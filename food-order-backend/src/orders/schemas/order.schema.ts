@@ -71,12 +71,20 @@ export class Order {
   })
   paymentStatus: string;
 
-  @Prop({
-    type: String,
-    enum: ['cash', 'momo'],
-    default: 'cash',
-  })
+  @Prop({ type: String, enum: ['cash', 'momo'], default: 'cash' })
   paymentMethod: string;
+
+  @Prop({ type: String, default: null })
+  couponCode: string;
+
+  @Prop({ type: Number, default: 0 })
+  discountAmount: number;
+
+  @Prop({ type: String, default: null })
+  customerName: string;
+
+  @Prop({ type: Date, default: null })
+  paidAt: Date;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

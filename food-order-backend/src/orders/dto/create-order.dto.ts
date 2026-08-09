@@ -42,4 +42,12 @@ export class CreateOrderDto {
   @IsEnum(['cash', 'momo'], { message: 'Phương thức thanh toán phải là "cash" hoặc "momo".' })
   @IsOptional()
   paymentMethod?: string;
+
+  @IsString()
+  @IsOptional()
+  couponCode?: string;
+
+  @IsString()
+  @IsOptional()
+  customerName?: string;
 }

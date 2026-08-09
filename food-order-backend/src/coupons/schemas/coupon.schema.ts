@@ -1,0 +1,36 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument } from 'mongoose';
+
+export type CouponDocument = HydratedDocument<Coupon>;
+
+@Schema({ timestamps: true })
+export class Coupon {
+  @Prop({ type: String, required: true, unique: true, uppercase: true, trim: true })
+  code: string;
+
+  @Prop({ type: String, enum: ['percent', 'fixed'], required: true })
+  type: string; // 'percent' = giảm %, 'fixed' = giảm số tiền cố định
+
+  @Prop({ type: Number, required: true, min: 0 })
+  value: number; // % hoặc VND
+
+  @Prop({ type: Number, default: 0 })
+  maxDiscount: number; // Giảm tối đa (chỉ dùng cho type=percent)
+
+  @Prop({ type: Number, default: 0 })
+  minOrderAmount: number; // Giá trị đơn tối thiểu để áp dụng
+
+  @Prop({ type: Number, default: 0 })
+  maxUsage: number; // 0 = không giới hạn
+
+  @Prop({ type: Number, default: 0 })
+  usedCount: number;
+
+  @Prop({ type: Date, required: true })
+  expiresAt: Date;
+
+  @Prop({ type: Boolean, default: true })
+  isActive: boolean;
+}
+
+export const CouponSchema = SchemaFactory.createForClass(Coupon);

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
+const bcrypt = require('bcrypt');
 
 // 1. Manually parse .env to get MONGODB_URI
 const envPath = path.join(__dirname, '.env');
@@ -23,8 +24,6 @@ if (!MONGODB_URI) {
   console.error('Error: MONGODB_URI is not defined in .env file!');
   process.exit(1);
 }
-
-const bcrypt = require('bcrypt');
 
 // 2. Define Mongoose Schemas (matching the NestJS models)
 const FoodSchema = new mongoose.Schema({
@@ -53,512 +52,505 @@ const Food = mongoose.model('Food', FoodSchema);
 const Table = mongoose.model('Table', TableSchema);
 const User = mongoose.model('User', UserSchema);
 
-// 3. Realistic Seed Data
+// 3. Coffee Shop Seed Data (Chika Coffee Menu)
 const foods = [
   // ==========================================
-  // 1. DANH MỤC: MÓN NƯỚC (20 món)
+  // 1. DANH MỤC: CÀ PHÊ (Coffee) - 15 món
   // ==========================================
   {
-    name: 'Phở Bò Tái Lăn Phố Cổ',
-    description: 'Món phở truyền thống danh tiếng with bánh phở mềm dẻo, nước dùng thanh ngọt tự nhiên được ninh liên tục từ xương ống bò trong 24 giờ. Phần thịt bò thăn được thái mỏng, chần tái và xào lăn nhanh trên lửa lớn cùng hành, tỏi lý sơn, mang lại hương vị béo ngậy, thơm nức mũi chuẩn vị Hà Thành.',
-    price: 65000,
-    image: 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-  {
-    name: 'Bún Bò Huế Cố Đô Đặc Biệt',
-    description: 'Sợi bún to mềm đặc trưng hòa quyện cùng nước dùng đậm đà chuẩn vị Huế cổ kính, dậy mùi thơm nồng đặc trưng của mắm ruốc thượng hạng và sả cây đập dập. Tô đặc biệt siêu đầy đặn bao gồm nạm bò mềm, chả cua Huế béo bùi, giò heo hầm nhừ cốt tủy, huyết mềm và rau sống tươi ngon đi kèm.',
-    price: 60000,
-    image: 'https://images.unsplash.com/photo-1625398407796-82650a8c135f?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-  {
-    name: 'Hủ Tiếu Nam Vang Khô Sốt Hắc Xì Dầu',
-    description: 'Sợi hủ tiếu dai ngon trứ danh được trụng nóng hổi, trộn đều cùng nước sốt hắc xì dầu đậm đà theo công thức độc quyền. Ăn kèm với tôm sú tươi bóc vỏ, thịt băm, gan heo, trứng cút lòng đào, tỏi phi vàng ruộm thơm lừng và một chén nước súp hầm xương mực ngọt thanh, đậm đà.',
-    price: 55000,
-    image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-  {
-    name: 'Mì Ramen Xá Xíu Nhật Bản',
-    description: 'Sợi mì tươi nguyên bản chiết xuất từ lúa mì thượng hạng dai giòn, kết hợp hoàn hảo cùng nước súp Tonkotsu hầm từ xương heo béo ngậy đậm đà trong nhiều giờ liền. Món ăn được trang trí đẹp mắt với hai lát thịt heo xá xíu dày dặn mềm tan, trứng ngâm tương Ajitama lòng đào dẻo bùi, măng tây và rong biển khô thơm giòn.',
-    price: 89000,
-    image: 'https://images.unsplash.com/photo-1557872943-16a5ac26437e?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-  {
-    name: 'Bún Riêu Cua Bắp Bò Trùng Trục',
-    description: 'Tô bún riêu đậm đà hương vị đồng quê với phần riêu cua nguyên chất béo bùi, nổi váng óng ánh béo ngậy. Nước dùng chua thanh nhẹ nhàng nhờ cà chua chín cây và giấm bỗng nếp thơm nồng. Ăn kèm thịt bắp bò hoa giòn sần sật, đậu hũ chiên phồng thấm đẫm nước súp, chả lụa và rau muống chẻ tơi.',
-    price: 55000,
-    image: 'https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-  {
-    name: 'Phở Gà Ta Lá Chanh Rắc Tỏi',
-    description: 'Sự thanh tao đến từ nước dùng phở gà trong vắt, ngọt lịm từ xương gà hầm cùng sá sùng và hành gừng nướng thơm. Thịt gà ta thả vườn dai da, ngọt thịt được xé phay vừa ăn, xếp đều trên lớp bánh phở mềm mượt, rắc thêm lá chanh xắt chỉ sợi chỉ mảnh và chút hành hoa xanh mướt.',
-    price: 50000,
-    image: 'https://images.unsplash.com/photo-1634068413119-3e0e4313c96c?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-  {
-    name: 'Bánh Canh Cua Tôm Tích Huế',
-    description: 'Sợi bánh canh bột lọc trong suốt, dai mềm đặc trưng ngập trong phần nước súp sền sệt, óng ánh sắc cam của gạch cua và dầu điều. Tô bánh canh đầy đặn ngập tràn thịt cua biển tươi rói, tôm tích ngọt lịm, chả cua quết tay dẻo quánh, huyết heo và trứng cút, rắc tiêu sọ Phú Quốc cay nồng.',
-    price: 65000,
-    image: 'https://images.unsplash.com/photo-1623341214825-9f4f963727da?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-  {
-    name: 'Bún Mọc Sườn Non Măng Khô',
-    description: 'Thức quà sáng thanh nhã với nước dùng hầm xương ống trong vắt, ngọt thanh. Những viên mọc heo giòn sần sật được quết kỹ cùng mộc nhĩ, nấm hương thơm lừng, ăn kèm dải sườn non hầm nhừ mềm sụn, măng khô Tây Bắc xé nhỏ dai giòn gấm vóc và hành phi vàng ruộm.',
-    price: 45000,
-    image: 'https://images.unsplash.com/photo-1555126634-323283e090fa?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-  {
-    name: 'Mì Hoành Thánh Tôm Tươi Xá Xíu',
-    description: 'Từng viên hoành thánh được gói khéo léo với lớp vỏ bột mỏng bọc bên trong nhân tôm thịt tươi ngon, cắn vào mọng nước bùi béo. Sợi mì trứng tươi vàng óng, dai ngon ăn cùng thịt xá xíu thái mỏng xém cạnh, hẹ lá xanh và nước súp sườn heo hầm tôm khô thanh mát chuẩn vị Hoa.',
-    price: 55000,
-    image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-  {
-    name: 'Bún Thang Hà Nội Tinh Tế',
-    description: 'Món ăn đại diện cho sự cầu kỳ, thanh lịch của ẩm thực Hà Thành. Nước dùng ninh từ xương gà và tôm khô trong vắt ngọt sâu. Các nguyên liệu ăn kèm được thái sợi chỉ nhỏ li ti bao gồm: lườn gà xé nhỏ, giò lụa, trứng tráng mỏng tang, củ cải khô dầm dẻo dai và một chút mắm tôm nồng nàn.',
-    price: 55000,
-    image: 'https://images.unsplash.com/photo-1608897013039-887f21d8c804?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-  {
-    name: 'Bánh Canh Cá Lóc Miền Tây',
-    description: 'Sợi bánh canh bột gạo xắt tay bản to dày dặn, hòa quyện trong nước dùng sệt nhẹ ngọt lịm từ xương cá hầm. Từng lát thịt cá lóc đồng được phi lê khéo léo, rim đậm đà cùng hành tỏi, tiêu đen, không hề tanh mà săn chắc bùi béo, rắc thêm thật nhiều hành lá và rau đắng đất.',
-    price: 45000,
-    image: 'https://images.unsplash.com/photo-1618411640018-97108990cf2b?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-  {
-    name: 'Miến Lươn Xứ Nghệ Tươi Giòn',
-    description: 'Đặc sản miền Trung với sợi miến dong hảo hạng dai mềm, ngập trong nước dùng xương lươn ninh kỹ ngọt lịm và có màu nâu sẫm tự nhiên. Khách hàng có thể cảm nhận vị lươn đồng xào nghệ vàng óng mượt mà kết hợp lươn chiên giòn tan rôm rốp, điểm xuyết rau răm và hành tăm phi thơm.',
-    price: 55000,
-    image: 'https://images.unsplash.com/photo-1614963326505-843867e2d330?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-  {
-    name: 'Bún Sứa Nha Trang Đại Dương',
-    description: 'Mang trọn hương vị gió biển miền Trung với những miếng sứa trắng phau, giòn sần sật mọng nước ngon miệng. Nước dùng thanh ngọt tuyệt đối nhờ ninh từ cá dầm và xương ống cá cờ, ăn kèm chả cá hấp, chả cá chiên dai ngon nguyên chất và một đĩa rau sống thái mỏng sợi chỉ cực thanh mát.',
-    price: 48000,
-    image: 'https://images.unsplash.com/photo-1606787366850-de6330128bfc?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-  {
-    name: 'Bún Chả Cá Quy Nhơn Đậm Đà',
-    description: 'Hương vị đậm đà khó quên với nước dùng thanh chua nhẹ từ cà chua và thơm chín ngọt. Tô bún đầy đặn tụ hội đầy đủ các loại chả cá thu quết tay nguyên chất chiên vàng ruộm, chả cá hấp dẻo dai ngọt thịt, viên cá viên và da heo sần sật, ăn cùng muối ớt xanh cay tê đầu lưỡi.',
-    price: 45000,
-    image: 'https://images.unsplash.com/photo-1591814468924-caf88d1232e1?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-  {
-    name: 'Phở Bò Sốt Vang Đậm Đà',
-    description: 'Sự giao thoa ẩm thực tuyệt vời với bánh phở mềm mịn, ngập trong nước dùng sốt vang sánh đặc màu đỏ nâu quyến rũ, thơm nồng nàn hương hoa hồi, quế chi và thảo quả. Những miếng thịt nạm bò gân giòn được hầm nhừ cùng rượu vang chát, mềm tan chảy béo ngậy ngay trong khoang miệng.',
-    price: 65000,
-    image: 'https://images.unsplash.com/photo-1610614819513-58e34989848b?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-  {
-    name: 'Mì Vịt Tiềm Thảo Mộc Thượng Hạng',
-    description: 'Món ăn đại bổ với chiếc đùi vịt siêu to khổng lồ được tẩm ướp gia vị, chiên sơ rồi tiềm nhừ trong nước cốt thảo mộc gồm đinh hương, thục địa, cam thảo. Sợi mì tươi dai giòn ăn cùng cải thìa xanh mướt, nấm đông cô ngọt lịm, nước súp ngọt đậm đà có hậu vị thanh tao.',
-    price: 95000,
-    image: 'https://images.unsplash.com/photo-1511910849309-0d5bc9c63e43?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-  {
-    name: 'Súp Bào Ngư Vi Cá Đại Dương',
-    description: 'Món súp hoàng gia cao cấp với nước cốt hầm từ gà già và hải sâm sánh đặc, ngọt ngào bổ dưỡng. Thành phần thượng hạng bao gồm 1 con bào ngư Hàn Quốc size lớn dai giòn ngọt thịt, vi cá thượng hạng mọng nước, nấm linh chi trắng bùi béo và trứng cút lòng đào dẻo thơm.',
-    price: 189000,
-    image: 'https://images.unsplash.com/photo-1547928576-a4a33237ce35?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-  {
-    name: 'Hủ Tiếu Mỹ Tho Đậm Vị Nam Bộ',
-    description: 'Sợi hủ tiếu Mỹ Tho làm từ gạo thơm phơi nắng dẻo dai đặc trưng không lẫn vào đâu được. Nước dùng hầm sườn heo, tôm khô và mực nướng thơm nức mũi, ngọt đậm đà. Tô hủ tiếu ngập tràn sườn non chặt khúc, tôm sú bóc vỏ, thịt băm và tỏi phi vàng ươm thơm lừng cả một góc bàn.',
-    price: 55000,
-    image: 'https://images.unsplash.com/photo-1547592180-85f173990554?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-  {
-    name: 'Bún Ốc Nguội Tây Hồ Cổ Kính',
-    description: 'Thức quà thanh nhã độc đáo của người Hà Nội xưa. Nước chấm dấm bỗng nếp chua thanh mát lạnh, thơm nhẹ dịu, đựng trong những chiếc chum đất nhỏ mộc mạc. Ăn cùng đĩa bún lá sợi nhỏ xếp nếp và những con ốc nhồi béo múp, giòn sần sật được luộc chín tới mọng nước sạch sẽ.',
-    price: 50000,
-    image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-  {
-    name: 'Bún Cá Cay Hải Phòng Đậm Vị',
-    description: 'Đặc sản đất Cảng với nước dùng hầm xương cá thanh ngọt, chua nhẹ vị me và cay nồng vị ớt tươi. Tô bún rực rỡ sắc màu với cá đồng chiên giòn tan rụm, chả cá thu quết tay dai ngon, lòng cá ba sa xào nghệ giòn sần sật và dọc mùng (bạc hà) tước vỏ xanh mướt xốp mềm.',
-    price: 50000,
-    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&auto=format&fit=crop&q=80',
-    category: 'Món nước',
-    isAvailable: true,
-  },
-
-  // ==========================================
-  // 2. DANH MỤC: MÓN CHÍNH (20 món)
-  // ==========================================
-  {
-    name: 'Bún Chả Hà Nội Nướng Than Hoa',
-    description: 'Thịt ba chỉ thái mỏng và chả viên băm nhuyễn được tẩm ướp gia vị gia truyền nhiều giờ, nướng cháy cạnh xèo xèo trên bếp than hoa rực hồng tạo nên mùi thơm quyến rũ khó cưỡng. Ăn kèm bún sợi nhỏ, đu đủ xanh giòn sần sật, đồ chua ngọt và chén nước mắm ấm nóng thanh dịu.',
-    price: 55000,
-    image: 'https://images.unsplash.com/photo-1617421731671-5caee6c43422?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-  {
-    name: 'Cơm Tấm Sườn Bì Chả Sài Gòn',
-    description: 'Cơm tấm dẻo thơm hạt ngọc được làm từ gạo tấm loại một, kết hợp cùng miếng sườn cốt lết dày dặn nướng mật ong vàng óng, thấm vị đậm đà bên ngoài nhưng vẫn giữ độ mọng nước bên trong. Đi kèm là bì thính thơm lừng, chả trứng đúc béo ngậy và nước mắm kẹo ớt tỏi cay ngọt kích thích.',
-    price: 50000,
-    image: 'https://images.unsplash.com/photo-1616666179724-4f0ec3df43a9?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-  {
-    name: 'Cơm Gà Xối Mỡ Da Giòn Rúm',
-    description: 'Hạt cơm chiên đảo đều cùng nước luộc gà và nghệ tươi cho màu vàng ươm bắt mắt, hạt tơi xốp không bị khô dầu. Đùi gà góc tư siêu to được xối mỡ liên tục, giúp phần da bên ngoài giòn rụm như bánh quy nhưng thịt bên trong vẫn giữ nguyên độ mềm ngọt tự nhiên, chấm sốt tương tỏi ớt.',
-    price: 55000,
-    image: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-  {
-    name: 'Mì Quảng Gà Ta Thả Vườn',
-    description: 'Sợi mì Quảng bản to mềm mịn ngập trong nước nhân đậm đà kho từ thịt gà ta thả vườn săn chắc, ngọt thịt, thơm nức hương củ nén và dầu phộng nguyên chất. Món ăn hoàn hảo hơn khi bẻ thêm bánh tráng nướng giòn rụm, rắc đậu phộng rang giã nhỏ, rau bắp chuối bào và vài lát ớt xanh cay tê.',
-    price: 48000,
-    image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-  {
-    name: 'Bò Né Hoa Đá Thượng Hạng',
-    description: 'Thịt bò Mỹ phi lê mềm mọng được cắt lát vừa ăn, xèo xèo trên chảo gang nóng hổi cùng một viên bơ thơm, trứng ốp la lòng đào chảy, pate gan béo ngậy và phô mai kéo sợi. Món ăn được phục vụ kèm bánh mì đặc ruột nướng nóng giòn và một đĩa salad dầu giấm rau củ thanh mát cân bằng vị giác.',
-    price: 79000,
-    image: 'https://images.unsplash.com/photo-1600891964599-f61ba0e24092?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-  {
-    name: 'Cơm Rang Dưa Bò Lửa Lớn',
-    description: 'Hạt cơm nguội được đánh tơi, chiên trên lửa lớn lách tách cùng trứng gà lòng đỏ tạo độ săn chắc, vàng giòn rùm rụm ngoài rìa. Phần dưa cải muối chua giòn xào cùng thịt bò thăn mềm mọng ngọt ngào xém cạnh tỏi phi thơm, tạo nên bộ đôi kết hợp hoàn hảo ăn hoài không ngấy.',
-    price: 50000,
-    image: 'https://images.unsplash.com/photo-1603133872878-685f5082c64a?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-  {
-    name: 'Bún Thịt Nướng Chả Giò Sài Gòn',
-    description: 'Tô bún khô mát mẻ với thịt nướng mật ong sả ớt thơm phưng phức, chả giò tôm thịt chiên giòn rụm xắt đôi. Bên dưới phủ kín rau sống thái nhỏ, giá đỗ, dưa leo. Trên cùng rắc mỡ hành xanh mướt, đậu phộng giã dập và chan nước mắm chua ngọt pha tỏi ớt băm nhuyễn cực bắt vị.',
-    price: 45000,
-    image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-  {
-    name: 'Cơm Thịt Kho Tàu Trứng Cút Mẹ Nấu',
-    description: 'Món ăn mang đậm hương vị gia đình với những miếng thịt ba chỉ dọi heo dày dặn, ninh nhừ trong nước dừa tươi thanh ngọt cho đến khi mỡ chuyển màu trong suốt, tan chảy. Ăn kèm trứng cút thấm đẫm gia vị mặn ngọt, đĩa dưa giá muối chua ngọt chống ngấy cực tốt trên nền cơm trắng dẻo.',
-    price: 45000,
-    image: 'https://images.unsplash.com/photo-1543339308-43e59d6b73a6?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-  {
-    name: 'Cơm Bò Lúc Lắc Sốt Tiêu Đen',
-    description: 'Thịt thăn bò tươi cắt khối vuông vuông "lúc lắc" vừa vặn, xào nhanh tay trên lửa cực lớn cùng ớt chuông ba màu (xanh, đỏ, vàng), hành tây ngọt dịu. Nước sốt dầu hào tiêu đen bao bọc quanh miếng thịt mềm mọng mượt mà. Đi kèm cơm chiên tỏi thơm phức và khoai tây chiên giòn.',
-    price: 69000,
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-  {
-    name: 'Cơm Gà Hải Nam Thượng Hải',
-    description: 'Món ăn tinh tế trứ danh với phần hạt cơm được nấu bằng nước dùng luộc gà, mỡ gà và gừng tỏi phi, cho từng hạt cơm béo ngậy thơm nồng dẻo thơm. Thịt gà hấp kiểu Hải Nam da vàng mọng nước, thịt trắng ngọt lịm tan chảy, chấm cùng bộ ba nước sốt: sốt gừng băm, sốt ớt cay và hắc xì dầu ngọt.',
-    price: 60000,
-    image: 'https://images.unsplash.com/photo-1626132647523-66f5bf380027?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-  {
-    name: 'Sườn Heo Xào Chua Ngọt Cực Phẩm',
-    description: 'Từng dẻ sườn non heo chặt nhỏ vừa ăn, chiên vàng đều xém cạnh bùi béo. Sườn được rim ngập trong nước sốt cà chua, giấm táo nguyên chất và dứa băm tạo nên vị chua thanh ngọt đậm đà sánh kẹo quyến rũ. Phục vụ trên dĩa cơm trắng nóng hổi rắc hành hoa.',
-    price: 55000,
-    image: 'https://images.unsplash.com/photo-1623653387945-2fd25214f8fc?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-  {
-    name: 'Mì Ý Sốt Bò Bằm Bolognaise',
-    description: 'Sợi mì Spaghetti nhập khẩu từ Ý được luộc chín tới giữ độ dai dẻo hoàn hảo (Al Dente). Rưới phủ lên trên là phần nước sốt đỏ rực làm từ thịt bò Úc xay nhuyễn bùi béo, cà chua cô đặc, hành tây và cỏ thơm Ý, rắc thêm một lớp phô mai Parmesan bột thơm ngậy kéo sợi mịn màng.',
-    price: 65000,
-    image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-  {
-    name: 'Cơm Rang Hải Săn Hoàng Kim',
-    description: 'Đĩa cơm rang rực rỡ sắc vàng óng từ lòng đỏ trứng muối giã nhuyễn bao bọc quanh từng hạt cơm săn chắc, giòn rụm ngoài rìa. Nhân cơm ngập tràn tôm sú cắt lựu ngọt lịm, mực ống giòn sần sật, chả lụa, đậu bắp xanh và ngô ngọt Mỹ bùi béo ngọt ngào hấp dẫn.',
-    price: 59000,
-    image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-  {
-    name: 'Gà Nướng Sốt Tiêu Xanh Tây Nguyên',
-    description: 'Nửa con gà ta thả vườn được tẩm ướp gia vị núi rừng Tây Nguyên, nướng lu đất vàng ruộm óng ả, phần da giòn sần sật bùi béo nhưng thớ thịt bên trong mọng nước ngọt ngào. Chan nước sốt tiêu xanh Phú Quốc cay tê dịu nồng nàn, ăn kèm xôi trắng chiên phồng giòn tan cực ngon miệng.',
-    price: 125000,
-    image: 'https://images.unsplash.com/photo-1616147458533-31f0cf2da484?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-  {
-    name: 'Cơm Vịt Quay Bắc Kinh Đậm Vị',
-    description: 'Thịt vịt quay hảo hạng với lớp da màu đỏ đồng bóng loáng, giòn tan rụm và béo ngậy ngào ngạt hương thảo mộc. Thịt vịt thái lát dày dặn xếp mượt mà lên đĩa cơm trắng dẻo thơm, chan nước tương đen ngọt kẹo độc quyền đi kèm dưa leo cắt lát mỏng và đồ chua ngọt.',
-    price: 69000,
-    image: 'https://images.unsplash.com/photo-1516685018646-549198525c1b?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-  {
-    name: 'Bún Đậu Mắm Tôm Thập Cẩm',
-    description: 'Mẹt bún đậu đầy đặn mang trọn hương vị thủ đô với bún lá cắt miếng, đậu hũ làng Mơ chiên ngập dầu giòn rìa ruột mềm mịn tan chảy, thịt chân giò luộc thảo mộc thái mỏng dẻo dai, nem chua rán giòn rụm và chả cốm dẻo quánh, chấm mắm tôm Thanh Hóa đánh bông chanh đường ớt.',
-    price: 55000,
-    image: 'https://images.unsplash.com/photo-1541832676-9b763b0239ab?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-  {
-    name: 'Cơm Cá Hú Kho Tộ Đậm Đà',
-    description: 'Khúc cá hú tươi béo ngậy được kho bằng niêu đất nung truyền thống. Nước kho cá kẹo quánh màu cánh gián óng ả nhờ đường thốt nốt, mặn ngọt cay tê đậm đà ngấm sâu vào lớp mỡ cá tan chảy. Ăn cùng cơm trắng dẻo thơm hạt ngọc và đĩa rau luộc thập cẩm thanh mát chấm sốt kho.',
-    price: 50000,
-    image: 'https://images.unsplash.com/photo-1534939561126-855b8675edd7?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-  {
-    name: 'Mì Xào Giòn Hải Sản Đại Dương',
-    description: 'Sợi mì trứng tươi được chiên phồng căng tròn như một tổ chim giòn tan rôm rốp quyến rũ. Rưới nước sốt sền sệt mặn ngọt nồng nàn ngập tràn tôm sú, mực ống bóc vỏ xẻ hoa, chả cá, bông cải xanh dẻo dai, nấm rơm bùi béo và cà rốt ngọt ngào giúp làm mềm mì khi thưởng thức.',
-    price: 60000,
-    image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-  {
-    name: 'Cơm Đùi Gà Nướng Mật Ong Rừng',
-    description: 'Chiếc đùi gà góc tư siêu to khổng lồ được tẩm ướp sốt mật ong rừng nguyên chất nướng cháy cạnh đỏ vàng ươm quyến rũ. Lớp da gà dai dẻo béo ngậy, thịt bên trong trắng ngần mọng nước ngọt thanh, ăn cùng cơm chiên tỏi hạt tơi xốp giòn rụm thơm lừng.',
-    price: 55000,
-    image: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-  {
-    name: 'Cơm Thịt Bò Xào Bông Cải Xanh',
-    description: 'Thịt bò thăn Úc thái lát mỏng mượt mà được ướp dầu hào, xào nhanh tay trên lửa cực lớn giữ trọn độ mềm ngọt mọng nước. Kết hợp cùng những búp bông cải xanh tươi rói, giòn sần sật ngọt ngào thơm nức mũi hương tỏi phi vàng ruộm, ăn hoài không ngấy.',
-    price: 50000,
-    image: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=800&auto=format&fit=crop&q=80',
-    category: 'Món chính',
-    isAvailable: true,
-  },
-
-  // ==========================================
-  // 3. DANH MỤC: ĂN NHẸ (20 món)
-  // ==========================================
-  {
-    name: 'Bánh Mì Pate Bơ Đặc Beệt',
-    description: 'Vỏ bánh mì được nướng nóng giòn rụm, ruột mềm mại. Nhân bánh ngập tràn lớp pate gan béo ngậy, bơ trứng gà lòng đỏ tươi tự làm, chả lụa truyền thống, thịt xá xíu đậm vị, dưa leo, đồ chua giòn ngọt và vài cọng ngò rí, chan chút nước sốt mặn ngọt cay nhẹ kích thích vị giác.',
+    name: 'Cà Phê Muối Huế Đặc Sản',
+    description: 'Sự kết hợp hoàn hảo giữa vị đậm đà thanh lịch của cà phê phin truyền thống, lớp kem sữa mặn béo ngậy mềm mịn đánh bông thủ công và chút đắng dịu lưu giữ hậu vị nồng nàn thơm nức.',
     price: 35000,
-    image: 'https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
+    image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop&q=80',
+    category: 'Cà phê',
     isAvailable: true,
   },
-  {
-    name: 'Nem Rán Hà Nội Vỏ Giòn (5 chiếc)',
-    description: 'Món khai vị quốc hồn quốc túy với lớp vỏ bánh đa nem mỏng, chiên ngập dầu giòn rụm vàng ruộm đẹp mắt. Nhân nem là sự hòa quyện hoàn hảo của thịt heo băm, tôm đất tươi, miến dong, mộc nhĩ, nấm hương thơm lừng, hành tây và giá đỗ, chấm cùng nước mắm tỏi ớt chua ngọt pha chuẩn tỉ lệ.',
-    price: 45000,
-    image: 'https://images.unsplash.com/photo-1609167830220-7164aa360951?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
-    isAvailable: true,
-  },
-  {
-    name: 'Gỏi Cuốn Tôm Thịt Heo Thảo Mộc (4 chiếc)',
-    description: 'Lựa chọn thanh mát tuyệt vời cho bữa ăn với tôm thẻ hấp đỏ mọng ngọt lịm, thịt ba chỉ luộc thảo mộc thái mỏng, bún tươi tơi xốp và các loại rau sống, hẹ lá được cuộn khéo léo, chặt tay trong lớp bánh tráng phơi sương dẻo dai. Thưởng thức cùng nước tương đen xào tương hột bùi béo.',
-    price: 39000,
-    image: 'https://images.unsplash.com/photo-1611143669185-af224c5e3252?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
-    isAvailable: true,
-  },
-  {
-    name: 'Khoai Tây Múi Cau Lắc Phô Mai Cheddar',
-    description: 'Những củ khoai tây tươi được bổ múi lớn phong cách phương Tây (Wedges), chiên qua hai lần lửa giúp bên ngoài giữ độ giòn tan, bên trong mềm xốp như kem. Sau đó khoai được lắc đều tay với lớp bột phô mai Cheddar thượng hạng nhập khẩu, mang đến hương vị mặn ngọt béo ngậy.',
-    price: 30000,
-    image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
-    isAvailable: true,
-  },
-  {
-    name: 'Cá Viên Chiên Sốt Nước Mắm Tỏi Ớt',
-    description: 'Từng viên cá thác lác dai ngon nguyên chất kết hợp bò viên, tôm viên được chiên căng phồng xốp bùi. Sau đó được đảo đều tay trên chảo nóng cùng phần nước sốt mắm tỏi kẹo quánh, kẹo kẹo bọc quanh viên chả. Phục vụ kèm tỏi phi giòn, hành tây và vài lá rau răm thơm nồng nàn.',
-    price: 35000,
-    image: 'https://images.unsplash.com/photo-1562967914-608f82629710?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
-    isAvailable: true,
-  },
-  {
-    name: 'Bánh Tráng Trộn Sài Gòn Đầy Đủ',
-    description: 'Món ăn vặt đường phố huyền thoại được phối trộn cầu kỳ từ bánh tráng cắt sợi, lòng đỏ trứng cút luộc, khô bò đen xé cay tơi, khô mực xé sợi, xoài xanh băm sợi chua chua, đậu phộng rang bùi béo, hành phi. Tất cả thấm đẫm nước sốt bò và muối tôm Tây Ninh, kèm chút tắc chua thanh.',
-    price: 25000,
-    image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
-    isAvailable: true,
-  },
-  {
-    name: 'Nem Chua Rán Phố Tạ Hiện (6 chiếc)',
-    description: 'Từng thanh nem chua bọc trong lớp bột chiên xù xù xì xì ngập dầu, khi chín tỏa ra mùi thơm ngào ngạt khó cưỡng. Vỏ ngoài giòn tan kêu rôm rốp trong miệng, nhân bên trong dai dẻo dính nhẹ, ngọt vị thịt heo và bì dẻo dai sần sật. Chấm cùng tương ớt cay nồng độc quyền siêu hợp.',
-    price: 35000,
-    image: 'https://images.unsplash.com/photo-1529042410759-befb1204b468?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
-    isAvailable: true,
-  },
-  {
-    name: 'Cánh Gà Chiên Nước Mắm Kẹo',
-    description: '3 khúc cánh gà tươi lớn được chiên vàng giòn da rùm rụm, sau đó phủ đều một lớp nước sốt mắm nhĩ Phú Quốc chưng đường thốt nốt và tỏi ớt băm nhuyễn kẹo sánh. Vị mặn mặn ngọt ngọt cay tê thấm sâu vào từng thớ thịt bên trong mọng nước, kích thích vị giác tột cùng.',
-    price: 49000,
-    image: 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
-    isAvailable: true,
-  },
-  {
-    name: 'Bột Chiên Trứng Gấp Giòn Rìa',
-    description: 'Những khối bột gạo được cắt vuông vức, chiên trên chảo phẳng gang lớn cho đến khi lớp vỏ ngoài chuyển màu vàng ruộm, giòn tan nứt vách nhưng ruột trong vẫn dẻo quánh. Đập thêm 2 quả trứng gà rải phủ lên, rắc hành lá thơm phức. Ăn kèm đồ chua đu đủ xanh và nước tương pha ngọt thanh.',
-    price: 30000,
-    image: 'https://images.unsplash.com/photo-1534080391025-a760de2802d2?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
-    isAvailable: true,
-  },
-  {
-    name: 'Ngô Chiên Bơ Tỏi Vàng Óng',
-    description: 'Từng hạt ngô ngọt Mỹ tách béo mọng, áo một lớp bột mỏng vừa vặn rồi chiên ngập dầu cho vàng giòn xốp. Sau đó ngô được xóc nhanh qua lớp bơ nhạt thơm ngậy và tỏi băm phi giòn. Món ăn vặt vui tai, giòn sần sật ngọt ngào xen lẫn vị mặn béo ngậy khó lòng dừng đũa.',
-    price: 30000,
-    image: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
-    isAvailable: true,
-  },
-  {
-    name: 'Khoai Lang Kén Nước Cốt Dừa',
-    description: 'Những kén khoai lang vàng ruộm tròn trịa xinh xắn, làm từ khoai lang ruột vàng tán nhuyễn mịn, trộn đều cùng nước cốt dừa sánh béo và chút bột năng dẻo dai. Vỏ ngoài rắc vừng đen thơm lừng chiên giòn tan rôm rốp, ruột trong mềm ngọt lịm bùi béo kích thích vị giác vô cùng.',
-    price: 25000,
-    image: 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
-    isAvailable: true,
-  },
-  {
-    name: 'Bánh Xèo Miền Tây Siêu To Khổng Lồ',
-    description: 'Chiếc bánh xèo giòn rụm vàng ươm sắc nghệ, viền bánh mỏng tang dẻo thơm nước cốt dừa. Nhân bánh ngập tràn tôm đất ngọt lịm, thịt ba chỉ thái mỏng, giá đỗ tơi xốp và đậu xanh hấp bùi béo. Cuộn bánh khéo léo trong lá cải bẹ xanh, rau rừng thái mỏng chấm mắm chua ngọt vị me.',
-    price: 45000,
-    image: 'https://images.unsplash.com/photo-1624555130581-1d9cca783bc0?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
-    isAvailable: true,
-  },
-  {
-    name: 'Bánh Khọt Vũng Tàu Tôm Nhảy',
-    description: '6 chiếc bánh khọt nhỏ nhắn được đổ khuôn gang xèo xèo vàng giòn rìa béo ngậy. Trên mặt mỗi chiếc bánh là một con tôm sú tươi rói đỏ mọng ngọt lịm, phủ mỡ hành xanh mướt mát mắt và chà bông tôm thơm lừng bùi béo, ăn kèm đồ chua đu đủ giòn sần sật dẻo dai.',
-    price: 40000,
-    image: 'https://images.unsplash.com/photo-1608756687911-d1b540c6d16b?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
-    isAvailable: true,
-  },
-  {
-    name: 'Chân Gà Sả Tắc Cay Tê Giòn Rụm',
-    description: 'Chân Gà rút xương được luộc chín tới cùng gừng sả, ngâm đá lạnh tạo độ giòn sần sật sướng tai khi nhai. Sau đó được ngâm ngập trong nước sốt tắc (quất) chua thanh ngọt dịu, nồng nàn hương sả cây, lá chanh xắt mảnh và ớt hiểm cay tê tái kích thích vị giác tột cùng.',
-    price: 49000,
-    image: 'https://images.unsplash.com/photo-1546964124-0cce460f38ef?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
-    isAvailable: true,
-  },
-  {
-    name: 'Phô Mai Que Kéo Sợi Mozzarella (3 chiếc)',
-    description: 'Thanh phô mai Mozzarella nhập khẩu từ Ý siêu dày dặn, áo lớp bột chiên xù xì vàng ruộm đẹp mắt. Khi cắn vào, lớp vỏ ngoài giòn tan kêu rôm rốp nhường chỗ cho lớp nhân phô mai béo ngậy ngào ngạt nóng hổi tan chảy, kéo sợi dài cả mét đầy vui nhộn quyến rũ.',
-    price: 30000,
-    image: 'https://images.unsplash.com/photo-1531749668029-2db88e4b76ce?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
-    isAvailable: true,
-  },
-  {
-    name: 'Súp Cua Tóc Tiên Trứng Bắc Thảo',
-    description: 'Chén súp cua sánh đặc màu sắc bắt mắt, ngọt thanh sâu sắc từ nước hầm xương gà. Thành phần đầy đặn bao gồm thịt cua biển xé nhỏ xốp bùi, nấm đông cô thái sợi, trứng cút, bắp ngọt dẻo và rong tóc tiên đen mun mềm mại, điểm xuyết nửa quả trứng bắc thảo béo bùi quánh dẻo.',
-    price: 35000,
-    image: 'https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
-    isAvailable: true,
-  },
-  {
-    name: 'Bánh Tráng Nướng Đà Lạt Pizza Việt Nam',
-    description: 'Đế bánh tráng phơi sương mỏng dẻo nướng trên bếp than hồng rực. Mặt bánh phủ đầy trứng cút đánh bông béo ngậy, bơ lạt thơm lừng, thịt băm ướp vị, chà bông heo bùi béo, xúc xích lát mỏng và hành lá xanh mướt, rưới sốt mayonnaise béo quánh tương ớt cay nồng giòn tan.',
-    price: 25000,
-    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
-    isAvailable: true,
-  },
-  {
-    name: 'Há Cảo Hấp Tôm Thịt Mọng Nước (5 chiếc)',
-    description: 'Từng viên há cảo chuẩn vị Quảng Đông với lớp vỏ bột tàn mì mỏng tang, trong suốt lộ rõ nhân tôm đỏ mọng nước hấp dẫn bên trong. Nhân tôm thịt quết kỹ dai ngon ngọt ngào, cắn vào mọng nước bùi béo thơm nức mùi dầu mè thượng hạng, chấm nước tương pha giấm đỏ.',
-    price: 35000,
-    image: 'https://images.unsplash.com/photo-1496116211227-7d3ccb8f4543?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
-    isAvailable: true,
-  },
-  {
-    name: 'Gà Popcorn Sốt Cay Lắc Giòn',
-    description: 'Những viên ức gà tươi được cắt khối vuông nhỏ nhắn vừa vặn, tẩm bột chiên xù giòn tan rụm rực rỡ sắc cam vàng óng. Gà được lắc đều trong nước sốt cay ngọt Hàn Quốc cay tê nồng nàn nịnh mũi, rắc thêm hạt vừng trắng rang bùi béo thơm phức vui miệng.',
-    price: 39000,
-    image: 'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
-    isAvailable: true,
-  },
-  {
-    name: 'Salad Ức Gà Áp Chảo Dầu Giấm Thanh Mát',
-    description: 'Lựa chọn ăn nhẹ healthy tuyệt vời với những lát ức gà áp chảo thơm xém cạnh vàng ươm nhưng thịt bên trong vẫn giữ nguyên độ mọng nước ngọt ngào. Kết hợp cùng xà lách tươi xanh, cà chua bi mọng nước, dưa leo giòn sần sật rưới sốt dầu giấm balsamic chua thanh nhẹ dịu.',
-    price: 45000,
-    image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&auto=format&fit=crop&q=80',
-    category: 'Ăn nhẹ',
-    isAvailable: true,
-  },
-
-  // ==========================================
-  // 4. DANH MỤC: ĐỒ UỐNG (20 món)
-  // ==========================================
   {
     name: 'Cà Phê Sữa Đá Phin Đậm Đặc',
-    description: 'Sự kết hợp hoàn hảo từ những hạt cà phê Robusta và Arabica Đắk Lắk nguyên chất, được rang xay và pha phin chậm rãi để giữ trọn vẹn hương vị đắng thanh, đậm đà đặc trưng. Hòa quyện sánh mịn cùng sữa đặc hảo hạng và đá nhuyễn, mang lại sự tỉnh táo tức thì cho ngày làm việc.',
+    description: 'Từng giọt cà phê Robusta Đắk Lắk nguyên chất chiết xuất qua phin truyền thống, hòa quyện với sữa đặc béo ngọt hảo hạng và đá lạnh nhuyễn mát mẻ, mang lại sự tỉnh táo tức thì.',
     price: 29000,
-    image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop&q=80',
-    category: 'Đồ uống',
+    image: 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=800&auto=format&fit=crop&q=80',
+    category: 'Cà phê',
+    isAvailable: true,
+  },
+  {
+    name: 'Cà Phê Đen Đá Phin Nguyên Chất',
+    description: 'Dành riêng cho gu thưởng thức đắng đậm truyền thống. Hạt cà phê Robusta rang mộc thơm nồng nàn, chiết xuất phin tinh khiết cho hậu vị đắng thanh thanh ngọt nhẹ sau cùng.',
+    price: 25000,
+    image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&auto=format&fit=crop&q=80',
+    category: 'Cà phê',
+    isAvailable: true,
+  },
+  {
+    name: 'Espresso Ý Double Shot',
+    description: 'Chiết xuất từ hạt Arabica Cầu Đất phối trộn Robusta thượng hạng bằng máy pha chuyên nghiệp, cho ra lớp crema dày mịn màu nâu cánh gián thơm phức và vị đắng đậm tinh tế.',
+    price: 32000,
+    image: 'https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?w=800&auto=format&fit=crop&q=80',
+    category: 'Cà phê',
+    isAvailable: true,
+  },
+  {
+    name: 'Cappuccino Ý Bọt Mịn Art',
+    description: 'Tỷ lệ cân bằng hoàn hảo giữa 1 shot Espresso đậm đà, sữa tươi thanh trùng đánh nóng và lớp bọt sữa dày mịn màng được tạo hình Latte Art đẹp mắt đầy tính nghệ thuật.',
+    price: 45000,
+    image: 'https://images.unsplash.com/photo-1534778101976-62847782c213?w=800&auto=format&fit=crop&q=80',
+    category: 'Cà phê',
+    isAvailable: true,
+  },
+  {
+    name: 'Latte Vanille Kem Béo',
+    description: 'Hương vị nhẹ nhàng êm ái kết hợp giữa Espresso thượng hạng, sữa tươi thanh trùng hòa quyện cùng siro Vanille Pháp ngọt ngào tinh tế, phủ lớp bọt sữa mỏng mượt.',
+    price: 49000,
+    image: 'https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?w=800&auto=format&fit=crop&q=80',
+    category: 'Cà phê',
+    isAvailable: true,
+  },
+  {
+    name: 'Caramel Macchiato Nóng/Đá',
+    description: 'Tầng sữa tươi nóng ngọt ngào rưới đều shot Espresso, dải trên cùng là sốt Caramel nướng thơm lừng béo ngậy tạo nên bản hòa tấu hương vị đa tầng độc đáo.',
+    price: 52000,
+    image: 'https://images.unsplash.com/photo-1485808191679-5f86510681a2?w=800&auto=format&fit=crop&q=80',
+    category: 'Cà phê',
+    isAvailable: true,
+  },
+  {
+    name: 'Americano Đá Thanh Mát',
+    description: 'Espresso nguyên bản pha loãng với nước tinh khiết và đá lạnh. Thức uống thanh nhẹ, giữ trọn hương vị trái cây tự nhiên và hương hoa thoang thoảng của hạt Arabica.',
+    price: 35000,
+    image: 'https://images.unsplash.com/photo-1551030173-122aabc4489c?w=800&auto=format&fit=crop&q=80',
+    category: 'Cà phê',
+    isAvailable: true,
+  },
+  {
+    name: 'Cold Brew Cam Sả Tươi',
+    description: 'Cà phê ủ lạnh trong 16 giờ chiết xuất vị chua thanh tự nhiên, kết hợp cùng nước cam tươi mọng nước và sả đập dập thơm nồng, sảng khoái và cực kỳ healthy.',
+    price: 48000,
+    image: 'https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=800&auto=format&fit=crop&q=80',
+    category: 'Cà phê',
+    isAvailable: true,
+  },
+  {
+    name: 'Cold Brew Sữa Dừa Bến Tre',
+    description: 'Cà phê Cold Brew ủ lạnh mát rượi hòa quyện cùng nước cốt dừa Bến Tre béo ngậy tự nhiên, mang lại cảm giác mượt mà êm dịu trên đầu lưỡi.',
+    price: 49000,
+    image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=800&auto=format&fit=crop&q=80',
+    category: 'Cà phê',
+    isAvailable: true,
+  },
+  {
+    name: 'Cà Phê Dừa Đá Xay Chika',
+    description: 'Món Best-Seller với nước cốt dừa tươi đá xay dẻo mịn béo ngậy, chan đều cốt cà phê phin đậm đà nguyên chất tạo hiệu ứng tầng màu đẹp mắt và hương vị thơm lừng.',
+    price: 49000,
+    image: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=800&auto=format&fit=crop&q=80',
+    category: 'Cà phê',
+    isAvailable: true,
+  },
+  {
+    name: 'Cà Phê Trứng Hà Nội Béo Bùi',
+    description: 'Lòng đỏ trứng gà tươi được đánh bông mịn quánh cùng mật ong và sữa đặc tạo thành lớp kem trứng vàng ươm béo bùi, rưới lên tách cà phê phin nóng hổi nồng nàn.',
+    price: 45000,
+    image: 'https://images.unsplash.com/photo-1541167760496-1628856ab772?w=800&auto=format&fit=crop&q=80',
+    category: 'Cà phê',
+    isAvailable: true,
+  },
+  {
+    name: 'Flat White Chuẩn Úc',
+    description: 'Gấp đôi hàm lượng Espresso (Ristretto) kết hợp với lượng sữa đánh mịn mỏng (microfoam), cho vị cà phê đậm nét nồng nàn hơn so với Latte truyền thống.',
+    price: 48000,
+    image: 'https://images.unsplash.com/photo-1577968897966-3d4325b36b61?w=800&auto=format&fit=crop&q=80',
+    category: 'Cà phê',
+    isAvailable: true,
+  },
+  {
+    name: 'Mocha Sô-cô-la Đắng Ngọt',
+    description: 'Sự hòa quyện hoàn hảo giữa shot Espresso đắng ngắt, sốt Sô-cô-la đen nguyên chất ngạt ngào và sữa tươi nóng béo mịn, rắc bột cacao thơm lừng trên mặt.',
+    price: 52000,
+    image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&auto=format&fit=crop&q=80',
+    category: 'Cà phê',
+    isAvailable: true,
+  },
+  {
+    name: 'Affogato Kem Vanille Espresso',
+    description: 'Trải nghiệm ẩm thực Ý tinh tế với 1 viên kem Vanille dẻo mịn béo ngậy được rưới ngập tràn shot Espresso nồng nàn nóng hổi ngay tại bàn.',
+    price: 49000,
+    image: 'https://images.unsplash.com/photo-1592663527359-cf6642f54cff?w=800&auto=format&fit=crop&q=80',
+    category: 'Cà phê',
+    isAvailable: true,
+  },
+
+  // ==========================================
+  // 2. DANH MỤC: TRÀ & TRÁI CÂY (Tea) - 15 món
+  // ==========================================
+  {
+    name: 'Trà Đào Cam Sả Tươi Mát',
+    description: 'Nước cốt trà Oolong thơm ngát kết hợp cùng vị ngọt chua nhẹ của cam tươi, hương sả đập dập thơm lừng và những miếng đào miếng giòn sần sật mọng nước.',
+    price: 45000,
+    image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=800&auto=format&fit=crop&q=80',
+    category: 'Trà & Trái cây',
+    isAvailable: true,
+  },
+  {
+    name: 'Trà Vải Lài Kem Cheese',
+    description: 'Cốt trà lài (lài ướp hoa tự nhiên) thanh mát dịu nhẹ, ăn cùng trái vải thiều mọng nước và lớp kem phô mai Macchiato mặn béo sánh mịn trên cùng.',
+    price: 49000,
+    image: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=800&auto=format&fit=crop&q=80',
+    category: 'Trà & Trái cây',
+    isAvailable: true,
+  },
+  {
+    name: 'Trà Mãng Cầu Đắk Lắk Sợi Tươi',
+    description: 'Thức uống Hot Trend kết hợp cốt trà xanh thơm ngát và thịt mãng cầu xiêm tươi rim đường chua chua ngọt ngọt dẻo dai, cực kỳ bắt vị và giải nhiệt hiệu quả.',
+    price: 45000,
+    image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&auto=format&fit=crop&q=80',
+    category: 'Trà & Trái cây',
+    isAvailable: true,
+  },
+  {
+    name: 'Trà Oolong Sen Vàng Hạt Sen',
+    description: 'Vị trà Oolong đậm đà thanh tao đi kèm hạt sen Đồng Tháp rim mật bùi dẻo, củ năng giòn sần sật và lớp kem phô mai béo ngậy nịnh đẫm vị giác.',
+    price: 49000,
+    image: 'https://images.unsplash.com/photo-1597481499750-3e6b22637e12?w=800&auto=format&fit=crop&q=80',
+    category: 'Trà & Trái cây',
+    isAvailable: true,
+  },
+  {
+    name: 'Matcha Latte Nhật Bản Uji',
+    description: 'Bột Matcha thượng hạng nhập khẩu trực tiếp từ Uji (Kyoto), khuấy tan cùng sữa tươi thanh trùng cho sắc xanh ngọc tuyệt đẹp và vị chát nhẹ hậu ngọt béo ngậy.',
+    price: 52000,
+    image: 'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=800&auto=format&fit=crop&q=80',
+    category: 'Trà & Trái cây',
+    isAvailable: true,
+  },
+  {
+    name: 'Trà Dâu Tằm Macchiato Dà Lạt',
+    description: 'Mứt dâu tằm tươi Đà Lạt đậm đà kết hợp trà đen Assam thanh dịu và lớp kem sữa Macchiato trắng mịn béo mặn, màu sắc rực rỡ quyến rũ.',
+    price: 45000,
+    image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=800&auto=format&fit=crop&q=80',
+    category: 'Trà & Trái cây',
+    isAvailable: true,
+  },
+  {
+    name: 'Trà Hoa Cúc Mật Ong Hữu Cơ',
+    description: 'Nụ hoa cúc sấy lạnh thơm thanh khiết ủ nóng cùng mật ong hoa nhãn nguyên chất. Món trà thảo mộc dịu nhẹ giúp thư giãn tinh thần và thanh lọc cơ thể.',
+    price: 39000,
+    image: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=800&auto=format&fit=crop&q=80',
+    category: 'Trà & Trái cây',
+    isAvailable: true,
+  },
+  {
+    name: 'Trà Xanh Băng Tuyết Kem Béo',
+    description: 'Trà xanh Thái Nguyên hảo hạng kết hợp đá xay cùng sữa chua dịu nhẹ, rưới sốt bơ thực vật và phủ lớp kem whipping mát rượi.',
+    price: 45000,
+    image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&auto=format&fit=crop&q=80',
+    category: 'Trà & Trái cây',
+    isAvailable: true,
+  },
+  {
+    name: 'Trà Tắc Mật Ong Hạt Chia',
+    description: 'Nước cốt tắc tươi thơm lừng vị tinh dầu kết hợp mật ong rừng thanh ngọt và hạt chia ngâm nở giàu dinh dưỡng, giải khát tức thì ngày nắng nóng.',
+    price: 35000,
+    image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=800&auto=format&fit=crop&q=80',
+    category: 'Trà & Trái cây',
+    isAvailable: true,
+  },
+  {
+    name: 'Trà Ổi Hồng Hạt Lựu Nhiệt Đới',
+    description: 'Nước ép ổi hồng chín cây thơm phức kết hợp cốt trà lài dịu nhẹ và trân châu trắng giòn giòn, sắc hồng ngọt ngào xinh xắn.',
+    price: 42000,
+    image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=800&auto=format&fit=crop&q=80',
+    category: 'Trà & Trái cây',
+    isAvailable: true,
+  },
+  {
+    name: 'Trà Dưa Lưới Kem Muối Biển',
+    description: 'Nước ép dưa lưới ngọt mát đậm vị trái cây nhiệt đới hòa cùng cốt trà Oolong nhẹ nhàng, lớp kem muối biển mặn nhẹ cân bằng vị ngọt mượt mà.',
+    price: 48000,
+    image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&auto=format&fit=crop&q=80',
+    category: 'Trà & Trái cây',
+    isAvailable: true,
+  },
+  {
+    name: 'Trà Chanh Giã Tay Quảng Đông',
+    description: 'Chanh nước thơm Quảng Đông được đập dập nguyên vỏ giã tay tỏa ra hương tinh dầu ngạt ngào, lắc đều với trà xanh Assam sảng khoái kích thích vị giác.',
+    price: 39000,
+    image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=800&auto=format&fit=crop&q=80',
+    category: 'Trà & Trái cây',
+    isAvailable: true,
+  },
+  {
+    name: 'Trà Earl Grey Kem Muối Anh Quốc',
+    description: 'Trà Bá Tước Earl Grey ướp hương tinh dầu cam Bergamot cổ điển, phủ lớp kem sữa phô mai mặn béo ngậy quánh mịn trên cùng.',
+    price: 49000,
+    image: 'https://images.unsplash.com/photo-1597481499750-3e6b22637e12?w=800&auto=format&fit=crop&q=80',
+    category: 'Trà & Trái cây',
+    isAvailable: true,
+  },
+  {
+    name: 'Trà Hoa Đậu Biếc Lemonade',
+    description: 'Trà hoa đậu biếc tự nhiên tạo màu xanh biếc kỳ diệu chuyển sang sắc tím mộng mơ khi hòa cùng nước cốt chanh tươi mát lạnh thanh nhiệt.',
+    price: 39000,
+    image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=800&auto=format&fit=crop&q=80',
+    category: 'Trà & Trái cây',
+    isAvailable: true,
+  },
+  {
+    name: 'Hojicha Latte Trà Rang Nhật',
+    description: 'Bột trà xanh Uji rang chín tỏa hương thơm khói bùi độc đáo, hòa cùng sữa tươi nóng dẻo mịn tạo nên hương vị êm dịu sưởi ấm tâm hồn.',
+    price: 52000,
+    image: 'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=800&auto=format&fit=crop&q=80',
+    category: 'Trà & Trái cây',
+    isAvailable: true,
+  },
+
+  // ==========================================
+  // 3. DANH MỤC: BÁNH NGỌT & PASTRY - 15 món
+  // ==========================================
+  {
+    name: 'Croissant Bơ Pháp Giòn Rụm',
+    description: 'Bánh sừng bò nướng nóng hổi chuẩn công thức nước Pháp với hàng trăm lớp bột xếp chồng giòn rụm bên ngoài, ruột bên trong mềm xốp thơm ngậy vị bơ Elle & Vire.',
+    price: 38000,
+    image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=800&auto=format&fit=crop&q=80',
+    category: 'Bánh ngọt & Pastry',
+    isAvailable: true,
+  },
+  {
+    name: 'Tiramisu Truyền Thống Ý',
+    description: 'Bánh Tiramisu mềm tan với từng lớp bánh Ladyfinger thấm đẫm cà phê Espresso & rượu Kahlua, xen kẽ lớp kem Mascarpone béo ngậy rắc bột cacao nguyên chất.',
+    price: 48000,
+    image: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=800&auto=format&fit=crop&q=80',
+    category: 'Bánh ngọt & Pastry',
+    isAvailable: true,
+  },
+  {
+    name: 'New York Cheesecake Việt Quất',
+    description: 'Bánh phô mai nướng phong cách New York đậm đặc béo ngậy tan chảy trên đầu lưỡi, phủ mứt việt quất tươi chua thanh cân bằng vị giác hoàn hảo.',
+    price: 52000,
+    image: 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=800&auto=format&fit=crop&q=80',
+    category: 'Bánh ngọt & Pastry',
+    isAvailable: true,
+  },
+  {
+    name: 'Croffle Sốt Caramel Muối',
+    description: 'Sự kết hợp giữa Croissant bơ nướng bằng máy Waffle tạo lớp vỏ giòn rụm thơm lừng, rưới sốt Caramel muối béo ngậy và rắc hạnh nhân lát nướng giòn.',
+    price: 45000,
+    image: 'https://images.unsplash.com/photo-1562376552-0d160a2f238d?w=800&auto=format&fit=crop&q=80',
+    category: 'Bánh ngọt & Pastry',
+    isAvailable: true,
+  },
+  {
+    name: 'Bánh Mì Tỏi Bơ Phô Mai Hàn Quốc',
+    description: 'Bánh mì tròn nướng giòn vỏ, nhân kem phô mai Cream Cheese béo ngậy tràn ngập inside và ngấm đẫm sốt bơ tỏi thơm nức mũi ngọt nhẹ.',
+    price: 42000,
+    image: 'https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=800&auto=format&fit=crop&q=80',
+    category: 'Bánh ngọt & Pastry',
+    isAvailable: true,
+  },
+  {
+    name: 'Egg Tart Hong Kong Nóng Hổi',
+    description: 'Bánh tạc trứng với lớp vỏ ngàn lớp giòn tan rôm rốp, nhân kem trứng nướng cháy xém béo bùi ngọt dịu nóng hổi vừa xuất lò.',
+    price: 28000,
+    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&auto=format&fit=crop&q=80',
+    category: 'Bánh ngọt & Pastry',
+    isAvailable: true,
+  },
+  {
+    name: 'Red Velvet Cake Kem Cheese',
+    description: 'Bánh nhung đỏ rực rỡ với cốt bánh chiffon dẻo mềm mịn thoảng hương cacao, xen kẽ các tầng kem phô mai mặn béo ngậy ngào ngạt.',
+    price: 49000,
+    image: 'https://images.unsplash.com/photo-1586985289688-ca3cf47d3e6e?w=800&auto=format&fit=crop&q=80',
+    category: 'Bánh ngọt & Pastry',
+    isAvailable: true,
+  },
+  {
+    name: 'Choco Lava Cake Tan Chảy',
+    description: 'Bánh sô-cô-la nướng ấm nóng với phần vỏ ngoài xốp mịn và phần nhân Sô-cô-la đắng chảy sóng sánh béo ngậy khi xắn thìa thưởng thức.',
+    price: 45000,
+    image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=800&auto=format&fit=crop&q=80',
+    category: 'Bánh ngọt & Pastry',
+    isAvailable: true,
+  },
+  {
+    name: 'Macaron Pháp Thập Cẩm (Set 4 cái)',
+    description: 'Set 4 chiếc bánh Macaron Pháp sắc màu xinh xắn với vỏ bánh từ bột hạnh nhân giòn xốp mỏng tang, nhân ganache Matcha, Dâu, Caramel & Chocolate béo ngậy.',
+    price: 59000,
+    image: 'https://images.unsplash.com/photo-1569864358642-9d1684040f43?w=800&auto=format&fit=crop&q=80',
+    category: 'Bánh ngọt & Pastry',
+    isAvailable: true,
+  },
+  {
+    name: 'Bánh Su Kem Choux Vanille (Set 3 cái)',
+    description: 'Bánh su kem vỏ giòn phủ đường giòn tan, nhân bên trong ngập tràn kem tươi Vanille béo ngậy mát lạnh tan chảy trong miệng.',
+    price: 32000,
+    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&auto=format&fit=crop&q=80',
+    category: 'Bánh ngọt & Pastry',
+    isAvailable: true,
+  },
+  {
+    name: 'Donut Glazed Sô-cô-la Hạnh Nhân',
+    description: 'Bánh Donut chiên vàng ươm mềm xốp, phủ lớp sô-cô-la đắng ngọt ngào và rắc hạt hạnh nhân giã dập nướng giòn rụm thơm phức.',
+    price: 29000,
+    image: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=800&auto=format&fit=crop&q=80',
+    category: 'Bánh ngọt & Pastry',
+    isAvailable: true,
+  },
+  {
+    name: 'Matcha Opera Cake Layer',
+    description: 'Bánh Opera biến tấu với cốt bánh Matcha thấm xirô trà xanh, xen kẽ kem bơ Matcha nhẹ nhàng và lớp phủ sô-cô-la trắng thanh lịch.',
+    price: 49000,
+    image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&auto=format&fit=crop&q=80',
+    category: 'Bánh ngọt & Pastry',
+    isAvailable: true,
+  },
+  {
+    name: 'Strawberry Shortcake Nhật Bản',
+    description: 'Cốt bánh bông lan dẻo mềm như mây, xếp nhiều tầng kem tươi Whipping nhẹ béo và những lát dâu tây tươi Đà Lạt đỏ mọng ngọt chua tự nhiên.',
+    price: 52000,
+    image: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800&auto=format&fit=crop&q=80',
+    category: 'Bánh ngọt & Pastry',
+    isAvailable: true,
+  },
+  {
+    name: 'Mousse Mango Chanh Dây',
+    description: 'Bánh Mousse mịn màng kết hợp vị chua ngọt thanh mát từ xoài chín cây và chanh dây tươi, đế bánh bánh quy giòn bùi nhẹ nhàng.',
+    price: 45000,
+    image: 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=800&auto=format&fit=crop&q=80',
+    category: 'Bánh ngọt & Pastry',
+    isAvailable: true,
+  },
+  {
+    name: 'Bánh Bông Lan Trứng Muối Chà Bông',
+    description: 'Ổ bánh bông lan nhỏ mềm mịn, nhân sốt phô mai bơ ngậy, phủ đầy chà bông gà cay ướp đậm đà và lòng đỏ trứng muối bùi bùi béo ngậy.',
+    price: 39000,
+    image: 'https://images.unsplash.com/photo-1586985289688-ca3cf47d3e6e?w=800&auto=format&fit=crop&q=80',
+    category: 'Bánh ngọt & Pastry',
+    isAvailable: true,
+  },
+
+  // ==========================================
+  // 4. DANH MỤC: ĐÁ XAY & ĂN VẶT - 15 món
+  // ==========================================
+  {
+    name: 'Cookie & Cream Ice Blended',
+    description: 'Bánh quy Bánh Oreo giòn thơm được xay nhuyễn cùng sữa tươi, sữa đặc và đá lạnh, xịt ngập ngụa kem tươi Whipping và vụn bánh Oreo rắc trên đỉnh.',
+    price: 52000,
+    image: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=800&auto=format&fit=crop&q=80',
+    category: 'Đá xay & Ăn vặt',
+    isAvailable: true,
+  },
+  {
+    name: 'Matcha Ice Blended Đậu Đỏ',
+    description: 'Matcha Uji Nhật Bản xay đá tuyết béo mịn, ăn kèm topping đậu đỏ Azuki ninh mềm bùi ngọt ngào và kem bông Whipping béo ngậy.',
+    price: 55000,
+    image: 'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=800&auto=format&fit=crop&q=80',
+    category: 'Đá xay & Ăn vặt',
+    isAvailable: true,
+  },
+  {
+    name: 'Chocolate Coconut Ice Blended',
+    description: 'Sô-cô-la nguyên chất đắng ngọt đá xay mịn mượt với nước cốt dừa tươi Bến Tre, phủ sô-cô-la chip nướng giòn trên mặt kem béo.',
+    price: 52000,
+    image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&auto=format&fit=crop&q=80',
+    category: 'Đá xay & Ăn vặt',
+    isAvailable: true,
+  },
+  {
+    name: 'Sinh Tố Bơ Dừa Sáp Đắk Lắk',
+    description: 'Thịt bơ sáp Đắk Lắk dẻo quánh béo ngậy xay mịn cùng sữa tươi và dừa sợi phơi khô giòn bùi, thức uống bổ dưỡng giàu năng lượng.',
+    price: 49000,
+    image: 'https://images.unsplash.com/photo-1525385133512-2f3bdd039054?w=800&auto=format&fit=crop&q=80',
+    category: 'Đá xay & Ăn vặt',
+    isAvailable: true,
+  },
+  {
+    name: 'Sinh Tố Xoài Chanh Dây Nhiệt Đới',
+    description: 'Xoài Cát Hòa Lộc chín vàng ngọt lịm kết hợp chanh dây tươi chua thanh đá xay mịn mượt, rạng rỡ màu nắng sảng khoái.',
+    price: 45000,
+    image: 'https://images.unsplash.com/photo-1623065422902-30a2d299bcc4?w=800&auto=format&fit=crop&q=80',
+    category: 'Đá xay & Ăn vặt',
+    isAvailable: true,
+  },
+  {
+    name: 'Hạt Hạnh Nhân Rang Bơ Tỏi (Hũ 150g)',
+    description: 'Hạt hạnh nhân Mỹ nhập khẩu nướng nguyên vỏ giòn rụm, lắc sốt bơ lạt và tỏi phi thơm lừng vị mặn ngọt bùi béo ăn vặt cực bắt miệng.',
+    price: 45000,
+    image: 'https://images.unsplash.com/photo-1508061253366-f7da158b6d96?w=800&auto=format&fit=crop&q=80',
+    category: 'Đá xay & Ăn vặt',
+    isAvailable: true,
+  },
+  {
+    name: 'Granola Yến Mạch Trái Cây Sấy',
+    description: 'Bát Granola giòn rụm gồm yến mạch nướng mật ong, hạt óc chó, hạnh nhân, hạt điều và dâu tây sấy thăng hoa, rưới sữa chua không đường healthy.',
+    price: 45000,
+    image: 'https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=800&auto=format&fit=crop&q=80',
+    category: 'Đá xay & Ăn vặt',
+    isAvailable: true,
+  },
+  {
+    name: 'Hạt Macca Úc Nướng Nút Nẻ',
+    description: 'Hạt Macca nướng nứt vỏ tự nhiên, nhân hạt tròn căng màu trắng kem giòn bùi béo ngậy như bơ nguyên chất tươi ngon.',
+    price: 49000,
+    image: 'https://images.unsplash.com/photo-1541832676-9b763b0239ab?w=800&auto=format&fit=crop&q=80',
+    category: 'Đá xay & Ăn vặt',
+    isAvailable: true,
+  },
+  {
+    name: 'Khô Bò Sợi Lá Chanh Đắk Lắk',
+    description: 'Thịt bò thăn nguyên miếng sấy khô xé sợi dẻo dai, ướp ngũ vị hương, ớt ớt cay nồng và lá chanh tươi thái chỉ thơm phức nhâm nhi cùng trà.',
+    price: 49000,
+    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format&fit=crop&q=80',
+    category: 'Đá xay & Ăn vặt',
+    isAvailable: true,
+  },
+  {
+    name: 'Khoai Tây Múi Cau Lắc Phô Mai',
+    description: 'Khoai tây bổ múi cau phong cách Bỉ chiên vàng giòn rụm vỏ bên ngoài, bên trong xốp mềm bùi ngậy, lắc bột phô mai Cheddar mặn ngọt thơm lừng.',
+    price: 35000,
+    image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=800&auto=format&fit=crop&q=80',
+    category: 'Đá xay & Ăn vặt',
+    isAvailable: true,
+  },
+  {
+    name: 'Bánh Biscotti Hạt Dinh Dưỡng Nguyên Cám',
+    description: 'Bánh Biscotti nướng 2 lần chuẩn phong cách Ý từ bột nguyên cám, tràn ngập hạt hạnh nhân, hạt bí và việt quất sấy, giòn tan kiềm dầu ít calo.',
+    price: 39000,
+    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&auto=format&fit=crop&q=80',
+    category: 'Đá xay & Ăn vặt',
+    isAvailable: true,
+  },
+  {
+    name: 'Cơm Cháy Chà Bông Sốt Mắm Tỏi',
+    description: 'Miếng cơm cháy nếp giòn tan rụm vàng ươm, quết mắm tỏi ớt kẹo quánh cay nhẹ và phủ lớp chà bông gà dai bùi thơm phức.',
+    price: 35000,
+    image: 'https://images.unsplash.com/photo-1541832676-9b763b0239ab?w=800&auto=format&fit=crop&q=80',
+    category: 'Đá xay & Ăn vặt',
+    isAvailable: true,
+  },
+  {
+    name: 'Pudding Trà Xanh Trân Châu Đen',
+    description: 'Chén Pudding Matcha Uji mềm mịn núng nính tan chảy trong khoang miệng, ăn cùng trân châu đường đen dẻo dai ngọt thanh.',
+    price: 29000,
+    image: 'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=800&auto=format&fit=crop&q=80',
+    category: 'Đá xay & Ăn vặt',
+    isAvailable: true,
+  },
+  {
+    name: 'Gelato Dừa Nướng Bến Tre',
+    description: 'Ý Gelato dừa tươi béo ngậy được chế biến thủ công, rắc dừa sấy nướng vàng giòn thơm lừng mát lạnh sảng khoái.',
+    price: 35000,
+    image: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=800&auto=format&fit=crop&q=80',
+    category: 'Đá xay & Ăn vặt',
+    isAvailable: true,
+  },
+  {
+    name: 'Kem Affogato Sô-cô-la Bỉ',
+    description: '1 viên kem Sô-cô-la đắng nguyên chất Bỉ mềm mịn được rưới shot Espresso nóng nồng nàn thơm nức, trải nghiệm đắng ngọt tinh tế.',
+    price: 49000,
+    image: 'https://images.unsplash.com/photo-1592663527359-cf6642f54cff?w=800&auto=format&fit=crop&q=80',
+    category: 'Đá xay & Ăn vặt',
     isAvailable: true,
   }
 ];
+
 const tables = [
   { _id: new mongoose.Types.ObjectId('65a0c01be5fe6910cab58701'), tableName: 'Bàn số 1', status: 'empty', qrCodeUrl: 'http://localhost:3000/table/65a0c01be5fe6910cab58701' },
   { _id: new mongoose.Types.ObjectId('65a0c01be5fe6910cab58702'), tableName: 'Bàn số 2', status: 'empty', qrCodeUrl: 'http://localhost:3000/table/65a0c01be5fe6910cab58702' },
@@ -582,27 +574,27 @@ async function run() {
     console.log('✅ Đã dọn dẹp xong.');
 
     // Insert new data
-    console.log('🌱 Đang nạp dữ liệu món ăn...');
+    console.log('🌱 Đang nạp dữ liệu menu Kohi Coffee (Cà phê, Trà, Bánh & Đá xay)...');
     const insertedFoods = await Food.insertMany(foods);
-    console.log(`✅ Đã nạp thành công ${insertedFoods.length} món ăn.`);
+    console.log(`✅ Đã nạp thành công ${insertedFoods.length} thức uống & bánh.`);
 
-    console.log('🌱 Đang nạp dữ liệu bàn ăn...');
+    console.log('🌱 Đang nạp dữ liệu bàn...');
     const insertedTables = await Table.insertMany(tables);
-    console.log(`✅ Đã nạp thành công ${insertedTables.length} bàn ăn.`);
+    console.log(`✅ Đã nạp thành công ${insertedTables.length} bàn.`);
 
     console.log('🌱 Đang nạp dữ liệu người dùng (Admin & Staff)...');
     const adminPassword = await bcrypt.hash('admin123', 10);
     const staffPassword = await bcrypt.hash('staff123', 10);
     const users = [
       {
-        name: 'Quản trị viên',
-        email: 'admin@restaurant.com',
+        name: 'Quản trị viên Kohi Coffee',
+        email: 'admin@kohicoffee.com',
         password: adminPassword,
         role: 'admin',
       },
       {
-        name: 'Nhân viên phục vụ',
-        email: 'staff@restaurant.com',
+        name: 'Nhân viên Barista',
+        email: 'staff@kohicoffee.com',
         password: staffPassword,
         role: 'staff',
       },
@@ -610,16 +602,16 @@ async function run() {
     const insertedUsers = await User.insertMany(users);
     console.log(`✅ Đã nạp thành công ${insertedUsers.length} tài khoản.`);
 
-    console.log('\n🌟 DANH SÁCH BÀN ĂN (Dùng để chạy thử nghiệm frontend):');
+    console.log('\n🌟 DANH SÁCH BÀN CÀ PHÊ KOHI COFFEE:');
     insertedTables.forEach((tab) => {
       console.log(`- ${tab.tableName} | ID: ${tab._id} | Link: http://localhost:3000/table/${tab._id}`);
     });
 
-    console.log('\n👤 TÀI KHOẢN ĐĂNG NHẬP THỬ NGHIỆM:');
-    console.log('- Admin: admin@restaurant.com / admin123');
-    console.log('- Staff: staff@restaurant.com / staff123');
+    console.log('\n👤 TÀI KHOẢN ĐĂNG NHẬP THỬ NGHIỆM KOHI COFFEE:');
+    console.log('- Admin: admin@kohicoffee.com / admin123');
+    console.log('- Staff: staff@kohicoffee.com / staff123');
 
-    console.log('\n🎉 Quá trình seed dữ liệu hoàn tất thành công!');
+    console.log('\n🎉 Quá trình seed dữ liệu Kohi Coffee hoàn tất thành công!');
   } catch (error) {
     console.error('❌ Lỗi trong quá trình seed dữ liệu:', error);
   } finally {

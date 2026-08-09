@@ -6,15 +6,17 @@ import { Order, OrderSchema } from './schemas/order.schema.js';
 import { OrdersGateway } from './orders.gateway.js';
 import { FoodsModule } from '../foods/foods.module.js';
 import { TablesModule } from '../tables/tables.module.js';
+import { CouponsModule } from '../coupons/coupons.module.js';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Order.name, schema: OrderSchema }]),
-    FoodsModule, // Nhập FoodsModule để sử dụng FoodsService tính tổng tiền
-    TablesModule, // Nhập TablesModule để sử dụng TablesService đổi bàn
+    FoodsModule,
+    TablesModule,
+    CouponsModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService, OrdersGateway],
-  exports: [OrdersService],
+  exports: [OrdersService, OrdersGateway],
 })
 export class OrdersModule {}

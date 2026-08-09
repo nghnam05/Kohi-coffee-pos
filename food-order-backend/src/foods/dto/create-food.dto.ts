@@ -10,7 +10,7 @@ import {
 
 export class CreateFoodDto {
   @IsString()
-  @IsNotEmpty({ message: 'Tên món ăn không được để trống.' })
+  @IsNotEmpty({ message: 'Tên món / thức uống không được để trống.' })
   name: string;
 
   @IsString()
@@ -19,7 +19,7 @@ export class CreateFoodDto {
 
   @IsNumber({}, { message: 'Giá phải là một số.' })
   @Min(0, { message: 'Giá không được âm.' })
-  @IsNotEmpty({ message: 'Giá món ăn không được để trống.' })
+  @IsNotEmpty({ message: 'Giá món / thức uống không được để trống.' })
   price: number;
 
   @IsString()

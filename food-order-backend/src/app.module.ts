@@ -7,17 +7,18 @@ import { FoodsModule } from './foods/foods.module.js';
 import { TablesModule } from './tables/tables.module.js';
 import { OrdersModule } from './orders/orders.module.js';
 import { AuthModule } from './auth/auth.module.js';
+import { StaffCallsModule } from './staff-calls/staff-calls.module.js';
+import { ReviewsModule } from './reviews/reviews.module.js';
+import { CouponsModule } from './coupons/coupons.module.js';
+import { AnalyticsModule } from './analytics/analytics.module.js';
+import { AttendanceModule } from './attendance/attendance.module.js';
+import { SalariesModule } from './salaries/salaries.module.js';
+import { AiChatModule } from './ai-chat/ai-chat.module.js';
 
 @Module({
   controllers: [AppController],
   imports: [
-    // 1. Cấu hình biến môi trường - isGlobal: true giúp dùng ConfigService ở bất kỳ module nào
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: '.env',
-    }),
-
-    // 2. Kết nối MongoDB - đọc URI từ biến môi trường MONGODB_URI
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -25,13 +26,18 @@ import { AuthModule } from './auth/auth.module.js';
       }),
       inject: [ConfigService],
     }),
-
-    // 3. Các Feature Modules
     AuthModule,
     UsersModule,
     FoodsModule,
     TablesModule,
     OrdersModule,
+    StaffCallsModule,
+    ReviewsModule,
+    CouponsModule,
+    AnalyticsModule,
+    AttendanceModule,
+    SalariesModule,
+    AiChatModule,
   ],
 })
 export class AppModule {}

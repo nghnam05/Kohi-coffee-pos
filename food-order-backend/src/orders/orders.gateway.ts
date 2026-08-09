@@ -31,4 +31,8 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   emitOrderDeleted(orderId: string): void {
     this.server.emit('orderDeleted', { orderId });
   }
+
+  emitOrdersMerged(tableId: string, mergedOrder: any): void {
+    this.server.emit('ordersMerged', { tableId, mergedOrder });
+  }
 }

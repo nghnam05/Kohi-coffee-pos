@@ -25,7 +25,7 @@ export class FoodsService {
   async findOne(id: string): Promise<FoodDocument> {
     const food = await this.foodModel.findById(id).exec();
     if (!food) {
-      throw new NotFoundException(`Không tìm thấy món ăn với ID: ${id}`);
+      throw new NotFoundException(`Không tìm thấy món / thức uống với ID: ${id}`);
     }
     return food;
   }
@@ -36,7 +36,7 @@ export class FoodsService {
       .exec();
 
     if (!updatedFood) {
-      throw new NotFoundException(`Không tìm thấy món ăn với ID: ${id}`);
+      throw new NotFoundException(`Không tìm thấy món / thức uống với ID: ${id}`);
     }
     return updatedFood;
   }
@@ -44,8 +44,8 @@ export class FoodsService {
   async remove(id: string): Promise<{ message: string }> {
     const deletedFood = await this.foodModel.findByIdAndDelete(id).exec();
     if (!deletedFood) {
-      throw new NotFoundException(`Không tìm thấy món ăn với ID: ${id}`);
+      throw new NotFoundException(`Không tìm thấy món / thức uống với ID: ${id}`);
     }
-    return { message: `Đã xóa món ăn "${deletedFood.name}" thành công.` };
+    return { message: `Đã xóa món / thức uống "${deletedFood.name}" thành công.` };
   }
 }

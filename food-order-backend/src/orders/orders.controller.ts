@@ -69,6 +69,12 @@ export class OrdersController {
     return this.ordersService.transferTable(fromTableId, toTableId);
   }
 
+  // PATCH /api/v1/orders/merge-table/:tableId (Cho phép gộp tất cả đơn active cùng 1 bàn làm 1)
+  @Patch('merge-table/:tableId')
+  async mergeTableOrders(@Param('tableId') tableId: string): Promise<any> {
+    return this.ordersService.mergeTableOrders(tableId);
+  }
+
   // PATCH /api/v1/orders/:id/pay (Truy cập tự do để giả lập webhook thanh toán MoMo/VietQR)
   @Patch(':id/pay')
   async simulatePayment(@Param('id') id: string): Promise<OrderDocument> {
