@@ -13,7 +13,7 @@
 /* ── Light Mode (default) ───────────────────────────────── */
 :root {
   /* Backgrounds */
-  --bg-primary:        #F8FAFC;
+  --bg-primary:        #F4F6F8;
   --bg-card:           #FFFFFF;
   --bg-card-inner:     #F1F5F9;
 
@@ -23,8 +23,8 @@
 
   /* Text */
   --text-primary:      #0F172A;
-  --text-secondary:    #6B7280;
-  --text-tertiary:     #9CA3AF;
+  --text-secondary:    #64748B;
+  --text-tertiary:     #94A3B8;
 
   /* Brand */
   --brand-primary:     #3AA6FF;

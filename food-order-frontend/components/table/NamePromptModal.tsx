@@ -81,7 +81,7 @@ export const NamePromptModal: React.FC<NamePromptModalProps> = ({
                 <button
                   id="confirm-name-btn"
                   onClick={handleConfirmName}
-                  className="w-full h-[52px] bg-[#3AA6FF] dark:bg-[#5B9EFF] hover:bg-[#2B96EF] text-white text-[14px] font-bold uppercase tracking-[0.04em] rounded-xl transition-all active:scale-[0.98] shadow-md shadow-[#3AA6FF]/30 font-sans"
+                  className="w-full h-[52px] uiverse-btn text-white text-[14px] font-bold uppercase tracking-[0.04em] rounded-xl transition-all active:scale-[0.98] shadow-md shadow-[#3AA6FF]/30 font-sans"
                 >
                   {nameInput.trim() ? `Xác nhận — ${nameInput.trim()}` : 'Bắt đầu gọi món'}
                 </button>

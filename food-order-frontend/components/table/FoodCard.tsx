@@ -82,10 +82,10 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.94 }}
             onClick={handleClick}
-            className={`px-4 py-2.5 rounded-[var(--radius-sm)] text-[13px] font-[600] tracking-[0.02em] flex items-center gap-1.5 shadow-sm transition-all ${
+            className={`px-4 py-2.5 rounded-xl text-[13px] font-[600] tracking-[0.02em] flex items-center gap-1.5 shadow-sm transition-all ${
               quantity > 0
                 ? 'bg-[var(--brand-primary-muted)] text-[var(--brand-primary)] border border-[var(--brand-primary)]/30 hover:bg-[var(--brand-primary)]/20'
-                : 'bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white'
+                : 'uiverse-btn'
             }`}
           >
             <span className="material-symbols-outlined text-[15px]">
@@ -160,10 +160,10 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.94 }}
             onClick={handleClick}
-            className={`px-4 py-2.5 rounded-[var(--radius-sm)] text-[13px] font-[600] tracking-[0.02em] flex items-center gap-1.5 shadow-sm transition-all ${
+            className={`px-4 py-2.5 rounded-xl text-[13px] font-[600] tracking-[0.02em] flex items-center gap-1.5 shadow-sm transition-all ${
               quantity > 0
                 ? 'bg-[var(--brand-primary-muted)] text-[var(--brand-primary)] border border-[var(--brand-primary)]/30 hover:bg-[var(--brand-primary)]/20'
-                : 'bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white'
+                : 'uiverse-btn'
             }`}
           >
             <span className="material-symbols-outlined text-[15px]">

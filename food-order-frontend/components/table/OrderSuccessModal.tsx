@@ -68,7 +68,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
                     setIsOrderSuccessModalOpen(false);
                     router.push(`/table/${tableId}/order-status/${latestCreatedOrder._id}`);
                   }}
-                  className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2B96EF] dark:bg-[#5B9EFF] dark:hover:bg-[#3AA6FF] text-white rounded-xl text-[13px] font-[600] transition-all active:scale-95 shadow-lg shadow-[#3AA6FF]/25"
+                  className="w-full py-3 uiverse-btn text-white rounded-xl text-[13px] font-[600] transition-all active:scale-95 shadow-lg shadow-[#3AA6FF]/25"
                 >
                   Theo dõi tiến độ
                 </button>

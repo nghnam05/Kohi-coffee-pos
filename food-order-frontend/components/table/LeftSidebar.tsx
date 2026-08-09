@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { ThemeToggleSwitch } from './ThemeToggleSwitch';
 
 interface Table {
   _id: string;
@@ -100,7 +101,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         <button
           onClick={handleCallStaff}
           disabled={callStaffCooldown > 0 || isCallingStaff}
-          className="w-full bg-[#3AA6FF] hover:bg-[#2B96EF] dark:bg-[#5B9EFF] dark:hover:bg-[#3AA6FF] text-[#FFFFFF] py-3 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-[#3AA6FF]/40 dark:shadow-[#5B9EFF]/30 font-[700] text-[13px] font-sans tracking-wide ring-2 ring-[#3AA6FF]/30 ring-offset-1 ring-offset-transparent"
+          className="w-full uiverse-btn py-3 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-[#3AA6FF]/40 font-[700] text-[13px] font-sans tracking-wide"
         >
           <span className="material-symbols-outlined text-[18px]">support_agent</span>
           <span>
@@ -157,26 +158,23 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
       <div className="border-t border-[#E2E8F0] dark:border-[#222732] my-2" />
 
       {/* Utilities Stack */}
-      <div className="flex flex-col gap-2 mb-4">
-        <div className="flex items-center gap-2">
-          {/* Theme Toggle Button */}
-          <button
-            onClick={() => setTheme(isDark ? 'light' : 'dark')}
-            className="p-2.5 bg-[#F8FAFC] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] hover:border-[#3AA6FF] rounded-xl text-[#000000] dark:text-[#FFFFFF] flex items-center justify-center transition-all shadow-sm"
-            title={isDark ? 'Chuyển sang giao diện Sáng' : 'Chuyển sang giao diện Tối'}
-          >
-            <span className="material-symbols-outlined text-base text-[#3AA6FF]">
-              {isDark ? 'dark_mode' : 'light_mode'}
+      <div className="flex flex-col gap-2.5 mb-4">
+        <div className="flex items-center justify-between gap-3 bg-[#F8FAFC] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] rounded-2xl p-2 shadow-sm">
+          {/* UIverse Sun/Moon Theme Toggle Switch */}
+          <div className="flex items-center gap-2 pl-1">
+            <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
+            <span className="text-[11px] font-[600] text-[#64748B] dark:text-[#94A3B8] font-sans">
+              {isDark ? 'Tối' : 'Sáng'}
             </span>
-          </button>
+          </div>
 
-          {/* Language Switcher Buttons */}
-          <div className="flex-1 bg-[#F8FAFC] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] rounded-xl p-1 flex justify-around items-center">
+          {/* Language Switcher Pills */}
+          <div className="bg-[#FFFFFF] dark:bg-[#090D16] border border-[#E2E8F0] dark:border-[#222732] rounded-xl p-1 flex items-center gap-1 shadow-xs">
             <button
               onClick={() => setLang('vi')}
-              className={`text-[10px] font-black px-2 py-1 rounded-lg transition-colors ${
+              className={`text-[10.5px] font-[700] px-2.5 py-1 rounded-lg transition-all font-sans ${
                 lang === 'vi'
-                  ? 'bg-[#3AA6FF] text-[#FFFFFF]'
+                  ? 'bg-[#3AA6FF] text-[#FFFFFF] shadow-sm'
                   : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#000000] dark:hover:text-[#FFFFFF]'
               }`}
             >
@@ -184,9 +182,9 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             </button>
             <button
               onClick={() => setLang('en')}
-              className={`text-[10px] font-black px-2 py-1 rounded-lg transition-colors ${
+              className={`text-[10.5px] font-[700] px-2.5 py-1 rounded-lg transition-all font-sans ${
                 lang === 'en'
-                  ? 'bg-[#3AA6FF] text-[#FFFFFF]'
+                  ? 'bg-[#3AA6FF] text-[#FFFFFF] shadow-sm'
                   : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#000000] dark:hover:text-[#FFFFFF]'
               }`}
             >
@@ -194,9 +192,9 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             </button>
             <button
               onClick={() => setLang('zh')}
-              className={`text-[10px] font-black px-2 py-1 rounded-lg transition-colors ${
+              className={`text-[10.5px] font-[700] px-2.5 py-1 rounded-lg transition-all font-sans ${
                 lang === 'zh'
-                  ? 'bg-[#3AA6FF] text-[#FFFFFF]'
+                  ? 'bg-[#3AA6FF] text-[#FFFFFF] shadow-sm'
                   : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#000000] dark:hover:text-[#FFFFFF]'
               }`}
             >

@@ -41,22 +41,21 @@
 }
 
 :root {
-  --background: #FFFFFF;
-  --foreground: #000000;
+  --background: #F4F6F8;
+  --foreground: #0F172A;
   --accent: #3AA6FF;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #000000;
-    --foreground: #FFFFFF;
-    --accent: #3AA6FF;
-  }
+[data-theme="dark"],
+.dark {
+  --background: #090D16;
+  --foreground: #FFFFFF;
+  --accent: #5B9EFF;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: var(--text-primary, var(--foreground));
+  background: var(--bg-primary, var(--background));
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -204,3 +203,132 @@ html.lenis, html.lenis body {
   opacity: 1 !important;
   transform: translateY(0) scale(1) !important;
 }
+
+/* ── UIverse Outline Hover Button System ─────────────────────────────────── */
+.uiverse-btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--brand-primary, #3AA6FF);
+  outline: 3px solid var(--brand-primary, #3AA6FF);
+  outline-offset: -3px;
+  border-radius: var(--radius-md, 12px);
+  border: none;
+  color: #FFFFFF !important;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 400ms ease, color 400ms ease, border-color 400ms ease, outline-color 400ms ease, transform 150ms ease;
+}
+
+.uiverse-btn:hover:not(:disabled) {
+  background-color: transparent !important;
+  color: var(--brand-primary, #3AA6FF) !important;
+}
+
+.uiverse-btn:hover:not(:disabled) svg path {
+  fill: var(--brand-primary, #3AA6FF) !important;
+  transition: fill 400ms ease;
+}
+
+.uiverse-btn:hover:not(:disabled) .material-symbols-outlined {
+  color: var(--brand-primary, #3AA6FF) !important;
+  transition: color 400ms ease;
+}
+
+/* ── UIverse Sun & Moon Theme Switcher ────────────────────────────────────── */
+.uiverse-switch {
+  font-size: 14px;
+  position: relative;
+  display: inline-block;
+  width: 3.8em;
+  height: 2.1em;
+  border-radius: 30px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.uiverse-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.uiverse-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #1e293b;
+  transition: 0.4s;
+  border-radius: 30px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.uiverse-slider:before {
+  position: absolute;
+  content: "";
+  height: 1.2em;
+  width: 1.2em;
+  border-radius: 20px;
+  left: 0.4em;
+  bottom: 0.38em;
+  transition: 0.4s;
+  transition-timing-function: cubic-bezier(0.81, -0.04, 0.38, 1.5);
+  box-shadow: inset 7px -3px 0px 0px #fff;
+}
+
+.uiverse-switch input:checked + .uiverse-slider {
+  background-color: #3AA6FF;
+  border-color: rgba(58, 166, 255, 0.4);
+}
+
+.uiverse-switch input:checked + .uiverse-slider:before {
+  transform: translateX(1.75em);
+  box-shadow: inset 15px -4px 0px 15px #ffcf48;
+}
+
+.uiverse-star {
+  background-color: #fff;
+  border-radius: 50%;
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  transition: all 0.4s;
+}
+
+.uiverse-star_1 {
+  left: 2.4em;
+  top: 0.4em;
+}
+
+.uiverse-star_2 {
+  left: 2.1em;
+  top: 1.1em;
+}
+
+.uiverse-star_3 {
+  left: 2.9em;
+  top: 0.8em;
+}
+
+.uiverse-switch input:checked ~ .uiverse-slider .uiverse-star {
+  opacity: 0;
+}
+
+.uiverse-cloud {
+  width: 3.2em;
+  position: absolute;
+  bottom: -1.3em;
+  left: -1em;
+  opacity: 0;
+  transition: all 0.4s;
+}
+
+.uiverse-switch input:checked ~ .uiverse-slider .uiverse-cloud {
+  opacity: 1;
+}
+

@@ -316,7 +316,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
 
                   <button
                     onClick={handleAddFromModal}
-                    className="flex-1 bg-[#3AA6FF] hover:bg-[#2B96EF] dark:bg-[#5B9EFF] dark:hover:bg-[#3AA6FF] text-white py-3.5 px-6 rounded-[var(--radius-md)] text-[14px] font-bold uppercase tracking-[0.02em] shadow-md shadow-[#3AA6FF]/30 transition-all active:scale-95 flex items-center justify-center"
+                    className="flex-1 uiverse-btn py-3.5 px-6 rounded-xl text-[14px] font-bold uppercase tracking-[0.02em] shadow-md shadow-[#3AA6FF]/30 transition-all active:scale-95 flex items-center justify-center"
                   >
                     <span>THÊM VÀO GIỎ</span>
                   </button>

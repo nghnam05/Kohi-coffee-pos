@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { AnimatePresence, motion } from 'framer-motion';
 import { io, Socket } from 'socket.io-client';
+import { playAlertPing } from '../../utils/sound';
 
 import { LeftSidebar } from '@/components/table/LeftSidebar';
 import { Header } from '@/components/table/Header';
@@ -308,6 +309,14 @@ export default function TableMenuPage() {
   const [isNamePromptOpen, setIsNamePromptOpen] = useState<boolean>(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
+  // Kitchen preparation notification state
+  const [kitchenNotification, setKitchenNotification] = useState<{
+    show: boolean;
+    title: string;
+    message: string;
+    orderId?: string;
+  } | null>(null);
+
   const socketRef = useRef<Socket | null>(null);
 
   const t = DICTIONARY[lang];
@@ -356,6 +365,24 @@ export default function TableMenuPage() {
           .map((o) => (o._id === updatedId ? { ...o, status } : o))
           .filter((o) => o.status !== 'cancelled' && o.status !== 'paid')
       );
+
+      if (status === 'preparing' || status === 'processing' || status === 'in_progress') {
+        try { playAlertPing(); } catch {}
+        setKitchenNotification({
+          show: true,
+          title: 'Bếp / Barista đang pha chế đơn!',
+          message: `Đơn hàng #${updatedId ? updatedId.slice(-6).toUpperCase() : ''} đã bắt đầu được làm.`,
+          orderId: updatedId,
+        });
+      } else if (status === 'ready' || status === 'served' || status === 'completed') {
+        try { playAlertPing(); } catch {}
+        setKitchenNotification({
+          show: true,
+          title: 'Thức uống đã sẵn sàng!',
+          message: `Đơn hàng #${updatedId ? updatedId.slice(-6).toUpperCase() : ''} đã chuẩn bị xong.`,
+          orderId: updatedId,
+        });
+      }
     });
 
     return () => {
@@ -364,6 +391,15 @@ export default function TableMenuPage() {
       }
     };
   }, [tableId, router]);
+
+  useEffect(() => {
+    if (kitchenNotification?.show) {
+      const timer = setTimeout(() => {
+        setKitchenNotification(null);
+      }, 7000);
+      return () => clearTimeout(timer);
+    }
+  }, [kitchenNotification]);
 
   useEffect(() => {
     async function fetchData() {
@@ -759,6 +795,52 @@ export default function TableMenuPage() {
 
   return (
     <>
+      {/* Realtime Kitchen Preparation Notification Toast */}
+      <AnimatePresence>
+        {kitchenNotification?.show && (
+          <motion.div
+            initial={{ y: -60, opacity: 0, scale: 0.95 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: -60, opacity: 0, scale: 0.95 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+            className="fixed top-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-50 bg-[#090D16]/95 dark:bg-[#181B21]/95 text-white border border-[#3AA6FF]/50 rounded-2xl p-4 shadow-2xl backdrop-blur-md font-sans"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#3AA6FF]/20 text-[#3AA6FF] flex items-center justify-center flex-shrink-0 border border-[#3AA6FF]/40 shadow-inner">
+                <span className="material-symbols-outlined text-xl animate-bounce">
+                  notifications_active
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-bold text-white leading-snug">
+                  {kitchenNotification.title}
+                </h4>
+                <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
+                  {kitchenNotification.message}
+                </p>
+                <div className="flex items-center gap-2 mt-2.5">
+                  <button
+                    onClick={() => {
+                      setKitchenNotification(null);
+                      setIsOrderHistoryModalOpen(true);
+                    }}
+                    className="px-3 py-1.5 bg-[#3AA6FF] hover:bg-[#2B96EF] text-white text-[11px] font-bold rounded-lg transition-all active:scale-95 shadow-sm"
+                  >
+                    Xem tiến độ chi tiết
+                  </button>
+                </div>
+              </div>
+              <button
+                onClick={() => setKitchenNotification(null)}
+                className="text-slate-400 hover:text-white transition-colors p-1"
+              >
+                <span className="material-symbols-outlined text-base">close</span>
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Mobile Top App Bar & Menu Dropdown Overlay */}
       <Header
         table={table}
@@ -772,6 +854,8 @@ export default function TableMenuPage() {
         setTheme={setTheme}
         lang={lang}
         setLang={setLang}
+        handleOpenOrderHistory={handleOpenOrderHistory}
+        activeOrders={activeOrders}
       />
 
       <div className="min-h-[100dvh] md:h-screen w-full md:w-screen overflow-y-auto md:overflow-hidden flex flex-col md:flex-row bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans antialiased selection:bg-[var(--brand-primary)] selection:text-white">
@@ -801,7 +885,7 @@ export default function TableMenuPage() {
         {/* Main Catalog View (Desktop/Tablet Column 2) */}
         <main
           data-lenis-prevent
-          className="flex-1 h-full overflow-y-auto scrollbar-none bg-[#F8FAFC] dark:bg-[#090D16] text-[#000000] dark:text-[#FFFFFF] relative min-w-0 pt-16 sm:pt-18 md:pt-0 pb-28 md:pb-12 transition-colors"
+          className="flex-1 h-full overflow-y-auto scrollbar-none bg-[var(--bg-primary)] text-[var(--text-primary)] relative min-w-0 pt-16 sm:pt-18 md:pt-0 pb-28 md:pb-12 transition-colors"
         >
           <div
             className="absolute inset-0 pointer-events-none opacity-[0.03]"
@@ -823,12 +907,12 @@ export default function TableMenuPage() {
 
           <div className="px-4 md:px-6">
             {/* Mobile Category Horizontal Scroll Bar */}
-            <div className="flex md:hidden gap-2 overflow-x-auto pb-2 mb-2 w-full scrollbar-none border-b border-[var(--border-color)] flex-shrink-0">
+            <div className="flex md:hidden gap-2 overflow-x-auto pb-3 mb-3 w-full scrollbar-none border-b border-[var(--border-color)] flex-shrink-0">
               <button
                 onClick={() => setActiveCategory('')}
-                className={`px-3.5 py-1.5 rounded-[var(--radius-full)] text-[10px] font-semibold tracking-[0.04em] uppercase whitespace-nowrap transition-colors ${
+                className={`px-4 py-2 rounded-xl text-[12px] font-[600] tracking-[0.02em] whitespace-nowrap transition-all font-sans ${
                   activeCategory === ''
-                    ? 'bg-[var(--brand-primary)] text-white'
+                    ? 'bg-[#3AA6FF] text-white shadow-sm'
                     : 'bg-[var(--bg-card)] text-[var(--text-secondary)] border border-[var(--border-color)]'
                 }`}
               >
@@ -838,9 +922,9 @@ export default function TableMenuPage() {
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`px-3.5 py-1.5 rounded-[var(--radius-full)] text-[10px] font-semibold tracking-[0.04em] uppercase whitespace-nowrap transition-colors ${
+                  className={`px-4 py-2 rounded-xl text-[12px] font-[600] tracking-[0.02em] whitespace-nowrap transition-all font-sans ${
                     activeCategory === cat
-                      ? 'bg-[var(--brand-primary)] text-white'
+                      ? 'bg-[#3AA6FF] text-white shadow-sm'
                       : 'bg-[var(--bg-card)] text-[var(--text-secondary)] border border-[var(--border-color)]'
                   }`}
                 >
@@ -850,8 +934,8 @@ export default function TableMenuPage() {
             </div>
 
             {/* Mobile Search Bar */}
-            <div className="relative mb-3 md:hidden flex-shrink-0">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] text-base pointer-events-none">
+            <div className="relative mb-4 md:hidden flex-shrink-0">
+              <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] text-lg pointer-events-none">
                 search
               </span>
               <input
@@ -859,7 +943,7 @@ export default function TableMenuPage() {
                 placeholder={t.searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-sm)] py-1.5 pl-9 pr-3 text-[14px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)]"
+                className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl py-2.5 pl-10 pr-3.5 text-[13.5px] font-[400] text-[var(--text-primary)] focus:outline-none focus:border-[#3AA6FF] shadow-xs font-sans placeholder-[var(--text-tertiary)]"
               />
             </div>
 
@@ -923,7 +1007,7 @@ export default function TableMenuPage() {
           </div>
         </main>
 
-        {/* Right Cart Sidebar (Desktop) */}
+        {/* Right Cart Sidebar (Desktop) & Mobile Cart Bottom Sheet */}
         <CartSidebar
           table={table}
           totalQuantity={totalQuantity}
@@ -947,6 +1031,8 @@ export default function TableMenuPage() {
           handleSubmitOrder={handleSubmitOrder}
           isSubmitting={isSubmitting}
           t={t}
+          isCartOpen={isCartOpen}
+          setIsCartOpen={setIsCartOpen}
         />
 
         {/* Sticky Mobile/Tablet Cart Bar */}

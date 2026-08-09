@@ -173,7 +173,7 @@ export const TransferTableModal: React.FC<TransferTableModalProps> = ({
               <button
                 onClick={handleTransferTable}
                 disabled={!selectedTransferTableId || isTransferring}
-                className="px-5 py-2.5 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white rounded-[var(--radius-sm)] text-[13px] font-semibold uppercase tracking-[0.02em] shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                className="px-5 py-2.5 uiverse-btn text-white rounded-xl text-[13px] font-semibold uppercase tracking-[0.02em] shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
               >
                 <span>{isTransferring ? 'Đang chuyển bàn...' : 'Xác nhận chuyển bàn'}</span>
               </button>

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Food {
   _id: string;
@@ -57,6 +58,8 @@ interface CartSidebarProps {
   handleSubmitOrder: () => void;
   isSubmitting: boolean;
   t: any;
+  isCartOpen?: boolean;
+  setIsCartOpen?: (open: boolean) => void;
 }
 
 export const CartSidebar: React.FC<CartSidebarProps> = ({
@@ -82,253 +85,321 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
   handleSubmitOrder,
   isSubmitting,
   t,
+  isCartOpen = false,
+  setIsCartOpen,
 }) => {
-  return (
-    <aside className="hidden lg:flex flex-col h-full w-[320px] xl:w-[360px] flex-shrink-0 bg-[var(--bg-card)] text-[var(--text-primary)] border-l border-[var(--border-color)] shadow-xl z-20 overflow-hidden">
-      {/* Cart Header */}
-      <div className="p-4 xl:p-5 border-b border-[var(--border-color)] flex justify-between items-center bg-[var(--bg-primary)] text-[var(--text-primary)]">
-        <div>
-          <h2 className="text-base font-[700] text-[var(--text-primary)] tracking-tight font-heading">
-            Đơn hàng tại bàn
-          </h2>
-          <p className="text-xs font-[500] text-[var(--brand-primary)] uppercase mt-1 tracking-[0.04em]">
-            {table?.tableName ?? 'Bàn 05'}
+  const renderCartItems = () => (
+    <div className="flex-1 overflow-y-auto px-4 xl:px-5 py-4 space-y-3 scrollbar-none font-sans">
+      {cart.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-48 text-center gap-2">
+          <span className="material-symbols-outlined text-4xl text-[var(--text-tertiary)]">
+            shopping_bag
+          </span>
+          <p className="text-xs font-semibold text-[var(--text-tertiary)]">
+            {t.emptyCart}
           </p>
         </div>
-        <div className="w-10 h-10 rounded-full bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-primary)] relative shadow-sm">
-          <span className="material-symbols-outlined">shopping_basket</span>
-          {totalQuantity > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-[var(--brand-primary)] text-white rounded-full text-[10px] font-black flex items-center justify-center border-2 border-[var(--bg-card)]">
-              {totalQuantity}
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Cart Items List */}
-      <div className="flex-1 overflow-y-auto p-4 xl:p-5 flex flex-col gap-4 scrollbar-none">
-        {cart.length === 0 ? (
-          <div className="text-center py-16 text-[var(--text-secondary)] flex flex-col items-center">
-            <span className="material-symbols-outlined text-4xl text-[var(--text-tertiary)] mb-2">
-              shopping_bag
-            </span>
-            <p className="text-xs font-normal">{t.emptyCart}</p>
-          </div>
-        ) : (
-          cart.map((item) => (
-            <div key={item.food._id} className="flex gap-3 pb-4 border-b border-[var(--border-color)]">
-              <div className="w-16 h-16 rounded-[var(--radius-md)] overflow-hidden bg-[var(--bg-primary)] flex-shrink-0 relative">
-                <Image src={item.food.image} alt={item.food.name} fill className="object-cover" />
-              </div>
-              <div className="flex-1 flex flex-col justify-between">
-                <div className="flex justify-between items-start">
-                  <h4 className="text-[15px] font-[600] text-[var(--text-primary)] line-clamp-1">
+      ) : (
+        cart.map((item) => {
+          const effectivePrice = item.unitPrice ?? item.food.price;
+          return (
+            <div
+              key={item.food._id}
+              className="p-3 rounded-[var(--radius-md)] bg-[var(--bg-primary)] border border-[var(--border-color)] shadow-xs transition-colors"
+            >
+              <div className="flex justify-between items-start gap-2">
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-xs font-semibold text-[var(--text-primary)] truncate">
                     {item.food.name}
                   </h4>
-                  <span className="text-[16px] font-[700] text-[var(--price-color)] tracking-tight">
-                    {formatPrice((item.unitPrice ?? item.food.price) * item.quantity, lang)}
+                  <span className="text-[13px] font-bold text-[var(--price-color)] block mt-0.5">
+                    {formatPrice(effectivePrice, lang)}
                   </span>
                 </div>
-                {item.note && (
-                  <p className="text-[13.5px] font-normal text-[var(--text-secondary)] line-clamp-1 italic mt-1">
-                    Ghi chú: {item.note}
-                  </p>
-                )}
-                <div className="flex justify-between items-center mt-2">
-                  <div className="flex items-center gap-1.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-[var(--radius-sm)] px-2 py-1 shadow-sm font-black">
-                    <button
-                      onClick={() => handleDecrease(item.food._id)}
-                      className="w-5 h-5 rounded-full bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] flex items-center justify-center hover:bg-[var(--brand-primary)] hover:text-white transition-colors"
-                    >
-                      <span className="material-symbols-outlined text-[12px]">remove</span>
-                    </button>
-                    <span className="text-[12px] font-black text-[var(--brand-primary)] w-4 text-center font-sans">
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() => handleIncrease(item.food)}
-                      className="w-5 h-5 rounded-full bg-[#3AA6FF] dark:bg-[#5B9EFF] text-white flex items-center justify-center hover:bg-[#2B96EF] transition-colors"
-                    >
-                      <span className="material-symbols-outlined text-[12px]">add</span>
-                    </button>
-                  </div>
+                <button
+                  onClick={() => handleRemove(item.food._id)}
+                  className="text-[var(--text-tertiary)] hover:text-red-500 transition-colors p-1"
+                  title="Xóa món"
+                >
+                  <span className="material-symbols-outlined text-base">close</span>
+                </button>
+              </div>
+              {item.note && (
+                <p className="text-[12px] font-normal text-[var(--text-secondary)] line-clamp-1 italic mt-1">
+                  Ghi chú: {item.note}
+                </p>
+              )}
+              <div className="flex justify-between items-center mt-2.5">
+                <div className="flex items-center gap-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-full px-2 py-1 shadow-xs">
                   <button
-                    onClick={() => handleRemove(item.food._id)}
-                    className="text-[#9CA3AF] hover:text-red-500 text-xs font-extrabold tracking-wider"
+                    onClick={() => handleDecrease(item.food._id)}
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors active:scale-95"
                   >
-                    Xóa
+                    <span className="material-symbols-outlined text-xs">remove</span>
+                  </button>
+                  <span className="text-xs font-bold text-[var(--text-primary)] min-w-4 text-center">
+                    {item.quantity}
+                  </span>
+                  <button
+                    onClick={() => handleIncrease(item.food)}
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors active:scale-95"
+                  >
+                    <span className="material-symbols-outlined text-xs">add</span>
                   </button>
                 </div>
+                <span className="text-xs font-black text-[var(--text-primary)]">
+                  {formatPrice(effectivePrice * item.quantity, lang)}
+                </span>
               </div>
             </div>
-          ))
-        )}
+          );
+        })
+      )}
 
-        {/* Upsell Recommendation Section */}
-        {cart.length <= 2 && foods.length > 0 && (
-          <div className="pt-2 border-t border-[var(--border-color)]">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.04em] text-[var(--accent)] mb-2.5 flex items-center gap-1.5">
-              <span>Có thể bạn sẽ thích</span>
-            </p>
-            <div className="space-y-2">
-              {foods
-                .filter((f) => !cartMap.has(f._id))
-                .slice(0, 2)
-                .map((recomFood) => (
-                  <div
-                    key={recomFood._id}
-                    className="flex items-center justify-between p-2 rounded-[var(--radius-md)] bg-[var(--upsell-card-bg)] border border-[var(--upsell-card-border)] shadow-[var(--upsell-card-shadow)]"
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-10 h-10 rounded-[var(--radius-sm)] overflow-hidden bg-[var(--bg-card)] relative flex-shrink-0">
-                        <Image src={recomFood.image} alt={recomFood.name} fill className="object-cover" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-[600] text-[var(--text-primary)] truncate">
-                          {recomFood.name}
-                        </p>
-                        <p className="text-[12px] font-[700] text-[var(--price-color)]">
-                          {formatPrice(recomFood.price, lang)}
-                        </p>
-                      </div>
+      {/* Upsell Recommendation Section */}
+      {cart.length <= 2 && foods.length > 0 && (
+        <div className="pt-2 border-t border-[var(--border-color)]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.04em] text-[var(--accent)] mb-2.5 flex items-center gap-1.5">
+            <span>Có thể bạn sẽ thích</span>
+          </p>
+          <div className="space-y-2">
+            {foods
+              .filter((f) => !cartMap.has(f._id))
+              .slice(0, 2)
+              .map((recomFood) => (
+                <div
+                  key={recomFood._id}
+                  className="flex items-center justify-between p-2 rounded-[var(--radius-md)] bg-[var(--upsell-card-bg)] border border-[var(--upsell-card-border)] shadow-[var(--upsell-card-shadow)]"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-10 h-10 rounded-[var(--radius-sm)] overflow-hidden bg-[var(--bg-card)] relative flex-shrink-0">
+                      <Image src={recomFood.image} alt={recomFood.name} fill className="object-cover" />
                     </div>
-                    <button
-                      onClick={() => handleIncrease(recomFood)}
-                      className="px-2.5 py-1 bg-[var(--brand-primary-muted)] hover:bg-[var(--brand-primary)] text-[var(--brand-primary)] hover:text-white rounded-[var(--radius-sm)] text-[11px] font-[600] transition-all flex items-center gap-0.5 flex-shrink-0 active:scale-95"
-                    >
-                      <span className="material-symbols-outlined text-[13px]">add</span>
-                      <span>Thêm</span>
-                    </button>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-[var(--text-primary)] truncate">
+                        {recomFood.name}
+                      </p>
+                      <p className="text-[12px] font-bold text-[var(--price-color)]">
+                        {formatPrice(recomFood.price, lang)}
+                      </p>
+                    </div>
                   </div>
-                ))}
-            </div>
+                  <button
+                    onClick={() => handleIncrease(recomFood)}
+                    className="px-2.5 py-1 bg-[var(--brand-primary-muted)] hover:bg-[var(--brand-primary)] text-[var(--brand-primary)] hover:text-white rounded-[var(--radius-sm)] text-[11px] font-semibold transition-all flex items-center gap-0.5 flex-shrink-0 active:scale-95"
+                  >
+                    <span className="material-symbols-outlined text-[13px]">add</span>
+                    <span>Thêm</span>
+                  </button>
+                </div>
+              ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
+    </div>
+  );
 
-      {/* Checkout Section */}
-      <div className="p-4 xl:p-5 bg-[var(--bg-primary)] border-t border-[var(--border-color)] shadow-2xl font-sans">
-        {cart.length === 0 && (
-          <p className="text-[13px] font-medium text-[var(--text-secondary)] text-center py-3 font-sans">
-            Thêm món để tiếp tục thanh toán
+  const renderCheckoutControls = () => (
+    <div className="p-4 xl:p-5 bg-[var(--bg-primary)] border-t border-[var(--border-color)] shadow-2xl font-sans">
+      {cart.length === 0 && (
+        <p className="text-[13px] font-medium text-[var(--text-secondary)] text-center py-2 font-sans">
+          Thêm món để tiếp tục thanh toán
+        </p>
+      )}
+
+      <div className={cart.length === 0 ? 'opacity-50 pointer-events-none select-none' : ''}>
+        {/* Coupon Input Group */}
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <input
+              type="text"
+              value={couponInput}
+              disabled={cart.length === 0}
+              onChange={(e) => {
+                setCouponInput(e.target.value.toUpperCase());
+                setCouponResult(null);
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && handleValidateCoupon()}
+              placeholder="Mã giảm giá..."
+              className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl py-2.5 px-3.5 text-xs text-[var(--text-primary)] font-medium uppercase focus:border-[var(--brand-primary)] outline-none font-sans placeholder-[var(--text-tertiary)]"
+            />
+          </div>
+          <button
+            onClick={handleValidateCoupon}
+            disabled={isValidatingCoupon || !couponInput.trim() || cart.length === 0}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all font-sans ${
+              couponInput.trim() && cart.length > 0
+                ? 'uiverse-btn cursor-pointer shadow-md'
+                : 'bg-[var(--btn-disabled-bg)] text-[var(--btn-disabled-text)] cursor-not-allowed'
+            }`}
+          >
+            {isValidatingCoupon ? '...' : 'Áp dụng'}
+          </button>
+        </div>
+        {couponResult && (
+          <p
+            className={`text-xs font-semibold mt-2 ${
+              couponResult.valid ? 'text-[var(--brand-primary)]' : 'text-red-500'
+            }`}
+          >
+            {couponResult.valid
+              ? `Giảm ${new Intl.NumberFormat('vi-VN').format(couponResult.discountAmount)}đ`
+              : couponResult.message}
           </p>
         )}
 
-        <div className={cart.length === 0 ? 'opacity-50 pointer-events-none select-none' : ''}>
-          {/* Coupon Input Group */}
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <input
-                type="text"
-                value={couponInput}
-                disabled={cart.length === 0}
-                onChange={(e) => {
-                  setCouponInput(e.target.value.toUpperCase());
-                  setCouponResult(null);
-                }}
-                onKeyDown={(e) => e.key === 'Enter' && handleValidateCoupon()}
-                placeholder="Mã giảm giá..."
-                className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl py-2.5 px-3.5 text-xs text-[var(--text-primary)] font-[500] uppercase focus:border-[var(--brand-primary)] outline-none font-sans placeholder-[var(--text-tertiary)]"
-              />
-            </div>
-            <button
-              onClick={handleValidateCoupon}
-              disabled={isValidatingCoupon || !couponInput.trim() || cart.length === 0}
-              className={`px-4 py-2.5 rounded-xl text-xs font-[600] transition-all font-sans ${
-                couponInput.trim() && cart.length > 0
-                  ? 'bg-[#3AA6FF] hover:bg-[#2B96EF] text-white cursor-pointer shadow-md active:scale-95'
-                  : 'bg-[var(--btn-disabled-bg)] text-[var(--btn-disabled-text)] cursor-not-allowed'
-              }`}
-            >
-              {isValidatingCoupon ? '...' : 'Áp dụng'}
-            </button>
+        <div className="border-t border-[var(--border-color)] my-3" />
+
+        {/* Payment Method Selector */}
+        <div className="flex gap-3">
+          <button
+            onClick={() => setPaymentMethod('cash')}
+            disabled={cart.length === 0}
+            className={`flex-1 h-[44px] text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 transition-all font-sans ${
+              paymentMethod === 'cash'
+                ? 'bg-[#3AA6FF] text-white shadow-md'
+                : 'bg-[var(--payment-inactive-bg)] border-2 border-[var(--payment-inactive-border)] text-[var(--payment-inactive-text)] hover:border-[#3AA6FF] hover:text-[#3AA6FF]'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[18px]">payments</span>
+            Tiền mặt
+          </button>
+          <button
+            onClick={() => setPaymentMethod('momo')}
+            disabled={cart.length === 0}
+            className={`flex-1 h-[44px] text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 transition-all font-sans ${
+              paymentMethod === 'momo'
+                ? 'bg-[#A50064] dark:bg-[#D94FAF] text-white shadow-md'
+                : 'bg-[var(--payment-inactive-bg)] border-2 border-[#A50064]/50 dark:border-[#D94FAF]/50 text-[#A50064] dark:text-[#D94FAF] hover:border-[#A50064] dark:hover:border-[#D94FAF] hover:bg-[#A50064]/5'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+            MoMo QR
+          </button>
+        </div>
+
+        <div className="border-t border-[var(--border-color)] my-3" />
+
+        {/* Summary Details */}
+        <div className="space-y-1.5 mb-4">
+          <div className="flex justify-between text-[13.5px] font-normal text-[var(--text-secondary)] font-sans">
+            <span>Tạm tính ({totalQuantity} món)</span>
+            <span>{formatPrice(totalAmount, lang)}</span>
           </div>
-          {couponResult && (
-            <p
-              className={`text-xs font-semibold mt-2 ${
-                couponResult.valid ? 'text-[var(--brand-primary)]' : 'text-red-500'
-              }`}
-            >
-              {couponResult.valid
-                ? `Giảm ${new Intl.NumberFormat('vi-VN').format(couponResult.discountAmount)}đ`
-                : couponResult.message}
-            </p>
+          {couponResult?.valid && couponResult.discountAmount > 0 && (
+            <div className="flex justify-between text-[13.5px] font-medium text-emerald-600 dark:text-emerald-400 font-sans">
+              <span>Khuyến mãi</span>
+              <span>-{formatPrice(couponResult.discountAmount, lang)}</span>
+            </div>
           )}
-
-          <div className="border-t border-[var(--border-color)] my-4" />
-
-          {/* Payment Method Selector */}
-          <div className="flex gap-3">
-            <button
-              onClick={() => setPaymentMethod('cash')}
-              disabled={cart.length === 0}
-              className={`flex-1 h-[48px] text-[13px] font-[600] rounded-[var(--radius-sm)] flex items-center justify-center gap-2 transition-all font-sans ${
-                paymentMethod === 'cash'
-                  ? 'bg-[#3AA6FF] text-white shadow-md'
-                  : 'bg-[var(--payment-inactive-bg)] border-2 border-[var(--payment-inactive-border)] text-[var(--payment-inactive-text)] hover:border-[#3AA6FF] hover:text-[#3AA6FF]'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">payments</span>
-              Tiền mặt
-            </button>
-            <button
-              onClick={() => setPaymentMethod('momo')}
-              disabled={cart.length === 0}
-              className={`flex-1 h-[48px] text-[13px] font-[600] rounded-[var(--radius-sm)] flex items-center justify-center gap-2 transition-all font-sans ${
-                paymentMethod === 'momo'
-                  ? 'bg-[#A50064] dark:bg-[#D94FAF] text-white shadow-md'
-                  : 'bg-[var(--payment-inactive-bg)] border-2 border-[#A50064]/50 dark:border-[#D94FAF]/50 text-[#A50064] dark:text-[#D94FAF] hover:border-[#A50064] dark:hover:border-[#D94FAF] hover:bg-[#A50064]/5'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
-              MoMo QR
-            </button>
+          <div className="flex justify-between items-baseline pt-1">
+            <span className="text-[14px] font-normal text-[var(--text-primary)] font-sans">
+              Tổng cộng
+            </span>
+            <span className="text-[20px] font-black text-[var(--price-color)] tracking-tight font-sans">
+              {formatPrice(
+                Math.max(
+                  0,
+                  totalAmount - (couponResult?.valid ? couponResult.discountAmount : 0)
+                ),
+                lang
+              )}
+            </span>
           </div>
+        </div>
+      </div>
 
-          <div className="border-t border-[var(--border-color)] my-4" />
+      {/* Submit CTA Button */}
+      <button
+        onClick={handleSubmitOrder}
+        disabled={cart.length === 0 || isSubmitting}
+        className={`w-full h-[50px] mt-2 rounded-xl text-[14px] font-bold uppercase tracking-[0.04em] flex items-center justify-center transition-all font-sans shadow-md ${
+          cart.length === 0
+            ? 'bg-[var(--btn-disabled-bg)] text-[var(--btn-disabled-text)] cursor-not-allowed shadow-none'
+            : 'uiverse-btn shadow-[0_4px_14px_rgba(58,166,255,0.35)]'
+        }`}
+      >
+        <span>{isSubmitting ? t.submitting : 'GỬI ĐƠN HÀNG NGAY'}</span>
+      </button>
+    </div>
+  );
 
-          {/* Summary Details */}
-          <div className="space-y-2 mb-5">
-            <div className="flex justify-between text-[14px] font-normal text-[var(--text-secondary)] font-sans">
-              <span>Tạm tính ({totalQuantity} món)</span>
-              <span>{formatPrice(totalAmount, lang)}</span>
-            </div>
-            {couponResult?.valid && couponResult.discountAmount > 0 && (
-              <div className="flex justify-between text-[14px] font-medium text-emerald-600 dark:text-emerald-400 font-sans">
-                <span>Khuyến mãi</span>
-                <span>-{formatPrice(couponResult.discountAmount, lang)}</span>
-              </div>
-            )}
-            <div className="flex justify-between items-baseline pt-1">
-              <span className="text-[14px] font-normal text-[var(--text-primary)] font-sans">
-                Tổng cộng
-              </span>
-              <span className="text-[22px] font-black text-[var(--price-color)] tracking-tight font-sans">
-                {formatPrice(
-                  Math.max(
-                    0,
-                    totalAmount - (couponResult?.valid ? couponResult.discountAmount : 0)
-                  ),
-                  lang
-                )}
-              </span>
-            </div>
+  return (
+    <>
+      {/* ── DESKTOP CART SIDEBAR ───────────────────────────────────────────── */}
+      <aside className="hidden lg:flex w-[320px] xl:w-[360px] h-full flex-col bg-[var(--bg-card)] border-l border-[var(--border-color)] flex-shrink-0 transition-colors">
+        {/* Header */}
+        <div className="px-4 xl:px-5 py-4 border-b border-[var(--border-color)] flex justify-between items-center bg-[var(--bg-card)] font-sans">
+          <div>
+            <h3 className="text-base font-bold text-[var(--text-primary)] leading-tight">
+              {t.cartTitle}
+            </h3>
+            <p className="text-[10px] font-bold text-[#3AA6FF] uppercase tracking-wider mt-0.5">
+              ĐƠN HÀNG TẠI BÀN
+            </p>
+          </div>
+          <div className="bg-[var(--bg-primary)] border border-[#3AA6FF]/30 px-3 py-1 rounded-full text-xs font-bold text-[#3AA6FF]">
+            {table?.tableName ?? 'Bàn 05'}
           </div>
         </div>
 
-        {/* Submit CTA Button */}
-        <button
-          onClick={handleSubmitOrder}
-          disabled={cart.length === 0 || isSubmitting}
-          className={`w-full h-[52px] mt-4 rounded-[var(--radius-md)] text-[14px] font-[600] uppercase tracking-[0.04em] flex items-center justify-center transition-all font-sans shadow-md ${
-            cart.length === 0
-              ? 'bg-[var(--btn-disabled-bg)] text-[var(--btn-disabled-text)] cursor-not-allowed shadow-none'
-              : 'bg-[#3AA6FF] hover:bg-[#2B96EF] text-white cursor-pointer active:scale-95 shadow-[0_4px_14px_rgba(58,166,255,0.35)]'
-          }`}
-        >
-          <span>{isSubmitting ? t.submitting : 'GỬI ĐƠN HÀNG NGAY'}</span>
-        </button>
-      </div>
-    </aside>
+        {renderCartItems()}
+        {renderCheckoutControls()}
+      </aside>
+
+      {/* ── MOBILE / TABLET BOTTOM SHEET CART DRAWER ─────────────────────── */}
+      <AnimatePresence>
+        {isCartOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsCartOpen && setIsCartOpen(false)}
+              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs lg:hidden"
+            />
+
+            {/* Bottom Sheet Modal */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              className="fixed bottom-0 left-0 right-0 z-50 max-h-[90vh] bg-[var(--bg-card)] rounded-t-[24px] border-t border-[var(--border-color)] shadow-2xl flex flex-col font-sans lg:hidden overflow-hidden"
+            >
+              {/* Drawer Handle */}
+              <div className="w-12 h-1.5 bg-[var(--border-color)] rounded-full mx-auto my-2.5 flex-shrink-0" />
+
+              {/* Mobile Drawer Header */}
+              <div className="px-5 py-3 border-b border-[var(--border-color)] flex justify-between items-center bg-[var(--bg-card)]">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-[var(--text-primary)]">
+                    {t.cartTitle}
+                  </h3>
+                  <span className="bg-[#3AA6FF] text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    {totalQuantity} món
+                  </span>
+                </div>
+                <button
+                  onClick={() => setIsCartOpen && setIsCartOpen(false)}
+                  className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-full bg-[var(--bg-primary)] border border-[var(--border-color)] transition-colors active:scale-95"
+                >
+                  <span className="material-symbols-outlined text-lg">close</span>
+                </button>
+              </div>
+
+              {/* Drawer Body (Scrollable Cart Items) */}
+              <div className="flex-1 overflow-y-auto max-h-[45vh]">
+                {renderCartItems()}
+              </div>
+
+              {/* Drawer Footer Controls */}
+              {renderCheckoutControls()}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 };

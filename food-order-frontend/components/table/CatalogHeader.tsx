@@ -20,12 +20,12 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
   setViewMode,
 }) => {
   return (
-    <div className="sticky top-0 z-30 bg-[#F8FAFC]/95 dark:bg-[#090D16]/95 backdrop-blur-md px-4 md:px-6 pt-4 pb-4 md:pt-6 md:pb-5 border-b border-[#E2E8F0] dark:border-[#222732] mb-5 md:mb-8 flex justify-between items-center transition-all shadow-sm">
+    <div className="sticky top-0 z-30 bg-[var(--bg-primary)]/95 backdrop-blur-md px-4 md:px-6 pt-4 pb-4 md:pt-6 md:pb-5 border-b border-[var(--border-color)] mb-5 md:mb-8 flex justify-between items-center transition-all shadow-sm">
       <div>
-        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-[32px] font-[700] text-[#000000] dark:text-[#FFFFFF] tracking-[-0.02em] leading-tight sm:leading-snug font-heading">
+        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-[32px] font-[700] text-[var(--text-primary)] tracking-[-0.02em] leading-tight sm:leading-snug font-heading">
           {t.welcome ?? 'Hôm nay chúng ta uống gì?'}
         </h2>
-        <p className="text-xs sm:text-[13px] md:text-[13.5px] font-[400] text-[#64748B] dark:text-[#9CA3AF] mt-1 sm:mt-1.5 leading-relaxed font-sans max-w-xl">
+        <p className="text-xs sm:text-[13px] md:text-[13.5px] font-[400] text-[var(--text-secondary)] mt-1 sm:mt-1.5 leading-relaxed font-sans max-w-xl">
           {customerName
             ? `Xin chào, ${customerName} — Khám phá hương vị đặc trưng từ những hạt cà phê rang xay thủ công và bánh ngọt chuẩn Kohi.`
             : 'Khám phá hương vị đặc trưng từ những hạt cà phê rang xay thủ công và bánh ngọt chuẩn Kohi.'}
@@ -36,12 +36,15 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
       <div className="hidden md:flex items-center gap-2 flex-shrink-0">
         <button
           onClick={handleOpenOrderHistory}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#FFFFFF] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] text-xs font-black text-[#000000] dark:text-[#FFFFFF] hover:text-[#3AA6FF] hover:border-[#3AA6FF]/50 transition-all shadow-sm active:scale-95 cursor-pointer"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#FFFFFF] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] text-xs font-bold text-[#000000] dark:text-[#FFFFFF] hover:text-[#3AA6FF] hover:border-[#3AA6FF]/50 transition-all shadow-sm active:scale-95 cursor-pointer font-sans"
           title="Xem lịch sử & trạng thái đơn hàng"
         >
-          <span className="font-sans">Lịch sử & Trạng thái đơn</span>
+          <span className="material-symbols-outlined text-base text-[#3AA6FF]">
+            {activeOrders.length > 0 ? 'notifications_active' : 'notifications'}
+          </span>
+          <span>Lịch sử & Trạng thái đơn</span>
           {activeOrders.length > 0 && (
-            <span className="bg-[#3AA6FF] text-[#FFFFFF] text-[10px] font-black px-2 py-0.5 rounded-full animate-pulse">
+            <span className="bg-[#3AA6FF] text-[#FFFFFF] text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">
               {activeOrders.length}
             </span>
           )}
