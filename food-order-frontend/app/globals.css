@@ -1,16 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+@import './tokens.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* Apply Be Vietnam Pro as base font-sans override */
+  :root {
+    --font-sans: var(--font-be-vietnam), 'Be Vietnam Pro', system-ui, sans-serif;
+  }
+
+  body {
+    font-family: var(--font-be-vietnam), 'Be Vietnam Pro', system-ui, sans-serif;
+    font-weight: 400;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  }
+}
+
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
 :root {
-  --background: #FCFBF9; /* Premium Warm Ivory */
-  --foreground: #2A2219; /* Espresso Rich Black */
+  --background: #FFFFFF;
+  --foreground: #000000;
+  --accent: #3AA6FF;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0A0807; /* Premium Luxury Obsidian */
-    --foreground: #F5F2EB;
+    --background: #000000;
+    --foreground: #FFFFFF;
+    --accent: #3AA6FF;
   }
 }
 
@@ -54,7 +94,9 @@ body {
   }
 
   .font-logo {
-    font-family: var(--font-great-vibes), cursive;
+    font-family: var(--font-outfit), var(--font-inter), sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.02em;
   }
 }
 
@@ -93,6 +135,33 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Hide browser scrollbars globally while keeping scroll functional */
+html, body, ::-webkit-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.scrollbar-none, .scrollbar-thin, * {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+.scrollbar-none::-webkit-scrollbar, .scrollbar-thin::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+* {
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Lenis smooth scroll optimization */

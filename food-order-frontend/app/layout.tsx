@@ -1,28 +1,24 @@
 import type { Metadata } from "next";
-import { Inter, Roboto, Great_Vibes } from "next/font/google";
+import { Be_Vietnam_Pro, Manrope } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
-  variable: "--font-inter",
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-be-vietnam",
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
-const roboto = Roboto({
-  subsets: ["latin", "vietnamese"],
-  variable: "--font-roboto",
-  weight: ["100", "300", "400", "500", "700", "900"],
-});
-
-const greatVibes = Great_Vibes({
+const manrope = Manrope({
   subsets: ["latin"],
-  variable: "--font-great-vibes",
-  weight: ["400"],
+  variable: "--font-manrope",
+  weight: ["600", "700", "800"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Chika Restaurant Delivery QR Order",
-  description: "QR Order System for Chika Restaurant Delivery",
+  title: "Kohi Coffee & Pastry - Order QR",
+  description: "QR Order System for Kohi Coffee & Specialty Drinks",
 };
 
 import { Providers } from "./providers";
@@ -33,9 +29,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="vi" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${roboto.variable} ${greatVibes.variable} font-sans antialiased`}
+        className={`${beVietnamPro.variable} ${manrope.variable} antialiased`}
       >
         <Providers>
           {children}

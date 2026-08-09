@@ -1,0 +1,188 @@
+/* ──────────────────────────────────────────────────────────
+   KOHI COFFEE & PASTRY — Design Tokens
+   Font: Be Vietnam Pro (body) + Manrope (heading)
+   Palette: Sky Blue #3AA6FF / Black #090D16 / White #FFFFFF
+   ──────────────────────────────────────────────────────────  */
+
+/* ── Font variables ─────────────────────────────────────── */
+:root {
+  --font-body: var(--font-be-vietnam), 'Be Vietnam Pro', system-ui, sans-serif;
+  --font-heading: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+}
+
+/* ── Light Mode (default) ───────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --bg-primary:        #F8FAFC;
+  --bg-card:           #FFFFFF;
+  --bg-card-inner:     #F1F5F9;
+
+  /* Borders */
+  --border-color:      #E2E8F0;
+  --border-strong:     #CBD5E1;
+
+  /* Text */
+  --text-primary:      #0F172A;
+  --text-secondary:    #6B7280;
+  --text-tertiary:     #9CA3AF;
+
+  /* Brand */
+  --brand-primary:     #3AA6FF;
+  --brand-primary-hover: #2B96EF;
+  --brand-primary-muted: rgba(58, 166, 255, 0.12);
+
+  /* Price — bright brand blue in light, white in dark */
+  --price-color:       #0EA5E9;
+
+  /* Active table badge */
+  --table-badge-bg:    #E8963B;
+  --table-badge-text:  #FFFFFF;
+
+  /* Accent (global tint) */
+  --accent:            #3AA6FF;
+
+  /* CTA button disabled state */
+  --btn-disabled-bg:   #E2E8F0;
+  --btn-disabled-text: #94A3B8;
+
+  /* Payment buttons in light */
+  --payment-inactive-bg:     #FFFFFF;
+  --payment-inactive-border: #CBD5E1;
+  --payment-inactive-text:   #6B7280;
+
+  /* Upsell card */
+  --upsell-card-bg:    #FFFFFF;
+  --upsell-card-border: #E5E7EB;
+  --upsell-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+  /* Radii */
+  --radius-sm: 10px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+
+  /* Shadows */
+  --shadow-card:       0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-card-hover: 0 6px 16px rgba(58, 166, 255, 0.12);
+  --shadow-sidebar:    1px 0 0 #E2E8F0;
+}
+
+/* ── Dark Mode ──────────────────────────────────────────── */
+[data-theme="dark"],
+.dark {
+  /* Backgrounds */
+  --bg-primary:        #090D16;
+  --bg-card:           #181B21;
+  --bg-card-inner:     #11141A;
+
+  /* Borders */
+  --border-color:      #222732;
+  --border-strong:     #2E3340;
+
+  /* Text */
+  --text-primary:      #F1F5F9;
+  --text-secondary:    #9CA3AF;
+  --text-tertiary:     #64748B;
+
+  /* Brand — slightly brighter for dark contrast (WCAG AA ≥ 4.5:1 on #181B21) */
+  --brand-primary:     #5B9EFF;
+  --brand-primary-hover: #4F94FF;
+  --brand-primary-muted: rgba(91, 158, 255, 0.15);
+
+  /* Price — white in dark mode for max contrast */
+  --price-color:       #FFFFFF;
+
+  /* Active table badge */
+  --table-badge-bg:    #E8963B;
+  --table-badge-text:  #FFFFFF;
+
+  /* Accent */
+  --accent:            #5B9EFF;
+
+  /* CTA button disabled state */
+  --btn-disabled-bg:   #1E2330;
+  --btn-disabled-text: #4A5568;
+
+  /* Payment buttons in dark */
+  --payment-inactive-bg:     #181B21;
+  --payment-inactive-border: #2E3340;
+  --payment-inactive-text:   #9CA3AF;
+
+  /* Upsell card */
+  --upsell-card-bg:    #11141A;
+  --upsell-card-border: #222732;
+  --upsell-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+
+  /* Shadows */
+  --shadow-card:       0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 6px 20px rgba(91, 158, 255, 0.2);
+  --shadow-sidebar:    1px 0 0 #222732;
+}
+
+/* ── Base element styles ───────────────────────────────── */
+html, body {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: var(--bg-primary);
+}
+
+/* Heading — Manrope */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* ── Shared card component ─────────────────────────────── */
+.kohi-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition:
+    box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 250ms cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.kohi-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+  border-color: var(--brand-primary);
+}
+
+/* ── Button system ─────────────────────────────────────── */
+.kohi-btn-primary {
+  background-color: var(--brand-primary);
+  color: #FFFFFF !important;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-weight: 600;
+  transition:
+    background-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 150ms ease,
+    box-shadow 200ms ease;
+}
+
+.kohi-btn-primary:hover {
+  background-color: var(--brand-primary-hover);
+}
+
+.kohi-btn-accent {
+  background-color: var(--accent);
+  color: #FFFFFF !important;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-weight: 600;
+  transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1), transform 150ms ease;
+}
+
+.kohi-btn-accent:hover {
+  opacity: 0.9;
+}
+
+/* ── Smooth theme transitions ──────────────────────────── */
+body, main, aside, header, nav, article, button, input, textarea, select {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 220ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}

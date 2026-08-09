@@ -17,44 +17,44 @@ type Lang = 'vi' | 'en' | 'zh';
 
 const DICTIONARY = {
   vi: {
-    hubTitle: 'Chika restaurant',
+    hubTitle: 'Kohi Coffee',
     hubSubtitle: 'REALTIME OPERATIONS DASHBOARD',
     adminRole: 'Quản trị',
-    staffRole: 'Nhân viên',
+    staffRole: 'Nhân viên Barista',
     updateAccount: 'Cập nhật thông tin tài khoản',
     logout: 'Đăng xuất',
     tabOrders: 'Đơn hàng realtime',
-    tabFoods: 'Quản lý thực đơn',
-    tabTables: 'Quản lý bàn ăn',
+    tabFoods: 'Quản lý thực đơn Coffee',
+    tabTables: 'Quản lý bàn',
     tabUsers: 'Quản lý nhân viên',
-    addFood: 'Thêm món ăn mới',
-    addTable: 'Thêm bàn ăn mới',
+    addFood: 'Thêm món mới',
+    addTable: 'Thêm bàn mới',
     addUser: 'Thêm nhân viên mới',
     loadingOrders: 'Đang đồng bộ đơn hàng theo thời gian thực...',
     errorSync: 'Lỗi đồng bộ',
     noOrders: 'Chưa có đơn hàng nào',
-    noOrdersDesc: 'Các đơn hàng mới của khách hàng quét QR sẽ xuất hiện ở đây ngay lập tức theo thời gian thực.',
+    noOrdersDesc: 'Các đơn hàng mới của khách hàng quét QR tại bàn sẽ xuất hiện ở đây ngay lập tức.',
     unknownTable: 'Không rõ bàn',
     momo: 'MoMo',
     cash: 'Tiền mặt',
     orderCode: 'Mã đơn',
     orderDeleteConfirm: 'Bạn có chắc chắn muốn xoá đơn hàng này không?',
     toastDeleteOrder: 'Đơn hàng đã được xóa khỏi hệ thống! 🗑️',
-    toastDeleteFood: 'Đã xóa món ăn khỏi thực đơn thành công! 🍔',
+    toastDeleteFood: 'Đã xóa món khỏi thực đơn thành công! ☕',
     toastDeleteUser: 'Đã xóa tài khoản nhân viên thành công! 👥',
     toastDeleteTable: 'Đã xóa bàn ăn thành công! 🪑',
     toastDeleteConfirmTitle: 'Xác nhận xóa',
     deleteOrderTitle: 'Xóa đơn hàng',
     deleteOrderDesc: 'Hành động này sẽ xóa vĩnh viễn đơn hàng của {tableName} khỏi hệ thống.',
-    deleteFoodTitle: 'Xóa món ăn',
-    deleteFoodDesc: 'Hành động này sẽ xóa vĩnh viễn món ăn {foodName} khỏi thực đơn.',
+    deleteFoodTitle: 'Xóa món',
+    deleteFoodDesc: 'Hành động này sẽ xóa vĩnh viễn món {foodName} khỏi thực đơn.',
     deleteUserTitle: 'Xóa nhân viên',
     deleteUserDesc: 'Hành động này sẽ xóa tài khoản nhân viên {userName}.',
-    deleteTableTitle: 'Xóa bàn ăn',
-    deleteTableDesc: 'Hành động này sẽ xóa bàn ăn {tableName} khỏi danh sách.',
+    deleteTableTitle: 'Xóa bàn',
+    deleteTableDesc: 'Hành động này sẽ xóa bàn {tableName} khỏi danh sách.',
     confirm: 'Xác nhận',
     cancel: 'Hủy bỏ',
-    orderItems: 'Món ăn',
+    orderItems: 'Thức uống & Bánh',
     totalAmount: 'Tổng cộng',
     updateStatus: 'Cập nhật trạng thái',
     printInvoice: 'In hóa đơn',
@@ -82,8 +82,8 @@ const DICTIONARY = {
     foodUnavailable: 'Tạm ngưng',
     foodDescription: 'Mô tả',
     foodActions: 'Hành động',
-    foodSearchPlaceholder: 'Tìm kiếm món ăn...',
-    tableListName: 'Tên bàn ăn',
+    foodSearchPlaceholder: 'Tìm kiếm thức uống & bánh...',
+    tableListName: 'Tên bàn',
     tableListStatus: 'Trạng thái bàn',
     tableEmpty: 'Bàn trống',
     tableOccupied: 'Có khách',
@@ -93,13 +93,13 @@ const DICTIONARY = {
     userEmail: 'Email',
     userRole: 'Quyền hạn',
     userActions: 'Hành động',
-    modalFoodTitleAdd: 'Thêm Món Ăn Mới',
-    modalFoodTitleEdit: 'Cập Nhật Món Ăn',
-    modalFoodName: 'Tên món ăn',
+    modalFoodTitleAdd: 'Thêm Thức Uống / Bánh Mới',
+    modalFoodTitleEdit: 'Cập Nhật Thức Uống / Bánh',
+    modalFoodName: 'Tên thức uống / bánh',
     modalFoodPrice: 'Giá tiền (VND)',
     modalFoodCategory: 'Danh mục thực đơn',
     modalFoodDesc: 'Mô tả chi tiết',
-    modalFoodImg: 'Hình ảnh món ăn',
+    modalFoodImg: 'Hình ảnh món',
     modalFoodUpload: 'Chọn ảnh từ thiết bị',
     modalFoodUrl: 'Nhập URL',
     modalFoodUrlPlaceholder: 'Dán link ảnh (Unsplash, Imgur...)',
@@ -134,7 +134,7 @@ const DICTIONARY = {
     orderCancelledText: 'Đơn đã bị hủy bỏ',
   },
   en: {
-    hubTitle: 'Chika restaurant',
+    hubTitle: 'Kohi Coffee',
     hubSubtitle: 'REALTIME OPERATIONS DASHBOARD',
     adminRole: 'Admin',
     staffRole: 'Staff',
@@ -251,7 +251,7 @@ const DICTIONARY = {
     orderCancelledText: 'Order has been cancelled',
   },
   zh: {
-    hubTitle: 'Chika restaurant',
+    hubTitle: 'Kohi Coffee',
     hubSubtitle: 'REALTIME OPERATIONS DASHBOARD',
     adminRole: '管理员',
     staffRole: '员工',
@@ -388,7 +388,19 @@ interface Order {
   items: FoodItem[];
   totalAmount: number;
   status: 'pending' | 'cooking' | 'completed' | 'cancelled' | 'paid';
+  paymentStatus?: 'unpaid' | 'paid';
   paymentMethod: 'cash' | 'momo';
+  createdAt: string;
+}
+
+interface StaffCall {
+  _id: string;
+  tableId: {
+    _id: string;
+    tableName: string;
+  };
+  status: 'pending' | 'acknowledged';
+  message: string;
   createdAt: string;
 }
 
@@ -432,7 +444,43 @@ export default function DashboardPage() {
 
   // Foods management states
   const [foods, setFoods] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'orders' | 'foods' | 'tables' | 'users'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'foods' | 'tables' | 'users' | 'analytics' | 'coupons' | 'attendance' | 'salaries'>('orders');
+
+  // ── New Features States ───────────────────────────────────────────────────
+  // Analytics
+  const [analyticsSummary, setAnalyticsSummary] = useState<any>(null);
+  const [revenueData, setRevenueData] = useState<any[]>([]);
+  const [topFoodsData, setTopFoodsData] = useState<any[]>([]);
+
+  // Coupons
+  const [couponsList, setCouponsList] = useState<any[]>([]);
+  const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
+  const [couponForm, setCouponForm] = useState({
+    code: '',
+    type: 'percent' as 'percent' | 'fixed',
+    value: 10,
+    maxDiscount: 50000,
+    minOrderAmount: 100000,
+    maxUsage: 0,
+    expiresAt: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
+  });
+
+  // Attendance
+  const [attendanceList, setAttendanceList] = useState<any[]>([]);
+  const [myAttendance, setMyAttendance] = useState<any[]>([]);
+  const [isCheckedIn, setIsCheckedIn] = useState(false);
+  const [todayAttendance, setTodayAttendance] = useState<any>(null);
+
+  // Salaries
+  const [payrollList, setPayrollList] = useState<any[]>([]);
+  const [salaryConfigs, setSalaryConfigs] = useState<any[]>([]);
+  const [selectedStaffSalary, setSelectedStaffSalary] = useState<string>('');
+  const [salaryConfigForm, setSalaryConfigForm] = useState({
+    type: 'monthly',
+    baseSalary: 7000000,
+    overtimeRate: 1.5,
+    standardHoursPerMonth: 176,
+  });
   const [isFoodModalOpen, setIsFoodModalOpen] = useState(false);
   const [editingFood, setEditingFood] = useState<any | null>(null);
   const [foodForm, setFoodForm] = useState({
@@ -591,9 +639,11 @@ export default function DashboardPage() {
   const [isTransferring, setIsTransferring] = useState(false);
   const [isTableModalOpen, setIsTableModalOpen] = useState(false);
   const [editingTable, setEditingTable] = useState<any | null>(null);
+  const [viewingQrTable, setViewingQrTable] = useState<any | null>(null);
   const [tableForm, setTableForm] = useState({
     tableName: '',
     status: 'empty',
+    qrCodeUrl: '',
   });
 
   // Users/Staff management states
@@ -608,6 +658,8 @@ export default function DashboardPage() {
   });
 
   const [filterTableId, setFilterTableId] = useState<string>('');
+  // Staff Calls state
+  const [staffCalls, setStaffCalls] = useState<StaffCall[]>([]);
 
   // Profile Update states
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -710,6 +762,186 @@ export default function DashboardPage() {
     fetchTablesAndUsers();
   }, [user]);
 
+  // ── Fetching Data for Active Tabs ──────────────────────────────────────────
+  useEffect(() => {
+    if (!token || !user) return;
+
+    if (activeTab === 'analytics' && user.role === 'admin') {
+      fetch(`${API_BASE}/analytics/summary`, { headers: { Authorization: `Bearer ${token}` } })
+        .then((r) => r.json()).then((d) => setAnalyticsSummary(d)).catch(() => {});
+      fetch(`${API_BASE}/analytics/revenue`, { headers: { Authorization: `Bearer ${token}` } })
+        .then((r) => r.json()).then((d) => setRevenueData(d)).catch(() => {});
+      fetch(`${API_BASE}/analytics/top-foods`, { headers: { Authorization: `Bearer ${token}` } })
+        .then((r) => r.json()).then((d) => setTopFoodsData(d)).catch(() => {});
+    }
+
+    if (activeTab === 'coupons') {
+      fetch(`${API_BASE}/coupons`, { headers: { Authorization: `Bearer ${token}` } })
+        .then((r) => r.json()).then((d) => setCouponsList(Array.isArray(d) ? d : [])).catch(() => {});
+    }
+
+    if (activeTab === 'attendance') {
+      fetch(`${API_BASE}/attendance/my`, { headers: { Authorization: `Bearer ${token}` } })
+        .then((r) => r.json()).then((d) => {
+          if (Array.isArray(d)) {
+            setMyAttendance(d);
+            const today = new Date().toISOString().split('T')[0];
+            const foundToday = d.find((item: any) => new Date(item.date).toISOString().split('T')[0] === today);
+            setTodayAttendance(foundToday || null);
+            setIsCheckedIn(!!foundToday && !foundToday.checkOut);
+          }
+        }).catch(() => {});
+
+      if (user.role === 'admin') {
+        fetch(`${API_BASE}/attendance`, { headers: { Authorization: `Bearer ${token}` } })
+          .then((r) => r.json()).then((d) => setAttendanceList(Array.isArray(d) ? d : [])).catch(() => {});
+      }
+    }
+
+    if (activeTab === 'salaries') {
+      if (user.role === 'admin') {
+        fetch(`${API_BASE}/salaries/payroll`, { headers: { Authorization: `Bearer ${token}` } })
+          .then((r) => r.json()).then((d) => setPayrollList(Array.isArray(d) ? d : [])).catch(() => {});
+        fetch(`${API_BASE}/salaries/config`, { headers: { Authorization: `Bearer ${token}` } })
+          .then((r) => r.json()).then((d) => setSalaryConfigs(Array.isArray(d) ? d : [])).catch(() => {});
+      } else {
+        fetch(`${API_BASE}/salaries/payroll/my`, { headers: { Authorization: `Bearer ${token}` } })
+          .then((r) => r.json()).then((d) => setPayrollList(Array.isArray(d) ? d : [])).catch(() => {});
+      }
+    }
+  }, [activeTab, token, user]);
+
+  // ── Attendance Handlers ────────────────────────────────────────────────────
+  const handleCheckIn = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/attendance/check-in`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Lỗi check-in');
+      setIsCheckedIn(true);
+      setTodayAttendance(data);
+      showToast('Check-in bắt đầu ca thành công! ⏰', 'success');
+    } catch (e: any) {
+      showToast(e.message, 'error');
+    }
+  };
+
+  const handleCheckOut = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/attendance/check-out`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Lỗi check-out');
+      setIsCheckedIn(false);
+      setTodayAttendance(data);
+      showToast(`Check-out kết thúc ca! Tổng: ${data.totalHours} giờ. 🎉`, 'success');
+    } catch (e: any) {
+      showToast(e.message, 'error');
+    }
+  };
+
+  // ── Coupon Handlers ────────────────────────────────────────────────────────
+  const handleSaveCoupon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/coupons`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(couponForm),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Lỗi tạo mã');
+      setCouponsList((prev) => [data, ...prev]);
+      setIsCouponModalOpen(false);
+      showToast('Tạo mã giảm giá thành công! 🎟️', 'success');
+    } catch (e: any) {
+      showToast(e.message, 'error');
+    }
+  };
+
+  const handleDeleteCoupon = async (id: string) => {
+    if (!token || !confirm('Xóa mã giảm giá này?')) return;
+    try {
+      const res = await fetch(`${API_BASE}/coupons/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Xóa thất bại');
+      setCouponsList((prev) => prev.filter((c) => c._id !== id));
+      showToast('Đã xóa mã giảm giá! 🗑️', 'success');
+    } catch (e: any) {
+      showToast(e.message, 'error');
+    }
+  };
+
+  // ── Salary Handlers ────────────────────────────────────────────────────────
+  const handleGeneratePayroll = async (staffId: string) => {
+    if (!token) return;
+    const now = new Date();
+    try {
+      const res = await fetch(`${API_BASE}/salaries/payroll/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ userId: staffId, month: now.getMonth() + 1, year: now.getFullYear() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Lỗi tính lương');
+      setPayrollList((prev) => [data, ...prev]);
+      showToast('Tính lương thành công! 💵', 'success');
+    } catch (e: any) {
+      showToast(e.message, 'error');
+    }
+  };
+
+  const handleMarkPaidSalary = async (payrollId: string) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/salaries/payroll/${payrollId}/pay`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ paidMethod: 'cash' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Lỗi xác nhận');
+      setPayrollList((prev) => prev.map((p) => (p._id === payrollId ? data : p)));
+      showToast('Xác nhận đã thanh toán lương! ✅', 'success');
+    } catch (e: any) {
+      showToast(e.message, 'error');
+    }
+  };
+
+  const handleSaveSalaryConfig = async (userId: string, type: 'hourly' | 'monthly', baseSalary: number) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/salaries/config/${userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ type, baseSalary }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Lỗi lưu cấu hình');
+      setSalaryConfigs((prev) => {
+        const idx = prev.findIndex((c) => (c.userId?._id || c.userId) === userId);
+        if (idx >= 0) {
+          const updated = [...prev];
+          updated[idx] = data;
+          return updated;
+        }
+        return [...prev, data];
+      });
+      showToast('Đã lưu cấu hình đơn giá lương thành công! ⚙️', 'success');
+    } catch (e: any) {
+      showToast(e.message, 'error');
+    }
+  };
+
   // Tables CRUD
   const handleDeleteTable = async (tableId: string) => {
     if (!confirm('Bạn có chắc chắn muốn xoá bàn này không?')) return;
@@ -752,7 +984,7 @@ export default function DashboardPage() {
 
       if (editingTable) {
         setTables((prev) => prev.map((t) => (t._id === editingTable._id ? saved : t)));
-        showToast('Cập nhật thông tin bàn thành công! 🪑', 'success');
+        showToast('Cập nhật thông tin bàn & mã QR thành công! 🪑', 'success');
       } else {
         setTables((prev) => [...prev, saved]);
         showToast('Thêm bàn ăn mới thành công! 🎉', 'success');
@@ -763,11 +995,36 @@ export default function DashboardPage() {
     }
   };
 
+  const handleRegenerateTableQr = async (tableItem: any) => {
+    try {
+      const baseOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+      const newQrTarget = `${baseOrigin}/table/${tableItem._id}?token=${Math.random().toString(36).substring(2, 9)}`;
+
+      const res = await fetch(`${API_BASE}/tables/${tableItem._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ qrCodeUrl: newQrTarget }),
+      });
+
+      if (!res.ok) throw new Error('Cập nhật mã QR thất bại.');
+      const updated = await res.json();
+
+      setTables((prev) => prev.map((t) => (t._id === tableItem._id ? updated : t)));
+      showToast(`Đã đổi mã QR mới cho ${tableItem.tableName} thành công! 📱✨`, 'success');
+    } catch (err: any) {
+      showToast(err.message || 'Lỗi khi đổi mã QR bàn.', 'error');
+    }
+  };
+
   const handleOpenAddTable = () => {
     setEditingTable(null);
     setTableForm({
       tableName: '',
       status: 'empty',
+      qrCodeUrl: '',
     });
     setIsTableModalOpen(true);
   };
@@ -777,6 +1034,7 @@ export default function DashboardPage() {
     setTableForm({
       tableName: tableItem.tableName,
       status: tableItem.status || 'empty',
+      qrCodeUrl: tableItem.qrCodeUrl || '',
     });
     setIsTableModalOpen(true);
   };
@@ -913,6 +1171,7 @@ export default function DashboardPage() {
     };
 
     fetchOrders();
+    fetchPendingCalls(token);
 
     // Socket.io initialization
     socketRef.current = io(SOCKET_BASE);
@@ -949,6 +1208,30 @@ export default function DashboardPage() {
         return prev.filter((order) => order._id !== orderId);
       });
       setActiveInvoice((prev) => (prev?._id === orderId ? null : prev));
+    });
+
+    socketRef.current.on('ordersMerged', ({ tableId }: { tableId: string }) => {
+      fetchOrders();
+      showToast('Tất cả đơn hàng của bàn vừa được gộp thành 1 đơn duy nhất! 🧩', 'info');
+    });
+
+    // ── Staff Call socket events ────────────────────────────────────────────
+    socketRef.current.on('staffCallRequest', (call: StaffCall) => {
+      setStaffCalls((prev) => {
+        // Tránh duplicate nếu nhận 2 lần
+        if (prev.some((c) => c._id === call._id)) return prev;
+        return [call, ...prev];
+      });
+      // Phát âm cảnh báo
+      try {
+        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        audio.volume = 0.7;
+        audio.play().catch(() => {});
+      } catch (_) {}
+    });
+
+    socketRef.current.on('staffCallAcknowledged', ({ id }: { id: string }) => {
+      setStaffCalls((prev) => prev.filter((c) => c._id !== id));
     });
 
     return () => {
@@ -1021,6 +1304,39 @@ export default function DashboardPage() {
     }
   };
 
+  // ── Staff Call handlers ─────────────────────────────────────────────────────
+
+  // Lấy danh sách yêu cầu đang chờ khi token sẵn sàng
+  const fetchPendingCalls = async (tok: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/staff-calls`, {
+        headers: { Authorization: `Bearer ${tok}` },
+      });
+      if (res.ok) {
+        const data: StaffCall[] = await res.json();
+        setStaffCalls(data);
+      }
+    } catch (err) {
+      console.error('Lỗi tải yêu cầu gọi nhân viên:', err);
+    }
+  };
+
+  const handleAcknowledgeCall = async (callId: string) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/staff-calls/${callId}/acknowledge`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setStaffCalls((prev) => prev.filter((c) => c._id !== callId));
+        showToast('Đã tiếp nhận yêu cầu hỗ trợ!', 'success');
+      }
+    } catch (err) {
+      showToast('Không thể xác nhận yêu cầu.', 'error');
+    }
+  };
+
   const handleTransferTable = async () => {
     if (!transferFromTableId || !transferToTableId || isTransferring || !token) return;
     setIsTransferring(true);
@@ -1070,6 +1386,35 @@ export default function DashboardPage() {
     }
   };
 
+  const handleMergeTableOrders = async (tableId: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/orders/merge-table/${tableId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Không thể gộp đơn hàng');
+      }
+
+      showToast('Đã gộp thành công tất cả các đơn hàng của bàn thành 1 đơn! 🎉', 'success');
+
+      const ordersRes = await fetch(`${API_BASE}/orders`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (ordersRes.ok) {
+        const data = await ordersRes.json();
+        setOrders(data);
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Lỗi khi thực hiện gộp đơn', 'error');
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -1106,10 +1451,10 @@ export default function DashboardPage() {
       <header className="bg-white dark:bg-zinc-900 border-b border-gray-100 dark:border-zinc-800 sticky top-0 z-20 shadow-sm transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <span className="text-2xl sm:text-3xl shrink-0">🧑‍🍳</span>
+            <span className="text-2xl sm:text-3xl shrink-0">☕</span>
             <div className="min-w-0">
-              <h1 className="font-logo text-xl sm:text-2xl text-orange-500 dark:text-orange-400 font-normal leading-none select-none">
-                Chika Restaurant
+              <h1 className="font-logo text-xl sm:text-2xl text-orange-500 dark:text-orange-400 font-extrabold tracking-tight select-none uppercase">
+                Kohi Coffee
               </h1>
               <p className="hidden sm:block text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 mt-1 uppercase font-semibold tracking-wider truncate">
                 {t.hubSubtitle}
@@ -1284,17 +1629,60 @@ export default function DashboardPage() {
             )}
 
             {user?.role === 'admin' && (
-              <button
-                onClick={() => setActiveTab('users')}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
-                  activeTab === 'users'
-                    ? 'bg-white dark:bg-zinc-800 text-orange-500 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-800 dark:hover:text-zinc-200'
-                }`}
-              >
-                👥 {t.tabUsers} ({usersList.length})
-              </button>
+              <>
+                <button
+                  onClick={() => setActiveTab('users')}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
+                    activeTab === 'users'
+                      ? 'bg-white dark:bg-zinc-800 text-orange-500 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-800 dark:hover:text-zinc-200'
+                  }`}
+                >
+                  👥 {t.tabUsers} ({usersList.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab('analytics')}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
+                    activeTab === 'analytics'
+                      ? 'bg-white dark:bg-zinc-800 text-orange-500 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-800 dark:hover:text-zinc-200'
+                  }`}
+                >
+                  📊 Thống kê
+                </button>
+                <button
+                  onClick={() => setActiveTab('coupons')}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
+                    activeTab === 'coupons'
+                      ? 'bg-white dark:bg-zinc-800 text-orange-500 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-800 dark:hover:text-zinc-200'
+                  }`}
+                >
+                  🎟️ Mã giảm giá
+                </button>
+                <button
+                  onClick={() => setActiveTab('salaries')}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
+                    activeTab === 'salaries'
+                      ? 'bg-white dark:bg-zinc-800 text-orange-500 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-800 dark:hover:text-zinc-200'
+                  }`}
+                >
+                  💵 Quản lý lương
+                </button>
+              </>
             )}
+
+            <button
+              onClick={() => setActiveTab('attendance')}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
+                activeTab === 'attendance'
+                  ? 'bg-white dark:bg-zinc-800 text-orange-500 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-800 dark:hover:text-zinc-200'
+              }`}
+            >
+              ⏰ Chấm công
+            </button>
           </div>
 
           {/* Action Buttons depending on current tab */}
@@ -1323,8 +1711,56 @@ export default function DashboardPage() {
                 ➕ {t.addUser}
               </button>
             )}
+            {activeTab === 'coupons' && user?.role === 'admin' && (
+              <button
+                onClick={() => setIsCouponModalOpen(true)}
+                className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-orange-500 hover:bg-orange-655 text-white font-extrabold text-xs shadow-md transition-all active:scale-95 w-full lg:w-fit"
+              >
+                ➕ Thêm mã giảm giá
+              </button>
+            )}
           </div>
         </div>
+
+        {/* ── Staff Call Alert Banner ──────────────────────────────────────────── */}
+        {staffCalls.length > 0 && (
+          <div className="mb-6 flex flex-col gap-2">
+            {staffCalls.map((call) => (
+              <motion.div
+                key={call._id}
+                initial={{ opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: 40 }}
+                className="flex items-center justify-between gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-2xl px-4 py-3 shadow-sm"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-amber-400 dark:bg-amber-600 flex items-center justify-center shrink-0">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-extrabold text-amber-800 dark:text-amber-300">
+                      {call.tableId?.tableName || 'Bàn không xác định'} — Yêu cầu hỗ trợ
+                    </p>
+                    {call.message && (
+                      <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5 truncate">{call.message}</p>
+                    )}
+                    <p className="text-[10px] text-amber-500 dark:text-amber-500 mt-0.5">
+                      {new Date(call.createdAt).toLocaleTimeString('vi-VN')}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleAcknowledgeCall(call._id)}
+                  className="shrink-0 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-white text-xs font-bold transition-all"
+                >
+                  Đã tiếp nhận
+                </button>
+              </motion.div>
+            ))}
+          </div>
+        )}
 
         {/* Render Tab Contents */}
         {activeTab === 'orders' && (
@@ -1343,7 +1779,7 @@ export default function DashboardPage() {
           ) : (
             <div>
               {filterTableId && (
-                <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-950/20 border border-orange-200/50 dark:border-zinc-800/80 rounded-3xl flex items-center justify-between">
+                <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-950/20 border border-orange-200/50 dark:border-zinc-800/80 rounded-3xl flex items-center justify-between flex-wrap gap-3">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">📋</span>
                     <div className="text-left">
@@ -1353,14 +1789,66 @@ export default function DashboardPage() {
                       <p className="text-[10px] text-slate-500 dark:text-zinc-400 mt-0.5">Hiển thị lịch sử tất cả các đợt gọi món của bàn này.</p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setFilterTableId('')}
-                    className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-[10px] rounded-xl transition-all shadow-sm shrink-0 uppercase tracking-wider"
-                  >
-                    Xóa bộ lọc ✕
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {orders.filter(o => o.tableId?._id === filterTableId && o.status !== 'cancelled' && o.paymentStatus !== 'paid').length > 1 && (
+                      <button
+                        onClick={() => handleMergeTableOrders(filterTableId)}
+                        className="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-[10px] rounded-xl transition-all shadow-sm shrink-0 uppercase tracking-wider flex items-center gap-1 active:scale-95"
+                      >
+                        🧩 Gộp tất cả đơn làm 1
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setFilterTableId('')}
+                      className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-[10px] rounded-xl transition-all shadow-sm shrink-0 uppercase tracking-wider"
+                    >
+                      Xóa bộ lọc ✕
+                    </button>
+                  </div>
                 </div>
               )}
+              {/* Alert banner when any table has multiple active orders */}
+              {(() => {
+                const tablesWithMultipleOrders = tables.filter((tItem) => {
+                  const count = orders.filter(
+                    (o) => o.tableId?._id === tItem._id && o.status !== 'cancelled' && o.paymentStatus !== 'paid'
+                  ).length;
+                  return count > 1;
+                });
+
+                if (tablesWithMultipleOrders.length === 0) return null;
+
+                return (
+                  <div className="mb-6 p-4 bg-sky-50 dark:bg-sky-950/30 border border-sky-200/80 dark:border-sky-800/50 rounded-3xl space-y-3 shadow-sm">
+                    {tablesWithMultipleOrders.map((tItem) => {
+                      const count = orders.filter(
+                        (o) => o.tableId?._id === tItem._id && o.status !== 'cancelled' && o.paymentStatus !== 'paid'
+                      ).length;
+                      return (
+                        <div key={tItem._id} className="flex items-center justify-between flex-wrap gap-2">
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-2xl animate-bounce">🧩</span>
+                            <div>
+                              <p className="text-xs font-extrabold text-sky-900 dark:text-sky-200">
+                                Phát hiện <span className="text-sky-600 dark:text-sky-400 font-black">{tItem.tableName}</span> có {count} đơn hàng riêng biệt chưa thanh toán.
+                              </p>
+                              <p className="text-[10px] text-sky-700/70 dark:text-sky-300/70">
+                                Gộp tất cả các đơn này làm 1 để dễ quản lý chế biến và tính tiền.
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleMergeTableOrders(tItem._id)}
+                            className="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-xs rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-1.5"
+                          >
+                            🧩 Gộp tất cả đơn của {tItem.tableName} làm 1
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
 
               {orders.filter((o) => !filterTableId || o.tableId?._id === filterTableId).length === 0 ? (
                 <div className="text-center py-28 bg-white dark:bg-zinc-900 rounded-3xl p-8 border border-gray-100 dark:border-zinc-800 shadow-md">
@@ -1408,11 +1896,34 @@ export default function DashboardPage() {
                         <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 mt-0.5 truncate">
                           {t.orderCode}: #{order._id.slice(-6).toUpperCase()} • {new Date(order.createdAt).toLocaleTimeString('vi-VN')}
                         </p>
+                        {order.status === 'paid' && (
+                          <p className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 mt-0.5 flex items-center gap-1">
+                            <span>⏱️ Đã thanh toán • Tự động dọn dẹp sau 5 phút</span>
+                          </p>
+                        )}
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${getStatusColor(order.status)}`}>
                           {getStatusText(order.status)}
                         </span>
+                        {(() => {
+                          if (order.status === 'paid' || order.status === 'cancelled') return null;
+                          const tableActiveCount = orders.filter(
+                            (o) => o.tableId?._id === order.tableId?._id && o.status !== 'cancelled' && o.paymentStatus !== 'paid'
+                          ).length;
+                          if (tableActiveCount > 1) {
+                            return (
+                              <button
+                                onClick={() => handleMergeTableOrders(order.tableId?._id)}
+                                className="px-2 py-1 rounded-xl text-sky-600 dark:text-sky-400 bg-sky-100/80 dark:bg-sky-950/40 hover:bg-sky-200/80 dark:hover:bg-sky-900/50 hover:scale-105 active:scale-95 transition-all font-black text-[10px] border border-sky-300/50 dark:border-sky-700/50 flex items-center gap-1"
+                                title={`Gộp ${tableActiveCount} đơn của ${order.tableId?.tableName || 'bàn này'} làm 1`}
+                              >
+                                🧩 Gộp bàn ({tableActiveCount})
+                              </button>
+                            );
+                          }
+                          return null;
+                        })()}
                         {order.status !== 'paid' && order.status !== 'cancelled' && (
                           <button
                             onClick={() => {
@@ -1743,6 +2254,31 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="space-y-2 mt-6">
+                    {(() => {
+                      const activeOrdersForTable = orders.filter(
+                        (o) => o.tableId?._id === tableItem._id && o.status !== 'cancelled' && o.paymentStatus !== 'paid'
+                      );
+                      return activeOrdersForTable.length > 1 ? (
+                        <button
+                          onClick={() => handleMergeTableOrders(tableItem._id)}
+                          className="w-full py-2.5 bg-sky-500/10 text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 border border-sky-500/20 active:scale-95"
+                        >
+                          🧩 Gộp {activeOrdersForTable.length} đơn làm 1
+                        </button>
+                      ) : null;
+                    })()}
+                    <button
+                      onClick={() => setViewingQrTable(tableItem)}
+                      className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-95"
+                    >
+                      👁️ Xem mã QR bàn
+                    </button>
+                    <button
+                      onClick={() => handleRegenerateTableQr(tableItem)}
+                      className="w-full py-2.5 bg-sky-50 dark:bg-sky-950/30 hover:bg-sky-100 dark:hover:bg-sky-900/40 text-sky-600 dark:text-sky-400 text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 border border-sky-200/50 active:scale-95"
+                    >
+                      📱 Đổi mã QR bàn mới
+                    </button>
                     <button
                       onClick={() => {
                         setFilterTableId(tableItem._id);
@@ -1833,7 +2369,423 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+
+        {/* 📊 ANALYTICS TAB PANEL (Admin) */}
+        {activeTab === 'analytics' && user?.role === 'admin' && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Cards summary */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white dark:bg-zinc-900 rounded-3xl p-5 border border-gray-150 dark:border-zinc-800 shadow-sm">
+                <p className="text-xs font-bold text-gray-400">Doanh Thu Hôm Nay</p>
+                <p className="text-2xl font-black text-orange-500 mt-2">
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(analyticsSummary?.today || 0)}
+                </p>
+              </div>
+              <div className="bg-white dark:bg-zinc-900 rounded-3xl p-5 border border-gray-150 dark:border-zinc-800 shadow-sm">
+                <p className="text-xs font-bold text-gray-400">Doanh Thu Tuần Này</p>
+                <p className="text-2xl font-black text-emerald-500 mt-2">
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(analyticsSummary?.week || 0)}
+                </p>
+              </div>
+              <div className="bg-white dark:bg-zinc-900 rounded-3xl p-5 border border-gray-150 dark:border-zinc-800 shadow-sm">
+                <p className="text-xs font-bold text-gray-400">Doanh Thu Tháng Này</p>
+                <p className="text-2xl font-black text-blue-500 mt-2">
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(analyticsSummary?.month || 0)}
+                </p>
+              </div>
+              <div className="bg-white dark:bg-zinc-900 rounded-3xl p-5 border border-gray-150 dark:border-zinc-800 shadow-sm">
+                <p className="text-xs font-bold text-gray-400">Tổng Đơn Hoàn Tất</p>
+                <p className="text-2xl font-black text-purple-500 mt-2">{analyticsSummary?.totalOrders || 0} đơn</p>
+              </div>
+            </div>
+
+            {/* Top foods chart/table */}
+            <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 border border-gray-150 dark:border-zinc-800 shadow-sm">
+              <h3 className="text-sm font-black text-gray-800 dark:text-white uppercase tracking-wider mb-4">
+                🔥 Top Món Bán Chạy Nhất
+              </h3>
+              <div className="space-y-3">
+                {topFoodsData.length === 0 ? (
+                  <p className="text-xs text-gray-400 py-4 text-center">Chưa có dữ liệu thống kê món ăn.</p>
+                ) : (
+                  topFoodsData.map((item, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-zinc-800/40">
+                      <div className="flex items-center gap-3">
+                        <span className="w-6 h-6 rounded-full bg-orange-500/10 text-orange-500 font-black text-xs flex items-center justify-center">
+                          #{idx + 1}
+                        </span>
+                        <span className="text-xs font-bold text-gray-800 dark:text-gray-200">{item.foodName}</span>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-black text-orange-500">{item.totalQuantity} phần</p>
+                        <p className="text-[10px] text-gray-400">
+                          {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.totalRevenue || 0)}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 🎟️ COUPONS TAB PANEL (Admin) */}
+        {activeTab === 'coupons' && user?.role === 'admin' && (
+          <div className="space-y-4 animate-fade-in">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {couponsList.length === 0 ? (
+                <div className="col-span-full text-center py-16 bg-white dark:bg-zinc-900 rounded-3xl border border-gray-150 dark:border-zinc-800">
+                  <span className="text-4xl">🎟️</span>
+                  <p className="text-xs font-bold text-gray-400 mt-2">Chưa có mã giảm giá nào được tạo.</p>
+                </div>
+              ) : (
+                couponsList.map((c) => (
+                  <div key={c._id} className="bg-white dark:bg-zinc-900 rounded-3xl p-5 border border-gray-150 dark:border-zinc-800 shadow-sm flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="px-3 py-1 bg-orange-500/10 text-orange-500 font-black text-xs rounded-xl uppercase tracking-wider">
+                          {c.code}
+                        </span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${c.isActive ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                          {c.isActive ? 'Đang hoạt động' : 'Tạm dừng'}
+                        </span>
+                      </div>
+                      <p className="text-sm font-black text-gray-800 dark:text-white mt-3">
+                        Giảm {c.type === 'percent' ? `${c.value}%` : `${new Intl.NumberFormat('vi-VN').format(c.value)}đ`}
+                      </p>
+                      <p className="text-[11px] text-gray-400 mt-1">
+                        {c.minOrderAmount > 0 ? `Đơn tối thiểu: ${new Intl.NumberFormat('vi-VN').format(c.minOrderAmount)}đ` : 'Không giới hạn đơn tối thiểu'}
+                      </p>
+                      <p className="text-[11px] text-gray-400">
+                        Đã dùng: {c.usedCount} {c.maxUsage > 0 ? `/ ${c.maxUsage}` : 'lượt'}
+                      </p>
+                      <p className="text-[10px] text-gray-400 mt-2">Hạn dùng: {new Date(c.expiresAt).toLocaleDateString('vi-VN')}</p>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteCoupon(c._id)}
+                      className="mt-4 w-full py-2 bg-red-50 hover:bg-red-100 text-red-500 text-xs font-bold rounded-xl transition-colors"
+                    >
+                      🗑️ Xóa mã
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ⏰ ATTENDANCE TAB PANEL */}
+        {activeTab === 'attendance' && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Employee Check-In/Out Card – chỉ dành cho Nhân viên (staff) */}
+            {user?.role === 'staff' && (() => {
+              const staffTotalHours = myAttendance.reduce((sum, item) => sum + (item.totalHours || 0), 0);
+              const staffCompletedShifts = myAttendance.filter((item) => !!item.checkOut).length;
+              return (
+                <div className="bg-gradient-to-br from-orange-500 to-amber-500 rounded-3xl p-6 text-white shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-lg font-black">Chấm Công Ca Làm Việc</h3>
+                    <p className="text-xs text-orange-100 mt-1">
+                      {todayAttendance
+                        ? `Hôm nay: Check-in lúc ${new Date(todayAttendance.checkIn).toLocaleTimeString('vi-VN')} ${todayAttendance.checkOut ? `• Check-out lúc ${new Date(todayAttendance.checkOut).toLocaleTimeString('vi-VN')}` : ''}`
+                        : 'Bạn chưa check-in ca làm việc hôm nay.'}
+                    </p>
+                    <div className="flex flex-wrap gap-2.5 mt-3">
+                      <span className="bg-white/20 px-3 py-1 rounded-xl text-xs font-black backdrop-blur-sm">
+                        ⏱️ Tổng giờ làm: {staffTotalHours.toFixed(1)} giờ
+                      </span>
+                      <span className="bg-white/20 px-3 py-1 rounded-xl text-xs font-black backdrop-blur-sm">
+                        📋 Đã hoàn thành: {staffCompletedShifts} ca
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    {!isCheckedIn ? (
+                      <button
+                        onClick={handleCheckIn}
+                        className="px-6 py-3 bg-white text-orange-600 hover:bg-orange-50 font-black text-xs rounded-2xl shadow-md transition-all active:scale-95 uppercase tracking-wider"
+                      >
+                        ⏰ Check-In Bắt Đầu Ca
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleCheckOut}
+                        className="px-6 py-3 bg-zinc-900 text-white hover:bg-zinc-800 font-black text-xs rounded-2xl shadow-md transition-all active:scale-95 uppercase tracking-wider"
+                      >
+                        🏁 Check-Out Kết Thúc Ca
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Attendance History Table */}
+            <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-gray-150 dark:border-zinc-800 shadow-sm p-6">
+              <h3 className="text-xs font-black text-gray-800 dark:text-white uppercase tracking-wider mb-4">
+                📋 Lịch Sử Chấm Công {user?.role === 'admin' ? '(Quản lý tất cả nhân viên)' : '(Của bạn)'}
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b dark:border-zinc-800 text-gray-400 uppercase">
+                      <th className="py-3">Nhân viên</th>
+                      <th className="py-3">Ngày</th>
+                      <th className="py-3">Check-In</th>
+                      <th className="py-3">Check-Out</th>
+                      <th className="py-3">Tổng Giờ</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
+                    {(user?.role === 'admin' ? attendanceList : myAttendance).map((att: any) => (
+                      <tr key={att._id}>
+                        <td className="py-3 font-bold text-gray-800 dark:text-gray-200">{att.userId?.name || user?.name}</td>
+                        <td className="py-3 text-gray-500">{new Date(att.date).toLocaleDateString('vi-VN')}</td>
+                        <td className="py-3 text-green-600 font-semibold">{new Date(att.checkIn).toLocaleTimeString('vi-VN')}</td>
+                        <td className="py-3 text-amber-600 font-semibold">{att.checkOut ? new Date(att.checkOut).toLocaleTimeString('vi-VN') : 'Đang làm...'}</td>
+                        <td className="py-3 font-black text-orange-500">
+                          {(() => {
+                            if (!att.checkOut) return <span className="text-amber-500 font-bold">Đang làm...</span>;
+                            const cIn = new Date(att.checkIn).getTime();
+                            const cOut = new Date(att.checkOut).getTime();
+                            const diffSec = Math.max(0, Math.floor((cOut - cIn) / 1000));
+                            const hours = diffSec / 3600;
+                            const mins = diffSec / 60;
+                            if (diffSec < 60) {
+                              return `${diffSec} giây (${hours.toFixed(4)}h)`;
+                            }
+                            if (diffSec < 3600) {
+                              return `${mins.toFixed(1)} phút (${hours.toFixed(4)}h)`;
+                            }
+                            return `${hours.toFixed(2)}h (${Math.floor(hours)}h ${Math.round((hours % 1) * 60)}p)`;
+                          })()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 💵 SALARIES TAB PANEL (Admin only) */}
+        {activeTab === 'salaries' && user?.role === 'admin' && (
+          <div className="space-y-6 animate-fade-in">
+            {/* ⚙️ Section: Chỉnh sửa Đơn Giá Lương / 1 Tiếng */}
+            <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 border border-gray-150 dark:border-zinc-800 shadow-sm">
+              <h3 className="text-xs font-black text-gray-800 dark:text-white uppercase tracking-wider mb-4">
+                ⚙️ Cấu Hình Đơn Giá Lương / 1 Tiếng
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {usersList.filter((u) => u.role !== 'admin').map((u) => {
+                  const cfg = salaryConfigs.find((c) => (c.userId?._id || c.userId) === u._id);
+                  const currentType = cfg?.type || 'hourly';
+                  const currentRate = cfg?.baseSalary || 30000;
+                  return (
+                    <div key={u._id} className="bg-slate-50 dark:bg-zinc-800/40 p-4 rounded-2xl border border-slate-100 dark:border-zinc-700/60 flex flex-col justify-between gap-3">
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="font-extrabold text-xs text-slate-800 dark:text-zinc-200">{u.name} (Nhân viên)</span>
+                          <span className="text-[10px] font-black text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded-full">
+                            {currentType === 'hourly' ? `${new Intl.NumberFormat('vi-VN').format(currentRate)}đ / tiếng` : `${new Intl.NumberFormat('vi-VN').format(currentRate)}đ / tháng`}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <select
+                          defaultValue={currentType}
+                          id={`type-${u._id}`}
+                          className="px-3 py-2 rounded-xl text-xs bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 font-bold"
+                        >
+                          <option value="hourly">Lương theo giờ (VND/h)</option>
+                          <option value="monthly">Lương tháng (VND/tháng)</option>
+                        </select>
+                        <input
+                          type="number"
+                          defaultValue={currentRate}
+                          step={1000}
+                          id={`rate-${u._id}`}
+                          placeholder="Nhập số tiền..."
+                          className="flex-1 px-3 py-2 rounded-xl text-xs bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 font-black text-orange-500"
+                        />
+                        <button
+                          onClick={() => {
+                            const typeEl = document.getElementById(`type-${u._id}`) as HTMLSelectElement;
+                            const rateEl = document.getElementById(`rate-${u._id}`) as HTMLInputElement;
+                            if (typeEl && rateEl) {
+                              handleSaveSalaryConfig(u._id, typeEl.value as any, Number(rateEl.value) || 0);
+                            }
+                          }}
+                          className="px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs rounded-xl shadow-sm transition-all"
+                        >
+                          Lưu
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ⚡ Section: Tính Bảng Lương Tháng */}
+            <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 border border-gray-150 dark:border-zinc-800 shadow-sm">
+              <h3 className="text-xs font-black text-gray-800 dark:text-white uppercase tracking-wider mb-4">
+                ⚡ Tính Bảng Lương Tháng Cho Nhân Viên
+              </h3>
+              <div className="flex flex-wrap gap-3 items-center">
+                <select
+                  value={selectedStaffSalary}
+                  onChange={(e) => setSelectedStaffSalary(e.target.value)}
+                  className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 text-xs bg-slate-50 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 font-bold"
+                >
+                  <option value="">-- Chọn nhân viên --</option>
+                  {usersList.filter((u) => u.role !== 'admin').map((u) => (
+                    <option key={u._id} value={u._id}>{u.name} (Nhân viên)</option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => selectedStaffSalary && handleGeneratePayroll(selectedStaffSalary)}
+                  disabled={!selectedStaffSalary}
+                  className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs rounded-xl shadow-md transition-all disabled:opacity-50"
+                >
+                  💵 Tính Lương Tháng Này
+                </button>
+              </div>
+            </div>
+
+            {/* Payroll Table */}
+            <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-gray-150 dark:border-zinc-800 shadow-sm p-6">
+              <h3 className="text-xs font-black text-gray-800 dark:text-white uppercase tracking-wider mb-4">
+                📊 Bảng Lương Tháng
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b dark:border-zinc-800 text-gray-400 uppercase">
+                      <th className="py-3">Nhân viên</th>
+                      <th className="py-3">Tháng/Năm</th>
+                      <th className="py-3">Tổng giờ làm</th>
+                      <th className="py-3">Lương cơ bản</th>
+                      <th className="py-3">Tăng ca</th>
+                      <th className="py-3">Thực nhận</th>
+                      <th className="py-3">Trạng thái</th>
+                      {user?.role === 'admin' && <th className="py-3 text-right">Hành động</th>}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
+                    {payrollList.map((p: any) => (
+                      <tr key={p._id}>
+                        <td className="py-3 font-bold text-gray-800 dark:text-gray-200">{p.userId?.name || '—'}</td>
+                        <td className="py-3 font-bold">{p.month}/{p.year}</td>
+                        <td className="py-3">{p.totalHoursWorked}h</td>
+                        <td className="py-3">{new Intl.NumberFormat('vi-VN').format(p.baseSalary)}đ</td>
+                        <td className="py-3 text-emerald-600">+{new Intl.NumberFormat('vi-VN').format(p.overtimePay || 0)}đ</td>
+                        <td className="py-3 font-black text-orange-500">{new Intl.NumberFormat('vi-VN').format(p.netSalary)}đ</td>
+                        <td className="py-3">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                            p.status === 'paid' ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'
+                          }`}>
+                            {p.status === 'paid' ? 'Đã thanh toán' : 'Chờ xác nhận'}
+                          </span>
+                        </td>
+                        {user?.role === 'admin' && (
+                          <td className="py-3 text-right">
+                            {p.status !== 'paid' && (
+                              <button
+                                onClick={() => handleMarkPaidSalary(p._id)}
+                                className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-[10px] font-black rounded-lg transition-all"
+                              >
+                                Xác nhận trả lương
+                              </button>
+                            )}
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
+
+      {/* ── 🎟️ Coupon Creator Modal ── */}
+      {isCouponModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div onClick={() => setIsCouponModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="relative w-full max-w-md bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl z-10 overflow-hidden border dark:border-zinc-800">
+            <div className="p-6 border-b dark:border-zinc-800 flex justify-between items-center">
+              <h2 className="text-base font-black text-gray-900 dark:text-white">🎟️ Thêm Mã Giảm Giá Mới</h2>
+              <button onClick={() => setIsCouponModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-sm font-bold">✕</button>
+            </div>
+            <form onSubmit={handleSaveCoupon} className="p-6 space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-gray-500 uppercase">Mã Coupon (viết hoa)</label>
+                <input
+                  type="text"
+                  required
+                  value={couponForm.code}
+                  onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })}
+                  placeholder="Ví dụ: KOHI50, DIS20..."
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 uppercase font-black"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-gray-500 uppercase">Loại giảm</label>
+                  <select
+                    value={couponForm.type}
+                    onChange={(e: any) => setCouponForm({ ...couponForm, type: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-800 text-sm bg-white dark:bg-zinc-900"
+                  >
+                    <option value="percent">Phần trăm (%)</option>
+                    <option value="fixed">Cố định (VND)</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-gray-500 uppercase">Giá trị giảm</label>
+                  <input
+                    type="number"
+                    required
+                    min={1}
+                    value={couponForm.value}
+                    onChange={(e) => setCouponForm({ ...couponForm, value: Number(e.target.value) })}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-800 text-sm"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-gray-500 uppercase">Đơn hàng tối thiểu (VND)</label>
+                <input
+                  type="number"
+                  value={couponForm.minOrderAmount}
+                  onChange={(e) => setCouponForm({ ...couponForm, minOrderAmount: Number(e.target.value) })}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-800 text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-gray-500 uppercase">Ngày hết hạn</label>
+                <input
+                  type="date"
+                  required
+                  value={couponForm.expiresAt}
+                  onChange={(e) => setCouponForm({ ...couponForm, expiresAt: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-800 text-sm"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-md transition-all active:scale-95 mt-4"
+              >
+                Tạo mã giảm giá
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ── 3. Food Editor Modal Overlay ── */}
       {isFoodModalOpen && (
@@ -2073,11 +3025,112 @@ export default function DashboardPage() {
                 </select>
               </div>
 
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-extrabold text-gray-500 uppercase tracking-wider">Mã QR / URL Đặt Món</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const baseOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+                      const newUrl = editingTable 
+                        ? `${baseOrigin}/table/${editingTable._id}?token=${Math.random().toString(36).substring(2, 9)}`
+                        : `${baseOrigin}/table/demo?token=${Math.random().toString(36).substring(2, 9)}`;
+                      setTableForm({ ...tableForm, qrCodeUrl: newUrl });
+                      showToast('Đã tạo liên kết QR mới!', 'info');
+                    }}
+                    className="text-[10px] font-extrabold text-sky-500 hover:text-sky-600"
+                  >
+                    🔄 Tạo token QR mới
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  value={tableForm.qrCodeUrl || ''}
+                  onChange={(e) => setTableForm({ ...tableForm, qrCodeUrl: e.target.value })}
+                  placeholder="Mặc định sử dụng URL gốc của bàn"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-800 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 text-gray-800 dark:text-gray-150"
+                />
+              </div>
+
               <div className="pt-4 border-t dark:border-zinc-800 grid grid-cols-2 gap-3">
                 <button type="button" onClick={() => setIsTableModalOpen(false)} className="py-3 text-xs font-bold bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-200 rounded-xl">Hủy bỏ</button>
                 <button type="submit" className="py-3 text-xs font-bold text-white bg-orange-500 hover:bg-orange-650 rounded-xl shadow-md transition-all active:scale-95">Lưu bàn ăn</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── QR Code Viewer Modal Overlay ── */}
+      {viewingQrTable && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div onClick={() => setViewingQrTable(null)} className="absolute inset-0 bg-black/70 backdrop-blur-md animate-fade-in" />
+          <div className="relative w-full max-w-md bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl z-10 overflow-hidden border dark:border-zinc-800 transition-all animate-fade-in text-center p-6 space-y-5">
+            <div className="flex justify-between items-center pb-3 border-b dark:border-zinc-800">
+              <div className="text-left">
+                <h2 className="text-lg font-black text-gray-900 dark:text-white">
+                  Mã QR - {viewingQrTable.tableName}
+                </h2>
+                <p className="text-xs text-gray-400 font-semibold">
+                  Mã bàn: {viewingQrTable._id.slice(-6).toUpperCase()}
+                </p>
+              </div>
+              <button
+                onClick={() => setViewingQrTable(null)}
+                className="w-8 h-8 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-500 hover:text-gray-800 dark:hover:text-white font-black text-sm flex items-center justify-center transition-all"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* QR Image Big Preview */}
+            <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-inner flex flex-col items-center justify-center space-y-3">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(
+                  viewingQrTable.qrCodeUrl || (typeof window !== 'undefined' ? `${window.location.origin}/table/${viewingQrTable._id}` : `http://localhost:3000/table/${viewingQrTable._id}`)
+                )}`}
+                alt={`QR ${viewingQrTable.tableName}`}
+                className="w-64 h-64 object-contain"
+              />
+              <p className="text-[10px] font-mono text-gray-500 break-all px-3 py-1 bg-gray-50 dark:bg-zinc-800 rounded-xl">
+                {viewingQrTable.qrCodeUrl || (typeof window !== 'undefined' ? `${window.location.origin}/table/${viewingQrTable._id}` : `http://localhost:3000/table/${viewingQrTable._id}`)}
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <a
+                href={`https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(
+                  viewingQrTable.qrCodeUrl || (typeof window !== 'undefined' ? `${window.location.origin}/table/${viewingQrTable._id}` : `http://localhost:3000/table/${viewingQrTable._id}`)
+                )}`}
+                target="_blank"
+                rel="noreferrer"
+                className="py-3 bg-orange-500 hover:bg-orange-600 text-white text-xs font-extrabold rounded-2xl shadow-md transition-all flex items-center justify-center gap-1.5 active:scale-95 text-center"
+              >
+                📥 Tải QR in nét
+              </a>
+              <button
+                type="button"
+                onClick={() => {
+                  const url = viewingQrTable.qrCodeUrl || (typeof window !== 'undefined' ? `${window.location.origin}/table/${viewingQrTable._id}` : `http://localhost:3000/table/${viewingQrTable._id}`);
+                  navigator.clipboard.writeText(url);
+                  showToast('Đã sao chép liên kết QR! 🔗', 'success');
+                }}
+                className="py-3 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-800 dark:text-zinc-200 text-xs font-extrabold rounded-2xl transition-all flex items-center justify-center gap-1.5 active:scale-95"
+              >
+                🔗 Sao chép link
+              </button>
+            </div>
+
+            <button
+              onClick={() => {
+                handleRegenerateTableQr(viewingQrTable);
+                setViewingQrTable(null);
+              }}
+              className="w-full py-2.5 bg-sky-50 dark:bg-sky-950/30 hover:bg-sky-100 text-sky-600 dark:text-sky-400 text-xs font-bold rounded-2xl transition-all border border-sky-200/50"
+            >
+              🔄 Đổi mã QR mới cho bàn này
+            </button>
           </div>
         </div>
       )}
@@ -2110,7 +3163,7 @@ export default function DashboardPage() {
                 <input
                   type="email" required value={userForm.email}
                   onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
-                  placeholder="name@restaurant.com"
+                  placeholder="name@kohicoffee.com"
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-800 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800 dark:text-gray-150"
                 />
               </div>
@@ -2178,7 +3231,7 @@ export default function DashboardPage() {
 
               {/* Invoice header info */}
               <div className="text-center pb-5 border-b border-dashed border-gray-250 dark:border-zinc-855 text-left">
-                <h3 className="text-base font-black text-gray-900 dark:text-white text-center">RESTAURANT HUB</h3>
+                <h3 className="text-base font-black text-gray-900 dark:text-white text-center">KOHI COFFEE HUB</h3>
                 <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 text-center">Dịch vụ gọi món & Thanh toán tự động</p>
 
                 <div className="grid grid-cols-2 gap-2 mt-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">

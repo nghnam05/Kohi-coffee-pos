@@ -85,7 +85,7 @@ export default function LoginPage() {
             Đăng nhập Hệ thống
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            Cổng quản trị viên & nhân viên phục vụ
+            Cổng quản trị viên & nhân viên Barista Kohi Coffee
           </p>
         </div>
 
@@ -97,7 +97,7 @@ export default function LoginPage() {
             <input
               id="email"
               type="email"
-              placeholder="admin@restaurant.com"
+              placeholder="admin@kohicoffee.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-zinc-700 rounded-2xl px-4 py-3.5 text-sm outline-none focus:ring-2 focus:ring-orange-500 transition-all"

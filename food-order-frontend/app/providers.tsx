@@ -17,6 +17,11 @@ export function Providers({ children }: { children: ReactNode }) {
         duration: 1.2,
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         smoothWheel: true,
+        prevent: (node: any) => 
+          node?.classList?.contains('scrollbar-none') || 
+          node?.classList?.contains('scrollbar-thin') || 
+          node?.hasAttribute?.('data-lenis-prevent') ||
+          Boolean(node?.closest?.('[data-lenis-prevent]')),
       });
 
       const raf = (time: number) => {

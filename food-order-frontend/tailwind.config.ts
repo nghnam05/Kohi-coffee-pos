@@ -10,8 +10,8 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-inter)", "sans-serif"],
-        roboto: ["var(--font-roboto)", "sans-serif"],
+        sans: ["var(--font-be-vietnam)", "'Be Vietnam Pro'", "system-ui", "sans-serif"],
+        heading: ["var(--font-manrope)", "'Manrope'", "system-ui", "sans-serif"],
       },
       colors: {
         background: "var(--background)",
