@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Patch,
+  Put,
   Param,
   Delete,
   Query,
@@ -35,9 +36,15 @@ export class FoodsController {
     return this.foodsService.findOne(id);
   }
 
+  // PUT /api/v1/foods/:id
+  @Put(':id')
+  updatePut(@Param('id') id: string, @Body() updateFoodDto: UpdateFoodDto) {
+    return this.foodsService.update(id, updateFoodDto);
+  }
+
   // PATCH /api/v1/foods/:id
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFoodDto: UpdateFoodDto) {
+  updatePatch(@Param('id') id: string, @Body() updateFoodDto: UpdateFoodDto) {
     return this.foodsService.update(id, updateFoodDto);
   }
 

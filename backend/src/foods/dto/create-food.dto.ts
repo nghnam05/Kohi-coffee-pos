@@ -23,8 +23,8 @@ export class CreateFoodDto {
   price: number;
 
   @IsString()
-  @IsNotEmpty({ message: 'Đường dẫn ảnh không được để trống.' })
-  image: string;
+  @IsOptional()
+  image?: string;
 
   @IsString()
   @IsNotEmpty({ message: 'Danh mục không được để trống.' })

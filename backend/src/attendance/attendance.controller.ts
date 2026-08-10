@@ -1,5 +1,5 @@
 import {
-  Controller, Post, Patch, Get, Param, Body, Request, Query, UseGuards,
+  Controller, Post, Patch, Put, Delete, Get, Param, Body, Request, Query, UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AttendanceService } from './attendance.service.js';
@@ -60,16 +60,38 @@ export class AttendanceController {
     return this.attendanceService.findAll(userId, month, year);
   }
 
-  /** PATCH /api/v1/attendance/:id – Admin chỉnh thủ công */
+  /** PUT /api/v1/attendance/:id – Admin chỉnh thủ công */
   @UseGuards(RolesGuard)
   @Roles('admin')
-  @Patch(':id')
-  adminEdit(
+  @Put(':id')
+  adminEditPut(
     @Param('id') id: string,
-    @Body('checkIn') checkIn: string,
-    @Body('checkOut') checkOut: string,
+    @Body('checkIn') checkIn?: string,
+    @Body('checkOut') checkOut?: string,
     @Body('note') note?: string,
   ) {
     return this.attendanceService.adminEdit(id, checkIn, checkOut, note);
   }
+
+  /** PATCH /api/v1/attendance/:id – Admin chỉnh thủ công */
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @Patch(':id')
+  adminEditPatch(
+    @Param('id') id: string,
+    @Body('checkIn') checkIn?: string,
+    @Body('checkOut') checkOut?: string,
+    @Body('note') note?: string,
+  ) {
+    return this.attendanceService.adminEdit(id, checkIn, checkOut, note);
+  }
+
+  /** DELETE /api/v1/attendance/:id – Admin xóa bản ghi */
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @Delete(':id')
+  deleteAttendance(@Param('id') id: string) {
+    return this.attendanceService.deleteAttendance(id);
+  }
 }
+

@@ -91,15 +91,42 @@ export class AttendanceService {
   }
 
   /** Admin chỉnh sửa thủ công */
-  async adminEdit(id: string, checkIn: string, checkOut: string, note?: string): Promise<AttendanceDocument> {
+  async adminEdit(id: string, checkIn?: string, checkOut?: string, note?: string): Promise<AttendanceDocument> {
     const record = await this.attendanceModel.findById(id).exec();
     if (!record) throw new NotFoundException('Không tìm thấy bản ghi chấm công.');
-    record.checkIn = new Date(checkIn);
-    record.checkOut = new Date(checkOut);
-    const diffSec = Math.max(0, Math.floor((record.checkOut.getTime() - record.checkIn.getTime()) / 1000));
-    record.totalHours = Number((diffSec / 3600).toFixed(4));
-    record.note = note || record.note;
+
+    if (checkIn) {
+      const cIn = new Date(checkIn);
+      if (!isNaN(cIn.getTime())) {
+        record.checkIn = cIn;
+      }
+    }
+
+    if (checkOut) {
+      const cOut = new Date(checkOut);
+      if (!isNaN(cOut.getTime())) {
+        record.checkOut = cOut;
+      }
+    }
+
+    if (record.checkIn && record.checkOut) {
+      const diffSec = Math.max(0, Math.floor((record.checkOut.getTime() - record.checkIn.getTime()) / 1000));
+      record.totalHours = Number((diffSec / 3600).toFixed(4));
+    }
+
+    if (note !== undefined) {
+      record.note = note;
+    }
     record.isManualEdit = true;
     return record.save();
   }
+
+
+  /** Admin xóa bản ghi chấm công */
+  async deleteAttendance(id: string): Promise<AttendanceDocument> {
+    const record = await this.attendanceModel.findByIdAndDelete(id).exec();
+    if (!record) throw new NotFoundException('Không tìm thấy bản ghi chấm công.');
+    return record;
+  }
 }
+

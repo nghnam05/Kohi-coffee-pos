@@ -15,11 +15,11 @@ export class ReviewsService {
   ) {}
 
   async create(dto: CreateReviewDto): Promise<ReviewDocument> {
-    // 1. Kiểm tra đơn hàng tồn tại và đã được thanh toán
+    // 1. Kiểm tra đơn hàng tồn tại và đã được phục vụ / thanh toán
     const order = await this.orderModel.findById(dto.orderId).lean();
     if (!order) throw new NotFoundException('Không tìm thấy đơn hàng.');
-    if (order.status !== 'paid') {
-      throw new BadRequestException('Chỉ có thể đánh giá đơn hàng đã thanh toán.');
+    if (order.status !== 'paid' && order.status !== 'completed') {
+      throw new BadRequestException('Chỉ có thể đánh giá đơn hàng đã hoàn thành hoặc thanh toán.');
     }
 
     // 2. Kiểm tra đã review chưa (unique orderId)

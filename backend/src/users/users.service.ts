@@ -30,7 +30,6 @@ export class UsersService {
   }
 
   async findAll(): Promise<UserDocument[]> {
-    // Mặc định không trả về trường password vì đã cấu hình select: false trong schema
     return this.userModel.find().exec();
   }
 
@@ -42,15 +41,16 @@ export class UsersService {
     return user;
   }
 
-  // Phương thức này dùng nội bộ cho AuthService, cần lấy cả password để so sánh
   async findOneByEmailWithPassword(email: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ email }).select('+password').exec();
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<UserDocument> {
-    if (updateUserDto.password) {
+    if (updateUserDto.password && updateUserDto.password.trim() !== '') {
       const saltRounds = 10;
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, saltRounds);
+    } else {
+      delete updateUserDto.password;
     }
 
     const updatedUser = await this.userModel

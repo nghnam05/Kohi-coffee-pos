@@ -64,6 +64,11 @@ export class OrdersService implements OnModuleInit {
       await this.couponsService.incrementUsage(couponCode);
     }
 
+    // Cập nhật trạng thái bàn ăn sang 'serving' (có khách)
+    if (createOrderDto.tableId) {
+      await this.tablesService.update(createOrderDto.tableId, { status: 'serving' }).catch(() => {});
+    }
+
     // Populate dữ liệu liên quan để trả về client và phát tín hiệu qua Socket
     const populatedOrder = await this.orderModel
       .findById(savedOrder._id)
@@ -140,6 +145,21 @@ export class OrdersService implements OnModuleInit {
 
     this.ordersGateway.emitStatusUpdate(id, updateOrderStatusDto.status);
 
+    // Tự động giải phóng bàn về 'empty' nếu không còn đơn hàng active nào khác
+    if (updateOrderStatusDto.status === 'paid' || updateOrderStatusDto.status === 'cancelled') {
+      const tableId = (updatedOrder.tableId as any)?._id || updatedOrder.tableId;
+      if (tableId) {
+        const remainingActiveOrders = await this.orderModel.countDocuments({
+          tableId,
+          _id: { $ne: id },
+          status: { $nin: ['paid', 'cancelled'] },
+        });
+        if (remainingActiveOrders === 0) {
+          await this.tablesService.update(tableId.toString(), { status: 'empty' }).catch(() => {});
+        }
+      }
+    }
+
     if (updateOrderStatusDto.status === 'paid') {
       console.log(`[Payment Completed] Đơn hàng ${id} đã thanh toán thành công và lưu vết vào DB.`);
     }
@@ -182,6 +202,19 @@ export class OrdersService implements OnModuleInit {
       throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${id}`);
     }
     this.ordersGateway.emitOrderDeleted(id);
+
+    // Tự động giải phóng bàn nếu không còn đơn hàng active nào khác
+    if (deletedOrder.tableId) {
+      const tableId = (deletedOrder.tableId as any)?._id || deletedOrder.tableId;
+      const remainingActiveOrders = await this.orderModel.countDocuments({
+        tableId,
+        status: { $nin: ['paid', 'cancelled'] },
+      });
+      if (remainingActiveOrders === 0) {
+        await this.tablesService.update(tableId.toString(), { status: 'empty' }).catch(() => {});
+      }
+    }
+
     return { message: `Đã xóa đơn hàng ${id} thành công.` };
   }
 
@@ -199,65 +232,45 @@ export class OrdersService implements OnModuleInit {
     const primaryOrder = activeOrders[0];
     const secondaryOrders = activeOrders.slice(1);
 
-    const combinedItemsMap = new Map<string, { foodId: any; quantity: number; note: string }>();
-    let totalAmountCombined = 0;
-    let discountAmountCombined = 0;
+    const mergedItems = [...primaryOrder.items];
 
-    for (const order of activeOrders) {
-      totalAmountCombined += order.totalAmount || 0;
-      discountAmountCombined += order.discountAmount || 0;
+    for (const secOrder of secondaryOrders) {
+      for (const item of secOrder.items) {
+        const existingItemIndex = mergedItems.findIndex(
+          (mItem) =>
+            mItem.foodId.toString() === item.foodId.toString() &&
+            (mItem.note || '') === (item.note || '')
+        );
 
-      for (const item of order.items) {
-        const foodIdStr = item.foodId ? item.foodId.toString() : '';
-        const noteStr = (item.note || '').trim();
-        const key = `${foodIdStr}___${noteStr}`;
-
-        if (combinedItemsMap.has(key)) {
-          const existing = combinedItemsMap.get(key)!;
-          existing.quantity += item.quantity;
+        if (existingItemIndex > -1) {
+          mergedItems[existingItemIndex].quantity += item.quantity;
         } else {
-          combinedItemsMap.set(key, {
-            foodId: item.foodId,
-            quantity: item.quantity,
-            note: item.note || '',
-          });
+          mergedItems.push(item);
         }
       }
     }
 
-    const mergedItems = Array.from(combinedItemsMap.values());
-
-    const statuses = activeOrders.map((o) => o.status);
-    let mergedStatus = 'completed';
-    if (statuses.includes('pending')) {
-      mergedStatus = 'pending';
-    } else if (statuses.includes('confirmed') || statuses.includes('cooking')) {
-      mergedStatus = 'cooking';
+    let newTotalAmount = 0;
+    for (const item of mergedItems) {
+      const food = await this.foodsService.findOne(item.foodId.toString());
+      newTotalAmount += (food.price || 0) * item.quantity;
     }
 
-    primaryOrder.items = mergedItems as any;
-    primaryOrder.totalAmount = totalAmountCombined;
-    primaryOrder.discountAmount = discountAmountCombined;
-    primaryOrder.status = mergedStatus;
+    primaryOrder.items = mergedItems;
+    primaryOrder.totalAmount = newTotalAmount;
     await primaryOrder.save();
 
     const secondaryIds = secondaryOrders.map((o) => o._id);
-    await this.orderModel.deleteMany({ _id: { $in: secondaryIds } }).exec();
+    await this.orderModel.deleteMany({ _id: { $in: secondaryIds } });
 
-    const populatedPrimaryOrder = await this.orderModel
-      .findById(primaryOrder._id)
-      .populate('tableId')
-      .populate('items.foodId')
-      .exec();
-
-    for (const secId of secondaryIds) {
-      this.ordersGateway.emitOrderDeleted(secId.toString());
+    if (this.ordersGateway.server) {
+      this.ordersGateway.server.emit('ordersMerged', { tableId, primaryOrderId: primaryOrder._id });
     }
 
-    if (populatedPrimaryOrder) {
-      this.ordersGateway.emitOrdersMerged(tableId, populatedPrimaryOrder);
-    }
-
-    return populatedPrimaryOrder || primaryOrder;
+    return {
+      message: 'Gộp đơn thành công',
+      primaryOrder,
+      mergedCount: secondaryOrders.length + 1,
+    };
   }
 }

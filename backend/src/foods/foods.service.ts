@@ -12,7 +12,11 @@ export class FoodsService {
   ) {}
 
   async create(createFoodDto: CreateFoodDto): Promise<FoodDocument> {
-    const newFood = new this.foodModel(createFoodDto);
+    const foodData = {
+      ...createFoodDto,
+      image: createFoodDto.image || 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&auto=format&fit=crop&q=80',
+    };
+    const newFood = new this.foodModel(foodData);
     return newFood.save();
   }
 

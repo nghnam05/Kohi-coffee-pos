@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Patch,
+  Put,
   Param,
   Delete,
 } from '@nestjs/common';
@@ -33,9 +34,15 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
+  // PUT /api/v1/users/:id
+  @Put(':id')
+  updatePut(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(id, updateUserDto);
+  }
+
   // PATCH /api/v1/users/:id
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  updatePatch(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
 

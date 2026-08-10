@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Patch,
+  Put,
   Param,
   Delete,
 } from '@nestjs/common';
@@ -33,9 +34,15 @@ export class TablesController {
     return this.tablesService.findOne(id);
   }
 
+  // PUT /api/v1/tables/:id
+  @Put(':id')
+  updatePut(@Param('id') id: string, @Body() updateTableDto: UpdateTableDto) {
+    return this.tablesService.update(id, updateTableDto);
+  }
+
   // PATCH /api/v1/tables/:id
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTableDto: UpdateTableDto) {
+  updatePatch(@Param('id') id: string, @Body() updateTableDto: UpdateTableDto) {
     return this.tablesService.update(id, updateTableDto);
   }
 

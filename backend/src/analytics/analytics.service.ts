@@ -46,7 +46,15 @@ export class AnalyticsService {
 
   private async sumRevenue(from: Date, to: Date): Promise<number> {
     const result = await this.orderModel.aggregate([
-      { $match: { status: 'paid', createdAt: { $gte: from, $lte: to } } },
+      {
+        $match: {
+          status: 'paid',
+          $or: [
+            { paidAt: { $gte: from, $lte: to } },
+            { paidAt: { $exists: false }, createdAt: { $gte: from, $lte: to } },
+          ],
+        },
+      },
       { $group: { _id: null, total: { $sum: '$totalAmount' } } },
     ]);
     return result[0]?.total ?? 0;
