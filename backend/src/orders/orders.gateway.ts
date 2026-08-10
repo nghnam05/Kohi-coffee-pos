@@ -1,0 +1,88 @@
+import {
+  WebSocketGateway,
+  WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  SubscribeMessage,
+  MessageBody,
+  ConnectedSocket,
+} from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
+import { JwtService } from '@nestjs/jwt';
+import { OrderDocument } from './schemas/order.schema.js';
+
+@WebSocketGateway({ cors: true })
+export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  @WebSocketServer()
+  server: Server;
+
+  constructor(private readonly jwtService: JwtService) {}
+
+  handleConnection(client: Socket) {
+    console.log(`Client connected via WebSocket: ${client.id}`);
+    this.authenticateSocket(client);
+  }
+
+  handleDisconnect(client: Socket) {
+    console.log(`Client disconnected via WebSocket: ${client.id}`);
+  }
+
+  @SubscribeMessage('register')
+  handleRegister(@ConnectedSocket() client: Socket, @MessageBody() data?: { token?: string }) {
+    this.authenticateSocket(client, data?.token);
+  }
+
+  private authenticateSocket(client: Socket, explicitToken?: string) {
+    try {
+      const rawToken =
+        explicitToken ||
+        client.handshake?.auth?.token ||
+        client.handshake?.query?.token;
+
+      if (!rawToken || typeof rawToken !== 'string') return;
+
+      const token = rawToken.replace(/^Bearer\s+/i, '').trim();
+      const payload = this.jwtService.verify(token);
+
+      if (payload && payload.role) {
+        if (payload.role === 'staff') {
+          client.join('staff');
+          console.log(`Socket ${client.id} joined room 'staff' (user: ${payload.email || payload.sub})`);
+        } else if (payload.role === 'admin') {
+          client.join('admin');
+          console.log(`Socket ${client.id} joined room 'admin' (user: ${payload.email || payload.sub})`);
+        }
+      }
+    } catch (err) {
+      // Unauthenticated client or invalid token
+    }
+  }
+
+  emitNewOrder(order: OrderDocument): void {
+    this.server.emit('newOrder', order);
+  }
+
+  emitStatusUpdate(orderId: string, status: string): void {
+    this.server.emit('statusUpdated', { orderId, status });
+  }
+
+  emitOrderDeleted(orderId: string): void {
+    this.server.emit('orderDeleted', { orderId });
+  }
+
+  emitOrdersMerged(tableId: string, mergedOrder: any): void {
+    this.server.emit('ordersMerged', { tableId, mergedOrder });
+  }
+
+  emitStaffCall(call: any): void {
+    if (this.server) {
+      this.server.emit('staffCallRequest', call);
+    }
+  }
+
+  emitStaffCallAcknowledged(id: string): void {
+    if (this.server) {
+      this.server.emit('staffCallAcknowledged', { id });
+    }
+  }
+}
