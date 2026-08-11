@@ -85,4 +85,11 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.server.emit('staffCallAcknowledged', { id });
     }
   }
+
+  emitAttendanceUpdate(data: any): void {
+    if (this.server) {
+      this.server.emit('attendanceUpdated', data);
+    }
+  }
 }
+

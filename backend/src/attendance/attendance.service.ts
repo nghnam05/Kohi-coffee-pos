@@ -1,14 +1,16 @@
 import {
-  Injectable, NotFoundException, BadRequestException, ConflictException,
+  Injectable, NotFoundException, BadRequestException, ConflictException, Optional, Inject,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Attendance, AttendanceDocument } from './schemas/attendance.schema.js';
+import { OrdersGateway } from '../orders/orders.gateway.js';
 
 @Injectable()
 export class AttendanceService {
   constructor(
     @InjectModel(Attendance.name) private readonly attendanceModel: Model<AttendanceDocument>,
+    @Optional() @Inject(OrdersGateway) private readonly ordersGateway?: OrdersGateway,
   ) {}
 
   /** Nhân viên bấm bắt đầu ca */
@@ -28,7 +30,20 @@ export class AttendanceService {
       date: dateOnly,
       checkIn: now,
     });
-    return record.save();
+    const saved = await record.save();
+    const populated = await this.attendanceModel.findById(saved._id).populate('userId', 'name email role').exec();
+
+    if (this.ordersGateway && populated) {
+      this.ordersGateway.emitAttendanceUpdate({
+        type: 'check-in',
+        attendance: populated,
+        userId: populated.userId?._id || userId,
+        userName: (populated.userId as any)?.name || 'Nhân viên',
+        timestamp: now,
+      });
+    }
+
+    return populated || saved;
   }
 
   /** Nhân viên bấm kết thúc ca */
@@ -43,7 +58,20 @@ export class AttendanceService {
     record.checkOut = now;
     const diffSec = Math.max(0, Math.floor((now.getTime() - record.checkIn.getTime()) / 1000));
     record.totalHours = Number((diffSec / 3600).toFixed(4));
-    return record.save();
+    const saved = await record.save();
+    const populated = await this.attendanceModel.findById(saved._id).populate('userId', 'name email role').exec();
+
+    if (this.ordersGateway && populated) {
+      this.ordersGateway.emitAttendanceUpdate({
+        type: 'check-out',
+        attendance: populated,
+        userId: populated.userId?._id || userId,
+        userName: (populated.userId as any)?.name || 'Nhân viên',
+        timestamp: now,
+      });
+    }
+
+    return populated || saved;
   }
 
   /** Admin: lấy danh sách chấm công với filter */

@@ -409,15 +409,18 @@ interface FoodItem {
 
 interface Order {
   _id: string;
-  tableId: {
+  tableId?: {
     _id: string;
     tableName: string;
-  };
+  } | null;
   items: FoodItem[];
   totalAmount: number;
   status: 'pending' | 'cooking' | 'completed' | 'cancelled' | 'paid';
   paymentStatus?: 'unpaid' | 'paid';
   paymentMethod: 'cash' | 'momo';
+  isTakeaway?: boolean;
+  customerName?: string;
+  couponCode?: string;
   createdAt: string;
 }
 
@@ -485,7 +488,7 @@ export default function DashboardPage() {
   const [usersList, setUsersList] = useState<User[]>([]);
   const [staffCalls, setStaffCalls] = useState<StaffCall[]>([]);
   const [activeTab, setActiveTab] = useState<'orders' | 'foods' | 'tables' | 'users' | 'attendance' | 'analytics'>('foods');
-  const [activityFilter, setActivityFilter] = useState<'all' | 'support' | 'payment'>('all');
+  const [activityFilter, setActivityFilter] = useState<'all' | 'support' | 'payment' | 'checkedIn' | 'notCheckedIn'>('all');
   const [orderStatusFilter, setOrderStatusFilter] = useState<'active' | 'paid' | 'all'>('active');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedTableStatus, setSelectedTableStatus] = useState<string>('all');
@@ -521,6 +524,16 @@ export default function DashboardPage() {
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any | null>(null);
   const [userForm, setUserForm] = useState({ name: '', email: '', password: '', role: 'staff' });
+
+  // Staff Takeaway Order State
+  const [isTakeawayModalOpen, setIsTakeawayModalOpen] = useState(false);
+  const [takeawayCart, setTakeawayCart] = useState<{ foodId: string; food: any; quantity: number; note: string }[]>([]);
+  const [takeawayCustomerName, setTakeawayCustomerName] = useState('');
+  const [takeawayPaymentMethod, setTakeawayPaymentMethod] = useState<'cash' | 'momo'>('cash');
+  const [takeawayCouponCode, setTakeawayCouponCode] = useState('');
+  const [takeawayCategory, setTakeawayCategory] = useState('all');
+  const [takeawaySearch, setTakeawaySearch] = useState('');
+  const [isCreatingTakeaway, setIsCreatingTakeaway] = useState(false);
 
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [profileName, setProfileName] = useState('');
@@ -633,6 +646,14 @@ export default function DashboardPage() {
 
     socketRef.current.on('staffCallAcknowledged', ({ id }: { id: string }) => {
       setStaffCalls((prev) => prev.filter((c) => c._id !== id));
+    });
+
+    socketRef.current.on('attendanceUpdated', (data: any) => {
+      if (token) fetchAttendance(token);
+      if (user?.role === 'admin') {
+        const actionText = data.type === 'check-in' ? 'vừa điểm danh Check-in' : 'vừa Check-out ca làm';
+        showToast(`Nhân viên ${data.userName || ''} ${actionText}!`, 'info');
+      }
     });
 
     return () => {
@@ -1033,6 +1054,89 @@ export default function DashboardPage() {
       fetchUsers(token);
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Có lỗi xảy ra.', 'error');
+    }
+  };
+
+  // Staff Takeaway Cart Helpers & Order Handler
+  const addToTakeawayCart = (food: any) => {
+    setTakeawayCart((prev) => {
+      const existing = prev.find((item) => item.foodId === food._id);
+      if (existing) {
+        return prev.map((item) =>
+          item.foodId === food._id ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      }
+      return [...prev, { foodId: food._id, food, quantity: 1, note: '' }];
+    });
+  };
+
+  const updateTakeawayQuantity = (foodId: string, delta: number) => {
+    setTakeawayCart((prev) =>
+      prev
+        .map((item) => {
+          if (item.foodId === foodId) {
+            const newQty = item.quantity + delta;
+            return newQty > 0 ? { ...item, quantity: newQty } : null;
+          }
+          return item;
+        })
+        .filter(Boolean) as any
+    );
+  };
+
+  const updateTakeawayNote = (foodId: string, note: string) => {
+    setTakeawayCart((prev) =>
+      prev.map((item) => (item.foodId === foodId ? { ...item, note } : item))
+    );
+  };
+
+  const handleCreateTakeawayOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token) return;
+    if (takeawayCart.length === 0) {
+      showToast('Vui lòng chọn ít nhất 1 món ăn cho đơn mang về!', 'error');
+      return;
+    }
+    setIsCreatingTakeaway(true);
+    try {
+      const items = takeawayCart.map((item) => ({
+        foodId: item.foodId,
+        quantity: item.quantity,
+        note: item.note,
+      }));
+
+      const payload: any = {
+        items,
+        isTakeaway: true,
+        paymentMethod: takeawayPaymentMethod,
+      };
+
+      if (takeawayCustomerName.trim()) payload.customerName = takeawayCustomerName.trim();
+      if (takeawayCouponCode.trim()) payload.couponCode = takeawayCouponCode.trim();
+
+      const res = await fetch(`${API_BASE}/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        const msg = Array.isArray(errData.message) ? errData.message.join(', ') : errData.message;
+        throw new Error(msg || 'Không thể tạo đơn hàng mang về.');
+      }
+
+      showToast('Tạo đơn hàng mang về thành công!', 'success');
+      setIsTakeawayModalOpen(false);
+      setTakeawayCart([]);
+      fetchOrders(token);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Có lỗi xảy ra khi tạo đơn.', 'error');
+    } finally {
+      setIsCreatingTakeaway(false);
     }
   };
 
@@ -1718,6 +1822,20 @@ export default function DashboardPage() {
                   {orders.length}
                 </span>
               </button>
+
+              <button
+                onClick={() => {
+                  setTakeawayCart([]);
+                  setTakeawayCustomerName('');
+                  setTakeawayPaymentMethod('cash');
+                  setTakeawayCouponCode('');
+                  setIsTakeawayModalOpen(true);
+                }}
+                className="px-4 py-2 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md active:scale-95 ml-auto shrink-0 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-base">shopping_bag</span>
+                <span>➕ Tạo đơn mang về</span>
+              </button>
             </div>
 
             {/* Table Merge Alert Banner */}
@@ -1774,8 +1892,15 @@ export default function DashboardPage() {
                         {/* Card Header: Table Name & Status */}
                         <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-[#1e293b] mb-4">
                           <div className="flex items-center gap-2">
-                            <h3 className="text-lg font-black text-slate-900 dark:text-white font-heading">
-                              {order.tableId?.tableName || t.unknownTable}
+                            <h3 className="text-lg font-black text-slate-900 dark:text-white font-heading flex items-center gap-1.5">
+                              {order.isTakeaway || !order.tableId ? (
+                                <span className="text-[#0284c7] dark:text-[#38BDF8] flex items-center gap-1">
+                                  <span className="material-symbols-outlined text-base">shopping_bag</span>
+                                  <span>Mang về</span>
+                                </span>
+                              ) : (
+                                order.tableId?.tableName || t.unknownTable
+                              )}
                             </h3>
                             <button
                               onClick={() => setActiveInvoice(order)}
@@ -2723,7 +2848,7 @@ export default function DashboardPage() {
       >
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading">
-            Hoạt động realtime
+            {user?.role === 'admin' ? 'Chấm công realtime' : 'Hoạt động realtime'}
           </h3>
           <button
             onClick={() => setIsRealtimeDrawerOpen(false)}
@@ -2734,100 +2859,279 @@ export default function DashboardPage() {
         </div>
 
         {/* Realtime Activity Filter Tabs */}
-        <div className="flex border-b border-slate-200 dark:border-[#1e293b] mb-4 gap-4 text-xs font-bold text-slate-500 dark:text-slate-400">
-          <button
-            onClick={() => setActivityFilter('all')}
-            className={`pb-2 transition-all ${
-              activityFilter === 'all'
-                ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
-                : 'hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            Tất cả
-          </button>
-          <button
-            onClick={() => setActivityFilter('support')}
-            className={`pb-2 transition-all ${
-              activityFilter === 'support'
-                ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
-                : 'hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            Hỗ trợ {staffCalls.length > 0 && `(${staffCalls.length})`}
-          </button>
-          <button
-            onClick={() => setActivityFilter('payment')}
-            className={`pb-2 transition-all ${
-              activityFilter === 'payment'
-                ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
-                : 'hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            Thanh toán
-          </button>
-        </div>
+        {user?.role === 'admin' ? (
+          <>
+            {/* Admin Realtime Attendance Filter Tabs */}
+            {(() => {
+              const now = new Date();
+              const todayAttendances = attendances.filter((att) => {
+                if (!att.checkIn) return false;
+                const d = new Date(att.checkIn);
+                return (
+                  d.getDate() === now.getDate() &&
+                  d.getMonth() === now.getMonth() &&
+                  d.getFullYear() === now.getFullYear()
+                );
+              });
+              const checkedInSet = new Set(
+                todayAttendances.map((att) => (att.userId?._id || att.userId)?.toString())
+              );
+              const staffMembers = usersList.filter((u) => u.role === 'staff');
+              const checkedInCount = staffMembers.filter((u) => checkedInSet.has(String(u._id || ''))).length;
+              const notCheckedInCount = staffMembers.filter((u) => !checkedInSet.has(String(u._id || ''))).length;
 
-        {/* Timeline Items */}
-        <div className="space-y-4 flex-1 overflow-y-auto scrollbar-none pr-1">
-          {/* Staff Call Support Items */}
-          {(activityFilter === 'all' || activityFilter === 'support') &&
-            staffCalls.map((call) => (
-              <div key={call._id} className="flex gap-3 text-xs">
-                <span className="w-2 h-2 rounded-full bg-[#38BDF8] mt-1.5 shrink-0 animate-pulse" />
-                <div className="flex-1">
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono block mb-0.5">
-                    {call.createdAt
-                      ? new Date(call.createdAt).toLocaleTimeString('vi-VN', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          second: '2-digit',
-                        })
-                      : 'Vừa xong'}
-                  </span>
-                  <p className="font-bold text-slate-900 dark:text-white">
-                    {call.tableId?.tableName || 'Bàn'} — Yêu cầu hỗ trợ
-                  </p>
+              return (
+                <div className="flex border-b border-slate-200 dark:border-[#1e293b] mb-4 gap-2 text-[11px] font-bold text-slate-500 dark:text-slate-400">
                   <button
-                    onClick={() => handleAcknowledgeCall(call._id)}
-                    className="mt-2 px-3 py-1 bg-slate-100 dark:bg-[#1e293b] hover:bg-[#38BDF8] hover:text-[#090D16] text-slate-700 dark:text-slate-300 text-[10px] font-bold rounded-lg transition-all"
+                    onClick={() => setActivityFilter('all')}
+                    className={`pb-2 transition-all ${
+                      activityFilter === 'all'
+                        ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
+                        : 'hover:text-slate-900 dark:hover:text-white'
+                    }`}
                   >
-                    Đã tiếp nhận
+                    Tất cả
+                  </button>
+                  <button
+                    onClick={() => setActivityFilter('checkedIn')}
+                    className={`pb-2 transition-all ${
+                      activityFilter === 'checkedIn'
+                        ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-400'
+                        : 'hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Đã điểm danh ({checkedInCount})
+                  </button>
+                  <button
+                    onClick={() => setActivityFilter('notCheckedIn')}
+                    className={`pb-2 transition-all ${
+                      activityFilter === 'notCheckedIn'
+                        ? 'text-rose-500 dark:text-rose-400 border-b-2 border-rose-400'
+                        : 'hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Chưa điểm danh ({notCheckedInCount})
                   </button>
                 </div>
-              </div>
-            ))}
+              );
+            })()}
 
-          {/* Recent Orders Items */}
-          {(activityFilter === 'all' || activityFilter === 'payment') &&
-            orders.slice(0, 10).map((order) => (
-              <div key={order._id} className="flex gap-3 text-xs">
-                <span
-                  className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
-                    order.status === 'paid' ? 'bg-emerald-500' : 'bg-slate-400'
-                  }`}
-                />
-                <div className="flex-1">
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono block mb-0.5">
-                    {order.createdAt
-                      ? new Date(order.createdAt).toLocaleTimeString('vi-VN', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          second: '2-digit',
-                        })
-                      : 'Vừa xong'}
-                  </span>
-                  <p className="font-semibold text-slate-800 dark:text-slate-200">
-                    {order.tableId?.tableName || 'Bàn'} —{' '}
-                    {order.status === 'paid'
-                      ? 'Thanh toán'
-                      : order.status === 'pending'
-                      ? 'Đặt món mới'
-                      : 'Đang chế biến'}
-                  </p>
-                </div>
-              </div>
-            ))}
-        </div>
+            {/* Admin Realtime Staff Attendance Content */}
+            <div className="space-y-4 flex-1 overflow-y-auto scrollbar-none pr-1">
+              {(() => {
+                const now = new Date();
+                const todayAttendances = attendances.filter((att) => {
+                  if (!att.checkIn) return false;
+                  const d = new Date(att.checkIn);
+                  return (
+                    d.getDate() === now.getDate() &&
+                    d.getMonth() === now.getMonth() &&
+                    d.getFullYear() === now.getFullYear()
+                  );
+                });
+                const checkedInMap = new Map<string, any>();
+                todayAttendances.forEach((att) => {
+                  const uid = (att.userId?._id || att.userId)?.toString();
+                  if (uid) checkedInMap.set(uid, att);
+                });
+
+                const staffMembers = usersList.filter((u) => u.role === 'staff');
+                const checkedInList = staffMembers.filter((u) => checkedInMap.has(String(u._id || '')));
+                const notCheckedInList = staffMembers.filter((u) => !checkedInMap.has(String(u._id || '')));
+
+                return (
+                  <>
+                    {/* Render Checked In Staff */}
+                    {(activityFilter === 'all' || activityFilter === 'checkedIn') && (
+                      <div className="space-y-2.5">
+                        <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                          Nhân viên đã điểm danh ({checkedInList.length})
+                        </h4>
+                        {checkedInList.length === 0 ? (
+                          <p className="text-xs text-slate-400 italic">Chưa có nhân viên nào điểm danh hôm nay</p>
+                        ) : (
+                          checkedInList.map((st) => {
+                            const attRecord = checkedInMap.get(String(st._id || ''));
+                            const cInTime = attRecord?.checkIn
+                              ? new Date(attRecord.checkIn).toLocaleTimeString('vi-VN', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })
+                              : '';
+                            const cOutTime = attRecord?.checkOut
+                              ? new Date(attRecord.checkOut).toLocaleTimeString('vi-VN', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })
+                              : null;
+
+                            return (
+                              <div
+                                key={st._id || st.email}
+                                className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl space-y-1 text-xs"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                    {st.name}
+                                  </span>
+                                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-md">
+                                    {cOutTime ? 'Đã check-out' : 'Đang làm việc'}
+                                  </span>
+                                </div>
+                                <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                                  Check-in lúc: <strong className="text-slate-700 dark:text-slate-300">{cInTime}</strong>
+                                  {cOutTime && (
+                                    <>
+                                      {' '}
+                                      | Check-out: <strong className="text-slate-700 dark:text-slate-300">{cOutTime}</strong> ({attRecord.totalHours}h)
+                                    </>
+                                  )}
+                                </div>
+                                <div className="text-[10px] text-slate-400 truncate">{st.email}</div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    )}
+
+                    {/* Render Not Checked In Staff */}
+                    {(activityFilter === 'all' || activityFilter === 'notCheckedIn') && (
+                      <div className="space-y-2.5 pt-2">
+                        <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-500 dark:text-rose-400">
+                          Nhân viên chưa điểm danh ({notCheckedInList.length})
+                        </h4>
+                        {notCheckedInList.length === 0 ? (
+                          <p className="text-xs text-emerald-500 font-bold">Tất cả nhân viên đã điểm danh đầy đủ! 🎉</p>
+                        ) : (
+                          notCheckedInList.map((st) => (
+                            <div
+                              key={st._id}
+                              className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl space-y-1 text-xs"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                  <span className="w-2 h-2 rounded-full bg-rose-500" />
+                                  {st.name}
+                                </span>
+                                <span className="text-[10px] font-bold text-rose-500 dark:text-rose-400 bg-rose-500/15 px-2 py-0.5 rounded-md">
+                                  Chưa ca
+                                </span>
+                              </div>
+                              <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                                Chưa có dữ liệu điểm danh ca làm hôm nay
+                              </div>
+                              <div className="text-[10px] text-slate-400 truncate">{st.email}</div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+          </>
+        ) : (
+          /* Staff View: Support Calls & Recent Orders */
+          <>
+            <div className="flex border-b border-slate-200 dark:border-[#1e293b] mb-4 gap-4 text-xs font-bold text-slate-500 dark:text-slate-400">
+              <button
+                onClick={() => setActivityFilter('all')}
+                className={`pb-2 transition-all ${
+                  activityFilter === 'all'
+                    ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
+                    : 'hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                Tất cả
+              </button>
+              <button
+                onClick={() => setActivityFilter('support')}
+                className={`pb-2 transition-all ${
+                  activityFilter === 'support'
+                    ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
+                    : 'hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                Hỗ trợ {staffCalls.length > 0 && `(${staffCalls.length})`}
+              </button>
+              <button
+                onClick={() => setActivityFilter('payment')}
+                className={`pb-2 transition-all ${
+                  activityFilter === 'payment'
+                    ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
+                    : 'hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                Thanh toán
+              </button>
+            </div>
+
+            {/* Timeline Items for Staff */}
+            <div className="space-y-4 flex-1 overflow-y-auto scrollbar-none pr-1">
+              {/* Staff Call Support Items */}
+              {(activityFilter === 'all' || activityFilter === 'support') &&
+                staffCalls.map((call) => (
+                  <div key={call._id} className="flex gap-3 text-xs">
+                    <span className="w-2 h-2 rounded-full bg-[#38BDF8] mt-1.5 shrink-0 animate-pulse" />
+                    <div className="flex-1">
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono block mb-0.5">
+                        {call.createdAt
+                          ? new Date(call.createdAt).toLocaleTimeString('vi-VN', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit',
+                            })
+                          : 'Vừa xong'}
+                      </span>
+                      <p className="font-bold text-slate-900 dark:text-white">
+                        {call.tableId?.tableName || 'Bàn'} — Yêu cầu hỗ trợ
+                      </p>
+                      <button
+                        onClick={() => handleAcknowledgeCall(call._id)}
+                        className="mt-2 px-3 py-1 bg-slate-100 dark:bg-[#1e293b] hover:bg-[#38BDF8] hover:text-[#090D16] text-slate-700 dark:text-slate-300 text-[10px] font-bold rounded-lg transition-all"
+                      >
+                        Đã tiếp nhận
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+              {/* Recent Orders Items */}
+              {(activityFilter === 'all' || activityFilter === 'payment') &&
+                orders.slice(0, 10).map((order) => (
+                  <div key={order._id} className="flex gap-3 text-xs">
+                    <span
+                      className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
+                        order.status === 'paid' ? 'bg-emerald-500' : 'bg-slate-400'
+                      }`}
+                    />
+                    <div className="flex-1">
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono block mb-0.5">
+                        {order.createdAt
+                          ? new Date(order.createdAt).toLocaleTimeString('vi-VN', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit',
+                            })
+                          : 'Vừa xong'}
+                      </span>
+                      <p className="font-semibold text-slate-800 dark:text-slate-200">
+                        {order.tableId?.tableName || 'Bàn'} —{' '}
+                        {order.status === 'paid'
+                          ? 'Thanh toán'
+                          : order.status === 'pending'
+                          ? 'Đặt món mới'
+                          : 'Đang chế biến'}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </>
+        )}
       </aside>
 
       {/* ── ALL MODALS & TOAST NOTIFICATIONS ────────────────────────────────── */}
@@ -3258,6 +3562,265 @@ export default function DashboardPage() {
                 <button onClick={handlePrintInvoice} className="flex-1 py-2 bg-[#38BDF8] text-[#090D16] font-black rounded-xl text-xs hover:bg-[#0284c7]">
                   {t.invoicePrintBtn}
                 </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 5.5 Staff Takeaway POS Modal (Tạo đơn mang về) */}
+      <AnimatePresence>
+        {isTakeawayModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsTakeawayModalOpen(false)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-xs"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative z-10 w-full max-w-4xl bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+            >
+              {/* Modal Header */}
+              <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3 shrink-0">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[#38BDF8]">shopping_bag</span>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading">
+                    Tạo Đơn Hàng Bán Mang Về (POS)
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setIsTakeawayModalOpen(false)}
+                  className="text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              {/* Modal Body: 2 Columns layout (Catalog Left, Cart Right) */}
+              <div className="flex-1 overflow-y-auto space-y-4 lg:space-y-0 lg:grid lg:grid-cols-12 lg:gap-4 min-h-0 pr-1">
+                {/* LEFT: Food Catalog (7 cols) */}
+                <div className="lg:col-span-7 flex flex-col gap-3 lg:border-r border-slate-200 dark:border-[#1e293b] lg:pr-4 pb-4 lg:pb-0 lg:h-full lg:overflow-hidden">
+                  {/* Category Filter & Search */}
+                  <div className="flex flex-col gap-2 shrink-0">
+                    <input
+                      type="text"
+                      placeholder="Tìm kiếm món ăn, thức uống..."
+                      value={takeawaySearch}
+                      onChange={(e) => setTakeawaySearch(e.target.value)}
+                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
+                    />
+
+                    <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[11px] font-bold">
+                      <button
+                        type="button"
+                        onClick={() => setTakeawayCategory('all')}
+                        className={`px-2.5 py-1 rounded-lg transition-all shrink-0 ${
+                          takeawayCategory === 'all'
+                            ? 'bg-[#38BDF8] text-[#090D16]'
+                            : 'bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300'
+                        }`}
+                      >
+                        Tất cả
+                      </button>
+                      {availableCategories.map((cat) => (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() => setTakeawayCategory(cat)}
+                          className={`px-2.5 py-1 rounded-lg transition-all shrink-0 ${
+                            takeawayCategory === cat
+                              ? 'bg-[#38BDF8] text-[#090D16]'
+                              : 'bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300'
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Food Grid Catalog */}
+                  <div className="grid grid-cols-2 gap-2 max-h-[220px] sm:max-h-[300px] lg:max-h-none lg:flex-1 overflow-y-auto pr-1 scrollbar-thin">
+                    {foods
+                      .filter((f) => f.isAvailable !== false)
+                      .filter((f) => {
+                        const matchCat = takeawayCategory === 'all' || f.category === takeawayCategory;
+                        const matchSearch =
+                          !takeawaySearch ||
+                          f.name?.toLowerCase().includes(takeawaySearch.toLowerCase()) ||
+                          f.category?.toLowerCase().includes(takeawaySearch.toLowerCase());
+                        return matchCat && matchSearch;
+                      })
+                      .map((food) => {
+                        const inCart = takeawayCart.find((i) => i.foodId === food._id);
+                        return (
+                          <div
+                            key={food._id}
+                            onClick={() => addToTakeawayCart(food)}
+                            className="bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] hover:border-[#38BDF8] p-2.5 rounded-xl flex items-center gap-2.5 cursor-pointer transition-all hover:scale-[1.02] active:scale-95 group relative"
+                          >
+                            <img
+                              src={food.image || 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&auto=format&fit=crop&q=80'}
+                              alt={food.name}
+                              className="w-11 h-11 rounded-lg object-cover bg-slate-200 dark:bg-slate-800 shrink-0"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate group-hover:text-[#38BDF8]">
+                                {food.name}
+                              </h4>
+                              <p className="text-[11px] font-black text-[#0284c7] dark:text-[#38BDF8]">
+                                {formatPrice(food.price)}
+                              </p>
+                            </div>
+                            {inCart && (
+                              <span className="absolute -top-1.5 -right-1.5 bg-[#38BDF8] text-[#090D16] text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-md">
+                                {inCart.quantity}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+
+                {/* RIGHT: Takeaway Order Cart (5 cols) */}
+                <form onSubmit={handleCreateTakeawayOrder} className="lg:col-span-5 flex flex-col gap-3 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-200 dark:border-[#1e293b] lg:h-full lg:overflow-hidden">
+                  <h4 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wider flex items-center justify-between border-b border-slate-200 dark:border-[#1e293b] pb-2">
+                    <span>Giỏ hàng mang về ({takeawayCart.reduce((sum, i) => sum + i.quantity, 0)})</span>
+                    {takeawayCart.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setTakeawayCart([])}
+                        className="text-[10px] text-rose-500 font-bold hover:underline"
+                      >
+                        Xóa tất cả
+                      </button>
+                    )}
+                  </h4>
+
+                  {/* Cart Items List */}
+                  <div className="space-y-2 pr-1 max-h-[160px] sm:max-h-[220px] lg:max-h-none lg:flex-1 overflow-y-auto min-h-[80px] scrollbar-thin">
+                    {takeawayCart.length === 0 ? (
+                      <div className="text-center py-8 text-slate-400 text-xs">
+                        <span className="material-symbols-outlined text-3xl mb-1 block">add_shopping_cart</span>
+                        Chưa chọn món nào. Nhấp vào món bên trái để thêm vào giỏ.
+                      </div>
+                    ) : (
+                      takeawayCart.map((item) => (
+                        <div
+                          key={item.foodId}
+                          className="bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] p-2.5 rounded-xl space-y-2 text-xs"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-bold text-slate-900 dark:text-white truncate flex-1">
+                              {item.food.name}
+                            </span>
+                            <span className="font-extrabold text-[#0284c7] dark:text-[#38BDF8]">
+                              {formatPrice(item.food.price * item.quantity)}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-200/60 dark:border-slate-800">
+                            <input
+                              type="text"
+                              placeholder="Ghi chú (Ví dụ: Ít đường, không đá...)"
+                              value={item.note}
+                              onChange={(e) => updateTakeawayNote(item.foodId, e.target.value)}
+                              className="flex-1 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-lg px-2 py-1 text-[11px] text-slate-900 dark:text-white focus:outline-none"
+                            />
+                            <div className="flex items-center gap-1 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-lg p-0.5">
+                              <button
+                                type="button"
+                                onClick={() => updateTakeawayQuantity(item.foodId, -1)}
+                                className="w-5 h-5 flex items-center justify-center font-bold text-slate-500 hover:text-rose-500"
+                              >
+                                -
+                              </button>
+                              <span className="font-bold px-1 text-slate-900 dark:text-white text-xs">
+                                {item.quantity}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => updateTakeawayQuantity(item.foodId, 1)}
+                                className="w-5 h-5 flex items-center justify-center font-bold text-slate-500 hover:text-[#38BDF8]"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Customer Info & Order Inputs */}
+                  <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-[#1e293b] text-xs shrink-0">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                        Tên khách hàng (Tùy chọn)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Nhập tên khách nhận món..."
+                        value={takeawayCustomerName}
+                        onChange={(e) => setTakeawayCustomerName(e.target.value)}
+                        className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-2.5 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                          Thanh toán
+                        </label>
+                        <select
+                          value={takeawayPaymentMethod}
+                          onChange={(e) => setTakeawayPaymentMethod(e.target.value as 'cash' | 'momo')}
+                          className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-2.5 py-1.5 text-slate-900 dark:text-white font-bold cursor-pointer"
+                        >
+                          <option value="cash" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold">Tiền mặt</option>
+                          <option value="momo" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold">Chuyển khoản MoMo</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                          Mã giảm giá
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Mã voucher..."
+                          value={takeawayCouponCode}
+                          onChange={(e) => setTakeawayCouponCode(e.target.value)}
+                          className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-2.5 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Total Amount Summary */}
+                    <div className="flex items-center justify-between py-2 border-t border-slate-200 dark:border-[#1e293b]">
+                      <span className="font-extrabold text-slate-700 dark:text-slate-300">Tổng cộng tiền món:</span>
+                      <span className="text-base font-black text-[#0284c7] dark:text-[#38BDF8]">
+                        {formatPrice(takeawayCart.reduce((sum, item) => sum + item.food.price * item.quantity, 0))}
+                      </span>
+                    </div>
+
+                    {/* Submit Button */}
+                    <button
+                      type="submit"
+                      disabled={takeawayCart.length === 0 || isCreatingTakeaway}
+                      className="w-full py-3 bg-[#38BDF8] hover:bg-[#0284c7] disabled:opacity-50 text-[#090D16] font-black rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-base">check_circle</span>
+                      <span>{isCreatingTakeaway ? 'Đang tạo đơn...' : 'Xác nhận tạo đơn mang về'}</span>
+                    </button>
+                  </div>
+                </form>
               </div>
             </motion.div>
           </div>

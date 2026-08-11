@@ -49,9 +49,11 @@ export class OrdersService implements OnModuleInit {
     }
 
     const finalAmount = Math.max(0, totalAmount - discountAmount);
+    const isTakeaway = createOrderDto.isTakeaway ?? !createOrderDto.tableId;
 
     const newOrder = new this.orderModel({
       ...createOrderDto,
+      isTakeaway,
       totalAmount: finalAmount,
       discountAmount,
       couponCode,

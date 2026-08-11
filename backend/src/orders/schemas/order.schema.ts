@@ -39,9 +39,16 @@ export class Order {
   @Prop({
     type: Types.ObjectId,
     ref: 'Table',
-    required: true,
+    required: false,
+    default: null,
   })
   tableId: Types.ObjectId;
+
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  isTakeaway: boolean;
 
   @Prop({
     type: [OrderItemSchema],
