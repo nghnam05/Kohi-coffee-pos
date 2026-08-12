@@ -1,0 +1,217 @@
+import {
+  Injectable, NotFoundException, BadRequestException, OnModuleInit, Optional, Inject,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Reservation, ReservationDocument } from './schemas/reservation.schema.js';
+import { CreateReservationDto } from './dto/create-reservation.dto.js';
+import { TablesService } from '../tables/tables.service.js';
+import { OrdersGateway } from '../orders/orders.gateway.js';
+
+@Injectable()
+export class ReservationsService implements OnModuleInit {
+  constructor(
+    @InjectModel(Reservation.name) private readonly reservationModel: Model<ReservationDocument>,
+    private readonly tablesService: TablesService,
+    @Optional() @Inject(OrdersGateway) private readonly ordersGateway?: OrdersGateway,
+  ) {}
+
+  async syncTableStatusesWithReservations() {
+    try {
+      const activeReservations = await this.reservationModel
+        .find({ status: { $in: ['pending', 'confirmed'] } })
+        .exec();
+
+      for (const res of activeReservations) {
+        const tableId = (res.tableId as any)?._id || res.tableId;
+        if (tableId) {
+          const table = await this.tablesService.findOne(tableId.toString()).catch(() => null);
+          if (table && table.status !== 'serving') {
+            await this.tablesService.update(tableId.toString(), { status: 'reserved' }).catch(() => {});
+          }
+        }
+      }
+    } catch (err) {
+      console.error('[Sync Error] Failed to sync table statuses with reservations:', err);
+    }
+  }
+
+  async onModuleInit() {
+    const count = await this.reservationModel.countDocuments();
+    if (count === 0) {
+      try {
+        const tables = await this.tablesService.findAll();
+        if (tables.length > 0) {
+          const now = new Date();
+          const table1 = tables[0]._id;
+          const table2 = tables[1] ? tables[1]._id : table1;
+
+          await this.reservationModel.insertMany([
+            {
+              tableId: table1,
+              customerName: 'Nguyễn Văn An',
+              customerPhone: '0901234567',
+              guestCount: 4,
+              reservationTime: new Date(now.getTime() + 2 * 3600 * 1000),
+              status: 'confirmed',
+              note: 'Đặt bàn họp nhóm công ty, cần góc yên tĩnh',
+            },
+            {
+              tableId: table2,
+              customerName: 'Trần Thị Mai',
+              customerPhone: '0987654321',
+              guestCount: 2,
+              reservationTime: new Date(now.getTime() + 5 * 3600 * 1000),
+              status: 'pending',
+              note: 'Bàn hẹn hò gần cửa sổ',
+            },
+          ]);
+          console.log('[Seed] Sample Table Reservations initialized in Database.');
+        }
+      } catch (err) {
+        console.error('[Seed Error] Failed to seed reservations:', err);
+      }
+    }
+    await this.syncTableStatusesWithReservations();
+  }
+
+  async create(dto: CreateReservationDto): Promise<ReservationDocument> {
+    const table = await this.tablesService.findOne(dto.tableId);
+    if (!table) throw new NotFoundException('Không tìm thấy bàn ăn được chọn.');
+
+    // ⚡ BẢO VỆ CHỐNG ĐẶT TRÙNG BÀN: Bàn đang có khách hoặc đã giữ chỗ thì không cho đặt
+    if (table.status === 'serving') {
+      throw new BadRequestException(`${table.tableName} hiện đang có khách ngồi. Vui lòng chọn bàn khác.`);
+    }
+
+    const activeExistingRes = await this.reservationModel.findOne({
+      tableId: dto.tableId,
+      status: { $in: ['pending', 'confirmed'] },
+    });
+    if (activeExistingRes || table.status === 'reserved') {
+      throw new BadRequestException(`${table.tableName} đã được giữ chỗ trước. Vui lòng chọn bàn trống khác.`);
+    }
+
+    const resTime = new Date(dto.reservationTime);
+    if (isNaN(resTime.getTime())) {
+      throw new BadRequestException('Thời gian đặt bàn không hợp lệ.');
+    }
+
+    const reservation = new this.reservationModel({
+      ...dto,
+      reservationTime: resTime,
+    });
+    const saved = await reservation.save();
+
+    // ⚡ Tự động cập nhật trạng thái bàn sang 'reserved' ngay lập tức trong Database
+    await this.tablesService.update(dto.tableId, { status: 'reserved' }).catch(() => {});
+
+    const populated = await this.reservationModel
+      .findById(saved._id)
+      .populate('tableId', 'tableName status')
+      .exec();
+
+    if (this.ordersGateway && populated) {
+      this.ordersGateway.emitNewReservation(populated);
+    }
+
+    return populated || saved;
+  }
+
+  async findByPhone(phone: string): Promise<ReservationDocument[]> {
+    const cleanPhone = phone.trim();
+    if (!cleanPhone) return [];
+    return this.reservationModel
+      .find({ customerPhone: cleanPhone })
+      .populate('tableId', 'tableName status')
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
+  async findAll(status?: string): Promise<ReservationDocument[]> {
+    await this.syncTableStatusesWithReservations().catch(() => {});
+    const filter = status ? { status } : {};
+    return this.reservationModel
+      .find(filter)
+      .populate('tableId', 'tableName status')
+      .sort({ reservationTime: -1 })
+      .exec();
+  }
+
+  async findOne(id: string): Promise<ReservationDocument> {
+    const res = await this.reservationModel
+      .findById(id)
+      .populate('tableId', 'tableName status')
+      .exec();
+    if (!res) throw new NotFoundException(`Không tìm thấy đơn đặt bàn ID: ${id}`);
+    return res;
+  }
+
+  async updateStatus(id: string, status: string): Promise<ReservationDocument> {
+    const resDoc = await this.reservationModel.findById(id).exec();
+    if (!resDoc) throw new NotFoundException(`Không tìm thấy đơn đặt bàn ID: ${id}`);
+
+    resDoc.status = status;
+    const updated = await resDoc.save();
+
+    const tableId = (updated.tableId as any)?._id || updated.tableId;
+    if (tableId) {
+      if (status === 'arrived') {
+        await this.tablesService.update(tableId.toString(), { status: 'serving' }).catch(() => {});
+      } else if (status === 'cancelled') {
+        await this.tablesService.update(tableId.toString(), { status: 'empty' }).catch(() => {});
+      } else if (status === 'confirmed') {
+        await this.tablesService.update(tableId.toString(), { status: 'reserved' }).catch(() => {});
+      }
+    }
+
+    const populated = await this.reservationModel
+      .findById(updated._id)
+      .populate('tableId', 'tableName status')
+      .exec();
+
+    if (this.ordersGateway && populated) {
+      this.ordersGateway.emitReservationStatusUpdate(id, status);
+    }
+
+    return populated || updated;
+  }
+
+  async remove(id: string): Promise<{ message: string }> {
+    const deleted = await this.reservationModel.findByIdAndDelete(id).exec();
+    if (!deleted) throw new NotFoundException(`Không tìm thấy đơn đặt bàn ID: ${id}`);
+    const tableId = (deleted.tableId as any)?._id || deleted.tableId;
+    if (tableId) {
+      await this.tablesService.update(tableId.toString(), { status: 'empty' }).catch(() => {});
+    }
+    return { message: `Đã xóa đơn đặt bàn ${id} thành công.` };
+  }
+
+  async customerCancel(id: string): Promise<ReservationDocument> {
+    const resDoc = await this.reservationModel.findById(id).exec();
+    if (!resDoc) throw new NotFoundException(`Không tìm thấy đơn đặt bàn ID: ${id}`);
+
+    if (resDoc.status === 'arrived') {
+      throw new BadRequestException('Khách hàng đã đến quán, không thể hủy đơn đặt bàn.');
+    }
+
+    resDoc.status = 'cancelled';
+    const updated = await resDoc.save();
+
+    const tableId = (updated.tableId as any)?._id || updated.tableId;
+    if (tableId) {
+      await this.tablesService.update(tableId.toString(), { status: 'empty' }).catch(() => {});
+    }
+
+    const populated = await this.reservationModel
+      .findById(updated._id)
+      .populate('tableId', 'tableName status')
+      .exec();
+
+    if (this.ordersGateway && populated) {
+      this.ordersGateway.emitReservationStatusUpdate(id, 'cancelled');
+    }
+
+    return populated || updated;
+  }
+}
