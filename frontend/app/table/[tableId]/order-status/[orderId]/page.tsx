@@ -22,6 +22,7 @@ const DICTIONARY = {
     status: 'Trạng thái',
     total: 'Tổng thanh toán',
     backToMenu: 'Quay lại thực đơn',
+    backToHome: 'Quay về trang chủ (Đặt bàn)',
     loading: 'Đang tải thông tin đơn hàng...',
     error: 'Không tìm thấy đơn hàng hoặc đơn hàng đã hoàn tất.',
     orderTime: 'Thời gian đặt món',
@@ -51,6 +52,7 @@ const DICTIONARY = {
     status: 'Status',
     total: 'Total Amount',
     backToMenu: 'Back to Menu',
+    backToHome: 'Back to Home Page (Booking)',
     loading: 'Loading order details...',
     error: 'Order not found or already completed.',
     orderTime: 'Order time',
@@ -80,6 +82,7 @@ const DICTIONARY = {
     status: '状态',
     total: '总计金额',
     backToMenu: '返回菜单',
+    backToHome: '返回首页（预订桌位）',
     loading: '正在加载订单详情...',
     error: '未找到订单或订单已结账。',
     orderTime: '下单时间',
@@ -289,7 +292,14 @@ export default function OrderStatusPage() {
     socketRef.current.on('statusUpdated', ({ orderId: updatedId, status }: { orderId: string; status: Order['status'] }) => {
       if (updatedId === orderId) {
         setOrder((prev) => (prev ? { ...prev, status } : null));
-        if (status === 'completed') {
+        if (status === 'paid') {
+          playMomoChime();
+          fetch(`${API_BASE}/tables/${tableId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'empty' }),
+          }).catch(() => {});
+        } else if (status === 'completed') {
           playCashChime();
         } else {
           playAlertPing();
@@ -505,12 +515,21 @@ export default function OrderStatusPage() {
                     </div>
                   </div>
 
-                  {/* Back to Menu CTA */}
+                  {/* Back to Home Page CTA */}
                   <button
-                    onClick={() => router.push(`/table/${tableId}`)}
-                    className="mt-6 w-full h-[52px] uiverse-btn text-[#FFFFFF] font-bold rounded-xl shadow-md hover:shadow-lg transition-all text-xs uppercase tracking-wider flex items-center justify-center font-sans cursor-pointer"
+                    onClick={async () => {
+                      try {
+                        await fetch(`${API_BASE}/tables/${tableId}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ status: 'empty' }),
+                        }).catch(() => {});
+                      } catch (e) {}
+                      router.push('/');
+                    }}
+                    className="mt-6 w-full h-[52px] bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-xl shadow-md hover:shadow-lg transition-all text-xs uppercase tracking-wider flex items-center justify-center font-sans cursor-pointer active:scale-95"
                   >
-                    <span>Quay lại Thực đơn</span>
+                    <span>{t.backToHome || 'QUAY VỀ TRANG CHỦ (ĐẶT BÀN)'}</span>
                   </button>
                 </div>
 

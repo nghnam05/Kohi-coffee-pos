@@ -176,9 +176,9 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                           setIsOrderHistoryModalOpen(false);
                           router.push(`/table/${tableId}/order-status/${order._id}`);
                         }}
-                        className="w-full py-2 bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--brand-primary)] text-[var(--brand-primary)] text-xs font-semibold rounded-[var(--radius-sm)] transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                        className="w-full py-2 bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--brand-primary)] text-[var(--brand-primary)] text-xs font-semibold rounded-[var(--radius-sm)] transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
                       >
-                        <span>Theo dõi tiến độ chi tiết</span>
+                        <span>{order.status === 'paid' ? 'Xem hóa đơn & Chi tiết thanh toán' : 'Theo dõi tiến độ chi tiết'}</span>
                       </button>
                     </div>
                   );

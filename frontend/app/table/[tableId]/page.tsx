@@ -439,8 +439,8 @@ export default function TableMenuPage() {
         const res = await fetch(`${API_BASE}/orders/table/${tableId}`);
         if (res.ok) {
           const data = await res.json();
-          const activeOnly = data.filter((o: any) => o.status !== 'cancelled' && o.status !== 'paid');
-          setActiveOrders(activeOnly);
+          const validOrders = data.filter((o: any) => o.status !== 'cancelled');
+          setActiveOrders(validOrders);
         }
       } catch (err) {
         console.error('Error fetching active orders:', err);
