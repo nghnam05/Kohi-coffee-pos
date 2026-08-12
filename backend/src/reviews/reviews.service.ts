@@ -2,17 +2,47 @@ import {
   Injectable, NotFoundException, BadRequestException, ConflictException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Review, ReviewDocument } from './schemas/review.schema.js';
 import { Order, OrderDocument } from '../orders/schemas/order.schema.js';
 import { CreateReviewDto } from './dto/create-review.dto.js';
 
+import { OnModuleInit } from '@nestjs/common';
+
 @Injectable()
-export class ReviewsService {
+export class ReviewsService implements OnModuleInit {
   constructor(
     @InjectModel(Review.name) private readonly reviewModel: Model<ReviewDocument>,
     @InjectModel(Order.name) private readonly orderModel: Model<OrderDocument>,
   ) {}
+
+  async onModuleInit() {
+    const count = await this.reviewModel.countDocuments();
+    if (count === 0) {
+      try {
+        const orders = await this.orderModel.find({ status: 'paid' }).limit(5).exec();
+        if (orders.length > 0) {
+          const sampleReviews: any[] = [];
+          for (let i = 0; i < orders.length; i++) {
+            const ord = orders[i];
+            const foodId = ord.items?.[0]?.foodId || null;
+            sampleReviews.push({
+              orderId: ord._id,
+              tableId: ord.tableId || null,
+              overallStar: 5 - (i % 2),
+              overallComment: i % 2 === 0 ? 'Cà phê rất thơm ngon, phục vụ nhanh nhạy!' : 'Bánh ngọt tươi mới, không khí quán tuyệt vời!',
+              ratings: foodId ? [{ foodId, star: 5, comment: 'Hương vị tuyệt vời!' }] : [],
+              createdAt: (ord as any).createdAt || new Date(),
+            });
+          }
+          await this.reviewModel.insertMany(sampleReviews);
+          console.log('[Seed] Sample Customer Reviews initialized in Database.');
+        }
+      } catch (err) {
+        console.error('[Seed Error] Failed to seed sample reviews:', err);
+      }
+    }
+  }
 
   async create(dto: CreateReviewDto): Promise<ReviewDocument> {
     // 1. Kiểm tra đơn hàng tồn tại và đã được phục vụ / thanh toán
@@ -31,19 +61,30 @@ export class ReviewsService {
   }
 
   /** Lấy tất cả reviews (admin) */
-  async findAll(): Promise<ReviewDocument[]> {
+  async findAll(): Promise<any[]> {
     return this.reviewModel
       .find()
-      .populate('orderId', 'totalAmount createdAt')
+      .populate('orderId', 'totalAmount createdAt customerName items')
       .populate('tableId', 'tableName')
+      .populate('ratings.foodId', 'name image price')
       .sort({ createdAt: -1 })
+      .lean()
       .exec();
   }
 
   /** Reviews theo món ăn */
   async findByFood(foodId: string): Promise<any[]> {
+    let foodObjId: Types.ObjectId | null = null;
+    try {
+      foodObjId = new Types.ObjectId(foodId);
+    } catch (e) {}
+
+    const filter = foodObjId
+      ? { $or: [{ 'ratings.foodId': foodId }, { 'ratings.foodId': foodObjId }] }
+      : { 'ratings.foodId': foodId };
+
     const reviews = await this.reviewModel
-      .find({ 'ratings.foodId': foodId })
+      .find(filter)
       .populate('tableId', 'tableName')
       .sort({ createdAt: -1 })
       .lean()
@@ -51,16 +92,38 @@ export class ReviewsService {
 
     return reviews.map((r) => ({
       ...r,
-      foodRating: r.ratings.find((rt: any) => rt.foodId?.toString() === foodId),
+      foodRating: r.ratings.find(
+        (rt: any) => rt.foodId?.toString() === foodId
+      ),
     }));
   }
 
   /** Tóm tắt điểm đánh giá theo món */
   async getRatingSummary(foodId: string): Promise<{ avgStar: number; totalReviews: number }> {
+    let foodObjId: Types.ObjectId | null = null;
+    try {
+      foodObjId = new Types.ObjectId(foodId);
+    } catch (e) {}
+
+    const matchCondition = foodObjId
+      ? {
+          $expr: {
+            $or: [
+              { $eq: ['$ratings.foodId', foodObjId] },
+              { $eq: [{ $toString: '$ratings.foodId' }, foodId] },
+            ],
+          },
+        }
+      : {
+          $expr: {
+            $eq: [{ $toString: '$ratings.foodId' }, foodId],
+          },
+        };
+
     const result = await this.reviewModel.aggregate([
-      { $match: { 'ratings.foodId': { $exists: true } } },
+      { $match: { 'ratings.0': { $exists: true } } },
       { $unwind: '$ratings' },
-      { $match: { 'ratings.foodId': { $toString: foodId } } },
+      { $match: matchCondition },
       {
         $group: {
           _id: null,

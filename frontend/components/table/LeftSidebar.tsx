@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { ThemeToggleSwitch } from './ThemeToggleSwitch';
+import { LanguageToggleSwitch } from './LanguageToggleSwitch';
+import { BrandLogo } from './BrandLogo';
 
 interface Table {
   _id: string;
@@ -60,22 +62,8 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
       className="hidden md:flex flex-col h-full py-5 px-4 w-64 xl:w-72 flex-shrink-0 bg-[#FFFFFF] dark:bg-[#090D16] text-[#000000] dark:text-[#FFFFFF] border-r border-[#E2E8F0] dark:border-[#222732] overflow-y-auto scrollbar-none transition-colors"
     >
       {/* Brand Header */}
-      <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#E2E8F0] dark:border-[#222732] shadow-sm bg-[#FFFFFF] dark:bg-[#181B21] flex items-center justify-center flex-shrink-0">
-          <img
-            alt="Kohi Coffee Logo"
-            className="w-full h-full object-cover"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1gruMY9y7itKwQuGt_2QDbG7uIA1qTve1u9WDH-CKJQLM7F9Qw9vRxSl4_HMI9_XsWuqEjaaVZSAaPCY7-_dWlbtAlWBQYk5BLoONpBRYW0pLgjKwf23nU1P6ZZM8OUvEe5PSiGxng65S3Hx4-XKmnbmvKq_do2HYm5AMqKiZaGelzC3KCfS-B2K26AjAtskxfDHcLLp7PUjGLV50mFJkLVGR-yoiMk0qUd-ikHaWqjyOlCCKQC7Xmw"
-          />
-        </div>
-        <div>
-          <h1 className="text-lg font-[700] text-[#000000] dark:text-[#FFFFFF] tracking-tight leading-none font-heading">
-            Kohi
-          </h1>
-          <p className="text-[9.5px] font-[500] text-[#3AA6FF] uppercase tracking-[0.05em] mt-1 font-sans">
-            COFFEE & PASTRY
-          </p>
-        </div>
+      <div className="mb-5">
+        <BrandLogo />
       </div>
 
       {/* Table Location Badge Box */}
@@ -169,38 +157,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
           </div>
 
           {/* Language Switcher Pills */}
-          <div className="bg-[#FFFFFF] dark:bg-[#090D16] border border-[#E2E8F0] dark:border-[#222732] rounded-xl p-1 flex items-center gap-1 shadow-xs">
-            <button
-              onClick={() => setLang('vi')}
-              className={`text-[10.5px] font-[700] px-2.5 py-1 rounded-lg transition-all font-sans ${
-                lang === 'vi'
-                  ? 'bg-[#3AA6FF] text-[#FFFFFF] shadow-sm'
-                  : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#000000] dark:hover:text-[#FFFFFF]'
-              }`}
-            >
-              VI
-            </button>
-            <button
-              onClick={() => setLang('en')}
-              className={`text-[10.5px] font-[700] px-2.5 py-1 rounded-lg transition-all font-sans ${
-                lang === 'en'
-                  ? 'bg-[#3AA6FF] text-[#FFFFFF] shadow-sm'
-                  : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#000000] dark:hover:text-[#FFFFFF]'
-              }`}
-            >
-              EN
-            </button>
-            <button
-              onClick={() => setLang('zh')}
-              className={`text-[10.5px] font-[700] px-2.5 py-1 rounded-lg transition-all font-sans ${
-                lang === 'zh'
-                  ? 'bg-[#3AA6FF] text-[#FFFFFF] shadow-sm'
-                  : 'text-[#64748B] dark:text-[#94A3B8] hover:text-[#000000] dark:hover:text-[#FFFFFF]'
-              }`}
-            >
-              ZH
-            </button>
-          </div>
+          <LanguageToggleSwitch lang={lang} setLang={setLang} />
         </div>
 
         {/* Button: Yêu cầu đổi bàn */}

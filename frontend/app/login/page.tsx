@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import { ThemeToggleSwitch } from '@/components/table/ThemeToggleSwitch';
+import { LanguageToggleSwitch, Lang } from '@/components/table/LanguageToggleSwitch';
+import { BrandLogo } from '@/components/table/BrandLogo';
 import CloudLoader from '../components/CloudLoader';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
@@ -15,7 +18,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [lang, setLang] = useState<'vi' | 'en'>('vi');
+  const [lang, setLang] = useState<Lang>('vi');
 
   useEffect(() => {
     setMounted(true);
@@ -88,67 +91,42 @@ export default function LoginPage() {
       submitBtn: 'Sign In',
       submittingBtn: 'Signing in...',
     },
+    zh: {
+      title: '系统登录',
+      subtitle: 'Kohi Coffee 管理员与员工入口',
+      emailLabel: '登录邮箱',
+      emailPlaceholder: '请输入您的邮箱',
+      passwordLabel: '密码',
+      passwordPlaceholder: '请输入您的密码',
+      rememberMe: '记住登录',
+      forgotPassword: '忘记密码？',
+      submitBtn: '登录',
+      submittingBtn: '正在登录...',
+    },
   };
 
-  const currText = t[lang];
+  const currText = (t as any)[lang] || t.vi;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--bg-primary)] p-6 transition-colors duration-300 font-sans text-[var(--text-primary)]">
       {/* Header controls: Language & Theme toggles */}
       <div className="absolute top-6 right-6 flex items-center gap-3">
-        {/* Language Switcher */}
-        <div className="flex bg-[var(--bg-card)] border border-[var(--border-color)] rounded-full p-1 shadow-sm">
-          <button
-            type="button"
-            onClick={() => setLang('vi')}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-              lang === 'vi'
-                ? 'bg-[var(--brand-primary)] text-white shadow-sm'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-          >
-            🇻🇳 VI
-          </button>
-          <button
-            type="button"
-            onClick={() => setLang('en')}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-              lang === 'en'
-                ? 'bg-[var(--brand-primary)] text-white shadow-sm'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-          >
-            🇬🇧 EN
-          </button>
-        </div>
-
-        {/* Theme Toggle */}
-        <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="p-3 rounded-full bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] shadow-sm hover:border-[var(--brand-primary)] transition-all"
-          aria-label="Toggle Dark Mode"
-        >
-          {theme === 'dark' ? (
-            <svg className="w-5 h-5 text-[var(--brand-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-          ) : (
-            <svg className="w-5 h-5 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-            </svg>
-          )}
-        </button>
+        <LanguageToggleSwitch lang={lang as Lang} setLang={(l) => setLang(l as any)} />
+        <ThemeToggleSwitch isDark={theme === 'dark'} setTheme={setTheme} />
       </div>
 
       {/* Main Login Card */}
       <main className="w-full max-w-md bg-[var(--bg-card)] rounded-3xl p-8 sm:p-10 shadow-2xl border border-[var(--border-color)] transition-colors duration-300">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-black tracking-tight text-[var(--text-primary)]">
-            {currText.title}
-          </h1>
-          <p className="text-xs text-[var(--text-secondary)] mt-2">
-            {currText.subtitle}
-          </p>
+        <div className="text-center mb-8 space-y-3 flex flex-col items-center">
+          <BrandLogo onClick={() => router.push('/')} />
+          <div>
+            <h1 className="text-2xl font-black tracking-tight text-[var(--text-primary)]">
+              {currText.title}
+            </h1>
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
+              {currText.subtitle}
+            </p>
+          </div>
         </div>
 
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
@@ -211,7 +189,8 @@ export default function LoginPage() {
           {/* Error Banner */}
           {error && (
             <p className="text-red-500 text-xs font-semibold flex items-center gap-1.5 bg-red-500/10 p-3 rounded-xl border border-red-500/20">
-              <span>⚠️</span> {error}
+              <span className="material-symbols-outlined text-base">warning</span>
+              <span>{error}</span>
             </p>
           )}
 

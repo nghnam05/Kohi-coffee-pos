@@ -14,6 +14,7 @@ import { AnalyticsModule } from './analytics/analytics.module.js';
 import { AttendanceModule } from './attendance/attendance.module.js';
 import { SalariesModule } from './salaries/salaries.module.js';
 import { AiChatModule } from './ai-chat/ai-chat.module.js';
+import { ReservationsModule } from './reservations/reservations.module.js';
 
 @Module({
   controllers: [AppController],
@@ -38,6 +39,7 @@ import { AiChatModule } from './ai-chat/ai-chat.module.js';
     AttendanceModule,
     SalariesModule,
     AiChatModule,
+    ReservationsModule,
   ],
 })
 export class AppModule {}

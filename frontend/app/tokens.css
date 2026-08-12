@@ -13,33 +13,40 @@
 /* ── Light Mode (default) ───────────────────────────────── */
 :root {
   /* Backgrounds */
-  --bg-primary:        #F4F6F8;
+  --bg-primary:        #FFFFFF;
   --bg-card:           #FFFFFF;
-  --bg-card-inner:     #F1F5F9;
+  --bg-card-inner:     #F8FAFC;
 
   /* Borders */
   --border-color:      #E2E8F0;
   --border-strong:     #CBD5E1;
+  --border-focus:      #93C5FD;
 
   /* Text */
-  --text-primary:      #0F172A;
-  --text-secondary:    #64748B;
-  --text-tertiary:     #94A3B8;
+  --text-primary:      #000000;
+  --text-secondary:    #1F2937;
+  --text-tertiary:     #6B7280;
 
   /* Brand */
-  --brand-primary:     #3AA6FF;
-  --brand-primary-hover: #2B96EF;
-  --brand-primary-muted: rgba(58, 166, 255, 0.12);
+  --brand-primary:       #2563EB;
+  --brand-primary-hover: #1D4ED8;
+  --brand-primary-fg:    #FFFFFF;
+  --brand-primary-muted: rgba(37, 99, 235, 0.12);
 
-  /* Price — bright brand blue in light, white in dark */
-  --price-color:       #0EA5E9;
+  /* Price — Primary Brand Blue in light, Primary Blue in dark */
+  --price-color:       #2563EB;
 
-  /* Active table badge */
-  --table-badge-bg:    #E8963B;
-  --table-badge-text:  #FFFFFF;
+  /* Accent */
+  --accent:            #7C3AED;
 
-  /* Accent (global tint) */
-  --accent:            #3AA6FF;
+  /* Status / Semantic */
+  --color-success:     #16A34A;
+  --color-success-bg:  #DCFCE7;
+  --color-warning:     #D97706;
+  --color-warning-bg:  #FEF3C7;
+  --color-danger:      #DC2626;
+  --color-danger-bg:   #FEE2E2;
+  --color-info:        #0891B2;
 
   /* CTA button disabled state */
   --btn-disabled-bg:   #E2E8F0;
@@ -48,12 +55,7 @@
   /* Payment buttons in light */
   --payment-inactive-bg:     #FFFFFF;
   --payment-inactive-border: #CBD5E1;
-  --payment-inactive-text:   #6B7280;
-
-  /* Upsell card */
-  --upsell-card-bg:    #FFFFFF;
-  --upsell-card-border: #E5E7EB;
-  --upsell-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --payment-inactive-text:   #475569;
 
   /* Radii */
   --radius-sm: 10px;
@@ -63,7 +65,7 @@
 
   /* Shadows */
   --shadow-card:       0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-card-hover: 0 6px 16px rgba(58, 166, 255, 0.12);
+  --shadow-card-hover: 0 6px 16px rgba(37, 99, 235, 0.12);
   --shadow-sidebar:    1px 0 0 #E2E8F0;
 }
 
@@ -71,52 +73,59 @@
 [data-theme="dark"],
 .dark {
   /* Backgrounds */
-  --bg-primary:        #090D16;
-  --bg-card:           #181B21;
-  --bg-card-inner:     #11141A;
+  --bg-primary:        #0B1120;
+  --bg-card:           #111827;
+  --bg-card-inner:     #1A2232;
 
   /* Borders */
-  --border-color:      #222732;
-  --border-strong:     #2E3340;
+  --border-color:      #293246;
+  --border-strong:     #374151;
+  --border-focus:      #3B82F6;
 
   /* Text */
   --text-primary:      #F1F5F9;
-  --text-secondary:    #9CA3AF;
-  --text-tertiary:     #64748B;
+  --text-secondary:    #94A3B8;
+  --text-tertiary:     #4B5563;
 
-  /* Brand — slightly brighter for dark contrast (WCAG AA ≥ 4.5:1 on #181B21) */
-  --brand-primary:     #5B9EFF;
-  --brand-primary-hover: #4F94FF;
-  --brand-primary-muted: rgba(91, 158, 255, 0.15);
+  /* Brand */
+  --brand-primary:       #3B82F6;
+  --brand-primary-hover: #60A5FA;
+  --brand-primary-fg:    #0B1120;
+  --brand-primary-muted: rgba(59, 130, 246, 0.15);
 
-  /* Price — white in dark mode for max contrast */
-  --price-color:       #FFFFFF;
-
-  /* Active table badge */
-  --table-badge-bg:    #E8963B;
-  --table-badge-text:  #FFFFFF;
+  /* Price — Blue in dark mode */
+  --price-color:       #60A5FA;
 
   /* Accent */
-  --accent:            #5B9EFF;
+  --accent:            #8B5CF6;
+
+  /* Status / Semantic */
+  --color-success:     #22C55E;
+  --color-success-bg:  #052E16;
+  --color-warning:     #F59E0B;
+  --color-warning-bg:  #451A03;
+  --color-danger:      #EF4444;
+  --color-danger-bg:   #450A0A;
+  --color-info:        #22D3EE;
 
   /* CTA button disabled state */
-  --btn-disabled-bg:   #1E2330;
-  --btn-disabled-text: #4A5568;
+  --btn-disabled-bg:   #1F2937;
+  --btn-disabled-text: #4B5563;
 
   /* Payment buttons in dark */
-  --payment-inactive-bg:     #181B21;
-  --payment-inactive-border: #2E3340;
-  --payment-inactive-text:   #9CA3AF;
+  --payment-inactive-bg:     #111827;
+  --payment-inactive-border: #293246;
+  --payment-inactive-text:   #94A3B8;
 
   /* Upsell card */
-  --upsell-card-bg:    #11141A;
-  --upsell-card-border: #222732;
+  --upsell-card-bg:    #111827;
+  --upsell-card-border: #293246;
   --upsell-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 
   /* Shadows */
   --shadow-card:       0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-card-hover: 0 6px 20px rgba(91, 158, 255, 0.2);
-  --shadow-sidebar:    1px 0 0 #222732;
+  --shadow-card-hover: 0 6px 20px rgba(59, 130, 246, 0.2);
+  --shadow-sidebar:    1px 0 0 #293246;
 }
 
 /* ── Base element styles ───────────────────────────────── */

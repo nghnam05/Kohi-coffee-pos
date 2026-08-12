@@ -3,47 +3,110 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { playScanBeep, playWelcomeChime } from './utils/sound';
+import { ThemeToggleSwitch } from '@/components/table/ThemeToggleSwitch';
+import { LanguageToggleSwitch, Lang } from '@/components/table/LanguageToggleSwitch';
+import { BrandLogo } from '@/components/table/BrandLogo';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 const translations = {
   vi: {
     welcome: 'Kohi Coffee & Pastry',
-    subtitle: 'Hệ thống gọi món & thức uống QR thông minh',
-    scanCamera: 'Quét mã QR bằng Camera',
-    scanUpload: 'Tải ảnh mã QR lên để quét',
-    or: 'Hoặc',
+    heroTitle: 'Đặt Bàn & Giữ Chỗ Trực Tuyến',
+    heroSubtitle: 'Thưởng thức cà phê rang xay thủ công & bánh ngọt tươi mới. Giữ chỗ trước để có vị trí đẹp nhất!',
+    btnBookTab: 'Đặt Bàn Trực Tuyến',
+    btnQrTab: 'Vào Bàn Qua Mã QR',
+    btnLogin: 'Đăng nhập Nhân viên',
+    selectTableLabel: '1. Chọn bàn ăn phù hợp',
+    tableStatusEmpty: 'Bàn trống',
+    tableStatusServing: 'Đang có khách',
+    tableStatusReserved: 'Đã giữ chỗ',
+    bookingFormTitle: '2. Nhập thông tin đặt bàn',
+    customerNameLabel: 'Họ và tên khách hàng',
+    customerNamePlaceholder: 'Ví dụ: Nguyễn Văn An',
+    customerPhoneLabel: 'Số điện thoại liên hệ',
+    customerPhonePlaceholder: 'Ví dụ: 0901234567',
+    reservationTimeLabel: 'Thời gian nhận bàn',
+    guestCountLabel: 'Số lượng khách hàng',
+    selectedTableLabel: 'Bàn ăn được chọn',
+    noTableSelected: 'Vui lòng bấm chọn 1 bàn ở sơ đồ bên trái',
+    noteLabel: 'Ghi chú thêm',
+    notePlaceholder: 'Ví dụ: Cần bàn gần cửa sổ, ghế trẻ em, không gian yên tĩnh...',
+    btnSubmitBooking: 'XÁC NHẬN ĐẶT BÀN NGAY',
+    bookingSuccessTitle: 'Đặt bàn thành công!',
+    bookingSuccessSubtitle: 'Đơn đặt bàn của bạn đã được chuyển đến hệ thống Kohi Coffee.',
     manualLabel: 'HOẶC NHẬP SỐ BÀN THỦ CÔNG',
     manualPlaceholder: 'Ví dụ: Bàn 1, Bàn 2...',
-    enterButton: 'VÀO BÀN',
-    cameraStatus: 'Đang quét... Hãy căn mã QR vào chính giữa khung ngắm',
-    cancelButton: 'Hủy & nhập thủ công',
-    helpText: 'Hãy cho phép quyền truy cập máy ảnh để hệ thống tự động nhận dạng mã QR trên bàn.',
+    enterButton: 'VÀO BÀN NGAY',
+    helpText: 'Cho phép truy cập camera để tự động quét mã QR trên bàn.',
     errEmpty: 'Vui lòng nhập số bàn hoặc quét mã QR!',
-    errInvalid: 'Mã QR quét được không chứa ID bàn hợp lệ!',
-    errDecode: 'Không thể nhận diện mã QR từ tệp tin này. Hãy thử tải lên ảnh rõ nét hơn!',
-    errCamera: 'Không thể khởi động camera. Vui lòng kiểm tra quyền truy cập camera trong cài đặt trình duyệt hoặc chuyển sang tab HTTPS bảo mật.',
     errNotFound: 'Không tìm thấy bàn nào ứng với số hoặc tên: "{input}"',
-    errConnect: 'Lỗi kết nối đến máy chủ khi xác thực bàn.',
   },
   en: {
     welcome: 'Kohi Coffee & Pastry',
-    subtitle: 'Smart QR Coffee & Pastry Ordering System',
-    scanCamera: 'Scan Table QR via Camera',
-    scanUpload: 'Upload QR Image to Scan',
-    or: 'Or',
+    heroTitle: 'Online Table Reservation & Booking',
+    heroSubtitle: 'Enjoy handcrafted specialty coffee & fresh pastries. Book in advance to secure the best seats!',
+    btnBookTab: 'Reserve a Table',
+    btnQrTab: 'Enter via Table QR',
+    btnLogin: 'Staff Login',
+    selectTableLabel: '1. Select Your Table',
+    tableStatusEmpty: 'Available',
+    tableStatusServing: 'Occupied',
+    tableStatusReserved: 'Reserved',
+    bookingFormTitle: '2. Reservation Details',
+    customerNameLabel: 'Full Name',
+    customerNamePlaceholder: 'E.g. John Doe',
+    customerPhoneLabel: 'Phone Number',
+    customerPhonePlaceholder: 'E.g. +84 901 234 567',
+    reservationTimeLabel: 'Reservation Date & Time',
+    guestCountLabel: 'Number of Guests',
+    selectedTableLabel: 'Selected Table',
+    noTableSelected: 'Please click on a table from the left map',
+    noteLabel: 'Special Requests / Notes',
+    notePlaceholder: 'E.g. Window seat, baby chair, quiet area...',
+    btnSubmitBooking: 'CONFIRM RESERVATION NOW',
+    bookingSuccessTitle: 'Booking Successful!',
+    bookingSuccessSubtitle: 'Your table reservation has been recorded by Kohi Coffee.',
     manualLabel: 'OR ENTER TABLE NUMBER MANUALLY',
     manualPlaceholder: 'E.g. Table 1, Table 2...',
-    enterButton: 'ENTER TABLE',
-    cameraStatus: 'Scanning... Center the QR code in the viewfinder',
-    cancelButton: 'Cancel & Enter Manually',
-    helpText: 'Please allow camera access so the system can automatically read the QR code on your table.',
+    enterButton: 'ENTER TABLE NOW',
+    helpText: 'Allow camera access to automatically scan table QR codes.',
     errEmpty: 'Please enter a table number or scan a QR code!',
-    errInvalid: 'The scanned QR code does not contain a valid Table ID!',
-    errDecode: 'Could not read QR code from this image. Please try a clearer picture!',
-    errCamera: 'Cannot start camera. Please check camera permissions in browser settings or switch to secure HTTPS.',
     errNotFound: 'No table found matching: "{input}"',
-    errConnect: 'Connection error while validating the table.',
+  },
+  zh: {
+    welcome: 'Kohi Coffee & Pastry',
+    heroTitle: '在线预订桌位与留座',
+    heroSubtitle: '享用手工精制咖啡与新鲜糕点。提前预订以获得最佳位置！',
+    btnBookTab: '在线预订桌位',
+    btnQrTab: '扫码入座',
+    btnLogin: '员工登录',
+    selectTableLabel: '1. 选择合适桌位',
+    tableStatusEmpty: '空桌',
+    tableStatusServing: '使用中',
+    tableStatusReserved: '已预订',
+    bookingFormTitle: '2. 填写预订信息',
+    customerNameLabel: '顾客姓名',
+    customerNamePlaceholder: '例如：张三',
+    customerPhoneLabel: '联系电话',
+    customerPhonePlaceholder: '例如：13800138000',
+    reservationTimeLabel: '入座时间',
+    guestCountLabel: '顾客人数',
+    selectedTableLabel: '已选桌位',
+    noTableSelected: '请在左侧地图中点击选择桌位',
+    noteLabel: '特殊要求 / 备注',
+    notePlaceholder: '例如：靠窗座位、婴儿椅、安静区域...',
+    btnSubmitBooking: '立即确认预订',
+    bookingSuccessTitle: '预订成功！',
+    bookingSuccessSubtitle: '您的预订信息已成功提交至 Kohi Coffee。',
+    manualLabel: '或手动输入桌号',
+    manualPlaceholder: '例如：1号桌，2号桌...',
+    enterButton: '立即入座',
+    helpText: '允许使用摄像头以自动扫描桌上的二维码。',
+    errEmpty: '请输入桌号或扫描二维码！',
+    errNotFound: '未找到匹配桌号："{input}"',
   }
 };
 
@@ -51,544 +114,741 @@ export default function Home() {
   const router = useRouter();
   const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [tableId, setTableId] = useState('');
+  const [lang, setLang] = useState<Lang>('vi');
+  const [activeTab, setActiveTab] = useState<'reserve' | 'lookup' | 'qr'>('reserve');
+
+  // Tables list state
+  const [tables, setTables] = useState<any[]>([]);
+  const [selectedTable, setSelectedTable] = useState<any | null>(null);
+
+  // Reservation form state
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [guestCount, setGuestCount] = useState(2);
+  const [reservationTime, setReservationTime] = useState('');
+  const [note, setNote] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState<any | null>(null);
+
+  // Lookup / Cancel states
+  const [lookupPhone, setLookupPhone] = useState('');
+  const [lookupResults, setLookupResults] = useState<any[]>([]);
+  const [isSearchingLookup, setIsSearchingLookup] = useState(false);
+  const [hasSearchedLookup, setHasSearchedLookup] = useState(false);
+
+  // QR Scanning & Manual Enter state
+  const [manualInput, setManualInput] = useState('');
   const [error, setError] = useState('');
   const [isScanning, setIsScanning] = useState(false);
-  const [lang, setLang] = useState<'vi' | 'en'>('vi');
-  const [welcomeModalOpen, setWelcomeModalOpen] = useState(false);
-  const [welcomeTable, setWelcomeTable] = useState<{ _id: string; tableName: string; status: string } | null>(null);
   const html5QrcodeRef = useRef<Html5Qrcode | null>(null);
 
-  const t = translations[lang];
+  const t = (translations as any)[lang] || translations.vi;
+  const isDark = resolvedTheme === 'dark';
 
   useEffect(() => {
     setMounted(true);
-    const savedLang = localStorage.getItem('pho-beyond-lang') as 'vi' | 'en';
-    if (savedLang && (savedLang === 'vi' || savedLang === 'en')) {
+    const savedLang = localStorage.getItem('pho-beyond-lang') as Lang;
+    if (savedLang && (savedLang === 'vi' || savedLang === 'en' || savedLang === 'zh')) {
       setLang(savedLang);
     }
+    fetchTables();
+
+    // Default datetime input to 2 hours from now
+    const now = new Date();
+    now.setHours(now.getHours() + 2);
+    const pad = (n: number) => (n < 10 ? '0' + n : n);
+    setReservationTime(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`);
   }, []);
 
-  // Cleanup scanner on unmount
-  useEffect(() => {
-    return () => {
-      if (html5QrcodeRef.current) {
-        if (html5QrcodeRef.current.isScanning) {
-          html5QrcodeRef.current.stop().catch(err => console.error("Error stopping scanner", err));
+  const fetchTables = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/tables`);
+      if (res.ok) {
+        const data = await res.json();
+        setTables(data);
+        if (data.length > 0) {
+          const firstEmpty = data.find((tbl: any) => tbl.status === 'empty') || data[0];
+          setSelectedTable(firstEmpty);
         }
       }
-    };
-  }, []);
+    } catch (err) {
+      console.error('Lỗi tải danh sách bàn:', err);
+    }
+  };
 
   const changeLanguage = (newLang: 'vi' | 'en') => {
     setLang(newLang);
     localStorage.setItem('pho-beyond-lang', newLang);
   };
 
-  const handleStartOrder = async (e?: React.FormEvent, customInput?: string) => {
-    if (e) e.preventDefault();
-    const input = (customInput || tableId).trim();
+  // Lookup reservations by phone number
+  const handleLookupSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const phone = lookupPhone.trim();
+    if (!phone) {
+      setError('Vui lòng nhập số điện thoại để tra cứu!');
+      return;
+    }
+    setIsSearchingLookup(true);
+    setError('');
+
+    try {
+      const res = await fetch(`${API_BASE}/reservations/lookup?phone=${encodeURIComponent(phone)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setLookupResults(data);
+        setHasSearchedLookup(true);
+      } else {
+        throw new Error('Không thể tra cứu đơn đặt bàn.');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Lỗi khi tra cứu.');
+    } finally {
+      setIsSearchingLookup(false);
+    }
+  };
+
+  // Customer cancel reservation
+  const handleCustomerCancelReservation = async (id: string) => {
+    if (!confirm('Bạn có chắc chắn muốn hủy đơn đặt bàn này không?')) return;
+    try {
+      const res = await fetch(`${API_BASE}/reservations/${id}/customer-cancel`, {
+        method: 'PATCH',
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Không thể hủy đơn đặt bàn.');
+      }
+      playWelcomeChime();
+      alert('Đã hủy đơn đặt bàn thành công!');
+      handleLookupSubmit({ preventDefault: () => {} } as any);
+      fetchTables();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Lỗi khi hủy đơn đặt bàn.');
+    }
+  };
+
+  // Submit Table Reservation
+  const handleBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTable) {
+      setError(t.noTableSelected);
+      return;
+    }
+    if (selectedTable.status === 'reserved' || selectedTable.status === 'serving') {
+      setError(`Bàn ${selectedTable.tableName} đã có khách hoặc được giữ chỗ trước. Vui lòng chọn bàn khác.`);
+      return;
+    }
+    if (!customerName.trim() || !customerPhone.trim()) {
+      setError(t.errEmpty);
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      const payload = {
+        tableId: selectedTable._id,
+        customerName: customerName.trim(),
+        customerPhone: customerPhone.trim(),
+        guestCount: Number(guestCount),
+        reservationTime: new Date(reservationTime).toISOString(),
+        note: note.trim(),
+      };
+
+      const res = await fetch(`${API_BASE}/reservations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        const msg = Array.isArray(errData.message) ? errData.message.join(', ') : errData.message;
+        throw new Error(msg || 'Không thể gửi đơn đặt bàn.');
+      }
+
+      const result = await res.json();
+      playWelcomeChime();
+      setBookingSuccess(result);
+
+      // ⚡ Reset toàn bộ các giá trị trong form về trạng thái ban đầu
+      setCustomerName('');
+      setCustomerPhone('');
+      setGuestCount(2);
+      setNote('');
+      const now = new Date();
+      now.setHours(now.getHours() + 2);
+      const pad = (n: number) => (n < 10 ? '0' + n : n);
+      setReservationTime(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`);
+
+      fetchTables();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi đặt bàn.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Manual Enter or QR Jump
+  const handleManualEnter = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const input = manualInput.trim();
     if (!input) {
       setError(t.errEmpty);
       return;
     }
 
-    // 1. If it's already a 24-character hex string (ObjectId)
     const isObjectId = /^[0-9a-fA-F]{24}$/.test(input);
     if (isObjectId) {
-      try {
-        setError('');
-        const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
-        const res = await fetch(`${API_BASE}/tables`);
-        if (!res.ok) throw new Error(t.errConnect);
-        const tablesList = await res.json();
-        
-        const found = tablesList.find((tb: any) => tb._id === input);
-        if (found) {
-          setWelcomeTable({ _id: found._id, tableName: found.tableName, status: found.status || 'empty' });
-          setWelcomeModalOpen(true);
-          playWelcomeChime();
-        } else {
-          router.push(`/table/${input}`);
-        }
-      } catch (err) {
-        router.push(`/table/${input}`);
-      }
+      router.push(`/table/${input}`);
       return;
     }
 
-    // 2. Otherwise, treat it as a table number (e.g., "1", "2") and resolve its ObjectID
-    try {
-      setError('');
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
-      const res = await fetch(`${API_BASE}/tables`);
-      if (!res.ok) throw new Error(t.errConnect);
-      
-      const tablesList = await res.json();
-      
-      const found = tablesList.find((tb: any) => {
-        const numOnly = tb.tableName.replace(/\D/g, ''); // "Bàn số 1" -> "1"
-        return numOnly === input || tb.tableName.toLowerCase() === input.toLowerCase();
-      });
+    const matchTable = tables.find(
+      (tbl) =>
+        tbl.tableName?.toLowerCase() === input.toLowerCase() ||
+        String(tbl.tableName).replace(/\D/g, '') === input.replace(/\D/g, '')
+    );
 
-      if (found) {
-        setWelcomeTable({ _id: found._id, tableName: found.tableName, status: found.status || 'empty' });
-        setWelcomeModalOpen(true);
-        playWelcomeChime();
-      } else {
-        setError(t.errNotFound.replace('{input}', input));
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t.errConnect);
-    }
-  };
-
-  const startScanner = async () => {
-    setError('');
-    setIsScanning(true);
-    
-    setTimeout(async () => {
-      try {
-        if (html5QrcodeRef.current) {
-          try {
-            if (html5QrcodeRef.current.isScanning) {
-              await html5QrcodeRef.current.stop();
-            }
-          } catch (e) {
-            console.log("Previous scanner stop ignored", e);
-          }
-          html5QrcodeRef.current = null;
-        }
-
-        const container = document.getElementById("qr-reader");
-        if (container) {
-          container.innerHTML = "";
-        }
-
-        const scanner = new Html5Qrcode("qr-reader");
-        html5QrcodeRef.current = scanner;
-
-        await scanner.start(
-          { facingMode: "environment" },
-          {
-            fps: 20,
-            qrbox: (width: number, height: number) => {
-              const minDimension = Math.min(width, height);
-              const qrboxSize = Math.floor(minDimension * 0.8);
-              return { width: qrboxSize, height: qrboxSize };
-            },
-            aspectRatio: 1.0,
-            formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ],
-            experimentalFeatures: { useBarCodeDetectorIfSupported: true }
-          } as any,
-          (decodedText) => {
-            handleScanSuccess(decodedText, scanner);
-          },
-          () => {}
-        );
-      } catch (err) {
-        console.error("Camera access failed", err);
-        setError(t.errCamera);
-        setIsScanning(false);
-      }
-    }, 300);
-  };
-
-  const stopScanner = async () => {
-    if (html5QrcodeRef.current) {
-      try {
-        if (html5QrcodeRef.current.isScanning) {
-          await html5QrcodeRef.current.stop();
-        }
-      } catch (err) {
-        console.error("Failed to stop scanner", err);
-      }
-    }
-    setIsScanning(false);
-  };
-
-  const handleScanSuccess = async (decodedText: string, scannerInstance: Html5Qrcode) => {
-    try {
-      if (scannerInstance.isScanning) {
-        await scannerInstance.stop();
-      }
-    } catch (err) {
-      console.error(err);
-    }
-    setIsScanning(false);
-
-    let parsedId = decodedText.trim();
-    if (parsedId.includes('/table/')) {
-      const parts = parsedId.split('/table/');
-      parsedId = parts[parsedId.length - 1].split('?')[0].split('/')[0];
-    }
-
-    if (parsedId) {
+    if (matchTable) {
       playScanBeep();
-      handleStartOrder(undefined, parsedId);
+      router.push(`/table/${matchTable._id}`);
     } else {
-      setError(t.errInvalid);
-    }
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setError('');
-    const tempDiv = document.createElement('div');
-    tempDiv.id = 'qr-reader-temp';
-    tempDiv.style.display = 'none';
-    document.body.appendChild(tempDiv);
-
-    try {
-      const html5QrCode = new Html5Qrcode("qr-reader-temp");
-      const decodedText = await html5QrCode.scanFile(file, true);
-      document.body.removeChild(tempDiv);
-
-      let parsedId = decodedText.trim();
-      if (parsedId.includes('/table/')) {
-        const parts = parsedId.split('/table/');
-        parsedId = parts[parsedId.length - 1].split('?')[0].split('/')[0];
-      }
-
-      if (parsedId) {
-        playScanBeep();
-        handleStartOrder(undefined, parsedId);
-      } else {
-        setError(t.errInvalid);
-      }
-    } catch (err) {
-      console.error(err);
-      setError(t.errDecode);
-      try { document.body.removeChild(tempDiv); } catch (e) {}
+      setError(t.errNotFound.replace('{input}', input));
     }
   };
 
   if (!mounted) return null;
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-between relative overflow-x-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans antialiased selection:bg-[var(--brand-primary)] selection:text-white transition-colors duration-300">
-      
-      {/* ── Top Navigation Bar ────────────────────────────────────────────── */}
-      <header className="w-full max-w-7xl mx-auto flex justify-end items-center px-4 sm:px-8 md:px-12 py-4 sm:py-6 z-20 gap-2.5 sm:gap-3">
-        {/* Language Segmented Toggle */}
-        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-1 rounded-[var(--radius-full)] backdrop-blur-md flex items-center shadow-[var(--shadow-card)] transition-all">
-          <button
-            onClick={() => changeLanguage('vi')}
-            className={`px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-[var(--radius-full)] text-[10px] sm:text-xs font-bold tracking-wider transition-all duration-200 ${
-              lang === 'vi' 
-                ? 'bg-[var(--brand-primary)] text-white shadow-sm' 
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-          >
-            VI
-          </button>
-          <button
-            onClick={() => changeLanguage('en')}
-            className={`px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-[var(--radius-full)] text-[10px] sm:text-xs font-bold tracking-wider transition-all duration-200 ${
-              lang === 'en' 
-                ? 'bg-[var(--brand-primary)] text-white shadow-sm' 
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-          >
-            EN
-          </button>
-        </div>
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans flex flex-col justify-between transition-colors duration-300">
+      {/* ── TOP APP HEADER BAR ────────────────────────────────────────────── */}
+      <header className="w-full border-b border-[var(--border-color)] bg-[var(--bg-card)] sticky top-0 z-40 px-4 py-3 sm:px-8 shadow-xs">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
+          <BrandLogo onClick={() => router.push('/')} />
 
-        {/* Theme Switcher Button */}
-        <button
-          onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-          className="w-9 h-9 sm:w-10 sm:h-10 rounded-[var(--radius-full)] bg-[var(--bg-card)] hover:bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center justify-center backdrop-blur-md text-[var(--brand-primary)] transition-all shadow-[var(--shadow-card)] active:scale-95"
-          aria-label="Toggle Theme"
-        >
-          {resolvedTheme === 'dark' ? (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-          ) : (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-          )}
-        </button>
+          <div className="flex items-center gap-3">
+            {/* Language Switcher Switch */}
+            <LanguageToggleSwitch
+              lang={lang as Lang}
+              setLang={(l) => {
+                setLang(l as any);
+                localStorage.setItem('pho-beyond-lang', l);
+              }}
+            />
+
+            {/* Theme Switcher */}
+            <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
+
+            {/* Staff / Admin Login Button */}
+            <button
+              onClick={() => router.push('/login')}
+              className="hidden sm:flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-[var(--bg-card-inner)] border border-[var(--border-color)] text-xs font-bold text-[var(--text-primary)] hover:border-[#2563EB] hover:text-[#2563EB] transition-all min-w-[130px] shrink-0"
+            >
+              <span className="material-symbols-outlined text-base">login</span>
+              <span>{t.btnLogin}</span>
+            </button>
+          </div>
+        </div>
       </header>
 
-      {/* ── Main Responsive Content Canvas ───────────────────────────────── */}
-      <main className="relative z-10 w-full max-w-[480px] sm:max-w-[540px] md:max-w-[580px] px-4 sm:px-6 md:px-0 flex flex-col items-center justify-center my-auto py-4 sm:py-8 md:py-12">
-        
-        {/* Central Card */}
-        <div className="w-full bg-[var(--bg-card)] backdrop-blur-xl border border-[var(--border-color)] rounded-[var(--radius-lg)] p-6 sm:p-8 md:p-10 flex flex-col items-center gap-6 sm:gap-7 relative overflow-hidden shadow-[var(--shadow-card-hover)] transition-all">
-          
-          {/* Subtle internal brand glow */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-[var(--brand-primary)]/10 rounded-full blur-[60px] pointer-events-none" />
+      {/* ── MAIN HERO SECTION ────────────────────────────────────────────── */}
+      <main className="max-w-6xl mx-auto px-4 py-6 sm:py-10 w-full flex-1 space-y-8">
+        <div className="text-center space-y-3 max-w-2xl mx-auto">
+          <span className="inline-block px-3.5 py-1 bg-[#2563EB]/10 text-[#2563EB] dark:text-[#3B82F6] rounded-full text-xs font-bold tracking-wide uppercase">
+            Smart Table Booking & QR Order
+          </span>
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-[var(--text-primary)] font-heading tracking-tight">
+            {t.heroTitle}
+          </h2>
+          <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
+            {t.heroSubtitle}
+          </p>
+        </div>
 
-          {/* Brand Header */}
-          <div className="flex flex-col items-center text-center gap-2.5 sm:gap-3 z-10">
-            {/* Vector Coffee Cup Badge */}
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-[var(--radius-full)] bg-[var(--brand-primary)]/10 border border-[var(--brand-primary)]/30 flex items-center justify-center shadow-md relative mb-0.5 sm:mb-1">
-              <svg className="w-8 h-8 sm:w-10 sm:h-10 text-[var(--brand-primary)] filter drop-shadow-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
-                <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
-                <line x1="6" y1="2" x2="6" y2="4" />
-                <line x1="10" y1="2" x2="10" y2="4" />
-                <line x1="14" y1="2" x2="14" y2="4" />
-              </svg>
-            </div>
-            
-            <h1 className="font-logo text-2xl sm:text-3xl md:text-4xl text-[var(--text-primary)] font-bold tracking-tight uppercase select-none">
-              Kohi Coffee
-            </h1>
-
-            <div className="flex items-center justify-center gap-2 my-0.5">
-              <span className="h-px w-6 sm:w-8 bg-[var(--border-color)]" />
-              <span className="text-[9.5px] sm:text-[10px] font-semibold tracking-[0.04em] text-[var(--accent)] uppercase">
-                SPECIALTY & PASTRY
-              </span>
-              <span className="h-px w-6 sm:w-8 bg-[var(--border-color)]" />
-            </div>
-
-            <p className="text-[13.5px] font-normal leading-[1.55] text-[var(--text-secondary)] mt-0.5 max-w-[320px]">
-              {t.subtitle}
-            </p>
+        {/* Tab Navigation: Đặt Bàn vs Tra Cứu vs Vào Bàn Mã QR */}
+        <div className="flex justify-center border-b border-[var(--border-color)]">
+          <div className="flex gap-4 sm:gap-8 text-xs sm:text-sm font-bold">
+            <button
+              onClick={() => {
+                setActiveTab('reserve');
+                setError('');
+              }}
+              className={`pb-3 px-2 flex items-center gap-2 border-b-2 transition-all ${
+                activeTab === 'reserve'
+                  ? 'border-[#2563EB] text-[#2563EB] dark:text-[#3B82F6]'
+                  : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              }`}
+            >
+              <span className="material-symbols-outlined text-lg">event_seat</span>
+              <span>{t.btnBookTab}</span>
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('lookup');
+                setError('');
+              }}
+              className={`pb-3 px-2 flex items-center gap-2 border-b-2 transition-all ${
+                activeTab === 'lookup'
+                  ? 'border-[#2563EB] text-[#2563EB] dark:text-[#3B82F6]'
+                  : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              }`}
+            >
+              <span className="material-symbols-outlined text-lg">search</span>
+              <span>Tra Cứu Đặt Bàn</span>
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('qr');
+                setError('');
+              }}
+              className={`pb-3 px-2 flex items-center gap-2 border-b-2 transition-all ${
+                activeTab === 'qr'
+                  ? 'border-[#2563EB] text-[#2563EB] dark:text-[#3B82F6]'
+                  : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              }`}
+            >
+              <span className="material-symbols-outlined text-lg">qr_code_scanner</span>
+              <span>{t.btnQrTab}</span>
+            </button>
           </div>
+        </div>
 
-          {/* Action Area: Camera Scanning or Action Buttons */}
-          {isScanning ? (
-            <div className="w-full space-y-4 sm:space-y-5 z-10 animate-fade-in">
-              <div className="relative overflow-hidden rounded-[var(--radius-lg)] border-2 border-[var(--brand-primary)] bg-black aspect-square shadow-[var(--shadow-card-hover)]">
-                <div id="qr-reader" className="w-full h-full object-cover overflow-hidden" />
-                
-                {/* Viewfinder Overlay */}
-                <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
-                  <div className="w-[80%] h-[80%] border-2 border-dashed border-[var(--brand-primary)]/60 rounded-[var(--radius-md)] relative">
-                    <div className="absolute -top-1 -left-1 w-5 h-5 border-t-4 border-l-4 border-[var(--brand-primary)] rounded-tl-lg" />
-                    <div className="absolute -top-1 -right-1 w-5 h-5 border-t-4 border-r-4 border-[var(--brand-primary)] rounded-tr-lg" />
-                    <div className="absolute -bottom-1 -left-1 w-5 h-5 border-b-4 border-l-4 border-[var(--brand-primary)] rounded-bl-lg" />
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 border-b-4 border-r-4 border-[var(--brand-primary)] rounded-br-lg" />
-                    
-                    <div className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[var(--brand-primary)] to-transparent top-0 animate-scan" />
-                  </div>
+        {/* ── TAB 1: TABLE RESERVATION FORM & MAP ──────────────────────────── */}
+        {activeTab === 'reserve' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* LEFT: Table Selection Grid Map (7 cols) */}
+            <div className="lg:col-span-7 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-5 sm:p-6 space-y-4 shadow-sm">
+              <div className="flex justify-between items-center pb-2 border-b border-[var(--border-color)]">
+                <div>
+                  <h3 className="text-base font-extrabold text-[var(--text-primary)] font-heading">
+                    {t.selectTableLabel}
+                  </h3>
+                  <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                    Bấm vào bàn bạn muốn đặt để giữ chỗ
+                  </p>
+                </div>
+
+                <button
+                  onClick={fetchTables}
+                  className="p-1.5 rounded-lg bg-[var(--bg-card-inner)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all"
+                  title="Cập nhật sơ đồ bàn"
+                >
+                  <span className="material-symbols-outlined text-sm">refresh</span>
+                </button>
+              </div>
+
+              {/* Status legend */}
+              <div className="flex gap-4 text-[11px] font-bold text-[var(--text-secondary)]">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                  <span>{t.tableStatusEmpty}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                  <span>{t.tableStatusReserved}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-slate-400" />
+                  <span>{t.tableStatusServing}</span>
                 </div>
               </div>
 
-              <div className="text-center space-y-3">
-                <p className="text-xs font-semibold text-[var(--brand-primary)] animate-pulse px-2">
-                  {t.cameraStatus}
-                </p>
-                <button
-                  type="button"
-                  onClick={stopScanner}
-                  className="px-6 py-2.5 bg-[var(--bg-primary)] hover:bg-[var(--bg-card)] text-[var(--text-secondary)] text-xs font-semibold rounded-[var(--radius-sm)] transition-all border border-[var(--border-color)]"
-                >
-                  {t.cancelButton}
-                </button>
+              {/* Table Map Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+                {tables.length === 0 ? (
+                  <div className="col-span-full text-center py-10 text-xs text-[var(--text-secondary)]">
+                    Đang tải danh sách bàn từ máy chủ...
+                  </div>
+                ) : (
+                  tables.map((tbl) => {
+                    const isSelected = selectedTable?._id === tbl._id;
+                    const isBookable = tbl.status !== 'reserved' && tbl.status !== 'serving';
+                    let statusBg = 'border-slate-200 dark:border-slate-800 bg-[var(--bg-card-inner)]';
+                    let statusDot = 'bg-emerald-500';
+                    let statusText = t.tableStatusEmpty;
+
+                    if (tbl.status === 'serving') {
+                      statusDot = 'bg-slate-400';
+                      statusText = t.tableStatusServing;
+                      statusBg = 'border-slate-200 dark:border-slate-800/40 bg-slate-500/5 opacity-60 cursor-not-allowed';
+                    } else if (tbl.status === 'reserved') {
+                      statusDot = 'bg-amber-500';
+                      statusText = t.tableStatusReserved;
+                      statusBg = 'border-amber-500/30 bg-amber-500/5 opacity-75 cursor-not-allowed';
+                    }
+
+                    if (isSelected && isBookable) {
+                      statusBg = 'border-[#2563EB] bg-[#2563EB]/10 ring-2 ring-[#2563EB]/40';
+                    }
+
+                    return (
+                      <div
+                        key={tbl._id}
+                        onClick={() => setSelectedTable(tbl)}
+                        className={`p-4 rounded-2xl border text-center space-y-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-95 relative ${statusBg}`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <span className={`w-2 h-2 rounded-full ${statusDot}`} />
+                          <span className="text-[10px] font-bold text-[var(--text-secondary)]">{statusText}</span>
+                        </div>
+                        <h4 className="text-base font-extrabold text-[var(--text-primary)]">{tbl.tableName}</h4>
+                        <span className="text-[10px] text-[var(--text-secondary)] block font-medium">Tầng 1 — Khu máy lạnh</span>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
-          ) : (
-            <div className="w-full space-y-4 sm:space-y-5 z-10">
-              {/* Primary Action Buttons */}
-              <div className="space-y-3">
-                <button
-                  onClick={startScanner}
-                  className="w-full bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white font-semibold py-3.5 sm:py-4 rounded-[var(--radius-md)] flex items-center justify-center gap-2.5 sm:gap-3 shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all text-xs sm:text-[14px] tracking-wider uppercase"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span>{t.scanCamera}</span>
-                </button>
 
-                <label className="w-full bg-[var(--bg-primary)] hover:bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--brand-primary)] text-[var(--text-primary)] font-semibold py-3 sm:py-3.5 rounded-[var(--radius-md)] flex items-center justify-center gap-2.5 transition-all cursor-pointer text-xs sm:text-[14px] tracking-wide">
-                  <svg className="w-4 h-4 text-[var(--brand-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                  </svg>
-                  <span>{t.scanUpload}</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
-                </label>
+            {/* RIGHT: Booking Form (5 cols) */}
+            <div className="lg:col-span-5 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-5 sm:p-6 space-y-5 shadow-sm">
+              <div>
+                <h3 className="text-base font-extrabold text-[var(--text-primary)] font-heading">
+                  {t.bookingFormTitle}
+                </h3>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                  Vui lòng điền đầy đủ thông tin để nhân viên nhận đơn
+                </p>
               </div>
 
-              {/* Divider */}
-              <div className="w-full flex items-center gap-4 my-1">
-                <div className="flex-1 h-px bg-[var(--border-color)]" />
-                <span className="text-[10px] font-semibold text-[var(--text-tertiary)] uppercase tracking-widest">{t.or}</span>
-                <div className="flex-1 h-px bg-[var(--border-color)]" />
-              </div>
-
-              {/* Manual Table Number Entry Form */}
-              <form onSubmit={handleStartOrder} className="space-y-3">
-                <div>
-                  <label htmlFor="table-id" className="block text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                    <svg className="w-3.5 h-3.5 text-[var(--text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span>{t.manualLabel}</span>
-                  </label>
-                  
-                  <div className="flex gap-2 w-full">
-                    <div className="relative flex-1">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] select-none">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                        </svg>
-                      </span>
-                      <input
-                        id="table-id"
-                        type="text"
-                        placeholder={t.manualPlaceholder}
-                        value={tableId}
-                        onChange={(e) => {
-                          setTableId(e.target.value);
-                          setError('');
-                        }}
-                        className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-[var(--radius-sm)] py-3 pl-10 pr-3 text-[var(--text-primary)] placeholder:[var(--text-tertiary)] focus:border-[var(--brand-primary)] outline-none text-xs font-semibold transition-all"
-                      />
-                    </div>
-                    
-                    <button
-                      type="submit"
-                      className="bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] hover:bg-[var(--brand-primary)] hover:text-white px-4 sm:px-5 rounded-[var(--radius-sm)] font-semibold transition-all flex items-center justify-center text-xs tracking-wider uppercase active:scale-95 gap-1 shrink-0 border border-[var(--brand-primary)]/20"
-                    >
-                      <span>{t.enterButton}</span>
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                      </svg>
-                    </button>
-                  </div>
-
-                  {error && (
-                    <div className="text-red-500 text-xs font-semibold mt-3 flex items-center gap-1.5 px-1 animate-pulse">
-                      <svg className="w-4 h-4 shrink-0 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                      <span>{error}</span>
-                    </div>
-                  )}
+              {error && (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold flex items-center gap-2">
+                  <span className="material-symbols-outlined text-base">error</span>
+                  <span>{error}</span>
                 </div>
+              )}
+
+              <form onSubmit={handleBookingSubmit} className="space-y-4 text-xs">
+                {/* Selected Table Info Card */}
+                <div className="p-3.5 rounded-2xl bg-[#2563EB]/10 border border-[#2563EB]/30 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-[var(--text-secondary)] block">
+                      {t.selectedTableLabel}
+                    </span>
+                    <span className="text-sm font-black text-[#2563EB] dark:text-[#3B82F6]">
+                      {selectedTable ? selectedTable.tableName : t.noTableSelected}
+                    </span>
+                  </div>
+                  <span className="material-symbols-outlined text-xl text-[#2563EB] dark:text-[#3B82F6]">check_circle</span>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[var(--text-primary)] mb-1.5">{t.customerNameLabel}</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder={t.customerNamePlaceholder}
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#2563EB]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[var(--text-primary)] mb-1.5">{t.customerPhoneLabel}</label>
+                  <input
+                    type="tel"
+                    required
+                    placeholder={t.customerPhonePlaceholder}
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#2563EB]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-[var(--text-primary)] mb-1.5">{t.reservationTimeLabel}</label>
+                    <input
+                      type="datetime-local"
+                      required
+                      value={reservationTime}
+                      onChange={(e) => setReservationTime(e.target.value)}
+                      className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3 py-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#2563EB]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-[var(--text-primary)] mb-1.5">{t.guestCountLabel}</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={20}
+                      required
+                      value={guestCount}
+                      onChange={(e) => setGuestCount(Number(e.target.value))}
+                      className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3 py-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#2563EB]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[var(--text-primary)] mb-1.5">{t.noteLabel}</label>
+                  <textarea
+                    rows={2}
+                    placeholder={t.notePlaceholder}
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3.5 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#2563EB]"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !selectedTable}
+                  className="w-full py-3.5 bg-[#2563EB] hover:bg-blue-700 disabled:opacity-50 text-white font-extrabold rounded-2xl text-xs transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-base">event_available</span>
+                  <span>{isSubmitting ? 'Đang gửi thông tin...' : t.btnSubmitBooking}</span>
+                </button>
               </form>
             </div>
-          )}
-
-          {/* Footer note */}
-          <div className="w-full border-t border-[var(--border-color)] pt-4 sm:pt-5 text-center text-[10.5px] leading-relaxed font-normal text-[var(--text-secondary)] z-10">
-            {t.helpText}
           </div>
-        </div>
+        )}
+
+        {/* ── TAB 2: LOOKUP & CUSTOMER CANCEL RESERVATIONS ──────────────────── */}
+        {activeTab === 'lookup' && (
+          <div className="max-w-2xl mx-auto bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
+            <div className="text-center space-y-1">
+              <h3 className="text-lg font-extrabold text-[var(--text-primary)] font-heading">
+                Tra Cứu & Quản Lý Đơn Đặt Bàn
+              </h3>
+              <p className="text-xs text-[var(--text-secondary)]">
+                Nhập số điện thoại của bạn để kiểm tra chi tiết đơn đặt bàn và thực hiện hủy nếu cần
+              </p>
+            </div>
+
+            {error && (
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold flex items-center gap-2">
+                <span className="material-symbols-outlined text-base">error</span>
+                <span>{error}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleLookupSubmit} className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Nhập số điện thoại (Ví dụ: 0987654321)..."
+                value={lookupPhone}
+                onChange={(e) => setLookupPhone(e.target.value)}
+                className="flex-1 bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-2xl px-4 py-3 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#2563EB]"
+              />
+              <button
+                type="submit"
+                disabled={isSearchingLookup}
+                className="px-5 py-3 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-2xl text-xs transition-all shadow-md active:scale-95 flex items-center gap-1.5 shrink-0 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-base">search</span>
+                <span>{isSearchingLookup ? 'Đang tìm...' : 'Tra cứu ngay'}</span>
+              </button>
+            </form>
+
+            {hasSearchedLookup && (
+              <div className="space-y-4 pt-2">
+                {lookupResults.length === 0 ? (
+                  <div className="bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-2xl p-6 text-center text-xs text-[var(--text-secondary)]">
+                    Không tìm thấy đơn đặt bàn nào với số điện thoại <span className="font-bold text-[#38BDF8]">{lookupPhone}</span>.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-xs font-bold text-[var(--text-secondary)]">
+                      Tìm thấy {lookupResults.length} đơn đặt bàn:
+                    </p>
+
+                    {lookupResults.map((res) => {
+                      let statusBadge = 'bg-amber-500/10 text-amber-500 border-amber-500/30';
+                      let statusLabel = 'Chờ xác nhận';
+
+                      if (res.status === 'confirmed') {
+                        statusBadge = 'bg-sky-500/10 text-sky-500 border-sky-500/30';
+                        statusLabel = 'Đã xác nhận';
+                      } else if (res.status === 'arrived') {
+                        statusBadge = 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30';
+                        statusLabel = 'Khách đã đến';
+                      } else if (res.status === 'cancelled') {
+                        statusBadge = 'bg-rose-500/10 text-rose-500 border-rose-500/30';
+                        statusLabel = 'Đã hủy';
+                      }
+
+                      const canCancel = res.status === 'pending' || res.status === 'confirmed';
+                      const isArrived = res.status === 'arrived';
+                      const targetTableId = res.tableId?._id || res.tableId;
+
+                      return (
+                        <div
+                          key={res._id}
+                          className="bg-[var(--bg-card-inner)] border border-[var(--border-color)] p-4 sm:p-5 rounded-2xl space-y-3 shadow-xs"
+                        >
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-black text-[var(--text-primary)] text-sm">
+                                {res.customerName}
+                              </h4>
+                              <p className="text-xs text-[#38BDF8] font-bold mt-0.5">
+                                {res.customerPhone}
+                              </p>
+                            </div>
+                            <span className={`px-3 py-1 rounded-full text-[10.5px] font-extrabold border ${statusBadge}`}>
+                              {statusLabel}
+                            </span>
+                          </div>
+
+                          <div className="py-2 border-t border-b border-[var(--border-color)]/60 space-y-1.5 text-xs">
+                            <div className="flex justify-between">
+                              <span className="text-[var(--text-secondary)]">Bàn ăn chọn:</span>
+                              <span className="font-black text-[var(--text-primary)]">{res.tableId?.tableName || 'Bàn chọn'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[var(--text-secondary)]">Thời gian nhận bàn:</span>
+                              <span className="font-extrabold text-[var(--text-primary)]">{new Date(res.reservationTime).toLocaleString('vi-VN')}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[var(--text-secondary)]">Số lượng khách:</span>
+                              <span className="font-extrabold text-[var(--text-primary)]">{res.guestCount} người</span>
+                            </div>
+                            {res.note && (
+                              <div className="pt-1 text-[11px] text-amber-500 italic">
+                                Ghi chú: {res.note}
+                              </div>
+                            )}
+                          </div>
+
+                          {isArrived && targetTableId && (
+                            <button
+                              onClick={() => router.push(`/table/${targetTableId}`)}
+                              className="w-full py-2.5 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black text-xs rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                            >
+                              VÀO BÀN GỌI MÓN ({res.tableId?.tableName || 'BÀN ĐẶT'})
+                            </button>
+                          )}
+
+                          {canCancel && (
+                            <button
+                              onClick={() => handleCustomerCancelReservation(res._id)}
+                              className="w-full py-2 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-500 border border-rose-500/30 text-xs font-bold rounded-xl transition-all flex items-center justify-center cursor-pointer"
+                            >
+                              HỦY ĐƠN ĐẶT BÀN NÀY
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── TAB 3: QUICK QR SCAN / MANUAL ENTER ─────────────────────────── */}
+        {activeTab === 'qr' && (
+          <div className="max-w-md mx-auto bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-6 space-y-6 shadow-sm text-center">
+            <div>
+              <h3 className="text-lg font-extrabold text-[var(--text-primary)] font-heading">
+                Khách Hàng Đã Ngồi Tại Bàn
+              </h3>
+              <p className="text-xs text-[var(--text-secondary)] mt-1">
+                Nhập số bàn hoặc quét mã QR trên mặt bàn để chọn món trực tiếp
+              </p>
+            </div>
+
+            {error && (
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold flex items-center gap-2">
+                <span className="material-symbols-outlined text-base">error</span>
+                <span>{error}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleManualEnter} className="space-y-4 text-xs text-left">
+              <div>
+                <label className="block font-bold text-[var(--text-primary)] mb-1.5">{t.manualLabel}</label>
+                <input
+                  type="text"
+                  placeholder={t.manualPlaceholder}
+                  value={manualInput}
+                  onChange={(e) => setManualInput(e.target.value)}
+                  className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3.5 bg-[#2563EB] hover:bg-blue-700 text-white font-extrabold rounded-2xl text-xs transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-base">qr_code</span>
+                <span>{t.enterButton}</span>
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* ── BOOKING SUCCESS MODAL POPUP ──────────────────────────────────── */}
+        {bookingSuccess && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <div className="relative w-full max-w-md rounded-[28px] bg-[var(--bg-card)] border border-[var(--border-color)] p-6 sm:p-8 text-center space-y-6 shadow-2xl animate-modal-in">
+              <div className="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/10 animate-pop-scale">
+                <span className="material-symbols-outlined text-3xl font-black">check_circle</span>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-2xl font-black text-[var(--text-primary)] font-heading tracking-tight">
+                  {t.bookingSuccessTitle}
+                </h3>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed font-medium px-2">
+                  {t.bookingSuccessSubtitle}
+                </p>
+              </div>
+
+              {/* Zebra Stripe / Card Info Container */}
+              <div className="space-y-2 text-xs text-left p-2 rounded-2xl bg-[var(--bg-card-inner)] border border-[var(--border-color)]">
+                {/* Row 1: Khách hàng */}
+                <div className="flex justify-between items-center px-3.5 py-2.5 rounded-xl bg-slate-500/5 border border-slate-500/10">
+                  <span className="text-[var(--text-secondary)] font-bold">Khách hàng</span>
+                  <span className="font-extrabold text-[var(--text-primary)] text-sm">{bookingSuccess.customerName}</span>
+                </div>
+
+                {/* Row 2: Số điện thoại (Accent Skyblue) */}
+                <div className="flex justify-between items-center px-3.5 py-2.5 rounded-xl bg-slate-500/10 border border-slate-500/10">
+                  <span className="text-[var(--text-secondary)] font-bold">Số điện thoại</span>
+                  <span className="font-extrabold text-[#38BDF8]">{bookingSuccess.customerPhone}</span>
+                </div>
+
+                {/* Row 3: Bàn đặt (Highlighted Accent Card) */}
+                <div className="flex justify-between items-center px-3.5 py-2.5 rounded-xl bg-[#38BDF8]/10 border border-[#38BDF8]/25">
+                  <span className="text-[#38BDF8] font-bold">Bàn ăn đặt giữ</span>
+                  <span className="font-black text-[#38BDF8] text-sm tracking-wide">{bookingSuccess.tableId?.tableName || 'Bàn chọn'}</span>
+                </div>
+
+                {/* Row 4: Thời gian nhận bàn */}
+                <div className="flex justify-between items-center px-3.5 py-2.5 rounded-xl bg-slate-500/5 border border-slate-500/10">
+                  <span className="text-[var(--text-secondary)] font-bold">Thời gian nhận bàn</span>
+                  <span className="font-extrabold text-[var(--text-primary)]">{new Date(bookingSuccess.reservationTime).toLocaleString('vi-VN')}</span>
+                </div>
+
+                {/* Row 5: Số lượng khách */}
+                <div className="flex justify-between items-center px-3.5 py-2.5 rounded-xl bg-slate-500/10 border border-slate-500/10">
+                  <span className="text-[var(--text-secondary)] font-bold">Số lượng khách</span>
+                  <span className="font-extrabold text-[var(--text-primary)]">{bookingSuccess.guestCount} người</span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setBookingSuccess(null)}
+                className="w-full py-4 rounded-2xl bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black text-xs sm:text-sm tracking-wide uppercase transition-all duration-200 shadow-lg shadow-[#38BDF8]/20 hover:shadow-xl hover:shadow-[#38BDF8]/30 active:scale-[0.98] cursor-pointer"
+              >
+                HOÀN TẤT & ĐÓNG
+              </button>
+            </div>
+          </div>
+        )}
       </main>
 
-      <footer className="w-full py-4 text-center text-[11px] font-semibold text-[var(--text-tertiary)] z-10">
-        © 2026 Kohi Coffee & Pastry • Smart QR Solution
+      {/* ── FOOTER ───────────────────────────────────────────────────────── */}
+      <footer className="w-full py-4 text-center text-[11px] font-semibold text-[var(--text-secondary)] border-t border-[var(--border-color)]">
+        © 2026 Kohi Coffee & Pastry • Smart Online Reservation & QR Solution
       </footer>
-
-      {/* ── Welcome Modal Popup (Responsive Light/Dark Glassmorphism Modal) ─────── */}
-      {welcomeModalOpen && welcomeTable && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/70 backdrop-blur-md select-none text-center animate-fade-in">
-          {welcomeTable.status === 'reserved' ? (
-            // RESERVED / BOOKED WARNING MODAL
-            <div className="relative w-full max-w-sm overflow-hidden rounded-2xl sm:rounded-[28px] bg-white dark:bg-zinc-900 border border-red-200 dark:border-red-500/30 p-6 sm:p-8 flex flex-col items-center justify-center shadow-2xl transition-all">
-              <button 
-                onClick={() => setWelcomeModalOpen(false)}
-                className="absolute right-4 top-4 w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-white transition-colors"
-              >
-                ✕
-              </button>
-
-              <div className="w-12 h-1.5 rounded-full bg-red-500 mb-6" />
-
-              <h3 className="text-lg sm:text-xl font-black text-red-600 dark:text-red-400 tracking-tight leading-tight flex items-center gap-2">
-                <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <span>{lang === 'vi' ? 'Bàn đã có khách hẹn!' : 'Table is Reserved!'}</span>
-              </h3>
-              <p className="text-[10px] text-red-500 dark:text-red-400/80 font-extrabold uppercase tracking-widest mt-1">
-                {lang === 'vi' ? 'Không thể truy cập' : 'Access Restricted'}
-              </p>
-
-              <div className="w-full mt-6 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-500/20 rounded-2xl p-5 flex flex-col items-center justify-center relative overflow-hidden">
-                <span className="text-[10px] font-black text-red-500 dark:text-red-400/70 uppercase tracking-widest">
-                  {lang === 'vi' ? 'THÔNG TIN BÀN BẬN' : 'RESERVED TABLE'}
-                </span>
-                <span className="text-2xl font-black text-red-600 dark:text-red-400 mt-1.5 uppercase tracking-wide">
-                  {welcomeTable.tableName}
-                </span>
-              </div>
-
-              <p className="text-[11.5px] font-semibold text-slate-600 dark:text-zinc-400 leading-relaxed mt-5 px-1">
-                {lang === 'vi' 
-                  ? 'Rất tiếc, bàn này đã được giữ chỗ từ quản trị viên. Quý khách vui lòng liên hệ Barista tại quầy Kohi Coffee để được hỗ trợ đổi bàn khác.' 
-                  : 'We are sorry, this table is currently reserved. Please contact the Barista at the counter to be relocated.'}
-              </p>
-
-              <button
-                onClick={() => setWelcomeModalOpen(false)}
-                className="w-full mt-6 py-3.5 text-xs font-black text-slate-700 dark:text-zinc-200 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 rounded-2xl transition-all active:scale-95 border border-slate-200 dark:border-zinc-700 tracking-widest uppercase"
-              >
-                {lang === 'vi' ? 'QUAY LẠI & CHỌN BÀN KHÁC' : 'GO BACK & CHOOSE ANOTHER'}
-              </button>
-            </div>
-          ) : (
-            // STANDARD WELCOME MODAL
-            <div className="relative w-full max-w-sm overflow-hidden rounded-[var(--radius-lg)] bg-[var(--bg-card)] border border-[var(--border-color)] p-6 sm:p-8 flex flex-col items-center justify-center shadow-[var(--shadow-card-hover)] transition-all animate-pulse-once">
-              <button 
-                onClick={() => setWelcomeModalOpen(false)}
-                className="absolute right-4 top-4 w-8 h-8 rounded-[var(--radius-full)] flex items-center justify-center bg-[var(--bg-primary)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
-              >
-                ✕
-              </button>
-
-              <div className="w-12 h-1 rounded-full bg-[var(--brand-primary)] mb-5" />
-
-              <div className="text-center space-y-1.5 mb-2">
-                <h2 className="font-logo text-3xl text-[var(--text-primary)] font-extrabold tracking-tight uppercase leading-none select-none">
-                  Kohi Coffee
-                </h2>
-                <h3 className="text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-[0.04em] leading-none mt-1">
-                  {lang === 'vi' ? 'Xin kính chào quý khách!' : 'Warmly Welcomes You!'}
-                </h3>
-              </div>
-
-              <div className="w-full mt-5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-[var(--radius-md)] p-5 flex flex-col items-center justify-center relative overflow-hidden">
-                <div className="absolute -top-10 -right-10 w-20 h-20 bg-[var(--brand-primary)]/10 rounded-full blur-xl pointer-events-none" />
-                <div className="absolute -bottom-10 -left-10 w-20 h-20 bg-[var(--brand-primary)]/10 rounded-full blur-xl pointer-events-none" />
-                
-                <span className="text-[9px] font-semibold text-[var(--brand-primary)] uppercase tracking-wider mb-1.5">
-                  ✦ {lang === 'vi' ? 'THÔNG TIN BÀN CÀ PHÊ' : 'TABLE INFORMATION'} ✦
-                </span>
-                <span className="text-3xl font-bold text-[var(--text-primary)] uppercase tracking-wide">
-                  {welcomeTable.tableName}
-                </span>
-                <span className="text-[9px] font-semibold text-[var(--text-tertiary)] mt-1.5 uppercase tracking-wider">
-                  Mã bàn: {welcomeTable._id.slice(-6).toUpperCase()}
-                </span>
-              </div>
-
-              <p className="text-[11px] font-normal text-[var(--text-secondary)] leading-relaxed mt-5 px-1 text-center">
-                {lang === 'vi' 
-                  ? 'Hệ thống gọi món trực tuyến đã sẵn sàng. Vui lòng bấm tiếp tục bên dưới để xem thực đơn & chọn thức uống gửi tới quầy pha chế.' 
-                  : 'Smart digital table menu is fully loaded. Click continue below to view menu and order directly to the Barista.'}
-              </p>
-
-              <button
-                onClick={() => {
-                  setWelcomeModalOpen(false);
-                  router.push(`/table/${welcomeTable._id}`);
-                }}
-                className="group relative w-full mt-6 overflow-hidden rounded-[var(--radius-md)] bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] py-3.5 sm:py-4 text-xs font-semibold text-white shadow-md transition-all active:scale-95"
-              >
-                <div className="flex items-center justify-center gap-2 tracking-widest uppercase">
-                  <span>{lang === 'vi' ? 'XEM THỰC ĐƠN & GỌI MÓN' : 'VIEW MENU & PLACE ORDER'}</span>
-                  <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                  </svg>
-                </div>
-              </button>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

@@ -19,8 +19,49 @@ export class OrdersService implements OnModuleInit {
     private readonly couponsService: CouponsService,
   ) {}
 
-  onModuleInit() {
-    // Đơn hàng đã thanh toán được lưu vết lại trong DB để phục vụ truy vấn lịch sử & thống kê doanh thu
+  async onModuleInit() {
+    const count = await this.orderModel.countDocuments();
+    if (count === 0) {
+      try {
+        const foods = await this.foodsService.findAll();
+        const tables = await this.tablesService.findAll();
+        if (foods.length > 0) {
+          const sampleOrders: any[] = [];
+          const now = new Date();
+          const food1 = foods[0]._id;
+          const food2 = foods[1] ? foods[1]._id : food1;
+          const food3 = foods[2] ? foods[2]._id : food1;
+          const table1 = tables[0] ? tables[0]._id : null;
+
+          for (let i = 0; i < 15; i++) {
+            const dateOffset = Math.floor(i / 3);
+            const orderDate = new Date(now);
+            orderDate.setDate(now.getDate() - dateOffset);
+            orderDate.setHours(9 + (i % 8), (i * 17) % 60);
+
+            sampleOrders.push({
+              tableId: table1,
+              customerName: `Khách hàng #${101 + i}`,
+              items: [
+                { foodId: food1, quantity: (i % 3) + 1 },
+                { foodId: food2, quantity: (i % 2) + 1 },
+                { foodId: food3, quantity: 1 },
+              ],
+              totalAmount: 120000 + i * 15000,
+              status: 'paid',
+              paymentStatus: 'paid',
+              paymentMethod: i % 2 === 0 ? 'momo' : 'cash',
+              paidAt: orderDate,
+              createdAt: orderDate,
+            });
+          }
+          await this.orderModel.insertMany(sampleOrders);
+          console.log('[Seed] Sample Paid Orders initialized in Database for Revenue & Top Selling statistics.');
+        }
+      } catch (err) {
+        console.error('[Seed Error] Failed to seed sample orders:', err);
+      }
+    }
   }
 
   async cleanupExpiredPaidOrders() {

@@ -667,8 +667,9 @@ export default function OrderStatusPage() {
                       ) : '—'}</span>
                     </div>
                     {order.customerName && (
-                      <span className="text-[11px] font-black text-[#3AA6FF] bg-[#3AA6FF]/10 px-2 py-0.5 rounded-full border border-[#3AA6FF]/30">
-                        👤 {order.customerName}
+                      <span className="text-[11px] font-black text-[#3AA6FF] bg-[#3AA6FF]/10 px-2 py-0.5 rounded-full border border-[#3AA6FF]/30 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-xs">person</span>
+                        <span>{order.customerName}</span>
                       </span>
                     )}
                   </div>

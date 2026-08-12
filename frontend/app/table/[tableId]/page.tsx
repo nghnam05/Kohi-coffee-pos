@@ -773,7 +773,7 @@ export default function TableMenuPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-[#FAFAF9] dark:bg-[#090D16] p-8 text-center font-sans text-[#1C1008] dark:text-[#F5EFE6]">
         <div className="w-20 h-20 bg-[#3AA6FF]/10 dark:bg-[#5B9EFF]/15 text-[#3AA6FF] dark:text-[#5B9EFF] border border-[#3AA6FF]/40 rounded-full flex items-center justify-center text-4xl shadow-[0_0_20px_rgba(58,166,255,0.2)] animate-bounce">
-          ⚠️
+          <span className="material-symbols-outlined text-4xl">warning</span>
         </div>
         <div>
           <h2 className="text-xl font-extrabold">{lang === 'vi' ? 'Có lỗi xảy ra' : 'An error occurred'}</h2>

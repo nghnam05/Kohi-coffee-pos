@@ -91,5 +91,19 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.server.emit('attendanceUpdated', data);
     }
   }
+
+  emitNewReservation(reservation: any): void {
+    if (this.server) {
+      this.server.emit('newReservation', reservation);
+      this.server.emit('tableUpdated', { tableId: reservation.tableId?._id || reservation.tableId, status: 'reserved' });
+    }
+  }
+
+  emitReservationStatusUpdate(id: string, status: string): void {
+    if (this.server) {
+      this.server.emit('reservationStatusUpdated', { id, status });
+      this.server.emit('tableUpdated', { id, status });
+    }
+  }
 }
 

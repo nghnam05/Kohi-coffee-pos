@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Table, TableDocument } from './schemas/table.schema.js';
+import { Reservation, ReservationDocument } from '../reservations/schemas/reservation.schema.js';
 import { CreateTableDto } from './dto/create-table.dto.js';
 import { UpdateTableDto } from './dto/update-table.dto.js';
 
@@ -9,6 +10,7 @@ import { UpdateTableDto } from './dto/update-table.dto.js';
 export class TablesService {
   constructor(
     @InjectModel(Table.name) private readonly tableModel: Model<TableDocument>,
+    @InjectModel(Reservation.name) private readonly reservationModel: Model<ReservationDocument>,
   ) {}
 
   async create(createTableDto: CreateTableDto): Promise<TableDocument> {
@@ -36,7 +38,28 @@ export class TablesService {
   }
 
   async findAll(): Promise<any[]> {
-    return this.tableModel.find().lean().exec();
+    const tables = await this.tableModel.find().lean().exec();
+    const activeReservations = await this.reservationModel
+      .find({ status: { $in: ['pending', 'confirmed'] } })
+      .lean()
+      .exec();
+
+    const reservedTableIds = new Set(
+      activeReservations.map((r) => r.tableId?.toString()).filter(Boolean)
+    );
+
+    return Promise.all(
+      tables.map(async (table) => {
+        const idStr = table._id.toString();
+        if (reservedTableIds.has(idStr) && table.status !== 'serving') {
+          if (table.status !== 'reserved') {
+            await this.tableModel.findByIdAndUpdate(table._id, { status: 'reserved' }).exec();
+          }
+          return { ...table, status: 'reserved' };
+        }
+        return table;
+      })
+    );
   }
 
   async findOne(id: string): Promise<any> {

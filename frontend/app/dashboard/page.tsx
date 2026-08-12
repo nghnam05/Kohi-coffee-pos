@@ -6,6 +6,13 @@ import { useTheme } from 'next-themes';
 import { io, Socket } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggleSwitch } from '@/components/table/ThemeToggleSwitch';
+import { LanguageToggleSwitch } from '@/components/table/LanguageToggleSwitch';
+import { BrandLogo } from '@/components/table/BrandLogo';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Select } from '@/components/ui/select';
 
 import {
   Chart as ChartJS,
@@ -463,7 +470,7 @@ export default function DashboardPage() {
   const isDark = resolvedTheme === 'dark';
 
   // Translation helper
-  const t = DICTIONARY[lang];
+  const t = DICTIONARY[lang] || DICTIONARY.vi;
 
   // Toast notifications
   const [toasts, setToasts] = useState<{ id: string; message: string; type: 'success' | 'error' | 'info' }[]>([]);
@@ -509,6 +516,21 @@ export default function DashboardPage() {
   // Salary management state (for admin)
   const [payrolls, setPayrolls] = useState<any[]>([]);
   const [staffHourlyRates, setStaffHourlyRates] = useState<Record<string, number>>({});
+
+  // Coupons state (for admin)
+  const [coupons, setCoupons] = useState<any[]>([]);
+  const [reservations, setReservations] = useState<any[]>([]);
+  const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState<any | null>(null);
+  const [couponForm, setCouponForm] = useState({
+    code: '',
+    type: 'percent',
+    value: '',
+    maxDiscount: '',
+    minOrderAmount: '',
+    expiresAt: '',
+    isActive: true,
+  });
 
   // Modals state
   const [isFoodModalOpen, setIsFoodModalOpen] = useState(false);
@@ -591,6 +613,7 @@ export default function DashboardPage() {
       fetchSalaryConfigs(token);
     }
     fetchAttendance(token);
+    fetchReservations(token);
 
     // Socket.io initialization
     socketRef.current = io(SOCKET_BASE, {
@@ -630,6 +653,27 @@ export default function DashboardPage() {
     socketRef.current.on('ordersMerged', () => {
       fetchOrders(token);
       showToast('Tất cả đơn hàng của bàn vừa được gộp thành 1 đơn duy nhất!', 'info');
+    });
+
+    socketRef.current.on('newReservation', (newRes: any) => {
+      setReservations((prev) => [newRes, ...prev]);
+      fetchTables(token);
+      showToast(`Khách hàng ${newRes.customerName || ''} vừa đặt bàn!`, 'info');
+      try {
+        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/911/911-84.wav');
+        audio.play();
+      } catch (e) {}
+    });
+
+    socketRef.current.on('reservationStatusUpdated', ({ id, status }: { id: string; status: string }) => {
+      setReservations((prev) =>
+        prev.map((r) => (r._id === id ? { ...r, status } : r))
+      );
+      fetchTables(token);
+    });
+
+    socketRef.current.on('tableUpdated', () => {
+      fetchTables(token);
     });
 
     socketRef.current.on('staffCallRequest', (call: StaffCall) => {
@@ -768,6 +812,115 @@ export default function DashboardPage() {
       });
       if (res.ok) setPayrolls(await res.json());
     } catch (e) {}
+  };
+
+  const fetchCoupons = async (tok: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/coupons`, {
+        headers: { Authorization: `Bearer ${tok}` },
+      });
+      if (res.ok) setCoupons(await res.json());
+    } catch (e) {}
+  };
+
+  const handleCreateOrUpdateCoupon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token) return;
+    try {
+      const payload: any = {
+        code: couponForm.code.toUpperCase().trim(),
+        type: couponForm.type,
+        value: Number(couponForm.value),
+        maxDiscount: Number(couponForm.maxDiscount) || 0,
+        minOrderAmount: Number(couponForm.minOrderAmount) || 0,
+        expiresAt: couponForm.expiresAt ? new Date(couponForm.expiresAt).toISOString() : new Date(Date.now() + 30 * 86400000).toISOString(),
+        isActive: couponForm.isActive,
+      };
+
+      const url = editingCoupon ? `${API_BASE}/coupons/${editingCoupon._id}` : `${API_BASE}/coupons`;
+      const method = editingCoupon ? 'PATCH' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error('Không thể lưu mã giảm giá.');
+      showToast('Lưu mã giảm giá thành công!', 'success');
+      setIsCouponModalOpen(false);
+      fetchCoupons(token);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Lỗi lưu mã giảm giá.', 'error');
+    }
+  };
+
+  const handleDeleteCoupon = async (id: string) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/coupons/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Không thể xóa mã giảm giá.');
+      setCoupons((prev) => prev.filter((c) => c._id !== id));
+      showToast('Đã xóa mã giảm giá thành công!', 'success');
+    } catch (err) {
+      showToast('Không thể xóa mã giảm giá.', 'error');
+    }
+  };
+
+  const fetchReservations = async (tok: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/reservations`, {
+        headers: { Authorization: `Bearer ${tok}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setReservations(data);
+      }
+    } catch (e) {
+      console.error('Failed to fetch reservations:', e);
+    }
+  };
+
+  const handleUpdateReservationStatus = async (id: string, newStatus: string) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/reservations/${id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) throw new Error('Không thể cập nhật trạng thái đặt bàn.');
+      showToast('Cập nhật trạng thái đặt bàn thành công!', 'success');
+      fetchReservations(token);
+      fetchTables(token);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Có lỗi xảy ra.', 'error');
+    }
+  };
+
+  const handleDeleteReservation = async (id: string) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/reservations/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Không thể xóa đơn đặt bàn.');
+      setReservations((prev) => prev.filter((r) => r._id !== id));
+      fetchTables(token);
+      showToast('Đã xóa đơn đặt bàn!', 'success');
+    } catch (err) {
+      showToast('Lỗi khi xóa đơn đặt bàn.', 'error');
+    }
   };
 
   const handleUpdateHourlyRate = async (userId: string, rate: number) => {
@@ -1510,9 +1663,9 @@ export default function DashboardPage() {
     : '5.0';
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#090D16] text-slate-900 dark:text-white flex flex-col lg:flex-row overflow-hidden font-sans select-none relative transition-colors duration-300">
+    <div className="min-h-screen bg-white dark:bg-[#0B1120] text-[#000000] dark:text-[#F1F5F9] flex flex-col lg:flex-row overflow-hidden font-sans select-none relative transition-colors duration-300">
       {/* ── MOBILE TOP NAVIGATION BAR (Visible on screens < lg) ──────────────── */}
-      <div className="lg:hidden flex items-center justify-between bg-white dark:bg-[#0d1322] border-b border-slate-200 dark:border-[#1e293b] px-4 py-3 text-slate-900 dark:text-white shrink-0 z-30 transition-colors">
+      <div className="lg:hidden flex items-center justify-between bg-white dark:bg-[#1A2232] border-b border-[#E2E8F0] dark:border-[#293246] px-4 py-3 text-[#000000] dark:text-[#F1F5F9] shrink-0 z-30 transition-colors">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
@@ -1521,22 +1674,16 @@ export default function DashboardPage() {
           >
             <span className="material-symbols-outlined text-xl">menu</span>
           </button>
-          <div>
-            <h1 className="text-base font-black tracking-tight text-slate-900 dark:text-white font-heading">KOHI HQ</h1>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">{user?.role === 'admin' ? 'Quản trị viên' : 'Barista'}</p>
-          </div>
+          <BrandLogo onClick={() => router.push('/')} />
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Theme Toggle Switcher */}
           <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
-
           <button
             onClick={() => setIsRealtimeDrawerOpen(!isRealtimeDrawerOpen)}
             className="px-3 py-1.5 bg-slate-100 dark:bg-[#1e293b] border border-slate-300 dark:border-[#38BDF8]/40 text-[#0284c7] dark:text-[#38BDF8] rounded-xl text-xs font-extrabold flex items-center gap-1.5"
           >
             <span className="material-symbols-outlined text-base">notifications</span>
-            <span className="hidden sm:inline">Realtime</span>
             {staffCalls.length > 0 && (
               <span className="w-2 h-2 rounded-full bg-[#38BDF8] animate-pulse" />
             )}
@@ -1560,32 +1707,22 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* ── COLUMN 1: LEFT SIDEBAR (#0d1322 / bg-white) ────────────────────── */}
+      {/* ── COLUMN 1: LEFT SIDEBAR (#1A2232 / bg-white) ────────────────────── */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-white dark:bg-[#0d1322] border-r border-slate-200 dark:border-[#1e293b] flex flex-col justify-between p-4 h-screen transition-all duration-300 ease-in-out ${
+        className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-white dark:bg-[#1A2232] border-r border-[#E2E8F0] dark:border-[#293246] flex flex-col justify-between p-4 h-screen transition-all duration-300 ease-in-out ${
           isMobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         <div>
-          {/* Brand Header & Theme Switcher */}
+          {/* Brand Header */}
           <div className="mb-6 px-2 flex justify-between items-center">
-            <div>
-              <h1 className="text-xl font-black tracking-tight text-slate-900 dark:text-white font-heading">
-                KOHI HQ
-              </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Operations</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="hidden lg:block">
-                <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
-              </div>
-              <button
-                onClick={() => setIsMobileSidebarOpen(false)}
-                className="lg:hidden text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              >
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
+            <BrandLogo onClick={() => router.push('/')} />
+            <button
+              onClick={() => setIsMobileSidebarOpen(false)}
+              className="lg:hidden text-slate-400 hover:text-slate-900 dark:hover:text-white p-1 rounded-lg"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
           </div>
 
           {/* Navigation Items */}
@@ -1599,15 +1736,15 @@ export default function DashboardPage() {
                 }}
                 className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
                   activeTab === 'orders'
-                    ? 'bg-[#38BDF8]/10 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d]'
+                    ? 'bg-[#2563EB]/10 text-[#2563EB] dark:bg-[#293246] dark:text-[#3B82F6] shadow-xs'
+                    : 'text-[#475569] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1A2232]'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-lg">grid_view</span>
                   <span>{t.tabOrders}</span>
                 </div>
-                <span className="bg-[#38BDF8] text-[#090D16] text-[11px] font-black px-2 py-0.5 rounded-full">
+                <span className="bg-[#2563EB] dark:bg-[#3B82F6] text-white dark:text-[#0B1120] text-[11px] font-black px-2 py-0.5 rounded-full">
                   {activeOrdersList.length}
                 </span>
               </button>
@@ -1650,6 +1787,28 @@ export default function DashboardPage() {
               </div>
               <span className="bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-bold px-2 py-0.5 rounded-full">
                 {tables.length}
+              </span>
+            </button>
+
+            {/* Table Reservations Tab: STAFF & ADMIN */}
+            <button
+              onClick={() => {
+                setActiveTab('reservations' as any);
+                setIsMobileSidebarOpen(false);
+                if (token) fetchReservations(token);
+              }}
+              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
+                activeTab === ('reservations' as any)
+                  ? 'bg-[#38BDF8]/10 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d]'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-lg">event_seat</span>
+                <span>Quản lý bàn đã đặt</span>
+              </div>
+              <span className="bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px] font-extrabold px-2 py-0.5 rounded-full">
+                {reservations.length}
               </span>
             </button>
 
@@ -1714,11 +1873,41 @@ export default function DashboardPage() {
                 </div>
               </button>
             )}
+
+            {/* Coupons Management Tab: ADMIN ONLY */}
+            {user?.role === 'admin' && (
+              <button
+                onClick={() => {
+                  setActiveTab('coupons' as any);
+                  setIsMobileSidebarOpen(false);
+                  if (token) fetchCoupons(token);
+                }}
+                className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
+                  activeTab === ('coupons' as any)
+                    ? 'bg-[#38BDF8]/10 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d]'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-lg">local_offer</span>
+                  <span>Mã giảm giá</span>
+                </div>
+                <span className="bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-bold px-2 py-0.5 rounded-full">
+                  {coupons.length}
+                </span>
+              </button>
+            )}
           </nav>
         </div>
 
+        {/* Controls: Language & Theme Switches */}
+        <div className="px-2 pt-3 pb-2 border-t border-slate-200 dark:border-[#1e293b] flex items-center justify-between gap-2">
+          <LanguageToggleSwitch lang={lang} setLang={setLang} />
+          <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
+        </div>
+
         {/* User Profile & Logout at Bottom */}
-        <div className="border-t border-slate-200 dark:border-[#1e293b] pt-4 px-2 flex items-center justify-between">
+        <div className="border-t border-slate-200 dark:border-[#1e293b] pt-3 px-2 flex items-center justify-between">
           <button
             onClick={() => {
               setIsProfileModalOpen(true);
@@ -1744,17 +1933,19 @@ export default function DashboardPage() {
         </div>
       </aside>
 
-      {/* ── COLUMN 2: CENTER WORKSPACE (#F8FAFC / #090D16) ────────────────── */}
-      <main className="flex-1 min-w-0 bg-[#F8FAFC] dark:bg-[#090D16] flex flex-col h-screen overflow-hidden p-3 sm:p-6 transition-colors duration-300">
+      {/* ── COLUMN 2: CENTER WORKSPACE (bg-white / #0B1120) ────────────────── */}
+      <main className="flex-1 min-w-0 bg-white dark:bg-[#0B1120] flex flex-col h-screen overflow-hidden p-3 sm:p-6 transition-colors duration-300">
         {/* Workspace Top Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 shrink-0">
-          <h2 className="text-lg sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight font-heading">
+          <h2 className="text-lg sm:text-2xl font-extrabold text-[#000000] dark:text-[#F1F5F9] tracking-tight font-heading">
             {activeTab === 'orders' && t.tabOrders}
             {activeTab === 'foods' && t.tabFoods}
             {activeTab === 'tables' && t.tabTables}
             {activeTab === 'users' && t.tabUsers}
             {activeTab === 'attendance' && (user?.role === 'admin' ? 'Chấm công & Thanh toán Lương Nhân viên' : 'Chấm công ca làm')}
             {activeTab === 'analytics' && 'Thống kê Doanh thu & Đánh giá Khách hàng'}
+            {activeTab === ('coupons' as any) && 'Quản lý Mã giảm giá (Coupons)'}
+            {activeTab === ('reservations' as any) && 'Quản lý Bàn đã đặt (Reservations)'}
           </h2>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -1834,7 +2025,7 @@ export default function DashboardPage() {
                 className="px-4 py-2 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md active:scale-95 ml-auto shrink-0 cursor-pointer"
               >
                 <span className="material-symbols-outlined text-base">shopping_bag</span>
-                <span>➕ Tạo đơn mang về</span>
+                <span>Tạo đơn mang về</span>
               </button>
             </div>
 
@@ -2005,6 +2196,137 @@ export default function DashboardPage() {
                 })}
               </div>
             )}
+
+            {/* Table Reservations Management Section */}
+            <div className="mt-8 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-5 space-y-4 shadow-xs">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[#0284c7] dark:text-[#38BDF8] text-lg">event_seat</span>
+                    <span>Danh sách Đặt bàn Trực tuyến từ Khách hàng</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Quản lý các yêu cầu giữ chỗ trực tuyến trước của khách hàng
+                  </p>
+                </div>
+                <span className="bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] px-3 py-1 rounded-full text-xs font-bold">
+                  {reservations.length} lượt đặt bàn
+                </span>
+              </div>
+
+              {reservations.length === 0 ? (
+                <div className="bg-slate-50 dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-6 text-center text-slate-500 text-xs">
+                  Chưa có đơn đặt bàn trực tuyến nào
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                  {reservations.map((res) => {
+                    let statusBadge = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30';
+                    let statusLabel = 'Chờ xác nhận';
+                    let statusIcon = 'hourglass_empty';
+
+                    if (res.status === 'confirmed') {
+                      statusBadge = 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30';
+                      statusLabel = 'Đã xác nhận';
+                      statusIcon = 'check_circle';
+                    } else if (res.status === 'arrived') {
+                      statusBadge = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30';
+                      statusLabel = 'Khách đã đến';
+                      statusIcon = 'task_alt';
+                    } else if (res.status === 'cancelled') {
+                      statusBadge = 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30';
+                      statusLabel = 'Đã hủy đặt';
+                      statusIcon = 'cancel';
+                    }
+
+                    return (
+                      <div
+                        key={res._id}
+                        className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] hover:border-[#38BDF8]/40 p-5 rounded-2xl space-y-4 shadow-sm transition-all duration-200 flex flex-col justify-between"
+                      >
+                        {/* Header: Customer Name & Phone & Status Badge */}
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between items-start gap-2">
+                            <h4 className="font-extrabold text-slate-900 dark:text-white text-base tracking-tight font-heading truncate">
+                              {res.customerName}
+                            </h4>
+                            <span className={`px-2.5 py-1 rounded-full text-[10.5px] font-extrabold border flex items-center gap-1 shrink-0 ${statusBadge}`}>
+                              <span className="material-symbols-outlined text-xs">{statusIcon}</span>
+                              <span>{statusLabel}</span>
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1 text-xs font-bold text-[#0284c7] dark:text-[#38BDF8]">
+                            <span className="material-symbols-outlined text-xs">call</span>
+                            <span>{res.customerPhone}</span>
+                          </div>
+                        </div>
+
+                        {/* Middle Info Block with Strong Typography Hierarchy */}
+                        <div className="py-2.5 border-t border-b border-slate-100 dark:border-[#1e293b] space-y-2 text-xs">
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400 dark:text-slate-500 text-[11px] font-medium">Bàn ăn chọn:</span>
+                            <span className="font-black text-slate-900 dark:text-white text-xs">{res.tableId?.tableName || 'Bàn chọn'}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400 dark:text-slate-500 text-[11px] font-medium">Thời gian nhận bàn:</span>
+                            <span className="font-extrabold text-slate-800 dark:text-slate-200 text-xs">{new Date(res.reservationTime).toLocaleString('vi-VN')}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400 dark:text-slate-500 text-[11px] font-medium">Số lượng khách:</span>
+                            <span className="font-extrabold text-slate-800 dark:text-slate-200 text-xs">{res.guestCount} người</span>
+                          </div>
+                          {res.note && (
+                            <div className="pt-1.5 flex items-start gap-1.5 text-[11px] text-amber-600 dark:text-amber-400 bg-amber-500/5 p-2 rounded-xl border border-amber-500/10">
+                              <span className="material-symbols-outlined text-xs shrink-0 mt-0.5">sticky_note_2</span>
+                              <span className="italic font-medium">{res.note}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Bottom Standardized Action Button Grid */}
+                        <div className="grid grid-cols-12 gap-2 pt-1 items-center">
+                          {res.status === 'pending' && (
+                            <button
+                              onClick={() => handleUpdateReservationStatus(res._id, 'confirmed')}
+                              className="col-span-5 py-2.5 bg-[#38BDF8] text-[#090D16] text-xs font-black rounded-xl hover:bg-[#0284c7] transition-all flex items-center justify-center gap-1 shadow-xs cursor-pointer"
+                            >
+                              <span className="material-symbols-outlined text-xs">check</span>
+                              <span>Xác nhận</span>
+                            </button>
+                          )}
+                          {res.status !== 'arrived' && res.status !== 'cancelled' && (
+                            <button
+                              onClick={() => handleUpdateReservationStatus(res._id, 'arrived')}
+                              className={`${res.status === 'pending' ? 'col-span-4' : 'col-span-7'} py-2.5 bg-emerald-500 text-white text-xs font-black rounded-xl hover:bg-emerald-600 transition-all flex items-center justify-center gap-1 shadow-xs cursor-pointer`}
+                            >
+                              <span className="material-symbols-outlined text-xs">directions_walk</span>
+                              <span>Đã đến</span>
+                            </button>
+                          )}
+                          {res.status !== 'cancelled' && (
+                            <button
+                              onClick={() => handleUpdateReservationStatus(res._id, 'cancelled')}
+                              className={`${res.status === 'pending' ? 'col-span-2' : 'col-span-3'} py-2.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500 hover:text-white text-xs font-extrabold rounded-xl transition-all flex items-center justify-center cursor-pointer`}
+                              title="Hủy đơn đặt bàn"
+                            >
+                              <span>Hủy</span>
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDeleteReservation(res._id)}
+                            className={`${res.status === 'arrived' || res.status === 'cancelled' ? 'col-span-12 ml-auto' : 'col-span-1'} p-2.5 text-slate-400 hover:text-rose-500 transition-colors flex items-center justify-center cursor-pointer`}
+                            title="Xóa đơn đặt bàn"
+                          >
+                            <span className="material-symbols-outlined text-base">delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -2218,9 +2540,24 @@ export default function DashboardPage() {
               {filteredTables.map((tbl) => (
                 <div key={tbl._id} className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 rounded-2xl text-center space-y-3 relative group shadow-xs">
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-base">{tbl.tableName}</h4>
-                  <span className="inline-block px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full text-[10px] font-bold">
-                    {tbl.status === 'serving' ? 'Có khách' : 'Bàn trống'}
-                  </span>
+                  {(() => {
+                    let badgeStyle = 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
+                    let badgeLabel = 'Bàn trống';
+
+                    if (tbl.status === 'serving') {
+                      badgeStyle = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30';
+                      badgeLabel = 'Có khách';
+                    } else if (tbl.status === 'reserved') {
+                      badgeStyle = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30';
+                      badgeLabel = 'Khách hẹn';
+                    }
+
+                    return (
+                      <span className={`inline-block px-3 py-1 rounded-full text-[10.5px] font-extrabold border ${badgeStyle}`}>
+                        {badgeLabel}
+                      </span>
+                    );
+                  })()}
 
                   <button
                     onClick={() => setQrTable(tbl)}
@@ -2648,8 +2985,9 @@ export default function DashboardPage() {
               </div>
               <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-5 rounded-2xl shadow-xs">
                 <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold block">Đánh giá trung bình</span>
-                <span className="text-2xl font-black text-amber-500 dark:text-amber-400 mt-1 block font-heading">
-                  ⭐ {avgStar} / 5.0
+                <span className="text-2xl font-black text-amber-500 dark:text-amber-400 mt-1 flex items-center gap-1 font-heading">
+                  <span className="material-symbols-outlined text-amber-500 text-xl">star</span>
+                  <span>{avgStar} / 5.0</span>
                 </span>
                 <span className="text-[10px] text-slate-500 block mt-1">
                   {reviews.length} đánh giá từ khách hàng
@@ -2791,7 +3129,10 @@ export default function DashboardPage() {
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Ý kiến đóng góp trực tiếp từ khách hàng quét QR tại bàn</p>
                 </div>
                 <div className="flex items-center gap-2 bg-slate-100 dark:bg-[#1e293b] px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
-                  <span className="text-amber-500 dark:text-amber-400 font-black text-sm">⭐ {avgStar}</span>
+                  <span className="text-amber-500 dark:text-amber-400 font-black text-sm flex items-center gap-1">
+                    <span className="material-symbols-outlined text-base">star</span>
+                    <span>{avgStar}</span>
+                  </span>
                   <span className="text-xs text-slate-500 dark:text-slate-400">({reviews.length} đánh giá)</span>
                 </div>
               </div>
@@ -2812,8 +3153,10 @@ export default function DashboardPage() {
                               {rev.tableId?.tableName || 'Bàn'}
                             </span>
                           </div>
-                          <div className="text-amber-500 dark:text-amber-400 text-xs mt-1">
-                            {'⭐'.repeat(rev.serviceStar || 5)}
+                          <div className="text-amber-500 dark:text-amber-400 text-xs mt-1 flex items-center">
+                            {Array.from({ length: rev.serviceStar || 5 }).map((_, idx) => (
+                              <span key={idx} className="material-symbols-outlined text-sm">star</span>
+                            ))}
                           </div>
                         </div>
 
@@ -2838,11 +3181,240 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+
+        {/* Coupons View: ADMIN ONLY */}
+        {activeTab === ('coupons' as any) && user?.role === 'admin' && (
+          <div className="flex-1 overflow-y-auto space-y-4 pb-10 scrollbar-thin">
+            <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl flex justify-between items-center shadow-xs">
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading">
+                  Quản lý Mã giảm giá (Coupons)
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Tạo và quản lý các chương trình ưu đãi chiết khấu cho khách hàng
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setEditingCoupon(null);
+                  setCouponForm({
+                    code: '',
+                    type: 'percent',
+                    value: '',
+                    maxDiscount: '',
+                    minOrderAmount: '',
+                    expiresAt: '',
+                    isActive: true,
+                  });
+                  setIsCouponModalOpen(true);
+                }}
+                className="px-3.5 sm:px-4 py-2 bg-[#38BDF8] text-[#090D16] font-extrabold text-xs rounded-xl hover:bg-[#0284c7] transition-all flex items-center gap-1.5 shrink-0"
+              >
+                <span className="material-symbols-outlined text-base">add</span>
+                <span>Tạo mã mới</span>
+              </button>
+            </div>
+
+            {coupons.length === 0 ? (
+              <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-8 text-center text-slate-500 text-xs">
+                Chưa có mã giảm giá nào trong hệ thống
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {coupons.map((c) => (
+                  <div key={c._id} className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 rounded-2xl space-y-3 relative shadow-xs">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="font-mono text-base font-black text-[#0284c7] dark:text-[#38BDF8] tracking-wider block">
+                          {c.code}
+                        </span>
+                        <span className="text-[11px] text-slate-500 font-semibold">
+                          {c.type === 'percent' ? `Giảm ${c.value}% (Tối đa ${formatPrice(c.maxDiscount || 0)})` : `Giảm cố định ${formatPrice(c.value)}`}
+                        </span>
+                      </div>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${c.isActive ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-500'}`}>
+                        {c.isActive ? 'Đang kích hoạt' : 'Tạm khóa'}
+                      </span>
+                    </div>
+
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 space-y-1 pt-2 border-t border-slate-100 dark:border-[#1e293b]">
+                      <div>Đơn tối thiểu: <span className="font-bold text-slate-700 dark:text-slate-300">{formatPrice(c.minOrderAmount || 0)}</span></div>
+                      <div>Lượt đã dùng: <span className="font-bold text-slate-700 dark:text-slate-300">{c.usedCount || 0} / {c.maxUsage > 0 ? c.maxUsage : 'Không giới hạn'}</span></div>
+                      <div>Hạn dùng: <span className="font-bold text-slate-700 dark:text-slate-300">{c.expiresAt ? new Date(c.expiresAt).toLocaleDateString('vi-VN') : 'Không thời hạn'}</span></div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-[#1e293b]">
+                      <button
+                        onClick={() => {
+                          setEditingCoupon(c);
+                          setCouponForm({
+                            code: c.code || '',
+                            type: c.type || 'percent',
+                            value: String(c.value || ''),
+                            maxDiscount: String(c.maxDiscount || ''),
+                            minOrderAmount: String(c.minOrderAmount || ''),
+                            expiresAt: formatForDatetimeInput(c.expiresAt),
+                            isActive: c.isActive ?? true,
+                          });
+                          setIsCouponModalOpen(true);
+                        }}
+                        className="p-1.5 text-slate-400 hover:text-[#38BDF8] transition-colors"
+                        title="Sửa mã"
+                      >
+                        <span className="material-symbols-outlined text-base">edit</span>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCoupon(c._id)}
+                        className="p-1.5 text-slate-400 hover:text-rose-500 transition-colors"
+                        title="Xóa mã"
+                      >
+                        <span className="material-symbols-outlined text-base">delete</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Reservations View: STAFF & ADMIN */}
+        {activeTab === ('reservations' as any) && (
+          <div className="flex-1 overflow-y-auto space-y-4 pb-10 scrollbar-thin">
+            <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 rounded-2xl flex justify-between items-center shadow-xs">
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[#0284c7] dark:text-[#38BDF8] text-lg">event_seat</span>
+                  <span>Quản lý Danh sách Bàn đã đặt (Reservations)</span>
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Theo dõi và tiếp nhận thông tin giữ chỗ trực tuyến của khách hàng trước khi đến quán
+                </p>
+              </div>
+              <span className="bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] px-3.5 py-1.5 rounded-xl text-xs font-black">
+                {reservations.length} lượt giữ chỗ
+              </span>
+            </div>
+
+            {reservations.length === 0 ? (
+              <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-10 text-center text-slate-500 text-xs">
+                Chưa có đơn đặt bàn trực tuyến nào
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {reservations.map((res) => {
+                  let statusBadge = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30';
+                  let statusLabel = 'Chờ xác nhận';
+                  let statusIcon = 'hourglass_empty';
+
+                  if (res.status === 'confirmed') {
+                    statusBadge = 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30';
+                    statusLabel = 'Đã xác nhận';
+                    statusIcon = 'check_circle';
+                  } else if (res.status === 'arrived') {
+                    statusBadge = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30';
+                    statusLabel = 'Khách đã đến';
+                    statusIcon = 'task_alt';
+                  } else if (res.status === 'cancelled') {
+                    statusBadge = 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30';
+                    statusLabel = 'Đã hủy đặt';
+                    statusIcon = 'cancel';
+                  }
+
+                  return (
+                    <div
+                      key={res._id}
+                      className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] hover:border-[#38BDF8]/40 p-5 rounded-2xl space-y-4 shadow-sm transition-all duration-200 flex flex-col justify-between"
+                    >
+                      {/* Header: Customer Name & Phone & Status Badge */}
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between items-start gap-2">
+                          <h4 className="font-extrabold text-slate-900 dark:text-white text-base tracking-tight font-heading truncate">
+                            {res.customerName}
+                          </h4>
+                          <span className={`px-2.5 py-1 rounded-full text-[10.5px] font-extrabold border flex items-center gap-1 shrink-0 ${statusBadge}`}>
+                            <span className="material-symbols-outlined text-xs">{statusIcon}</span>
+                            <span>{statusLabel}</span>
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1 text-xs font-bold text-[#0284c7] dark:text-[#38BDF8]">
+                          <span className="material-symbols-outlined text-xs">call</span>
+                          <span>{res.customerPhone}</span>
+                        </div>
+                      </div>
+
+                      {/* Middle Info Block with Strong Typography Hierarchy */}
+                      <div className="py-2.5 border-t border-b border-slate-100 dark:border-[#1e293b] space-y-2 text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-400 dark:text-slate-500 text-[11px] font-medium">Bàn ăn chọn:</span>
+                          <span className="font-black text-slate-900 dark:text-white text-xs">{res.tableId?.tableName || 'Bàn chọn'}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-400 dark:text-slate-500 text-[11px] font-medium">Thời gian nhận bàn:</span>
+                          <span className="font-extrabold text-slate-800 dark:text-slate-200 text-xs">{new Date(res.reservationTime).toLocaleString('vi-VN')}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-400 dark:text-slate-500 text-[11px] font-medium">Số lượng khách:</span>
+                          <span className="font-extrabold text-slate-800 dark:text-slate-200 text-xs">{res.guestCount} người</span>
+                        </div>
+                        {res.note && (
+                          <div className="pt-1.5 flex items-start gap-1.5 text-[11px] text-amber-600 dark:text-amber-400 bg-amber-500/5 p-2 rounded-xl border border-amber-500/10">
+                            <span className="material-symbols-outlined text-xs shrink-0 mt-0.5">sticky_note_2</span>
+                            <span className="italic font-medium">{res.note}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Bottom Standardized Action Button Grid */}
+                      <div className="grid grid-cols-12 gap-2 pt-1 items-center">
+                        {res.status === 'pending' && (
+                          <button
+                            onClick={() => handleUpdateReservationStatus(res._id, 'confirmed')}
+                            className="col-span-5 py-2.5 bg-[#38BDF8] text-[#090D16] text-xs font-black rounded-xl hover:bg-[#0284c7] transition-all flex items-center justify-center gap-1 shadow-xs cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-xs">check</span>
+                            <span>Xác nhận</span>
+                          </button>
+                        )}
+                        {res.status !== 'arrived' && res.status !== 'cancelled' && (
+                          <button
+                            onClick={() => handleUpdateReservationStatus(res._id, 'arrived')}
+                            className={`${res.status === 'pending' ? 'col-span-4' : 'col-span-7'} py-2.5 bg-emerald-500 text-white text-xs font-black rounded-xl hover:bg-emerald-600 transition-all flex items-center justify-center gap-1 shadow-xs cursor-pointer`}
+                          >
+                            <span className="material-symbols-outlined text-xs">directions_walk</span>
+                            <span>Đã đến</span>
+                          </button>
+                        )}
+                        {res.status !== 'cancelled' && (
+                          <button
+                            onClick={() => handleUpdateReservationStatus(res._id, 'cancelled')}
+                            className={`${res.status === 'pending' ? 'col-span-2' : 'col-span-3'} py-2.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500 hover:text-white text-xs font-extrabold rounded-xl transition-all flex items-center justify-center cursor-pointer`}
+                            title="Hủy đơn đặt bàn"
+                          >
+                            <span>Hủy</span>
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDeleteReservation(res._id)}
+                          className={`${res.status === 'arrived' || res.status === 'cancelled' ? 'col-span-12 ml-auto' : 'col-span-1'} p-2.5 text-slate-400 hover:text-rose-500 transition-colors flex items-center justify-center cursor-pointer`}
+                          title="Xóa đơn đặt bàn"
+                        >
+                          <span className="material-symbols-outlined text-base">delete</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
-      {/* ── COLUMN 3: RIGHT REALTIME ACTIVITY SIDEBAR (#0d1322 / bg-white) ────── */}
+      {/* ── COLUMN 3: RIGHT REALTIME ACTIVITY SIDEBAR (#1A2232 / bg-white) ────── */}
       <aside
-        className={`fixed xl:static inset-y-0 right-0 z-40 w-80 bg-white dark:bg-[#0d1322] border-l border-slate-200 dark:border-[#1e293b] p-5 h-screen flex flex-col overflow-y-auto transition-all duration-300 ease-in-out ${
+        className={`fixed xl:static inset-y-0 right-0 z-40 w-80 bg-white dark:bg-[#1A2232] border-l border-[#E2E8F0] dark:border-[#293246] p-5 h-screen flex flex-col overflow-y-auto transition-all duration-300 ease-in-out ${
           isRealtimeDrawerOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full xl:translate-x-0'
         }`}
       >
@@ -3003,7 +3575,7 @@ export default function DashboardPage() {
                           Nhân viên chưa điểm danh ({notCheckedInList.length})
                         </h4>
                         {notCheckedInList.length === 0 ? (
-                          <p className="text-xs text-emerald-500 font-bold">Tất cả nhân viên đã điểm danh đầy đủ! 🎉</p>
+                          <p className="text-xs text-emerald-500 font-bold">Tất cả nhân viên đã điểm danh đầy đủ!</p>
                         ) : (
                           notCheckedInList.map((st) => (
                             <div
@@ -3822,6 +4394,139 @@ export default function DashboardPage() {
                   </div>
                 </form>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 7. Create/Edit Coupon Modal */}
+      <AnimatePresence>
+        {isCouponModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsCouponModalOpen(false)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-xs"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative z-10 w-full max-w-md bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4"
+            >
+              <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-[#1e293b]">
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading">
+                  {editingCoupon ? 'Cập nhật mã giảm giá' : 'Tạo mã giảm giá mới'}
+                </h3>
+                <button onClick={() => setIsCouponModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateOrUpdateCoupon} className="space-y-3 text-xs">
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Mã giảm giá (Code)</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="VD: KOHI10, WELCOME50K"
+                    value={couponForm.code}
+                    onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })}
+                    className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white uppercase font-mono font-bold focus:border-[#38BDF8]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Loại giảm giá</label>
+                    <select
+                      value={couponForm.type}
+                      onChange={(e) => setCouponForm({ ...couponForm, type: e.target.value })}
+                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:border-[#38BDF8]"
+                    >
+                      <option value="percent">Giảm theo %</option>
+                      <option value="fixed">Giảm số tiền cố định (VND)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      {couponForm.type === 'percent' ? 'Mức giảm (%)' : 'Số tiền giảm (VND)'}
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      placeholder={couponForm.type === 'percent' ? '10' : '20000'}
+                      value={couponForm.value}
+                      onChange={(e) => setCouponForm({ ...couponForm, value: e.target.value })}
+                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:border-[#38BDF8]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Giảm tối đa (VND)</label>
+                    <input
+                      type="number"
+                      placeholder="0 = không giới hạn"
+                      value={couponForm.maxDiscount}
+                      onChange={(e) => setCouponForm({ ...couponForm, maxDiscount: e.target.value })}
+                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:border-[#38BDF8]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Đơn tối thiểu (VND)</label>
+                    <input
+                      type="number"
+                      placeholder="0"
+                      value={couponForm.minOrderAmount}
+                      onChange={(e) => setCouponForm({ ...couponForm, minOrderAmount: e.target.value })}
+                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:border-[#38BDF8]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Hạn sử dụng</label>
+                  <input
+                    type="datetime-local"
+                    value={couponForm.expiresAt}
+                    onChange={(e) => setCouponForm({ ...couponForm, expiresAt: e.target.value })}
+                    className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:border-[#38BDF8]"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="couponActive"
+                    checked={couponForm.isActive}
+                    onChange={(e) => setCouponForm({ ...couponForm, isActive: e.target.checked })}
+                    className="rounded text-[#38BDF8]"
+                  />
+                  <label htmlFor="couponActive" className="font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
+                    Kích hoạt mã giảm giá ngay
+                  </label>
+                </div>
+
+                <div className="flex gap-3 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsCouponModalOpen(false)}
+                    className="flex-1 py-2.5 bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 rounded-xl font-bold"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 py-2.5 bg-[#38BDF8] text-[#090D16] font-black rounded-xl hover:bg-[#0284c7] transition-all"
+                  >
+                    Lưu mã
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </div>
         )}

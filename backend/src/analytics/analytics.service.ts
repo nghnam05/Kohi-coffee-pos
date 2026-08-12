@@ -24,7 +24,7 @@ export class AnalyticsService {
         this.sumRevenue(startOfDay, now),
         this.sumRevenue(startOfWeek, now),
         this.sumRevenue(startOfMonth, now),
-        this.orderModel.countDocuments({ status: 'paid' }),
+        this.orderModel.countDocuments({ $or: [{ status: 'paid' }, { paymentStatus: 'paid' }] }),
         this.sumPaidSalaries(startOfDay, now),
         this.sumPaidSalaries(startOfWeek, now),
         this.sumPaidSalaries(startOfMonth, now),
@@ -48,10 +48,14 @@ export class AnalyticsService {
     const result = await this.orderModel.aggregate([
       {
         $match: {
-          status: 'paid',
-          $or: [
-            { paidAt: { $gte: from, $lte: to } },
-            { paidAt: { $exists: false }, createdAt: { $gte: from, $lte: to } },
+          $and: [
+            { $or: [{ status: 'paid' }, { paymentStatus: 'paid' }] },
+            {
+              $or: [
+                { paidAt: { $gte: from, $lte: to } },
+                { createdAt: { $gte: from, $lte: to } },
+              ],
+            },
           ],
         },
       },
@@ -62,7 +66,20 @@ export class AnalyticsService {
 
   private async sumPaidSalaries(from: Date, to: Date): Promise<number> {
     const result = await this.payrollModel.aggregate([
-      { $match: { status: 'paid', paidAt: { $gte: from, $lte: to } } },
+      {
+        $match: {
+          $and: [
+            { $or: [{ status: 'paid' }, { isPaid: true }] },
+            {
+              $or: [
+                { paidAt: { $gte: from, $lte: to } },
+                { updatedAt: { $gte: from, $lte: to } },
+                { createdAt: { $gte: from, $lte: to } },
+              ],
+            },
+          ],
+        },
+      },
       { $group: { _id: null, total: { $sum: '$netSalary' } } },
     ]);
     return result[0]?.total ?? 0;
@@ -74,10 +91,22 @@ export class AnalyticsService {
     const toDate = new Date(to);
     toDate.setHours(23, 59, 59, 999);
     return this.orderModel.aggregate([
-      { $match: { status: 'paid', createdAt: { $gte: fromDate, $lte: toDate } } },
+      {
+        $match: {
+          $and: [
+            { $or: [{ status: 'paid' }, { paymentStatus: 'paid' }] },
+            {
+              $or: [
+                { paidAt: { $gte: fromDate, $lte: toDate } },
+                { createdAt: { $gte: fromDate, $lte: toDate } },
+              ],
+            },
+          ],
+        },
+      },
       {
         $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+07:00' } },
+          _id: { $dateToString: { format: '%Y-%m-%d', date: { $ifNull: ['$paidAt', '$createdAt'] }, timezone: '+07:00' } },
           revenue: { $sum: '$totalAmount' },
           orders: { $sum: 1 },
         },
@@ -89,22 +118,13 @@ export class AnalyticsService {
   /** Top món bán chạy */
   async getTopFoods(limit: number = 10): Promise<any[]> {
     return this.orderModel.aggregate([
-      { $match: { status: 'paid' } },
+      { $match: { $or: [{ status: 'paid' }, { paymentStatus: 'paid' }] } },
       { $unwind: '$items' },
       { $match: { 'items.foodId': { $ne: null } } },
       {
-        $group: {
-          _id: '$items.foodId',
-          totalQuantity: { $sum: '$items.quantity' },
-          totalRevenue: { $sum: { $multiply: ['$items.quantity', { $ifNull: ['$items.price', 0] }] } },
-        },
-      },
-      { $sort: { totalQuantity: -1 } },
-      { $limit: limit },
-      {
         $lookup: {
           from: 'foods',
-          let: { rawFoodId: '$_id' },
+          let: { rawFoodId: '$items.foodId' },
           pipeline: [
             {
               $match: {
@@ -117,18 +137,38 @@ export class AnalyticsService {
               },
             },
           ],
-          as: 'food',
+          as: 'foodDoc',
         },
       },
-      { $unwind: { path: '$food', preserveNullAndEmptyArrays: true } },
+      { $unwind: { path: '$foodDoc', preserveNullAndEmptyArrays: true } },
+      {
+        $group: {
+          _id: '$items.foodId',
+          foodName: { $first: { $ifNull: ['$foodDoc.name', 'Món ăn trong Menu'] } },
+          foodImage: { $first: '$foodDoc.image' },
+          category: { $first: '$foodDoc.category' },
+          price: { $first: { $ifNull: ['$foodDoc.price', 0] } },
+          totalQuantity: { $sum: '$items.quantity' },
+          totalRevenue: {
+            $sum: {
+              $multiply: [
+                '$items.quantity',
+                { $ifNull: ['$items.price', { $ifNull: ['$foodDoc.price', 0] }] },
+              ],
+            },
+          },
+        },
+      },
+      { $sort: { totalQuantity: -1, totalRevenue: -1 } },
+      { $limit: limit },
       {
         $project: {
           _id: 0,
           foodId: '$_id',
-          foodName: { $ifNull: ['$food.name', 'Món ăn trong Menu'] },
-          foodImage: '$food.image',
-          category: '$food.category',
-          price: '$food.price',
+          foodName: 1,
+          foodImage: 1,
+          category: 1,
+          price: 1,
           totalQuantity: 1,
           totalRevenue: 1,
         },
@@ -142,10 +182,22 @@ export class AnalyticsService {
     const end = new Date(date);
     end.setHours(23, 59, 59, 999);
     return this.orderModel.aggregate([
-      { $match: { status: 'paid', createdAt: { $gte: day, $lte: end } } },
+      {
+        $match: {
+          $and: [
+            { $or: [{ status: 'paid' }, { paymentStatus: 'paid' }] },
+            {
+              $or: [
+                { paidAt: { $gte: day, $lte: end } },
+                { createdAt: { $gte: day, $lte: end } },
+              ],
+            },
+          ],
+        },
+      },
       {
         $group: {
-          _id: { $hour: { date: '$createdAt', timezone: '+07:00' } },
+          _id: { $hour: { date: { $ifNull: ['$paidAt', '$createdAt'] }, timezone: '+07:00' } },
           revenue: { $sum: '$totalAmount' },
           orders: { $sum: 1 },
         },
