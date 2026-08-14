@@ -65,7 +65,7 @@ export class Order {
 
   @Prop({
     type: String,
-    enum: ['pending', 'confirmed', 'cooking', 'completed', 'cancelled', 'paid'],
+    enum: ['pending', 'confirmed', 'cooking', 'ready', 'completed', 'cancelled', 'paid'],
     default: 'pending',
     index: true,
   })

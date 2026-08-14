@@ -13,9 +13,9 @@ export class AttendanceController {
 
   /** POST /api/v1/attendance/check-in */
   @Post('check-in')
-  checkIn(@Request() req: any) {
+  checkIn(@Request() req: any, @Body('shift') shift?: string) {
     const userId = req.user?.userId || req.user?._id || req.user?.sub;
-    return this.attendanceService.checkIn(userId);
+    return this.attendanceService.checkIn(userId, shift);
   }
 
   /** PATCH /api/v1/attendance/check-out */
@@ -50,7 +50,7 @@ export class AttendanceController {
 
   /** GET /api/v1/attendance?userId=&month=&year= – Admin */
   @UseGuards(RolesGuard)
-  @Roles('admin', 'staff')
+  @Roles('admin', 'waiter', 'barista', 'staff')
   @Get()
   findAll(
     @Query('userId') userId?: string,
@@ -69,8 +69,9 @@ export class AttendanceController {
     @Body('checkIn') checkIn?: string,
     @Body('checkOut') checkOut?: string,
     @Body('note') note?: string,
+    @Body('shift') shift?: string,
   ) {
-    return this.attendanceService.adminEdit(id, checkIn, checkOut, note);
+    return this.attendanceService.adminEdit(id, checkIn, checkOut, note, shift);
   }
 
   /** PATCH /api/v1/attendance/:id – Admin chỉnh thủ công */
@@ -82,8 +83,9 @@ export class AttendanceController {
     @Body('checkIn') checkIn?: string,
     @Body('checkOut') checkOut?: string,
     @Body('note') note?: string,
+    @Body('shift') shift?: string,
   ) {
-    return this.attendanceService.adminEdit(id, checkIn, checkOut, note);
+    return this.attendanceService.adminEdit(id, checkIn, checkOut, note, shift);
   }
 
   /** DELETE /api/v1/attendance/:id – Admin xóa bản ghi */
@@ -94,4 +96,3 @@ export class AttendanceController {
     return this.attendanceService.deleteAttendance(id);
   }
 }
-

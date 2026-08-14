@@ -8,6 +8,7 @@ import { io, Socket } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { playCashChime, playAlertPing, playMomoChime } from '../../../../utils/sound';
 import { ThemeToggleSwitch } from '@/components/table/ThemeToggleSwitch';
+import { SplitBillModal } from '@/components/table/SplitBillModal';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 const SOCKET_BASE = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
@@ -31,16 +32,20 @@ const DICTIONARY = {
     served: 'Đã phục vụ xong',
     readyToEat: 'Thức uống & bánh đã sẵn sàng!',
     steps: {
-      pending: 'Đã nhận đơn',
+      pending: 'Đã gửi đơn',
+      confirmed: 'Phục vụ đã duyệt',
       cooking: 'Đang pha chế',
-      completed: 'Đã ra món',
+      ready: 'Xong pha chế',
+      completed: 'Đã ra món tại bàn',
       paid: 'Hoàn tất thanh toán',
       cancelled: 'Đã hủy đơn',
     },
     stepDesc: {
-      pending: 'Quầy pha chế đã nhận thông tin thức uống của bạn.',
-      cooking: 'Barista đang chuẩn bị và pha chế thức uống tươi ngon.',
-      completed: 'Thức uống & bánh đã sẵn sàng phục vụ tại bàn của bạn. Chúc bạn thưởng thức vui vẻ!',
+      pending: 'Đơn hàng của bạn đã gửi lên hệ thống. Phục vụ đang xác nhận.',
+      confirmed: 'Nhân viên phục vụ đã duyệt đơn và gửi xuống Quầy pha chế.',
+      cooking: 'Barista đang chuẩn bị và pha chế thức uống tươi ngon cho bạn.',
+      ready: 'Quầy pha chế đã làm xong đồ uống! Phục vụ đang mang ra bàn.',
+      completed: 'Thức uống & bánh đã được phục vụ tại bàn của bạn. Chúc bạn ngon miệng!',
       paid: 'Cảm ơn quý khách đã thưởng thức tại Kohi Coffee!',
       cancelled: 'Rất tiếc, đơn hàng đã bị hủy. Vui lòng liên hệ nhân viên.',
     },
@@ -62,15 +67,19 @@ const DICTIONARY = {
     readyToEat: 'Ready to enjoy!',
     steps: {
       pending: 'Order Received',
-      cooking: 'Cooking',
+      confirmed: 'Confirmed by Waiter',
+      cooking: 'Cooking / Brewing',
+      ready: 'Drink Ready',
       completed: 'Served',
       paid: 'Payment Completed',
       cancelled: 'Cancelled',
     },
     stepDesc: {
-      pending: 'Kitchen has received your ordering list.',
-      cooking: 'The chef is preparing your dishes with fresh ingredients.',
-      completed: 'Your food is served at your table. Enjoy your meal!',
+      pending: 'Order submitted. Service staff is confirming your order.',
+      confirmed: 'Service staff confirmed your order and sent to the Barista.',
+      cooking: 'The Barista is preparing your drinks with fresh ingredients.',
+      ready: 'Your drinks are ready! Service staff is bringing them to your table.',
+      completed: 'Your order is served at your table. Enjoy your meal!',
       paid: 'Thank you for dining with us!',
       cancelled: 'Unfortunately, your order has been cancelled. Please contact staff.',
     },
@@ -92,14 +101,18 @@ const DICTIONARY = {
     readyToEat: '美食已上桌！',
     steps: {
       pending: '已接单',
+      confirmed: '服务员已确认',
       cooking: '正在烹饪',
+      ready: '饮品制作完成',
       completed: '已上菜',
       paid: '交易完成',
       cancelled: '已取消',
     },
     stepDesc: {
-      pending: '后厨已收到您的点单信息。',
-      cooking: '主厨 đang sử dụng nguyên liệu tươi ngon để chế biến món ăn.',
+      pending: '订单已提交，服务员正在确认中。',
+      confirmed: '服务员已确认订单并转交吧台制作。',
+      cooking: '调饮师正在为您制作新鲜饮品。',
+      ready: '饮品已制作完成，服务员正送往您的餐桌。',
       completed: '您的美食已送达桌前，请慢用！',
       paid: '感谢您光临本店用餐！',
       cancelled: '抱歉，您的订单已被取消。请联系服务员。',
@@ -126,7 +139,7 @@ interface Order {
   customerName?: string;
   items: FoodItem[];
   totalAmount: number;
-  status: 'pending' | 'cooking' | 'completed' | 'cancelled' | 'paid';
+  status: 'pending' | 'confirmed' | 'cooking' | 'ready' | 'completed' | 'cancelled' | 'paid';
   paymentMethod: 'cash' | 'momo';
   createdAt: string;
 }
@@ -186,6 +199,7 @@ export default function OrderStatusPage() {
   const [overallStar, setOverallStar] = useState(5);
   const [overallComment, setOverallComment] = useState('');
   const [foodStars, setFoodStars] = useState<Record<string, number>>({});
+  const [isSplitBillOpen, setIsSplitBillOpen] = useState(false);
 
   const handleSimulateMoMoPayment = async () => {
     if (!orderId) return;
@@ -294,11 +308,6 @@ export default function OrderStatusPage() {
         setOrder((prev) => (prev ? { ...prev, status } : null));
         if (status === 'paid') {
           playMomoChime();
-          fetch(`${API_BASE}/tables/${tableId}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'empty' }),
-          }).catch(() => {});
         } else if (status === 'completed') {
           playCashChime();
         } else {
@@ -331,13 +340,13 @@ export default function OrderStatusPage() {
 
   if (!mounted) return null;
 
-  const stepsList: Order['status'][] = ['pending', 'cooking', 'completed', 'paid'];
+  const stepsList: Order['status'][] = ['pending', 'confirmed', 'cooking', 'ready', 'completed', 'paid'];
   const currentStepIndex = order ? stepsList.indexOf(order.status) : -1;
 
   const isDark = resolvedTheme === 'dark';
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC] dark:bg-[#090D16] text-[#000000] dark:text-[#FFFFFF] transition-colors duration-300 font-sans selection:bg-[#3AA6FF] selection:text-white">
+    <div className="min-h-screen flex flex-col bg-[#FFFFFF] dark:bg-[#090D16] text-[#000000] dark:text-[#FFFFFF] transition-colors duration-300 font-sans selection:bg-[#3AA6FF] selection:text-white">
       {/* Header Top Bar */}
       <header className="sticky top-0 z-40 bg-[var(--bg-primary)]/95 backdrop-blur-md border-b border-[var(--border-color)] transition-colors shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between font-sans">
@@ -411,7 +420,7 @@ export default function OrderStatusPage() {
           <div className="space-y-6">
             {order.status === 'paid' ? (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-6xl mx-auto items-start font-sans">
-                {/* 1️⃣ LEFT COLUMN: BEAUTIFUL INVOICE / RECEIPT COMPONENT FOR CUSTOMER (lg:col-span-7) */}
+                {/* LEFT COLUMN: BEAUTIFUL INVOICE / RECEIPT COMPONENT FOR CUSTOMER (lg:col-span-7) */}
                 <div className="lg:col-span-7 bg-[var(--bg-card)] rounded-2xl p-6 sm:p-8 shadow-2xl border border-[var(--border-color)] transition-all relative overflow-hidden font-sans">
                   {/* Dotted Accent Header Top Bar */}
                   <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#3AA6FF]" />
@@ -441,8 +450,11 @@ export default function OrderStatusPage() {
                         <p className="font-bold uppercase text-[#3AA6FF]">#{order._id.slice(-8).toUpperCase()}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[var(--text-secondary)] font-normal">Số bàn:</p>
-                        <p className="font-bold">{order.tableId?.tableName || '—'}</p>
+                        <p className="text-[var(--text-secondary)] font-normal">Số bàn & Người gọi:</p>
+                        <p className="font-bold">
+                          {order.tableId?.tableName || '—'}
+                          {order.customerName && <span className="text-[#3AA6FF] font-extrabold ml-1">({order.customerName})</span>}
+                        </p>
                       </div>
                       <div className="mt-2">
                         <p className="text-[var(--text-secondary)] font-normal">Hình thức:</p>
@@ -515,25 +527,52 @@ export default function OrderStatusPage() {
                     </div>
                   </div>
 
-                  {/* Back to Home Page CTA */}
+                  {/* Share / Split Bill CTA */}
                   <button
-                    onClick={async () => {
-                      try {
-                        await fetch(`${API_BASE}/tables/${tableId}`, {
-                          method: 'PATCH',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ status: 'empty' }),
-                        }).catch(() => {});
-                      } catch (e) {}
-                      router.push('/');
-                    }}
-                    className="mt-6 w-full h-[52px] bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-xl shadow-md hover:shadow-lg transition-all text-xs uppercase tracking-wider flex items-center justify-center font-sans cursor-pointer active:scale-95"
+                    onClick={() => setIsSplitBillOpen(true)}
+                    className="mt-4 w-full h-[48px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 font-bold rounded-xl shadow-xs transition-all text-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                   >
-                    <span>{t.backToHome || 'QUAY VỀ TRANG CHỦ (ĐẶT BÀN)'}</span>
+                    <span className="material-symbols-outlined text-base">payments</span>
+                    <span>CHIA TIỀN NHÓM / CỦA AI TRẢ NẤY</span>
                   </button>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                    {/* Leave Table CTA */}
+                    <button
+                      onClick={async () => {
+                        if (confirm('Bạn có chắc chắn muốn rời bàn? Trạng thái bàn sẽ được lập tức dọn trống cho lượt khách tiếp theo.')) {
+                          try {
+                            await fetch(`${API_BASE}/tables/${tableId}`, {
+                              method: 'PATCH',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ status: 'empty' }),
+                            }).catch(() => {});
+                          } catch (e) {}
+                          localStorage.removeItem(`chika_name_${tableId}`);
+                          localStorage.removeItem(`chika_name_dismissed_${tableId}`);
+                          router.push('/');
+                        }
+                      }}
+                      className="w-full h-[50px] bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl shadow-md transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 font-sans cursor-pointer active:scale-95"
+                    >
+                      <span className="material-symbols-outlined text-base">logout</span>
+                      <span>RỜI BÀN</span>
+                    </button>
+
+                    {/* Back to Home Page CTA */}
+                    <button
+                      onClick={() => {
+                        router.push('/');
+                      }}
+                      className="w-full h-[50px] bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-xl shadow-md hover:shadow-lg transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 font-sans cursor-pointer active:scale-95"
+                    >
+                      <span className="material-symbols-outlined text-base">home</span>
+                      <span>TRANG CHỦ</span>
+                    </button>
+                  </div>
                 </div>
 
-                {/* 2️⃣ RIGHT COLUMN: REVIEW & RATING CARD (lg:col-span-5) */}
+                {/* RIGHT COLUMN: REVIEW & RATING CARD (lg:col-span-5) */}
                 <div className="lg:col-span-5 bg-[var(--bg-card)] rounded-2xl p-6 sm:p-8 shadow-2xl border border-[var(--border-color)] transition-all font-sans">
                   <div className="flex items-center gap-3 pb-4 border-b border-[var(--border-color)] mb-5">
                     <div className="w-10 h-10 rounded-xl bg-[#3AA6FF]/10 text-[#3AA6FF] flex items-center justify-center border border-[#3AA6FF]/30">
@@ -626,7 +665,7 @@ export default function OrderStatusPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-6 items-stretch pb-16 lg:pb-0">
 
-                {/* 1️⃣ LEFT COLUMN (LỊCH SỬ GỌI MÓN TẠI BÀN) */}
+                {/* LEFT COLUMN (LỊCH SỬ GỌI MÓN TẠI BÀN) */}
                 <div className="order-3 md:order-3 lg:order-1 md:col-span-12 lg:col-span-3 bg-[#FFFFFF] dark:bg-[#11141A] border border-[#E2E8F0] dark:border-[#222732] rounded-2xl p-5 flex flex-col justify-between shadow-xl text-left transition-colors">
                   <div>
                     {/* Header */}
@@ -655,13 +694,20 @@ export default function OrderStatusPage() {
                           }}
                           className={`p-3.5 rounded-xl border transition-all cursor-pointer text-left ${tOrder._id === orderId
                             ? 'border-[#3AA6FF] bg-[#3AA6FF]/10 dark:bg-[#181B21] ring-2 ring-[#3AA6FF]/30 shadow-md'
-                            : 'border-[#E2E8F0] dark:border-[#222732] bg-[#F8FAFC] dark:bg-[#181B21]/50 hover:border-[#3AA6FF]/50'
+                            : 'border-[#E2E8F0] dark:border-[#222732] bg-[#FFFFFF] dark:bg-[#181B21]/50 hover:border-[#3AA6FF]/50'
                             }`}
                         >
                           <div className="flex justify-between items-center mb-1.5">
-                            <span className="text-xs font-black text-[#000000] dark:text-[#FFFFFF]">
-                              Lượt #{tableOrders.length - idx}
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-black text-[#000000] dark:text-[#FFFFFF]">
+                                Lượt #{tableOrders.length - idx}
+                              </span>
+                              {tOrder.customerName && (
+                                <span className="text-[10px] font-bold px-1.5 py-0.5 bg-[#3AA6FF]/10 text-[#3AA6FF] rounded border border-[#3AA6FF]/20 truncate max-w-[90px]">
+                                  👤 {tOrder.customerName}
+                                </span>
+                              )}
+                            </div>
                             <span className="text-[11px] font-normal text-[#64748B] dark:text-[#94A3B8]">
                               {new Date(tOrder.createdAt).toLocaleTimeString('vi-VN')}
                             </span>
@@ -676,26 +722,49 @@ export default function OrderStatusPage() {
                   </div>
 
                   {/* Bottom Table Info */}
-                  <div className="pt-4 mt-4 border-t border-[#E2E8F0] dark:border-[#222732] flex items-center justify-between text-xs text-[#000000] dark:text-white/90">
-                    <div className="flex items-center gap-2 font-black">
-                      <span className="material-symbols-outlined text-base text-[#3AA6FF]">table_restaurant</span>
-                      <span>{order.tableId?.tableName ? (
-                        order.tableId.tableName.toLowerCase().startsWith('bàn') || order.tableId.tableName.toLowerCase().startsWith('table')
-                          ? order.tableId.tableName
-                          : `${t.table} ${order.tableId.tableName}`
-                      ) : '—'}</span>
+                  <div className="pt-4 mt-4 border-t border-[#E2E8F0] dark:border-[#222732] flex flex-col gap-3 text-xs text-[#000000] dark:text-white/90">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 font-black">
+                        <span className="material-symbols-outlined text-base text-[#3AA6FF]">table_restaurant</span>
+                        <span>{order.tableId?.tableName ? (
+                          order.tableId.tableName.toLowerCase().startsWith('bàn') || order.tableId.tableName.toLowerCase().startsWith('table')
+                            ? order.tableId.tableName
+                            : `${t.table} ${order.tableId.tableName}`
+                        ) : '—'}</span>
+                      </div>
+                      {order.customerName && (
+                        <span className="text-[11px] font-black text-[#3AA6FF] bg-[#3AA6FF]/10 px-2 py-0.5 rounded-full border border-[#3AA6FF]/30 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-xs">person</span>
+                          <span>{order.customerName}</span>
+                        </span>
+                      )}
                     </div>
-                    {order.customerName && (
-                      <span className="text-[11px] font-black text-[#3AA6FF] bg-[#3AA6FF]/10 px-2 py-0.5 rounded-full border border-[#3AA6FF]/30 flex items-center gap-1">
-                        <span className="material-symbols-outlined text-xs">person</span>
-                        <span>{order.customerName}</span>
-                      </span>
-                    )}
+
+                    <button
+                      onClick={async () => {
+                        if (confirm('Bạn có chắc chắn muốn rời bàn? Trạng thái bàn sẽ được lập tức dọn trống cho lượt khách tiếp theo.')) {
+                          try {
+                            await fetch(`${API_BASE}/tables/${tableId}`, {
+                              method: 'PATCH',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ status: 'empty' }),
+                            }).catch(() => {});
+                          } catch (e) {}
+                          localStorage.removeItem(`chika_name_${tableId}`);
+                          localStorage.removeItem(`chika_name_dismissed_${tableId}`);
+                          router.push('/');
+                        }
+                      }}
+                      className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                    >
+                      <span className="material-symbols-outlined text-base">logout</span>
+                      <span>RỜI BÀN (RESET PHIÊN DÙNG MÓN)</span>
+                    </button>
                   </div>
                 </div>
 
 
-                {/* 2️⃣ MIDDLE COLUMN (LIVE TRACKING & TIMELINE) */}
+                {/* MIDDLE COLUMN (LIVE TRACKING & TIMELINE) */}
                 <div className="order-1 md:order-1 lg:order-2 md:col-span-7 lg:col-span-5 bg-[#FFFFFF] dark:bg-[#11141A] border border-[#E2E8F0] dark:border-[#222732] rounded-2xl p-5 sm:p-6 shadow-xl flex flex-col justify-between text-left transition-colors">
                   <div>
                     {/* Top Header Badge */}
@@ -731,13 +800,19 @@ export default function OrderStatusPage() {
                               isCurrent ? 'bg-[#3AA6FF] text-white ring-4 ring-[#3AA6FF]/30 shadow-lg animate-pulse' :
                                 'bg-[#CBD5E1] dark:bg-[#222732] text-[#64748B]'
                               }`}>
-                              {isCompleted ? '✓' : isCurrent ? '⊙' : '•'}
+                              {isCompleted ? (
+                                <span className="material-symbols-outlined text-xs">check</span>
+                              ) : isCurrent ? (
+                                <span className="material-symbols-outlined text-xs">radio_button_checked</span>
+                              ) : (
+                                <span className="w-1.5 h-1.5 rounded-full bg-current inline-block" />
+                              )}
                             </div>
 
                             {/* Step Card Box */}
                             <div className={`p-3.5 sm:p-4 rounded-xl border text-left transition-all ${isCurrent
                               ? 'bg-[#3AA6FF]/10 dark:bg-[#181B21] border-[#3AA6FF] ring-2 ring-[#3AA6FF]/20 shadow-lg'
-                              : 'bg-[#F8FAFC] dark:bg-[#181B21]/40 border-[#E2E8F0] dark:border-[#222732] opacity-80'
+                              : 'bg-[#FFFFFF] dark:bg-[#181B21]/40 border-[#E2E8F0] dark:border-[#222732] opacity-80'
                               }`}>
                               <h4 className={`text-xs sm:text-sm font-black uppercase tracking-wider ${isCurrent ? 'text-[#3AA6FF]' : isCompleted ? 'text-[#000000] dark:text-white' : 'text-[#64748B] dark:text-[#64748B]'
                                 }`}>
@@ -775,7 +850,7 @@ export default function OrderStatusPage() {
                 </div>
 
 
-                {/* 3️⃣ RIGHT COLUMN (ORDER DETAILS & CALL STAFF) */}
+                {/* RIGHT COLUMN (ORDER DETAILS & CALL STAFF) */}
                 <div className="order-2 md:order-2 lg:order-3 md:col-span-5 lg:col-span-4 bg-[#FFFFFF] dark:bg-[#11141A] border border-[#E2E8F0] dark:border-[#222732] rounded-2xl p-5 sm:p-6 shadow-xl flex flex-col justify-between text-left transition-colors">
                   <div>
                     {/* Header */}
@@ -788,7 +863,7 @@ export default function OrderStatusPage() {
                       {order.items.map((item, idx) => {
                         const foodImg = item.foodId?.image || 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&q=80';
                         return (
-                          <div key={idx} className="bg-[#F8FAFC] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] p-3 sm:p-3.5 rounded-xl flex items-start gap-3 text-left relative group">
+                          <div key={idx} className="bg-[#FFFFFF] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] p-3 sm:p-3.5 rounded-xl flex items-start gap-3 text-left relative group">
                             {/* Image thumbnail with Quantity Badge overlay */}
                             <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden relative bg-[#E2E8F0] dark:bg-[#090D16] border border-[#CBD5E1] dark:border-[#222732] flex-shrink-0">
                               <Image
@@ -838,7 +913,7 @@ export default function OrderStatusPage() {
                     <button
                       onClick={handleCallStaff}
                       disabled={callStaffCooldown > 0 || isCallingStaff}
-                      className="hidden sm:flex w-full py-4 bg-[#F1F5F9] dark:bg-[#181B21] hover:bg-[#E2E8F0] dark:hover:bg-[#22252C] border border-[#CBD5E1] dark:border-[#333333] hover:border-[#3AA6FF] text-[#000000] dark:text-[#FFFFFF] font-black rounded-xl shadow-md transition-all active:scale-95 text-xs uppercase tracking-wider items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                      className="hidden sm:flex w-full py-4 bg-[#FFFFFF] dark:bg-[#181B21] hover:bg-[#F8FAFC] dark:hover:bg-[#22252C] border border-[#CBD5E1] dark:border-[#333333] hover:border-[#3AA6FF] text-[#000000] dark:text-[#FFFFFF] font-black rounded-xl shadow-md transition-all active:scale-95 text-xs uppercase tracking-wider items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                     >
                       <span>
                         {callStaffCooldown > 0
@@ -859,7 +934,7 @@ export default function OrderStatusPage() {
                 <button
                   onClick={handleCallStaff}
                   disabled={callStaffCooldown > 0 || isCallingStaff}
-                  className="w-full py-3.5 bg-[#F1F5F9] dark:bg-[#181B21] hover:bg-[#E2E8F0] dark:hover:bg-[#22252C] border border-[#3AA6FF] text-[#000000] dark:text-[#FFFFFF] font-black rounded-xl shadow-lg active:scale-95 text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="w-full py-3.5 bg-[#FFFFFF] dark:bg-[#181B21] hover:bg-[#F8FAFC] dark:hover:bg-[#22252C] border border-[#3AA6FF] text-[#000000] dark:text-[#FFFFFF] font-black rounded-xl shadow-lg active:scale-95 text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   <span className="material-symbols-outlined text-base text-[#3AA6FF] animate-pulse">notifications</span>
                   <span>
@@ -872,6 +947,15 @@ export default function OrderStatusPage() {
                 </button>
               </div>
             )}
+            {/* Split Bill Modal */}
+            <SplitBillModal
+              isOpen={isSplitBillOpen}
+              onClose={() => setIsSplitBillOpen(false)}
+              table={order?.tableId as any}
+              activeOrders={tableOrders}
+              formatPrice={(price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)}
+              lang={lang}
+            />
           </div>
         )}
       </main>

@@ -63,10 +63,15 @@ export class SalariesService {
       baseSalary = Math.round(totalHoursWorked * config.baseSalary);
       overtimePay = 0;
     } else {
-      // Lương cố định tháng + OT nếu có
-      baseSalary = config.baseSalary;
-      const hourlyRate = config.baseSalary / standardHours;
-      overtimePay = Math.round(overtimeHours * hourlyRate * config.overtimeRate);
+      // Lương cố định tháng + OT nếu có (tính tỷ lệ công nếu làm thiếu giờ tiêu chuẩn)
+      const hourlyRate = standardHours > 0 ? config.baseSalary / standardHours : 0;
+      if (totalHoursWorked < standardHours) {
+        baseSalary = Math.round(totalHoursWorked * hourlyRate);
+        overtimePay = 0;
+      } else {
+        baseSalary = config.baseSalary;
+        overtimePay = Math.round(overtimeHours * hourlyRate * config.overtimeRate);
+      }
     }
 
     // Kiểm tra xem đã có bản ghi bảng lương tháng này chưa

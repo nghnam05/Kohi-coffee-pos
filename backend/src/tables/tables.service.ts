@@ -1,8 +1,10 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, Optional, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Table, TableDocument } from './schemas/table.schema.js';
 import { Reservation, ReservationDocument } from '../reservations/schemas/reservation.schema.js';
+import { Order, OrderDocument } from '../orders/schemas/order.schema.js';
+import { OrdersGateway } from '../orders/orders.gateway.js';
 import { CreateTableDto } from './dto/create-table.dto.js';
 import { UpdateTableDto } from './dto/update-table.dto.js';
 
@@ -11,6 +13,8 @@ export class TablesService {
   constructor(
     @InjectModel(Table.name) private readonly tableModel: Model<TableDocument>,
     @InjectModel(Reservation.name) private readonly reservationModel: Model<ReservationDocument>,
+    @Optional() @InjectModel(Order.name) private readonly orderModel?: Model<OrderDocument>,
+    @Optional() @Inject(forwardRef(() => OrdersGateway)) private readonly ordersGateway?: OrdersGateway,
   ) {}
 
   async create(createTableDto: CreateTableDto): Promise<TableDocument> {
@@ -63,15 +67,26 @@ export class TablesService {
   }
 
   async findOne(id: string): Promise<any> {
-    const table = await this.tableModel.findById(id).lean().exec();
+    let table = await this.tableModel.findById(id).lean().exec();
     if (!table) {
       throw new NotFoundException(`Không tìm thấy bàn với ID: ${id}`);
+    }
+    if (!table.qrToken) {
+      const newToken = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+      await this.tableModel.findByIdAndUpdate(id, { qrToken: newToken }).exec();
+      table.qrToken = newToken;
     }
     return table;
   }
 
   async update(id: string, updateTableDto: UpdateTableDto): Promise<TableDocument> {
     let normalizedPayload: any = { ...updateTableDto };
+    if (updateTableDto.status === 'empty') {
+      normalizedPayload.qrToken = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+      normalizedPayload.currentSessionStartedAt = new Date();
+      this.activeOccupantsMap.delete(id);
+    }
+
     if (updateTableDto.tableName) {
       const numberOnly = updateTableDto.tableName.replace(/\D/g, '');
       const normalizedName = numberOnly ? `Bàn số ${numberOnly}` : updateTableDto.tableName.trim();
@@ -99,7 +114,69 @@ export class TablesService {
     if (!updatedTable) {
       throw new NotFoundException(`Không tìm thấy bàn với ID: ${id}`);
     }
+
+    if (this.ordersGateway && updatedTable) {
+      this.ordersGateway.emitTableUpdate(id, updatedTable.status);
+    }
+
     return updatedTable;
+  }
+
+  async regenerateQrToken(id: string): Promise<TableDocument> {
+    const newToken = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+    const updatedTable = await this.tableModel
+      .findByIdAndUpdate(id, { qrToken: newToken }, { new: true })
+      .exec();
+
+    if (!updatedTable) {
+      throw new NotFoundException(`Không tìm thấy bàn với ID: ${id}`);
+    }
+    return updatedTable;
+  }
+
+  private activeOccupantsMap = new Map<string, Set<string>>();
+
+  async joinSession(tableId: string, deviceId?: string): Promise<{ occupantCount: number }> {
+    if (!this.activeOccupantsMap.has(tableId)) {
+      this.activeOccupantsMap.set(tableId, new Set());
+    }
+    const currentCount = this.activeOccupantsMap.get(tableId)!.size;
+    if (currentCount === 0) {
+      const table = await this.findOne(tableId).catch(() => null);
+      if (table && table.status === 'empty') {
+        await this.update(tableId, { status: 'serving', currentSessionStartedAt: new Date() } as any);
+      }
+    }
+    if (deviceId) {
+      this.activeOccupantsMap.get(tableId)!.add(deviceId);
+    }
+    return { occupantCount: this.activeOccupantsMap.get(tableId)!.size };
+  }
+
+  async leaveSession(tableId: string, deviceId?: string): Promise<{ isTableCleared: boolean; remainingCount: number }> {
+    if (deviceId && this.activeOccupantsMap.has(tableId)) {
+      this.activeOccupantsMap.get(tableId)!.delete(deviceId);
+    }
+    const remainingCount = this.activeOccupantsMap.get(tableId)?.size || 0;
+    if (remainingCount === 0) {
+      if (this.orderModel) {
+        const activeOrdersCount = await this.orderModel.countDocuments({
+          tableId,
+          status: { $nin: ['paid', 'cancelled'] },
+        }).exec().catch(() => 0);
+
+        if (activeOrdersCount > 0) {
+          return { isTableCleared: false, remainingCount: 0 };
+        }
+      }
+      await this.update(tableId, { status: 'empty' });
+      return { isTableCleared: true, remainingCount: 0 };
+    }
+    return { isTableCleared: false, remainingCount };
+  }
+
+  getOccupantCount(tableId: string): number {
+    return this.activeOccupantsMap.get(tableId)?.size || 0;
   }
 
   async remove(id: string): Promise<{ message: string }> {

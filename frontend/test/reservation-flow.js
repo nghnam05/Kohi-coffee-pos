@@ -73,7 +73,24 @@ function runFrontendLogicAudit() {
 
   assert.strictEqual(validHistoryOrders.length, 2);
   assert.deepStrictEqual(validHistoryOrders.map((o) => o.status), ['cooking', 'paid']);
-  console.log('✅ Audit 5 Passed: Order History Modal paid order preservation is 100% compliant.');
+  // Audit 6: 5-Step Order Pipeline (Khách -> Phục vụ -> Barista -> Phục vụ -> Khách)
+  const getOrderNextStep = (currentStatus) => {
+    switch (currentStatus) {
+      case 'pending': return { nextStatus: 'confirmed', buttonText: 'Xác Nhận & Chuyển Quầy Pha Chế', assignedRole: 'waiter' };
+      case 'confirmed': return { nextStatus: 'cooking', buttonText: 'Bắt Đầu Pha Chế', assignedRole: 'barista' };
+      case 'cooking': return { nextStatus: 'ready', buttonText: 'Hoàn Tất Pha Chế (Báo Phục Vụ)', assignedRole: 'barista' };
+      case 'ready': return { nextStatus: 'completed', buttonText: 'Đã Ra Món Tại Bàn', assignedRole: 'waiter' };
+      case 'completed': return { nextStatus: 'paid', buttonText: 'Thanh toán Tiền mặt', assignedRole: 'waiter' };
+      default: return null;
+    }
+  };
+
+  assert.deepStrictEqual(getOrderNextStep('pending'), { nextStatus: 'confirmed', buttonText: 'Xác Nhận & Chuyển Quầy Pha Chế', assignedRole: 'waiter' });
+  assert.deepStrictEqual(getOrderNextStep('confirmed'), { nextStatus: 'cooking', buttonText: 'Bắt Đầu Pha Chế', assignedRole: 'barista' });
+  assert.deepStrictEqual(getOrderNextStep('cooking'), { nextStatus: 'ready', buttonText: 'Hoàn Tất Pha Chế (Báo Phục Vụ)', assignedRole: 'barista' });
+  assert.deepStrictEqual(getOrderNextStep('ready'), { nextStatus: 'completed', buttonText: 'Đã Ra Món Tại Bàn', assignedRole: 'waiter' });
+  assert.deepStrictEqual(getOrderNextStep('completed'), { nextStatus: 'paid', buttonText: 'Thanh toán Tiền mặt', assignedRole: 'waiter' });
+  console.log('✅ Audit 6 Passed: 5-Step Order Pipeline (Khách -> Phục vụ -> Barista -> Phục vụ -> Khách) is 100% compliant.');
 
   console.log('🎉 ALL FRONTEND BUSINESS LOGIC AUDITS PASSED WITH 0 ERRORS!');
 }

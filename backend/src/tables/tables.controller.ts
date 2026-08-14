@@ -46,6 +46,24 @@ export class TablesController {
     return this.tablesService.update(id, updateTableDto);
   }
 
+  // PATCH /api/v1/tables/:id/regenerate-qr
+  @Patch(':id/regenerate-qr')
+  regenerateQrToken(@Param('id') id: string) {
+    return this.tablesService.regenerateQrToken(id);
+  }
+
+  // POST /api/v1/tables/:id/join-session
+  @Post(':id/join-session')
+  joinSession(@Param('id') id: string, @Body('deviceId') deviceId?: string) {
+    return this.tablesService.joinSession(id, deviceId);
+  }
+
+  // POST /api/v1/tables/:id/leave-session
+  @Post(':id/leave-session')
+  leaveSession(@Param('id') id: string, @Body('deviceId') deviceId?: string) {
+    return this.tablesService.leaveSession(id, deviceId);
+  }
+
   // DELETE /api/v1/tables/:id
   @Delete(':id')
   remove(@Param('id') id: string) {

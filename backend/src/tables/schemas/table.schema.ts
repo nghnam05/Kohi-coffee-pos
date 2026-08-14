@@ -19,10 +19,22 @@ export class Table {
 
   @Prop({
     type: String,
+    default: () => Math.random().toString(36).substring(2, 10) + Date.now().toString(36),
+  })
+  qrToken: string;
+
+  @Prop({
+    type: String,
     enum: ['empty', 'serving', 'reserved'],
     default: 'empty',
   })
   status: string;
+
+  @Prop({
+    type: Date,
+    default: () => new Date(),
+  })
+  currentSessionStartedAt: Date;
 }
 
 export const TableSchema = SchemaFactory.createForClass(Table);

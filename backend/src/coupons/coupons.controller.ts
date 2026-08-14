@@ -15,7 +15,7 @@ export class CouponsController {
   create(@Body() dto: CreateCouponDto) { return this.couponsService.create(dto); }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin', 'staff')
+  @Roles('admin', 'waiter', 'barista', 'staff')
   @Get()
   findAll() { return this.couponsService.findAll(); }
 

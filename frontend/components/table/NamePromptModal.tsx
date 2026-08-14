@@ -74,7 +74,7 @@ export const NamePromptModal: React.FC<NamePromptModalProps> = ({
                   onKeyDown={(e) => e.key === 'Enter' && handleConfirmName()}
                   placeholder="Ví dụ: Anh Minh, Nhóm A, Cô Lan..."
                   maxLength={40}
-                  className="w-full px-4 py-3 text-[15px] font-normal bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-[var(--text-primary)] placeholder-gray-400 outline-none focus:border-[var(--brand-primary)] focus:ring-2 focus:ring-[var(--brand-primary)]/20 transition-all font-sans"
+                  className="w-full px-4 py-3 text-[15px] font-normal bg-[#FFFFFF] dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-[var(--text-primary)] placeholder-gray-400 outline-none focus:border-[var(--brand-primary)] focus:ring-2 focus:ring-[var(--brand-primary)]/20 transition-all font-sans"
                 />
 
                 {/* Action buttons */}

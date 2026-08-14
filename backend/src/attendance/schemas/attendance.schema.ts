@@ -17,6 +17,9 @@ export class Attendance {
   @Prop({ type: Date, default: null })
   checkOut: Date;
 
+  @Prop({ type: String, default: 'morning' })
+  shift: string; // 'morning' | 'afternoon' | 'evening'
+
   @Prop({ type: Number, default: 0 })
   totalHours: number; // Tính khi checkOut
 

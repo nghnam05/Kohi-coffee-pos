@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Be_Vietnam_Pro, Manrope } from "next/font/google";
+import { Be_Vietnam_Pro, Manrope, Noto_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
 const beVietnamPro = Be_Vietnam_Pro({
@@ -29,6 +29,12 @@ export const viewport: Viewport = {
 };
 
 import { Providers } from "./providers";
+import { cn } from "@/lib/utils";
+
+const playfairDisplayHeading = Playfair_Display({subsets:['latin'],variable:'--font-heading'});
+
+const notoSans = Noto_Sans({subsets:['latin'],variable:'--font-sans'});
+
 
 export default function RootLayout({
   children,
@@ -36,7 +42,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" suppressHydrationWarning className="bg-[#FFFFFF] dark:bg-[#090D16]">
+    <html lang="vi" suppressHydrationWarning className={cn("bg-[#FFFFFF] dark:bg-[#090D16]", "font-sans", notoSans.variable, playfairDisplayHeading.variable)}>
       <head>
         <meta name="theme-color" content="#090D16" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />

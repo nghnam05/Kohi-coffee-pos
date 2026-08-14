@@ -44,6 +44,8 @@ interface CartItem {
   quantity: number;
   note: string;
   unitPrice?: number; // adjusted price (with size/addons)
+  addedBy?: string;
+  addedByDeviceId?: string;
 }
 
 // ─── Price modifiers ─────────────────────────────────────────────────────────
@@ -335,8 +337,12 @@ export default function TableMenuPage() {
   useEffect(() => {
     if (!tableId || !mounted) return;
     const savedName = localStorage.getItem(`chika_name_${tableId}`);
+    const isDismissed = localStorage.getItem(`chika_name_dismissed_${tableId}`) === 'true';
     if (savedName && savedName.trim()) {
       setCustomerName(savedName.trim());
+      setIsNamePromptOpen(false);
+    } else if (isDismissed) {
+      setIsNamePromptOpen(false);
     } else {
       setIsNamePromptOpen(true);
     }
@@ -352,10 +358,64 @@ export default function TableMenuPage() {
     if (!tableId) return;
     socketRef.current = io(SOCKET_BASE);
 
+    socketRef.current.emit('joinTableRoom', { tableId });
+
+    socketRef.current.on('groupCartState', ({ items }: { items: any[] }) => {
+      if (Array.isArray(items) && items.length > 0) {
+        setCart(items);
+      }
+    });
+
+    socketRef.current.on('groupCartUpdated', ({ items }: { items: any[] }) => {
+      if (Array.isArray(items)) {
+        setCart(items);
+      }
+    });
+
+    socketRef.current.on('groupCartCleared', () => {
+      setCart([]);
+    });
+
     socketRef.current.on('tableTransferred', ({ fromTableId, toTableId }: { fromTableId: string; toTableId: string }) => {
       if (fromTableId === tableId) {
-        setCart([]);
+        const savedName = localStorage.getItem(`chika_name_${tableId}`);
+        if (savedName) {
+          localStorage.setItem(`chika_name_${toTableId}`, savedName);
+        }
         router.push(`/table/${toTableId}`);
+      }
+    });
+
+    socketRef.current.on('newOrder', (newOrder: any) => {
+      const orderTableId = newOrder.tableId?._id || newOrder.tableId;
+      if (orderTableId === tableId) {
+        setActiveOrders((prev) => {
+          if (prev.some((o) => o._id === newOrder._id)) return prev;
+          return [newOrder, ...prev];
+        });
+        setTable((prev) => (prev ? { ...prev, status: 'serving' } : null));
+      }
+    });
+
+    socketRef.current.on('orderDeleted', ({ orderId: deletedId }: { orderId: string }) => {
+      setActiveOrders((prev) => prev.filter((o) => o._id !== deletedId));
+    });
+
+    socketRef.current.on('ordersMerged', ({ tableId: evtTableId }: { tableId: string }) => {
+      if (evtTableId === tableId) {
+        const fetchActiveOrders = async () => {
+          try {
+            const res = await fetch(`${API_BASE}/orders/table/${tableId}`);
+            if (res.ok) {
+              const data = await res.json();
+              const validOrders = data.filter((o: any) => o.status !== 'cancelled');
+              setActiveOrders(validOrders);
+            }
+          } catch (err) {
+            console.error('Error fetching active orders:', err);
+          }
+        };
+        fetchActiveOrders();
       }
     });
 
@@ -363,7 +423,7 @@ export default function TableMenuPage() {
       setActiveOrders((prev) =>
         prev
           .map((o) => (o._id === updatedId ? { ...o, status } : o))
-          .filter((o) => o.status !== 'cancelled' && o.status !== 'paid')
+          .filter((o) => o.status !== 'cancelled')
       );
 
       if (status === 'preparing' || status === 'processing' || status === 'in_progress') {
@@ -382,6 +442,29 @@ export default function TableMenuPage() {
           message: `Đơn hàng #${updatedId ? updatedId.slice(-6).toUpperCase() : ''} đã chuẩn bị xong.`,
           orderId: updatedId,
         });
+      } else if (status === 'paid') {
+        try { playAlertPing(); } catch {}
+        setKitchenNotification({
+          show: true,
+          title: 'Thanh toán thành công!',
+          message: `Nhân viên đã xác nhận thanh toán hoàn tất cho bàn. Bạn có thể xem lại hóa đơn hoặc chọn rời bàn.`,
+          orderId: updatedId,
+        });
+      }
+    });
+
+    socketRef.current.on('tableUpdated', ({ tableId: evtTableId, status }: { tableId: string; status: string }) => {
+      const currentTableId = typeof tableId === 'string' ? tableId : (tableId as any)?._id;
+      if (evtTableId === currentTableId) {
+        setTable((prev) => (prev ? { ...prev, status } : null));
+        if (status === 'empty') {
+          try { playAlertPing(); } catch {}
+          setKitchenNotification({
+            show: true,
+            title: 'Thanh toán hoàn tất!',
+            message: 'Bàn đã được giải phóng sang trạng thái trống. Cảm ơn quý khách!',
+          });
+        }
       }
     });
 
@@ -400,6 +483,50 @@ export default function TableMenuPage() {
       return () => clearTimeout(timer);
     }
   }, [kitchenNotification]);
+
+  useEffect(() => {
+    if (tableId) {
+      let devId = localStorage.getItem('kohi_device_id');
+      if (!devId) {
+        devId = 'dev_' + Math.random().toString(36).substring(2, 9);
+        localStorage.setItem('kohi_device_id', devId);
+      }
+      fetch(`${API_BASE}/tables/${tableId}/join-session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId: devId }),
+      }).catch(() => {});
+    }
+  }, [tableId]);
+
+  const handleLeaveTable = async () => {
+    if (!confirm('Bạn có chắc chắn muốn rời bàn?')) return;
+    try {
+      let devId = localStorage.getItem('kohi_device_id');
+      if (!devId) {
+        devId = 'dev_' + Math.random().toString(36).substring(2, 9);
+        localStorage.setItem('kohi_device_id', devId);
+      }
+      const res = await fetch(`${API_BASE}/tables/${tableId}/leave-session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId: devId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.isTableCleared) {
+          alert('Bạn là người cuối cùng rời bàn. Bàn đã được đưa về trạng thái bàn trống.');
+        } else {
+          alert(`Bạn đã rời bàn thành công. Nhóm của bạn vẫn còn ${data.remainingCount} người đang ở tại bàn.`);
+        }
+      }
+    } catch (err) {
+      console.error('Error leaving session:', err);
+    }
+    localStorage.removeItem(`chika_name_${tableId}`);
+    localStorage.removeItem(`chika_name_dismissed_${tableId}`);
+    router.push('/');
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -506,29 +633,33 @@ export default function TableMenuPage() {
     if (!selectedTransferTableId || isTransferring) return;
     setIsTransferring(true);
     try {
-      if (activeOrders.length > 0) {
-        const res = await fetch(`${API_BASE}/orders/transfer-table`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            fromTableId: tableId,
-            toTableId: selectedTransferTableId,
-          }),
-        });
-        if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(errData.message || 'Không thể chuyển bàn ăn.');
-        }
-      } else {
-        await fetch(`${API_BASE}/tables/${tableId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'empty' }),
-        });
-        await fetch(`${API_BASE}/tables/${selectedTransferTableId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'serving' }),
+      // 1. Chuyển tên khách hàng lưu trong localStorage từ bàn cũ sang bàn mới
+      const savedName = localStorage.getItem(`chika_name_${tableId}`);
+      if (savedName) {
+        localStorage.setItem(`chika_name_${selectedTransferTableId}`, savedName);
+      }
+
+      // 2. Gọi API backend chuyển đơn hàng & giỏ hàng từ bàn cũ sang bàn mới
+      const res = await fetch(`${API_BASE}/orders/transfer-table`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromTableId: tableId,
+          toTableId: selectedTransferTableId,
+        }),
+      });
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || 'Không thể chuyển bàn ăn.');
+      }
+
+      // 3. Giữ nguyên giỏ hàng đang chọn và đồng bộ qua socket sang bàn mới
+      if (socketRef.current && cart.length > 0) {
+        const cName = savedName || customerName || 'Khách';
+        socketRef.current.emit('updateGroupCart', {
+          tableId: selectedTransferTableId,
+          items: cart,
+          senderName: cName,
         });
       }
 
@@ -568,45 +699,94 @@ export default function TableMenuPage() {
 
   const handleIncrease = useCallback((food: Food) => {
     setCart((prev) => {
-      const existing = prev.find((item) => item.food._id === food._id);
+      const devId = typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest';
+      const cName = typeof window !== 'undefined' ? localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Khách' : 'Khách';
+      const existing = prev.find((item) => item.food._id === food._id && item.addedByDeviceId === devId);
+      let updated: CartItem[];
       if (existing) {
-        return prev.map((item) =>
-          item.food._id === food._id ? { ...item, quantity: item.quantity + 1 } : item,
+        updated = prev.map((item) =>
+          item.food._id === food._id && item.addedByDeviceId === devId ? { ...item, quantity: item.quantity + 1 } : item,
         );
+      } else {
+        updated = [...prev, { food, quantity: 1, note: '', addedBy: cName, addedByDeviceId: devId }];
       }
-      return [...prev, { food, quantity: 1, note: '' }];
+      if (socketRef.current && tableId) {
+        socketRef.current.emit('updateGroupCart', {
+          tableId,
+          items: updated,
+          senderName: cName,
+        });
+      }
+      return updated;
     });
-  }, []);
+  }, [tableId, customerName]);
 
   const handleDecrease = useCallback((foodId: string) => {
     setCart((prev) => {
+      const devId = typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest';
+      const cName = typeof window !== 'undefined' ? localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Khách' : 'Khách';
       const existing = prev.find((item) => item.food._id === foodId);
       if (!existing) return prev;
-      if (existing.quantity === 1) return prev.filter((item) => item.food._id !== foodId);
-      return prev.map((item) =>
-        item.food._id === foodId ? { ...item, quantity: item.quantity - 1 } : item,
-      );
+      let updated: CartItem[];
+      if (existing.quantity === 1) {
+        updated = prev.filter((item) => !(item.food._id === foodId && (item.addedByDeviceId ? item.addedByDeviceId === devId : true)));
+      } else {
+        updated = prev.map((item) =>
+          item.food._id === foodId ? { ...item, quantity: item.quantity - 1 } : item,
+        );
+      }
+      if (socketRef.current && tableId) {
+        socketRef.current.emit('updateGroupCart', {
+          tableId,
+          items: updated,
+          senderName: cName,
+        });
+      }
+      return updated;
     });
-  }, []);
+  }, [tableId, customerName]);
 
   const handleRemove = useCallback((foodId: string) => {
-    setCart((prev) => prev.filter((item) => item.food._id !== foodId));
-  }, []);
+    setCart((prev) => {
+      const cName = typeof window !== 'undefined' ? localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Khách' : 'Khách';
+      const updated = prev.filter((item) => item.food._id !== foodId);
+      if (socketRef.current && tableId) {
+        socketRef.current.emit('updateGroupCart', {
+          tableId,
+          items: updated,
+          senderName: cName,
+        });
+      }
+      return updated;
+    });
+  }, [tableId, customerName]);
 
   const handleAddFromModal = () => {
     if (!selectedFood) return;
+    const devId = typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest';
+    const cName = typeof window !== 'undefined' ? localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Khách' : 'Khách';
     const addonTotal = selectedAddons.reduce((sum, a) => sum + (ADDON_PRICES[a] ?? 0), 0);
     const adjusted = Math.round(selectedFood.price * SIZE_MULTIPLIERS[selectedSize] + addonTotal);
     setCart((prev) => {
-      const existing = prev.find((item) => item.food._id === selectedFood._id);
+      const existing = prev.find((item) => item.food._id === selectedFood._id && item.addedByDeviceId === devId);
+      let updated: CartItem[];
       if (existing) {
-        return prev.map((item) =>
-          item.food._id === selectedFood._id
+        updated = prev.map((item) =>
+          item.food._id === selectedFood._id && item.addedByDeviceId === devId
             ? { ...item, quantity: item.quantity + modalQuantity, note: modalNote || item.note, unitPrice: adjusted }
             : item
         );
+      } else {
+        updated = [...prev, { food: selectedFood, quantity: modalQuantity, note: modalNote, unitPrice: adjusted, addedBy: cName, addedByDeviceId: devId }];
       }
-      return [...prev, { food: selectedFood, quantity: modalQuantity, note: modalNote, unitPrice: adjusted }];
+      if (socketRef.current && tableId) {
+        socketRef.current.emit('updateGroupCart', {
+          tableId,
+          items: updated,
+          senderName: cName,
+        });
+      }
+      return updated;
     });
     setSelectedFood(null);
     setSelectedSize('M');
@@ -620,6 +800,9 @@ export default function TableMenuPage() {
     setCustomerName(finalName);
     if (finalName) {
       localStorage.setItem(`chika_name_${tableId}`, finalName);
+      localStorage.removeItem(`chika_name_dismissed_${tableId}`);
+    } else {
+      localStorage.setItem(`chika_name_dismissed_${tableId}`, 'true');
     }
     setIsNamePromptOpen(false);
   };
@@ -632,16 +815,19 @@ export default function TableMenuPage() {
     setIsCartOpen(false);
 
     try {
+      const uniqueNames = Array.from(new Set(cart.map((i) => i.addedBy).filter(Boolean)));
+      const groupCustomerName = uniqueNames.length > 0 ? uniqueNames.join(', ') : (customerName || 'Nhóm khách');
+
       const payload = {
         tableId,
         items: cart.map((item) => ({
           foodId: item.food._id,
           quantity: item.quantity,
-          note: item.note || undefined,
+          note: item.addedBy ? `[${item.addedBy}] ${item.note || ''}`.trim() : item.note || undefined,
         })),
         paymentMethod,
         ...(couponResult?.valid && couponInput ? { couponCode: couponInput.toUpperCase() } : {}),
-        ...(customerName ? { customerName } : {}),
+        customerName: groupCustomerName,
       };
 
       const res = await fetch(`${API_BASE}/orders`, {
@@ -656,6 +842,12 @@ export default function TableMenuPage() {
       }
 
       const createdOrder = await res.json();
+
+      setActiveOrders((prev) => {
+        if (prev.some((o) => o._id === createdOrder._id)) return prev;
+        return [createdOrder, ...prev];
+      });
+      setTable((prev) => (prev ? { ...prev, status: 'serving' } : null));
 
       setCart([]);
       setCouponInput('');
@@ -771,7 +963,7 @@ export default function TableMenuPage() {
 
   if (error && !isLoading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-[#FAFAF9] dark:bg-[#090D16] p-8 text-center font-sans text-[#1C1008] dark:text-[#F5EFE6]">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-[#FFFFFF] dark:bg-[#090D16] p-8 text-center font-sans text-[#1C1008] dark:text-[#F5EFE6]">
         <div className="w-20 h-20 bg-[#3AA6FF]/10 dark:bg-[#5B9EFF]/15 text-[#3AA6FF] dark:text-[#5B9EFF] border border-[#3AA6FF]/40 rounded-full flex items-center justify-center text-4xl shadow-[0_0_20px_rgba(58,166,255,0.2)] animate-bounce">
           <span className="material-symbols-outlined text-4xl">warning</span>
         </div>
@@ -854,7 +1046,7 @@ export default function TableMenuPage() {
         activeOrders={activeOrders}
       />
 
-      <div className="min-h-[100dvh] md:h-screen w-full md:w-screen overflow-y-auto md:overflow-hidden flex flex-col md:flex-row bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans antialiased selection:bg-[var(--brand-primary)] selection:text-white">
+      <div className="min-h-[100dvh] md:h-screen w-full md:w-screen overflow-y-auto md:overflow-hidden flex flex-col md:flex-row bg-[#FFFFFF] dark:bg-[#090D16] text-[var(--text-primary)] font-sans antialiased selection:bg-[#3AA6FF] selection:text-white">
         {/* Left Sidebar (Desktop/Tablet Column 1) */}
         <LeftSidebar
           isLoading={isLoading}
@@ -876,12 +1068,13 @@ export default function TableMenuPage() {
           isAiChatOpen={isAiChatOpen}
           setIsAiChatOpen={setIsAiChatOpen}
           setAiInput={setAiInput}
+          handleLeaveTable={handleLeaveTable}
         />
 
         {/* Main Catalog View (Desktop/Tablet Column 2) */}
         <main
           data-lenis-prevent
-          className="flex-1 h-full overflow-y-auto scrollbar-none bg-[var(--bg-primary)] text-[var(--text-primary)] relative min-w-0 pt-16 sm:pt-18 md:pt-0 pb-28 md:pb-12 transition-colors"
+          className="flex-1 h-full overflow-y-auto scrollbar-none bg-[#FFFFFF] dark:bg-[#090D16] text-[var(--text-primary)] relative min-w-0 pt-16 sm:pt-18 md:pt-0 pb-28 md:pb-12 transition-colors"
         >
           <div
             className="absolute inset-0 pointer-events-none opacity-[0.03]"
@@ -1029,6 +1222,8 @@ export default function TableMenuPage() {
           t={t}
           isCartOpen={isCartOpen}
           setIsCartOpen={setIsCartOpen}
+          currentDeviceId={typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest'}
+          customerName={customerName}
         />
 
         {/* Sticky Mobile/Tablet Cart Bar */}

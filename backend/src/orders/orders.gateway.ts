@@ -45,7 +45,7 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const payload = this.jwtService.verify(token);
 
       if (payload && payload.role) {
-        if (payload.role === 'staff') {
+        if (payload.role === 'staff' || payload.role === 'waiter' || payload.role === 'barista') {
           client.join('staff');
           console.log(`Socket ${client.id} joined room 'staff' (user: ${payload.email || payload.sub})`);
         } else if (payload.role === 'admin') {
@@ -99,10 +99,93 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  emitDrinkReadyNotification(data: { orderId: string; tableName?: string; items?: any[] }): void {
+    if (this.server) {
+      this.server.emit('drinkReadyNotification', data);
+    }
+  }
+
   emitReservationStatusUpdate(id: string, status: string): void {
     if (this.server) {
       this.server.emit('reservationStatusUpdated', { id, status });
       this.server.emit('tableUpdated', { id, status });
+    }
+  }
+
+  emitReservationDeleted(id: string): void {
+    if (this.server) {
+      this.server.emit('reservationDeleted', { id });
+    }
+  }
+
+  emitTableUpdate(tableId: string, status: string): void {
+    if (this.server) {
+      this.server.emit('tableUpdated', { tableId, status });
+    }
+  }
+
+  private sharedCarts = new Map<string, any[]>();
+
+  @SubscribeMessage('joinTableRoom')
+  handleJoinTableRoom(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { tableId: string },
+  ) {
+    if (data?.tableId) {
+      client.join(`table_${data.tableId}`);
+      const cart = this.sharedCarts.get(data.tableId) || [];
+      client.emit('groupCartState', { tableId: data.tableId, items: cart });
+    }
+  }
+
+  @SubscribeMessage('updateGroupCart')
+  handleUpdateGroupCart(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { tableId: string; items: any[]; senderName?: string },
+  ) {
+    if (data?.tableId) {
+      this.sharedCarts.set(data.tableId, data.items || []);
+      this.server.to(`table_${data.tableId}`).emit('groupCartUpdated', {
+        tableId: data.tableId,
+        items: data.items || [],
+        senderName: data.senderName,
+      });
+    }
+  }
+
+  @SubscribeMessage('clearGroupCart')
+  handleClearGroupCart(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { tableId: string },
+  ) {
+    if (data?.tableId) {
+      this.sharedCarts.delete(data.tableId);
+      this.server.to(`table_${data.tableId}`).emit('groupCartCleared', { tableId: data.tableId });
+    }
+  }
+
+  emitClearGroupCart(tableId: string): void {
+    if (tableId) {
+      this.sharedCarts.delete(tableId);
+      if (this.server) {
+        this.server.to(`table_${tableId}`).emit('groupCartCleared', { tableId });
+      }
+    }
+  }
+
+  transferGroupCart(fromTableId: string, toTableId: string): void {
+    if (!fromTableId || !toTableId) return;
+    const cart = this.sharedCarts.get(fromTableId) || [];
+    if (cart.length > 0) {
+      this.sharedCarts.set(toTableId, cart);
+      this.sharedCarts.delete(fromTableId);
+    }
+    if (this.server) {
+      this.server.to(`table_${toTableId}`).emit('groupCartUpdated', {
+        tableId: toTableId,
+        items: cart,
+      });
+      this.server.to(`table_${fromTableId}`).emit('groupCartCleared', { tableId: fromTableId });
     }
   }
 }

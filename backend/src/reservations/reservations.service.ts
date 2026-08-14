@@ -37,39 +37,51 @@ export class ReservationsService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    const count = await this.reservationModel.countDocuments();
-    if (count === 0) {
-      try {
-        const tables = await this.tablesService.findAll();
-        if (tables.length > 0) {
-          const now = new Date();
-          const table1 = tables[0]._id;
-          const table2 = tables[1] ? tables[1]._id : table1;
+    const marker = await this.reservationModel.findOne({ customerPhone: '0000000000_SEED_MARKER' }).exec();
+    if (!marker) {
+      const count = await this.reservationModel.countDocuments();
+      if (count === 0) {
+        try {
+          const tables = await this.tablesService.findAll();
+          if (tables.length > 0) {
+            const now = new Date();
+            const table1 = tables[0]._id;
+            const table2 = tables[1] ? tables[1]._id : table1;
 
-          await this.reservationModel.insertMany([
-            {
-              tableId: table1,
-              customerName: 'Nguyễn Văn An',
-              customerPhone: '0901234567',
-              guestCount: 4,
-              reservationTime: new Date(now.getTime() + 2 * 3600 * 1000),
-              status: 'confirmed',
-              note: 'Đặt bàn họp nhóm công ty, cần góc yên tĩnh',
-            },
-            {
-              tableId: table2,
-              customerName: 'Trần Thị Mai',
-              customerPhone: '0987654321',
-              guestCount: 2,
-              reservationTime: new Date(now.getTime() + 5 * 3600 * 1000),
-              status: 'pending',
-              note: 'Bàn hẹn hò gần cửa sổ',
-            },
-          ]);
-          console.log('[Seed] Sample Table Reservations initialized in Database.');
+            await this.reservationModel.insertMany([
+              {
+                tableId: table1,
+                customerName: 'Nguyễn Văn An',
+                customerPhone: '0901234567',
+                guestCount: 4,
+                reservationTime: new Date(now.getTime() + 2 * 3600 * 1000),
+                status: 'confirmed',
+                note: 'Đặt bàn họp nhóm công ty, cần góc yên tĩnh',
+              },
+              {
+                tableId: table2,
+                customerName: 'Trần Thị Mai',
+                customerPhone: '0987654321',
+                guestCount: 2,
+                reservationTime: new Date(now.getTime() + 5 * 3600 * 1000),
+                status: 'pending',
+                note: 'Bàn hẹn hò gần cửa sổ',
+              },
+              {
+                tableId: table1,
+                customerName: 'SYSTEM SEED MARKER',
+                customerPhone: '0000000000_SEED_MARKER',
+                guestCount: 0,
+                reservationTime: new Date(),
+                status: 'cancelled',
+                note: 'Prevent auto re-seeding on delete',
+              },
+            ]);
+            console.log('[Seed] Sample Table Reservations initialized in Database.');
+          }
+        } catch (err) {
+          console.error('[Seed Error] Failed to seed reservations:', err);
         }
-      } catch (err) {
-        console.error('[Seed Error] Failed to seed reservations:', err);
       }
     }
     await this.syncTableStatusesWithReservations();
@@ -178,13 +190,30 @@ export class ReservationsService implements OnModuleInit {
   }
 
   async remove(id: string): Promise<{ message: string }> {
+    const resDoc = await this.reservationModel.findById(id).exec();
+    if (!resDoc) throw new NotFoundException(`Không tìm thấy đơn đặt bàn ID: ${id}`);
+
+    // Bug #4 fix: Không cho phép xóa khi khách đã đến (arrived) - tránh mất tracking
+    if (resDoc.status === 'arrived') {
+      throw new BadRequestException('Khách hàng đã đến quán. Không thể xóa đặt bàn đang hoạt động.');
+    }
+
     const deleted = await this.reservationModel.findByIdAndDelete(id).exec();
-    if (!deleted) throw new NotFoundException(`Không tìm thấy đơn đặt bàn ID: ${id}`);
+    if (!deleted) return { message: `Đã xóa đơn đặt bàn thành công.` };
     const tableId = (deleted.tableId as any)?._id || deleted.tableId;
     if (tableId) {
-      await this.tablesService.update(tableId.toString(), { status: 'empty' }).catch(() => {});
+      const table = await this.tablesService.findOne(tableId.toString()).catch(() => null);
+      if (table && table.status !== 'serving') {
+        await this.tablesService.update(tableId.toString(), { status: 'empty' }).catch(() => {});
+        if (this.ordersGateway) {
+          this.ordersGateway.emitTableUpdate(tableId.toString(), 'empty');
+        }
+      }
     }
-    return { message: `Đã xóa đơn đặt bàn ${id} thành công.` };
+    if (this.ordersGateway) {
+      this.ordersGateway.emitReservationDeleted(id);
+    }
+    return { message: `Đã xóa đơn đặt bàn thành công.` };
   }
 
   async customerCancel(id: string): Promise<ReservationDocument> {

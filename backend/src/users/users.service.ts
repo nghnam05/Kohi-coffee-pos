@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
@@ -7,10 +7,31 @@ import { CreateUserDto } from './dto/create-user.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
 
 @Injectable()
-export class UsersService {
+export class UsersService implements OnModuleInit {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
   ) {}
+
+  async onModuleInit() {
+    const saltRounds = 10;
+    const defaultPassword = await bcrypt.hash('123456', saltRounds);
+
+    const defaultUsers = [
+      { name: 'Nhân viên Phục vụ', email: 'phucvu@kohi.vn', role: 'waiter', assignedShift: 'morning' },
+      { name: 'Nhân viên Pha chế', email: 'phache@kohi.vn', role: 'barista', assignedShift: 'afternoon' },
+    ];
+
+    for (const u of defaultUsers) {
+      const exists = await this.userModel.findOne({ email: u.email });
+      if (!exists) {
+        await this.userModel.create({
+          ...u,
+          password: defaultPassword,
+        });
+        console.log(`[Seed] Created default user: ${u.email} (${u.role})`);
+      }
+    }
+  }
 
   async create(createUserDto: CreateUserDto): Promise<UserDocument> {
     const existingUser = await this.userModel.findOne({ email: createUserDto.email });
