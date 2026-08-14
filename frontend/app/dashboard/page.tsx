@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { io, Socket } from 'socket.io-client';
@@ -422,7 +422,7 @@ interface Order {
   } | null;
   items: FoodItem[];
   totalAmount: number;
-  status: 'pending' | 'cooking' | 'completed' | 'cancelled' | 'paid';
+  status: 'pending' | 'confirmed' | 'cooking' | 'ready' | 'completed' | 'cancelled' | 'paid';
   paymentStatus?: 'unpaid' | 'paid';
   paymentMethod: 'cash' | 'momo';
   isTakeaway?: boolean;
@@ -446,7 +446,8 @@ interface User {
   _id?: string;
   name: string;
   email: string;
-  role: 'admin' | 'staff';
+  role: 'admin' | 'waiter' | 'barista' | 'staff';
+  assignedShift?: 'morning' | 'afternoon' | 'evening';
 }
 
 export default function DashboardPage() {
@@ -495,7 +496,21 @@ export default function DashboardPage() {
   const [usersList, setUsersList] = useState<User[]>([]);
   const [staffCalls, setStaffCalls] = useState<StaffCall[]>([]);
   const [activeTab, setActiveTab] = useState<'orders' | 'foods' | 'tables' | 'users' | 'attendance' | 'analytics'>('foods');
-  const [activityFilter, setActivityFilter] = useState<'all' | 'support' | 'payment' | 'checkedIn' | 'notCheckedIn'>('all');
+  const [activityFilter, setActivityFilter] = useState<'all' | 'support' | 'payment' | 'checkedIn' | 'notCheckedIn' | 'confirmed' | 'cooking'>('all');
+  const [drinkReadyList, setDrinkReadyList] = useState<{ orderId: string; tableName: string; timestamp: Date }[]>([]);
+  const [selectedShift, setSelectedShift] = useState<'morning' | 'afternoon' | 'evening'>(() => {
+    const hour = new Date().getHours();
+    return hour >= 5 && hour < 12 ? 'morning' : hour >= 12 && hour < 18 ? 'afternoon' : 'evening';
+  });
+
+  // Bulk Selection for Orders
+  const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
+
+  // Shift Swap Requests State
+  const [shiftSwaps, setShiftSwaps] = useState<any[]>([]);
+  const [isShiftSwapModalOpen, setIsShiftSwapModalOpen] = useState(false);
+  const [requestedSwapShift, setRequestedSwapShift] = useState<'morning' | 'afternoon' | 'evening'>('morning');
+  const [swapReason, setSwapReason] = useState('');
   const [orderStatusFilter, setOrderStatusFilter] = useState<'active' | 'paid' | 'all'>('active');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedTableStatus, setSelectedTableStatus] = useState<string>('all');
@@ -519,6 +534,16 @@ export default function DashboardPage() {
 
   // Coupons state (for admin)
   const [coupons, setCoupons] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<any | null>(null);
+  const [categoryForm, setCategoryForm] = useState({
+    name: '',
+    icon: 'local_cafe',
+    order: 0,
+    isActive: true,
+  });
+
   const [reservations, setReservations] = useState<any[]>([]);
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<any | null>(null);
@@ -526,7 +551,7 @@ export default function DashboardPage() {
     code: '',
     type: 'percent',
     value: '',
-    maxDiscount: '',
+    maxUsage: '',
     minOrderAmount: '',
     expiresAt: '',
     isActive: true,
@@ -545,7 +570,7 @@ export default function DashboardPage() {
 
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any | null>(null);
-  const [userForm, setUserForm] = useState({ name: '', email: '', password: '', role: 'staff' });
+  const [userForm, setUserForm] = useState({ name: '', email: '', password: '', role: 'staff', assignedShift: 'morning' });
 
   // Staff Takeaway Order State
   const [isTakeawayModalOpen, setIsTakeawayModalOpen] = useState(false);
@@ -562,6 +587,31 @@ export default function DashboardPage() {
   const [profileEmail, setProfileEmail] = useState('');
   const [profilePassword, setProfilePassword] = useState('');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  // Payment History & Invoice Search State
+  const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
+  const [paymentSearchQuery, setPaymentSearchQuery] = useState('');
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState('all');
+  const [selectedInvoiceModal, setSelectedInvoiceModal] = useState<any | null>(null);
+
+  const fetchPaymentHistory = useCallback(async (queryStr?: string, methodStr?: string) => {
+    try {
+      const params = new URLSearchParams();
+      if (queryStr && queryStr.trim()) params.append('query', queryStr.trim());
+      if (methodStr && methodStr !== 'all') params.append('paymentMethod', methodStr);
+      const res = await fetch(`${API_BASE}/payments?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        setPaymentHistory(data);
+      }
+    } catch (err) {
+      console.error('Error fetching payments history:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPaymentHistory(paymentSearchQuery, paymentMethodFilter);
+  }, [paymentSearchQuery, paymentMethodFilter, fetchPaymentHistory]);
 
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -583,6 +633,9 @@ export default function DashboardPage() {
         setUser(u);
         setProfileName(u.name || '');
         setProfileEmail(u.email || '');
+        if (u.assignedShift && ['morning', 'afternoon', 'evening'].includes(u.assignedShift)) {
+          setSelectedShift(u.assignedShift as any);
+        }
 
         // Standardize Admin tab vs Staff tab
         if (u.role === 'admin') {
@@ -603,6 +656,7 @@ export default function DashboardPage() {
     fetchOrders(token);
     fetchPendingCalls(token);
     fetchFoods(token);
+    fetchCategories();
     fetchTables(token);
 
     if (user?.role === 'admin') {
@@ -614,6 +668,7 @@ export default function DashboardPage() {
     }
     fetchAttendance(token);
     fetchReservations(token);
+    fetchShiftSwaps(token);
 
     // Socket.io initialization
     socketRef.current = io(SOCKET_BASE, {
@@ -628,10 +683,16 @@ export default function DashboardPage() {
     });
 
     socketRef.current.on('newOrder', (newOrder: Order) => {
-      setOrders((prev) => [newOrder, ...prev]);
+      setOrders((prev) => {
+        const filtered = prev.filter((o) => o._id !== newOrder._id);
+        return [newOrder, ...filtered];
+      });
+      if (token) fetchOrders(token);
+      const tableName = newOrder.tableId?.tableName || 'Bàn';
+      showToast(`Có đơn hàng mới từ ${tableName}!`, 'info');
       try {
         const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/911/911-84.wav');
-        audio.play();
+        audio.play().catch(() => {});
       } catch (e) {}
     });
 
@@ -639,6 +700,7 @@ export default function DashboardPage() {
       setOrders((prev) =>
         prev.map((order) => (order._id === orderId ? { ...order, status } : order))
       );
+      if (token) fetchOrders(token);
       if (status === 'paid' && token && user?.role === 'admin') {
         fetchAnalytics(token);
         fetchReviews(token);
@@ -672,6 +734,11 @@ export default function DashboardPage() {
       fetchTables(token);
     });
 
+    socketRef.current.on('reservationDeleted', ({ id }: { id: string }) => {
+      setReservations((prev) => prev.filter((r) => r._id !== id));
+      fetchTables(token);
+    });
+
     socketRef.current.on('tableUpdated', () => {
       fetchTables(token);
     });
@@ -694,9 +761,58 @@ export default function DashboardPage() {
 
     socketRef.current.on('attendanceUpdated', (data: any) => {
       if (token) fetchAttendance(token);
+
+      if (data.attendance) {
+        setAttendances((prev) => {
+          const exists = prev.some((a) => a._id === data.attendance._id);
+          if (exists) {
+            return prev.map((a) => (a._id === data.attendance._id ? data.attendance : a));
+          }
+          return [data.attendance, ...prev];
+        });
+      }
+
       if (user?.role === 'admin') {
-        const actionText = data.type === 'check-in' ? 'vừa điểm danh Check-in' : 'vừa Check-out ca làm';
-        showToast(`Nhân viên ${data.userName || ''} ${actionText}!`, 'info');
+        const roleLabel =
+          data.userRole === 'barista' ? 'Pha chế' :
+          data.userRole === 'waiter' ? 'Phục vụ' :
+          data.userRole === 'admin' ? 'Quản trị' : 'Nhân viên';
+        const actionText = data.type === 'check-in' ? 'Check-in điểm danh ca làm' : 'Check-out ca làm';
+        const timeStr = data.timestamp ? new Date(data.timestamp).toLocaleTimeString('vi-VN') : new Date().toLocaleTimeString('vi-VN');
+        
+        try {
+          const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+          audio.volume = 0.7;
+          audio.play().catch(() => {});
+        } catch (_) {}
+
+        showToast(`${roleLabel} ${data.userName || ''} vừa ${actionText} lúc ${timeStr}!`, 'info');
+      }
+    });
+
+    socketRef.current.on('drinkReadyNotification', (data: { orderId: string; tableName?: string; items?: any[] }) => {
+      try {
+        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        audio.volume = 0.8;
+        audio.play().catch(() => {});
+      } catch (_) {}
+      const tableNameStr = data.tableName || 'Bàn';
+      showToast(`Quầy pha chế đã hoàn tất món cho ${tableNameStr}. Hãy phục vụ khách ngay!`, 'success');
+
+      setDrinkReadyList((prev) => {
+        if (prev.some((i) => i.orderId === data.orderId)) return prev;
+        return [{ orderId: data.orderId, tableName: tableNameStr, timestamp: new Date() }, ...prev];
+      });
+    });
+
+    socketRef.current.on('shiftSwapCreated', () => {
+      if (token) fetchShiftSwaps(token);
+    });
+
+    socketRef.current.on('shiftSwapUpdated', () => {
+      if (token) {
+        fetchShiftSwaps(token);
+        fetchUsers(token);
       }
     });
 
@@ -730,6 +846,13 @@ export default function DashboardPage() {
     } catch (e) {}
   };
 
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/categories`);
+      if (res.ok) setCategories(await res.json());
+    } catch (e) {}
+  };
+
   const fetchTables = async (tok: string) => {
     try {
       const res = await fetch(`${API_BASE}/tables`);
@@ -759,7 +882,8 @@ export default function DashboardPage() {
 
   const fetchAttendance = async (tok: string) => {
     try {
-      const res = await fetch(`${API_BASE}/attendance`, {
+      const endpoint = user?.role === 'admin' ? `${API_BASE}/attendance` : `${API_BASE}/attendance/my`;
+      const res = await fetch(endpoint, {
         headers: { Authorization: `Bearer ${tok}` },
       });
       if (res.ok) setAttendances(await res.json());
@@ -831,7 +955,7 @@ export default function DashboardPage() {
         code: couponForm.code.toUpperCase().trim(),
         type: couponForm.type,
         value: Number(couponForm.value),
-        maxDiscount: Number(couponForm.maxDiscount) || 0,
+        maxUsage: Number(couponForm.maxUsage) || 0,
         minOrderAmount: Number(couponForm.minOrderAmount) || 0,
         expiresAt: couponForm.expiresAt ? new Date(couponForm.expiresAt).toISOString() : new Date(Date.now() + 30 * 86400000).toISOString(),
         isActive: couponForm.isActive,
@@ -983,13 +1107,115 @@ export default function DashboardPage() {
     }
   };
 
+  const fetchShiftSwaps = async (tok: string) => {
+    try {
+      const endpoint = user?.role === 'admin' ? `${API_BASE}/shift-swaps` : `${API_BASE}/shift-swaps/my`;
+      const res = await fetch(endpoint, {
+        headers: { Authorization: `Bearer ${tok}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setShiftSwaps(data);
+      }
+    } catch (e) {
+      console.error('Failed to fetch shift swaps:', e);
+    }
+  };
+
+  const handleRequestShiftSwap = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/shift-swaps`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          requestedShift: requestedSwapShift,
+          reason: swapReason,
+        }),
+      });
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || 'Không thể gửi yêu cầu đổi ca.');
+      }
+      showToast('Đã gửi yêu cầu đổi ca làm! Đang chờ Admin duyệt.', 'success');
+      setIsShiftSwapModalOpen(false);
+      setSwapReason('');
+      fetchShiftSwaps(token);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Lỗi gửi yêu cầu đổi ca.', 'error');
+    }
+  };
+
+  const handleUpdateShiftSwapStatus = async (id: string, status: 'approved' | 'rejected') => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/shift-swaps/${id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error('Không thể duyệt yêu cầu đổi ca.');
+      showToast(status === 'approved' ? 'Đã duyệt yêu cầu đổi ca thành công!' : 'Đã từ chối yêu cầu đổi ca.', 'success');
+      fetchShiftSwaps(token);
+      fetchUsers(token);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Lỗi xử lý.', 'error');
+    }
+  };
+
+  const handleDeleteBulkOrders = async () => {
+    if (!token || selectedOrderIds.length === 0) return;
+    if (!confirm(`Bạn có chắc chắn muốn xóa ${selectedOrderIds.length} đơn hàng đã chọn không?`)) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/orders/bulk`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ ids: selectedOrderIds }),
+      });
+
+      if (!res.ok) {
+        // Fallback: parallel delete
+        await Promise.all(
+          selectedOrderIds.map((id) =>
+            fetch(`${API_BASE}/orders/${id}`, {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${token}` },
+            })
+          )
+        );
+      }
+
+      setOrders((prev) => prev.filter((o) => !selectedOrderIds.includes(o._id)));
+      setSelectedOrderIds([]);
+      showToast('Đã xóa thành công các đơn hàng đã chọn!', 'success');
+      fetchTables(token);
+    } catch (err) {
+      showToast('Lỗi khi xóa hàng loạt đơn hàng.', 'error');
+    }
+  };
+
   const handleCheckIn = async () => {
     if (!token) return;
     setIsCheckingIn(true);
     try {
       const res = await fetch(`${API_BASE}/attendance/check-in`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ shift: user?.assignedShift || 'morning' }),
       });
       if (!res.ok) throw new Error('Chưa thể check-in hoặc bạn đã điểm danh hôm nay.');
       showToast('Check-in điểm danh thành công!', 'success');
@@ -1182,6 +1408,7 @@ export default function DashboardPage() {
         name: userForm.name,
         email: userForm.email,
         role: userForm.role,
+        assignedShift: userForm.assignedShift,
       };
       if (userForm.password) payload.password = userForm.password;
 
@@ -1339,23 +1566,84 @@ export default function DashboardPage() {
       setOrders((prev) =>
         prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o))
       );
+      if (newStatus === 'completed' || newStatus === 'paid' || newStatus === 'cancelled') {
+        setDrinkReadyList((prev) => prev.filter((i) => i.orderId !== orderId));
+      }
       showToast(t.toastSaveSuccess, 'success');
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Lỗi cập nhật.', 'error');
     }
   };
 
-  const handleConfirmDelete = async () => {
+  const handleSaveCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!token) return;
+    try {
+      const url = editingCategory
+        ? `${API_BASE}/categories/${editingCategory._id}`
+        : `${API_BASE}/categories`;
+      const method = editingCategory ? 'PATCH' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: categoryForm.name,
+          icon: categoryForm.icon,
+          order: Number(categoryForm.order) || 0,
+          isActive: categoryForm.isActive,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || 'Không thể lưu danh mục.');
+      }
+
+      showToast(editingCategory ? 'Đã cập nhật danh mục!' : 'Đã tạo danh mục mới!', 'success');
+      setIsCategoryModalOpen(false);
+      setEditingCategory(null);
+      setCategoryForm({ name: '', icon: 'local_cafe', order: 0, isActive: true });
+      fetchCategories();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Lỗi xử lý.', 'error');
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: string) => {
+    if (!token) return;
+    if (!confirm('Bạn có chắc chắn muốn xóa danh mục này không?')) return;
+    try {
+      const res = await fetch(`${API_BASE}/categories/${categoryId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Không thể xóa danh mục.');
+      showToast('Đã xóa danh mục!', 'success');
+      fetchCategories();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Lỗi khi xóa.', 'error');
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    const authToken = token || localStorage.getItem('token');
     if (orderToDelete) {
       try {
         const res = await fetch(`${API_BASE}/orders/${orderToDelete}`, {
           method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+          },
         });
-        if (!res.ok) throw new Error('Không thể xóa đơn hàng.');
+        const responseData = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(responseData.message || 'Không thể xóa đơn hàng.');
         setOrders((prev) => prev.filter((o) => o._id !== orderToDelete));
-        showToast(t.toastDeleteOrder, 'success');
+        showToast(t.toastDeleteOrder || 'Đã xóa đơn hàng thành công!', 'success');
       } catch (err) {
         showToast(err instanceof Error ? err.message : 'Không thể xóa.', 'error');
       } finally {
@@ -1624,9 +1912,16 @@ export default function DashboardPage() {
 
   // Derived orders lists for tabs and history
   const activeOrdersList = orders.filter(
-    (o) => o.status !== 'completed' && o.status !== 'cancelled' && o.status !== 'paid'
+    (o) => o.status !== 'paid' && o.status !== 'cancelled'
   );
   const paidOrdersList = orders.filter((o) => o.status === 'paid');
+
+  const displayedAttendances = attendances.filter((att) => {
+    if (user?.role === 'admin') return true;
+    const attUserId = (att.userId?._id || att.userId)?.toString();
+    const currentUserId = user?._id?.toString();
+    return attUserId === currentUserId || att.userId?.email === user?.email;
+  });
 
   const displayedOrders =
     orderStatusFilter === 'active'
@@ -1663,9 +1958,9 @@ export default function DashboardPage() {
     : '5.0';
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0B1120] text-[#000000] dark:text-[#F1F5F9] flex flex-col lg:flex-row overflow-hidden font-sans select-none relative transition-colors duration-300">
+    <div className="min-h-screen bg-[#FFFFFF] dark:bg-[#090D16] text-[#000000] dark:text-[#F1F5F9] flex flex-col lg:flex-row overflow-hidden font-sans select-none relative transition-colors duration-300">
       {/* ── MOBILE TOP NAVIGATION BAR (Visible on screens < lg) ──────────────── */}
-      <div className="lg:hidden flex items-center justify-between bg-white dark:bg-[#1A2232] border-b border-[#E2E8F0] dark:border-[#293246] px-4 py-3 text-[#000000] dark:text-[#F1F5F9] shrink-0 z-30 transition-colors">
+      <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between bg-[#FFFFFF]/95 dark:bg-[#11141A]/95 backdrop-blur-md border-b border-[#E2E8F0] dark:border-[#222732] px-4 py-3 text-[#000000] dark:text-[#F1F5F9] shrink-0 transition-colors shadow-xs">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
@@ -1727,8 +2022,8 @@ export default function DashboardPage() {
 
           {/* Navigation Items */}
           <nav className="space-y-1.5">
-            {/* Realtime Orders Tab: STAFF ONLY */}
-            {user?.role === 'staff' && (
+            {/* Realtime Orders Tab: BARISTA & WAITER & STAFF ROLES ONLY */}
+            {user?.role !== 'admin' && (
               <button
                 onClick={() => {
                   setActiveTab('orders');
@@ -1736,13 +2031,13 @@ export default function DashboardPage() {
                 }}
                 className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
                   activeTab === 'orders'
-                    ? 'bg-[#2563EB]/10 text-[#2563EB] dark:bg-[#293246] dark:text-[#3B82F6] shadow-xs'
-                    : 'text-[#475569] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1A2232]'
+                    ? 'bg-[#38BDF8]/15 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
+                    : 'text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d] font-extrabold'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-lg">grid_view</span>
-                  <span>{t.tabOrders}</span>
+                  <span>{user?.role === 'barista' ? 'Quầy pha chế (KDS)' : t.tabOrders}</span>
                 </div>
                 <span className="bg-[#2563EB] dark:bg-[#3B82F6] text-white dark:text-[#0B1120] text-[11px] font-black px-2 py-0.5 rounded-full">
                   {activeOrdersList.length}
@@ -1750,67 +2045,70 @@ export default function DashboardPage() {
               </button>
             )}
 
-            <button
-              onClick={() => {
-                setActiveTab('foods');
-                setIsMobileSidebarOpen(false);
-              }}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
-                activeTab === 'foods'
-                  ? 'bg-[#38BDF8]/10 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d]'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-lg">restaurant_menu</span>
-                <span>{t.tabFoods}</span>
-              </div>
-              <span className="bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-bold px-2 py-0.5 rounded-full">
-                {foods.length}
-              </span>
-            </button>
+            {user?.role !== 'barista' && (
+              <>
+                <button
+                  onClick={() => {
+                    setActiveTab('foods');
+                    setIsMobileSidebarOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
+                    activeTab === 'foods'
+                      ? 'bg-[#38BDF8]/15 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
+                      : 'text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d] font-extrabold'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-lg">restaurant_menu</span>
+                    <span>{t.tabFoods}</span>
+                  </div>
+                  <span className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-200 text-[11px] font-black px-2 py-0.5 rounded-full">
+                    {foods.length}
+                  </span>
+                </button>
 
-            <button
-              onClick={() => {
-                setActiveTab('tables');
-                setIsMobileSidebarOpen(false);
-              }}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
-                activeTab === 'tables'
-                  ? 'bg-[#38BDF8]/10 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d]'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-lg">table_restaurant</span>
-                <span>{t.tabTables}</span>
-              </div>
-              <span className="bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-bold px-2 py-0.5 rounded-full">
-                {tables.length}
-              </span>
-            </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('tables');
+                    setIsMobileSidebarOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
+                    activeTab === 'tables'
+                      ? 'bg-[#38BDF8]/15 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
+                      : 'text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d] font-extrabold'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-lg">table_restaurant</span>
+                    <span>{t.tabTables}</span>
+                  </div>
+                  <span className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-200 text-[11px] font-black px-2 py-0.5 rounded-full">
+                    {tables.length}
+                  </span>
+                </button>
 
-            {/* Table Reservations Tab: STAFF & ADMIN */}
-            <button
-              onClick={() => {
-                setActiveTab('reservations' as any);
-                setIsMobileSidebarOpen(false);
-                if (token) fetchReservations(token);
-              }}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
-                activeTab === ('reservations' as any)
-                  ? 'bg-[#38BDF8]/10 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d]'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-lg">event_seat</span>
-                <span>Quản lý bàn đã đặt</span>
-              </div>
-              <span className="bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px] font-extrabold px-2 py-0.5 rounded-full">
-                {reservations.length}
-              </span>
-            </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('reservations' as any);
+                    setIsMobileSidebarOpen(false);
+                    if (token) fetchReservations(token);
+                  }}
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
+                    activeTab === ('reservations' as any)
+                      ? 'bg-[#38BDF8]/15 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
+                      : 'text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d] font-extrabold'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-lg">event_seat</span>
+                    <span>Quản lý bàn đã đặt</span>
+                  </div>
+                  <span className="bg-amber-500/20 text-amber-700 dark:text-amber-400 text-[11px] font-black px-2 py-0.5 rounded-full">
+                    {reservations.length}
+                  </span>
+                </button>
+              </>
+            )}
 
             {/* Attendance Tab */}
             <button
@@ -1820,8 +2118,8 @@ export default function DashboardPage() {
               }}
               className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
                 activeTab === 'attendance'
-                  ? 'bg-[#38BDF8]/10 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d]'
+                  ? 'bg-[#38BDF8]/15 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
+                  : 'text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d] font-extrabold'
               }`}
             >
               <div className="flex items-center gap-3">
@@ -1839,8 +2137,8 @@ export default function DashboardPage() {
                 }}
                 className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
                   activeTab === 'users'
-                    ? 'bg-[#38BDF8]/10 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d]'
+                    ? 'bg-[#38BDF8]/15 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
+                    : 'text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d] font-extrabold'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -1863,8 +2161,8 @@ export default function DashboardPage() {
                 }}
                 className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
                   activeTab === 'analytics'
-                    ? 'bg-[#38BDF8]/10 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d]'
+                    ? 'bg-[#38BDF8]/15 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
+                    : 'text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d] font-extrabold'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -1884,15 +2182,15 @@ export default function DashboardPage() {
                 }}
                 className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
                   activeTab === ('coupons' as any)
-                    ? 'bg-[#38BDF8]/10 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d]'
+                    ? 'bg-[#38BDF8]/15 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
+                    : 'text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d] font-extrabold'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-lg">local_offer</span>
                   <span>Mã giảm giá</span>
                 </div>
-                <span className="bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-bold px-2 py-0.5 rounded-full">
+                <span className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-200 text-[11px] font-black px-2 py-0.5 rounded-full">
                   {coupons.length}
                 </span>
               </button>
@@ -1933,22 +2231,41 @@ export default function DashboardPage() {
         </div>
       </aside>
 
-      {/* ── COLUMN 2: CENTER WORKSPACE (bg-white / #0B1120) ────────────────── */}
-      <main className="flex-1 min-w-0 bg-white dark:bg-[#0B1120] flex flex-col h-screen overflow-hidden p-3 sm:p-6 transition-colors duration-300">
+      {/* ── COLUMN 2: CENTER WORKSPACE (bg-[#FFFFFF] / #090D16) ────────────────── */}
+      <main className="flex-1 min-w-0 bg-[#FFFFFF] dark:bg-[#090D16] text-[var(--text-primary)] flex flex-col h-auto lg:h-screen min-h-screen lg:min-h-0 overflow-y-auto lg:overflow-hidden p-3 sm:p-6 transition-colors duration-300 font-sans">
         {/* Workspace Top Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 shrink-0">
-          <h2 className="text-lg sm:text-2xl font-extrabold text-[#000000] dark:text-[#F1F5F9] tracking-tight font-heading">
-            {activeTab === 'orders' && t.tabOrders}
-            {activeTab === 'foods' && t.tabFoods}
-            {activeTab === 'tables' && t.tabTables}
-            {activeTab === 'users' && t.tabUsers}
-            {activeTab === 'attendance' && (user?.role === 'admin' ? 'Chấm công & Thanh toán Lương Nhân viên' : 'Chấm công ca làm')}
-            {activeTab === 'analytics' && 'Thống kê Doanh thu & Đánh giá Khách hàng'}
-            {activeTab === ('coupons' as any) && 'Quản lý Mã giảm giá (Coupons)'}
-            {activeTab === ('reservations' as any) && 'Quản lý Bàn đã đặt (Reservations)'}
-          </h2>
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-xl bg-slate-100 dark:bg-[#131929] text-slate-700 dark:text-slate-200 hover:text-black dark:hover:text-white transition-all border border-slate-200 dark:border-[#1e293b] cursor-pointer shrink-0"
+              title="Mở menu quản trị"
+            >
+              <span className="material-symbols-outlined text-xl">menu</span>
+            </button>
+            <h2 className="text-base sm:text-2xl font-extrabold text-[#000000] dark:text-[#F1F5F9] tracking-tight font-heading truncate">
+              {activeTab === 'orders' && t.tabOrders}
+              {activeTab === 'foods' && t.tabFoods}
+              {activeTab === 'tables' && t.tabTables}
+              {activeTab === 'users' && t.tabUsers}
+              {activeTab === 'attendance' && (user?.role === 'admin' ? 'Chấm công & Thanh toán Lương Nhân viên' : 'Chấm công ca làm')}
+              {activeTab === 'analytics' && 'Thống kê Doanh thu & Đánh giá Khách hàng'}
+              {activeTab === ('coupons' as any) && 'Quản lý Mã giảm giá (Coupons)'}
+              {activeTab === ('reservations' as any) && 'Quản lý Bàn đã đặt (Reservations)'}
+            </h2>
+          </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <button
+              onClick={() => setIsRealtimeDrawerOpen(true)}
+              className="xl:hidden relative p-2.5 rounded-xl bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all shadow-xs shrink-0 cursor-pointer"
+              title="Xem thông báo phục vụ & cuộc gọi"
+            >
+              <span className="material-symbols-outlined text-base">notifications</span>
+              {staffCalls.length > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#38BDF8] animate-pulse" />
+              )}
+            </button>
             {/* Search Input for foods/tables */}
             {activeTab === 'foods' && (
               <input
@@ -1967,8 +2284,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Realtime Orders View: STAFF ONLY */}
-        {activeTab === 'orders' && user?.role === 'staff' && (
+        {/* Realtime Orders View */}
+        {activeTab === 'orders' && (
           <div className="flex-1 overflow-y-auto space-y-4 pr-1 pb-10 scrollbar-thin">
             {/* Status Filter Sub-Tabs: Đang xử lý | Đã thanh toán (Lịch sử) | Tất cả */}
             <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-200 dark:border-[#1e293b] text-xs font-bold shrink-0 scrollbar-none">
@@ -1977,11 +2294,11 @@ export default function DashboardPage() {
                 className={`px-3.5 py-2 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${
                   orderStatusFilter === 'active'
                     ? 'bg-[#38BDF8] text-[#090D16] font-black shadow-sm'
-                    : 'bg-white dark:bg-[#131929] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-[#1e293b]'
+                    : 'bg-white dark:bg-[#131929] text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white border border-slate-300 dark:border-[#1e293b] font-extrabold'
                 }`}
               >
                 <span>Đang xử lý</span>
-                <span className="bg-[#090D16]/20 dark:bg-[#090D16]/20 px-2 py-0.5 rounded-full text-[10px]">
+                <span className="bg-[#090D16]/20 dark:bg-[#090D16]/20 px-2 py-0.5 rounded-full text-[10px] font-black">
                   {orders.filter((o) => o.status !== 'paid' && o.status !== 'cancelled').length}
                 </span>
               </button>
@@ -1991,11 +2308,11 @@ export default function DashboardPage() {
                 className={`px-3.5 py-2 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${
                   orderStatusFilter === 'paid'
                     ? 'bg-emerald-500 text-white font-black shadow-sm'
-                    : 'bg-white dark:bg-[#131929] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-[#1e293b]'
+                    : 'bg-white dark:bg-[#131929] text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white border border-slate-300 dark:border-[#1e293b] font-extrabold'
                 }`}
               >
                 <span>Đã thanh toán (Lịch sử)</span>
-                <span className="bg-emerald-100 text-emerald-700 dark:bg-emerald-400/20 dark:text-emerald-300 px-2 py-0.5 rounded-full text-[10px]">
+                <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-400/20 dark:text-emerald-300 px-2 py-0.5 rounded-full text-[10px] font-extrabold">
                   {paidOrdersList.length}
                 </span>
               </button>
@@ -2004,30 +2321,79 @@ export default function DashboardPage() {
                 onClick={() => setOrderStatusFilter('all')}
                 className={`px-3.5 py-2 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${
                   orderStatusFilter === 'all'
-                    ? 'bg-slate-800 text-white dark:bg-[#1e293b] font-black shadow-sm border border-slate-700'
-                    : 'bg-white dark:bg-[#131929] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-[#1e293b]'
+                    ? 'bg-slate-900 text-white dark:bg-[#1e293b] font-black shadow-sm border border-slate-800'
+                    : 'bg-white dark:bg-[#131929] text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white border border-slate-300 dark:border-[#1e293b] font-extrabold'
                 }`}
               >
                 <span>Tất cả lịch sử</span>
-                <span className="bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-full text-[10px]">
+                <span className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-200 px-2 py-0.5 rounded-full text-[10px] font-extrabold">
                   {orders.length}
                 </span>
               </button>
 
-              <button
-                onClick={() => {
-                  setTakeawayCart([]);
-                  setTakeawayCustomerName('');
-                  setTakeawayPaymentMethod('cash');
-                  setTakeawayCouponCode('');
-                  setIsTakeawayModalOpen(true);
-                }}
-                className="px-4 py-2 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md active:scale-95 ml-auto shrink-0 cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-base">shopping_bag</span>
-                <span>Tạo đơn mang về</span>
-              </button>
+              {user?.role !== 'barista' && (
+                <button
+                  onClick={() => {
+                    setTakeawayCart([]);
+                    setTakeawayCustomerName('');
+                    setTakeawayPaymentMethod('cash');
+                    setTakeawayCouponCode('');
+                    setIsTakeawayModalOpen(true);
+                  }}
+                  className="px-4 py-2 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md active:scale-95 ml-auto shrink-0 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-base">shopping_bag</span>
+                  <span>Tạo đơn mang về</span>
+                </button>
+              )}
             </div>
+
+            {/* Bulk Selection & Batch Delete Toolbar (Hide if 0 orders; Show if > 2 orders or when orders are selected) */}
+            {(displayedOrders.length > 2 || selectedOrderIds.length > 0) && (
+              <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 rounded-2xl text-xs font-bold shadow-xs">
+                {displayedOrders.length > 2 && (
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none text-slate-800 dark:text-slate-200 font-extrabold">
+                    <input
+                      type="checkbox"
+                      checked={displayedOrders.length > 0 && displayedOrders.every((o) => selectedOrderIds.includes(o._id))}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          const allIds = displayedOrders.map((o) => o._id);
+                          setSelectedOrderIds((prev) => Array.from(new Set([...prev, ...allIds])));
+                        } else {
+                          const displayedSet = new Set(displayedOrders.map((o) => o._id));
+                          setSelectedOrderIds((prev) => prev.filter((id) => !displayedSet.has(id)));
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-[#38BDF8] focus:ring-[#38BDF8] cursor-pointer"
+                    />
+                    <span>
+                      {selectedOrderIds.length > 0
+                        ? `Đã chọn ${selectedOrderIds.length} / ${displayedOrders.length} đơn hàng`
+                        : `Chọn tất cả (${displayedOrders.length} đơn hàng đang hiển thị)`}
+                    </span>
+                  </label>
+                )}
+
+                {selectedOrderIds.length > 0 && (
+                  <div className="flex items-center gap-2 ml-auto">
+                    <button
+                      onClick={() => setSelectedOrderIds([])}
+                      className="px-3 py-1.5 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-bold cursor-pointer"
+                    >
+                      Bỏ chọn
+                    </button>
+                    <button
+                      onClick={handleDeleteBulkOrders}
+                      className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-black text-xs rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-base">delete</span>
+                      <span>Xóa {selectedOrderIds.length} đơn hàng đã chọn</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Table Merge Alert Banner */}
             {mergeableTables.length > 0 &&
@@ -2049,8 +2415,131 @@ export default function DashboardPage() {
                 </div>
               ))}
 
-            {/* Orders Cards Grid */}
-            {displayedOrders.length === 0 ? (
+            {/* Search Toolbar for Paid Payment History */}
+            {orderStatusFilter === 'paid' && (
+              <div className="space-y-4 mb-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 rounded-2xl shadow-xs">
+                  <div className="relative flex-1">
+                    <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                    <input
+                      type="text"
+                      placeholder="Tìm bằng Mã Hóa Đơn (HD-XXXXXX), Tên bàn hoặc Khách..."
+                      value={paymentSearchQuery}
+                      onChange={(e) => setPaymentSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-9 py-2 bg-slate-50 dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#38BDF8]"
+                    />
+                    {paymentSearchQuery && (
+                      <button
+                        onClick={() => setPaymentSearchQuery('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-base">close</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1.5 overflow-x-auto text-xs font-bold shrink-0">
+                    <button
+                      onClick={() => setPaymentMethodFilter('all')}
+                      className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                        paymentMethodFilter === 'all'
+                          ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black'
+                          : 'bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white'
+                      }`}
+                    >
+                      Tất cả PT
+                    </button>
+                    <button
+                      onClick={() => setPaymentMethodFilter('momo')}
+                      className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                        paymentMethodFilter === 'momo'
+                          ? 'bg-[#A50064] text-white font-black'
+                          : 'bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white'
+                      }`}
+                    >
+                      MoMo
+                    </button>
+                    <button
+                      onClick={() => setPaymentMethodFilter('cash')}
+                      className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                        paymentMethodFilter === 'cash'
+                          ? 'bg-emerald-600 text-white font-black'
+                          : 'bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white'
+                      }`}
+                    >
+                      Tiền mặt
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Paid Payment History Grid View */}
+            {orderStatusFilter === 'paid' ? (
+              paymentHistory.length === 0 ? (
+                <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-12 text-center text-slate-400">
+                  <span className="material-symbols-outlined text-4xl text-slate-500 mb-2">receipt_long</span>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">
+                    {paymentSearchQuery ? `Không tìm thấy hóa đơn mã "${paymentSearchQuery}"` : 'Chưa có hóa đơn thanh toán nào'}
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Thử đổi từ khóa hoặc tìm kiếm bằng Mã Hóa Đơn HD-XXXXXX</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {paymentHistory.map((payment) => (
+                    <div
+                      key={payment._id || payment.invoiceCode}
+                      className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-4 space-y-3 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+                    >
+                      <div className="space-y-2.5">
+                        <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1e293b] pb-2">
+                          <span className="px-2.5 py-1 bg-cyan-500/10 text-cyan-600 dark:text-[#38BDF8] border border-cyan-500/30 rounded-lg text-xs font-black font-mono">
+                            {payment.invoiceCode}
+                          </span>
+                          <span className="text-[11px] font-bold text-slate-400">
+                            {new Date(payment.paidAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+
+                        <div>
+                          <h4 className="text-sm font-black text-slate-900 dark:text-white">{payment.tableName}</h4>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{payment.customerName || 'Khách vãng lai'}</p>
+                        </div>
+
+                        <div className="space-y-1 text-xs text-slate-600 dark:text-slate-300">
+                          {payment.items?.map((item: any, idx: number) => (
+                            <div key={idx} className="flex justify-between items-center text-[11px]">
+                              <span className="truncate pr-2 font-medium">
+                                <strong className="text-slate-900 dark:text-white font-bold">{item.quantity}x</strong> {item.foodName}
+                              </span>
+                              <span className="font-semibold text-slate-500">{formatPrice(item.total)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="pt-3 border-t border-slate-100 dark:border-[#1e293b] space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-slate-400 font-medium">Thành tiền:</span>
+                          <span className="text-sm font-black text-[#38BDF8]">{formatPrice(payment.totalAmount)}</span>
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] text-slate-400">
+                          <span className="uppercase font-bold text-slate-500">{payment.paymentMethod === 'momo' ? 'Ví MoMo' : 'Tiền mặt'}</span>
+                          <button
+                            onClick={() => setSelectedInvoiceModal(payment)}
+                            className="px-3 py-1 bg-[#38BDF8]/15 hover:bg-[#38BDF8]/25 text-[#38BDF8] font-black rounded-lg transition-all text-[11px] flex items-center gap-1 cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-sm">visibility</span>
+                            <span>Xem Hóa Đơn</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
+            ) : displayedOrders.length === 0 ? (
               <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-12 text-center text-slate-400">
                 <span className="material-symbols-outlined text-4xl text-slate-500 mb-2">receipt_long</span>
                 <p className="text-sm font-bold text-slate-900 dark:text-white">
@@ -2061,55 +2550,94 @@ export default function DashboardPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {displayedOrders.map((order) => {
-                  const statusLabel =
-                    order.status === 'pending'
-                      ? t.status_pending
-                      : order.status === 'cooking'
-                      ? t.status_cooking
-                      : order.status === 'completed'
-                      ? t.status_completed
-                      : t.status_paid;
+                  const getOrderStatusBadge = (status: string) => {
+                    switch (status) {
+                      case 'pending':
+                        return <span className="px-2.5 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-lg text-[10px] font-black uppercase">Chờ Phục Vụ Duyệt</span>;
+                      case 'confirmed':
+                        return <span className="px-2.5 py-1 bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30 rounded-lg text-[10px] font-black uppercase">Chờ Pha Chế</span>;
+                      case 'cooking':
+                        return <span className="px-2.5 py-1 bg-sky-500/20 text-sky-500 border border-sky-500/40 rounded-lg text-[10px] font-black uppercase flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-ping" />Đang Pha Chế</span>;
+                      case 'ready':
+                        return <span className="px-2.5 py-1 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded-lg text-[10px] font-black uppercase">Xong - Chờ Ra Món</span>;
+                      case 'completed':
+                        return <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-500 border border-emerald-500/40 rounded-lg text-[10px] font-black uppercase">Đã Ra Món Tại Bàn</span>;
+                      case 'paid':
+                        return <span className="px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-black uppercase">Đã Thanh Toán</span>;
+                      default:
+                        return <span className="px-2.5 py-1 bg-slate-200 text-slate-700 rounded-lg text-[10px] font-black uppercase">Đang Xử Lý</span>;
+                    }
+                  };
 
                   const isPaid = order.status === 'paid';
+                  const isSelected = selectedOrderIds.includes(order._id);
 
                   return (
                     <div
                       key={order._id}
-                      className={`bg-white dark:bg-[#131929] border rounded-2xl p-5 shadow-sm dark:shadow-lg flex flex-col justify-between transition-all hover:border-slate-300 dark:hover:border-slate-700 ${
-                        isPaid ? 'border-emerald-500/30' : 'border-slate-200 dark:border-[#1e293b]'
+                      className={`bg-white dark:bg-[#131929] border rounded-2xl p-5 shadow-sm dark:shadow-lg flex flex-col justify-between transition-all ${
+                        isSelected
+                          ? 'border-[#38BDF8] ring-2 ring-[#38BDF8]/60 bg-sky-50/20 dark:bg-[#38BDF8]/5'
+                          : isPaid
+                          ? 'border-emerald-500/30 hover:border-slate-300 dark:hover:border-slate-700'
+                          : 'border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-700'
                       }`}
                     >
                       <div>
                         {/* Card Header: Table Name & Status */}
                         <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-[#1e293b] mb-4">
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-lg font-black text-slate-900 dark:text-white font-heading flex items-center gap-1.5">
-                              {order.isTakeaway || !order.tableId ? (
-                                <span className="text-[#0284c7] dark:text-[#38BDF8] flex items-center gap-1">
-                                  <span className="material-symbols-outlined text-base">shopping_bag</span>
-                                  <span>Mang về</span>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedOrderIds((prev) => [...prev, order._id]);
+                                  } else {
+                                    setSelectedOrderIds((prev) => prev.filter((id) => id !== order._id));
+                                  }
+                                }}
+                                className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-[#38BDF8] focus:ring-[#38BDF8] cursor-pointer shrink-0"
+                              />
+                              <h3 className="text-lg font-black text-slate-900 dark:text-white font-heading flex items-center gap-1.5">
+                                {order.isTakeaway || !order.tableId ? (
+                                  <span className="text-[#0284c7] dark:text-[#38BDF8] flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-base">shopping_bag</span>
+                                    <span>Mang về</span>
+                                  </span>
+                                ) : (
+                                  order.tableId?.tableName || t.unknownTable
+                                )}
+                              </h3>
+                              <button
+                                onClick={() => setActiveInvoice(order)}
+                                className="text-slate-400 hover:text-[#38BDF8] transition-colors"
+                                title="Xem chi tiết hóa đơn"
+                              >
+                                <span className="material-symbols-outlined text-sm">open_in_new</span>
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-1.5 mt-1">
+                              {order.paymentMethod === 'momo' ? (
+                                <span className="px-2 py-0.5 bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/30 rounded-md text-[10px] font-black uppercase flex items-center gap-1">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-pink-500" />
+                                  Ví MoMo
                                 </span>
                               ) : (
-                                order.tableId?.tableName || t.unknownTable
+                                <span className="px-2 py-0.5 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 rounded-md text-[10px] font-extrabold uppercase flex items-center gap-1">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                  Tiền mặt
+                                </span>
                               )}
-                            </h3>
-                            <button
-                              onClick={() => setActiveInvoice(order)}
-                              className="text-slate-400 hover:text-[#38BDF8] transition-colors"
-                              title="Xem chi tiết hóa đơn"
-                            >
-                              <span className="material-symbols-outlined text-sm">open_in_new</span>
-                            </button>
+                              {order.customerName && (
+                                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold truncate">
+                                  • {order.customerName}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <span
-                            className={`text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-wider ${
-                              isPaid
-                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
-                                : 'bg-slate-100 dark:bg-[#1e293b] text-[#0284c7] dark:text-[#38BDF8]'
-                            }`}
-                          >
-                            {statusLabel}
-                          </span>
+                          {getOrderStatusBadge(order.status)}
                         </div>
 
                         {/* Order Items List */}
@@ -2133,53 +2661,133 @@ export default function DashboardPage() {
                                 <span className="text-slate-900 dark:text-white font-bold">
                                   {formatPrice((item.foodId?.price || 0) * item.quantity)}
                                 </span>
-                                <button
-                                  onClick={() => setOrderToDelete(order._id)}
-                                  className="text-slate-400 hover:text-red-500 transition-colors p-1"
-                                  title="Xóa đơn hàng"
-                                >
-                                  <span className="material-symbols-outlined text-base">delete</span>
-                                </button>
+                                {(user?.role !== 'barista' || !['ready', 'served', 'completed', 'paid'].includes(order.status)) && (
+                                  <button
+                                    onClick={() => setOrderToDelete(order._id)}
+                                    className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                                    title="Xóa đơn hàng"
+                                  >
+                                    <span className="material-symbols-outlined text-base">delete</span>
+                                  </button>
+                                )}
                               </div>
                             </div>
                           ))}
                         </div>
                       </div>
 
-                      {/* Card Bottom Action Buttons */}
+                      {/* Card Bottom Action Buttons: 5-Step Lifecycle */}
                       <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-[#1e293b]">
+                        {/* Step 1 -> 2: Phục vụ xác nhận & gửi pha chế */}
                         {order.status === 'pending' && (
-                          <button
-                            onClick={() => handleUpdateStatus(order._id, 'cooking')}
-                            className="w-full bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black text-sm py-3 rounded-xl transition-all shadow-md active:scale-95"
-                          >
-                            Xác nhận đơn
-                          </button>
+                          user?.role === 'barista' ? (
+                            <button
+                              disabled
+                              className="w-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-extrabold text-xs py-3 rounded-xl cursor-not-allowed text-center border border-amber-500/20"
+                            >
+                              Chờ Phục vụ duyệt đơn
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleUpdateStatus(order._id, 'confirmed')}
+                              className="w-full bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black text-xs py-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                            >
+                              Xác Nhận & Chuyển Quầy Pha Chế
+                            </button>
+                          )
                         )}
+
+                        {/* Step 2 -> 3: Barista bắt đầu pha chế / Waiter xem trạng thái */}
+                        {order.status === 'confirmed' && (
+                          user?.role === 'barista' || user?.role === 'admin' ? (
+                            <button
+                              onClick={() => handleUpdateStatus(order._id, 'cooking')}
+                              className="w-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-xs py-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                            >
+                              Bắt Đầu Pha Chế
+                            </button>
+                          ) : (
+                            <button
+                              disabled
+                              className="w-full bg-slate-100 dark:bg-[#1e293b] text-slate-500 dark:text-slate-400 font-extrabold text-xs py-3 rounded-xl cursor-not-allowed flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-800"
+                            >
+                              <span className="w-2 h-2 rounded-full bg-sky-400 animate-ping" />
+                              <span>Đã chuyển quầy pha chế (Chờ làm món)</span>
+                            </button>
+                          )
+                        )}
+
+                        {/* Step 3 -> 4: Barista hoàn tất pha chế / Waiter xem trạng thái đang pha chế */}
                         {order.status === 'cooking' && (
-                          <button
-                            onClick={() => handleUpdateStatus(order._id, 'completed')}
-                            className="w-full bg-amber-500 hover:bg-amber-600 text-white font-black text-sm py-3 rounded-xl transition-all shadow-md active:scale-95"
-                          >
-                            Hoàn tất món
-                          </button>
+                          user?.role === 'barista' || user?.role === 'admin' ? (
+                            <button
+                              onClick={() => handleUpdateStatus(order._id, 'ready')}
+                              className="w-full bg-amber-500 hover:bg-amber-600 text-white font-black text-xs py-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                            >
+                              Hoàn Tất Pha Chế (Báo Phục Vụ)
+                            </button>
+                          ) : (
+                            <button
+                              disabled
+                              className="w-full bg-sky-500/10 text-sky-600 dark:text-sky-400 font-extrabold text-xs py-3 rounded-xl cursor-not-allowed flex items-center justify-center gap-2 border border-sky-500/20"
+                            >
+                              <span className="w-2 h-2 rounded-full bg-sky-400 animate-ping" />
+                              <span>Đang pha chế tại quầy...</span>
+                            </button>
+                          )
                         )}
+
+                        {/* Step 4 -> 5: Phục vụ mang đồ ra bàn cho Khách */}
+                        {order.status === 'ready' && (
+                          user?.role === 'barista' ? (
+                            <button
+                              disabled
+                              className="w-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-extrabold text-xs py-3 rounded-xl cursor-not-allowed flex items-center justify-center gap-1.5 border border-emerald-500/20"
+                            >
+                              <span className="material-symbols-outlined text-base">check_circle</span>
+                              <span>Đã báo Phục vụ ra món</span>
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleUpdateStatus(order._id, 'completed')}
+                              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs py-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                            >
+                              Đã Ra Món Tại Bàn
+                            </button>
+                          )
+                        )}
+
+                        {/* Step 5: Phục vụ thanh toán (Hiển thị phương thức MoMo / Tiền mặt chính xác) */}
                         {order.status === 'completed' && (
-                          <div className="flex gap-2">
+                          user?.role === 'barista' ? (
                             <button
-                              onClick={() => handleUpdateStatus(order._id, 'paid')}
-                              className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs py-3 rounded-xl transition-all shadow-md active:scale-95"
+                              disabled
+                              className="w-full bg-slate-100 dark:bg-[#1e293b] text-slate-500 dark:text-slate-400 font-extrabold text-xs py-3 rounded-xl cursor-not-allowed flex items-center justify-center gap-1.5 border border-slate-200 dark:border-slate-800"
                             >
-                              Thanh toán Tiền mặt
+                              <span className="material-symbols-outlined text-base text-emerald-500">check_circle</span>
+                              <span>Đã hoàn tất pha chế & ra món</span>
                             </button>
-                            <button
-                              onClick={() => setActiveInvoice(order)}
-                              className="px-3 py-3 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl transition-all"
-                              title="Xem hóa đơn"
-                            >
-                              <span className="material-symbols-outlined text-base">print</span>
-                            </button>
-                          </div>
+                          ) : (
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleUpdateStatus(order._id, 'paid')}
+                                className={`flex-1 text-white font-black text-xs py-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer ${
+                                  order.paymentMethod === 'momo'
+                                    ? 'bg-pink-600 hover:bg-pink-700'
+                                    : 'bg-emerald-600 hover:bg-emerald-700'
+                                }`}
+                              >
+                                {order.paymentMethod === 'momo' ? 'Xác nhận Thanh toán MoMo' : 'Thanh toán Tiền mặt'}
+                              </button>
+                              <button
+                                onClick={() => setActiveInvoice(order)}
+                                className="px-3 py-3 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl transition-all"
+                                title="Xem hóa đơn"
+                              >
+                                <span className="material-symbols-outlined text-base">print</span>
+                              </button>
+                            </div>
+                          )
                         )}
                         {isPaid && (
                           <button
@@ -2197,14 +2805,15 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Table Reservations Management Section */}
-            <div className="mt-8 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-5 space-y-4 shadow-xs">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[#0284c7] dark:text-[#38BDF8] text-lg">event_seat</span>
-                    <span>Danh sách Đặt bàn Trực tuyến từ Khách hàng</span>
-                  </h3>
+            {/* Table Reservations Management Section (Hidden for Barista role) */}
+            {user?.role !== 'barista' && (
+              <div className="mt-8 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-5 space-y-4 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[#0284c7] dark:text-[#38BDF8] text-lg">event_seat</span>
+                      <span>Danh sách Đặt bàn Trực tuyến từ Khách hàng</span>
+                    </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     Quản lý các yêu cầu giữ chỗ trực tuyến trước của khách hàng
                   </p>
@@ -2265,16 +2874,16 @@ export default function DashboardPage() {
                         {/* Middle Info Block with Strong Typography Hierarchy */}
                         <div className="py-2.5 border-t border-b border-slate-100 dark:border-[#1e293b] space-y-2 text-xs">
                           <div className="flex justify-between items-center">
-                            <span className="text-slate-400 dark:text-slate-500 text-[11px] font-medium">Bàn ăn chọn:</span>
+                            <span className="text-slate-800 dark:text-slate-400 text-[11px] font-bold">Bàn ăn chọn:</span>
                             <span className="font-black text-slate-900 dark:text-white text-xs">{res.tableId?.tableName || 'Bàn chọn'}</span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-slate-400 dark:text-slate-500 text-[11px] font-medium">Thời gian nhận bàn:</span>
-                            <span className="font-extrabold text-slate-800 dark:text-slate-200 text-xs">{new Date(res.reservationTime).toLocaleString('vi-VN')}</span>
+                            <span className="text-slate-800 dark:text-slate-400 text-[11px] font-bold">Thời gian nhận bàn:</span>
+                            <span className="font-extrabold text-slate-950 dark:text-slate-100 text-xs">{new Date(res.reservationTime).toLocaleString('vi-VN')}</span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-slate-400 dark:text-slate-500 text-[11px] font-medium">Số lượng khách:</span>
-                            <span className="font-extrabold text-slate-800 dark:text-slate-200 text-xs">{res.guestCount} người</span>
+                            <span className="text-slate-800 dark:text-slate-400 text-[11px] font-bold">Số lượng khách:</span>
+                            <span className="font-extrabold text-slate-950 dark:text-slate-100 text-xs">{res.guestCount} người</span>
                           </div>
                           {res.note && (
                             <div className="pt-1.5 flex items-start gap-1.5 text-[11px] text-amber-600 dark:text-amber-400 bg-amber-500/5 p-2 rounded-xl border border-amber-500/10">
@@ -2327,6 +2936,7 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
+          )}
           </div>
         )}
 
@@ -2348,11 +2958,11 @@ export default function DashboardPage() {
                     className={`px-3.5 py-2 rounded-xl transition-all flex items-center gap-2 flex-shrink-0 ${
                       selectedCategory === cat
                         ? 'bg-[#38BDF8] text-[#090D16] font-black shadow-sm'
-                        : 'bg-white dark:bg-[#131929] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-[#1e293b]'
+                        : 'bg-white dark:bg-[#131929] text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white border border-slate-300 dark:border-[#1e293b] font-extrabold'
                     }`}
                   >
                     <span>{cat === 'all' ? 'Tất cả danh mục' : cat}</span>
-                    <span className="bg-slate-200 dark:bg-[#090D16]/20 px-2 py-0.5 rounded-full text-[10px]">
+                    <span className="bg-slate-200 dark:bg-[#090D16]/20 text-slate-900 dark:text-slate-200 font-extrabold px-2 py-0.5 rounded-full text-[10px]">
                       {count}
                     </span>
                   </button>
@@ -2362,17 +2972,32 @@ export default function DashboardPage() {
 
             <div className="flex justify-between items-center bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl shadow-xs">
               <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Tổng cộng {filteredFoods.length} món ăn</span>
-              <button
-                onClick={() => {
-                  setEditingFood(null);
-                  setFoodForm({ name: '', price: '', category: 'Cà phê', description: '', image: '', isAvailable: true });
-                  setIsFoodModalOpen(true);
-                }}
-                className="px-3.5 sm:px-4 py-2 bg-[#38BDF8] text-[#090D16] font-extrabold text-xs rounded-xl hover:bg-[#0284c7] transition-all flex items-center gap-1.5 shrink-0"
-              >
-                <span className="material-symbols-outlined text-base">add</span>
-                <span>Thêm món mới</span>
-              </button>
+              <div className="flex items-center gap-2">
+                {user?.role === 'admin' && (
+                  <button
+                    onClick={() => {
+                      setEditingCategory(null);
+                      setCategoryForm({ name: '', icon: 'local_cafe', order: categories.length + 1, isActive: true });
+                      setIsCategoryModalOpen(true);
+                    }}
+                    className="px-3.5 sm:px-4 py-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-extrabold text-xs rounded-xl transition-all flex items-center gap-1.5 shrink-0 border border-slate-200 dark:border-slate-700 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-base">category</span>
+                    <span>Quản lý Danh mục</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setEditingFood(null);
+                    setFoodForm({ name: '', price: '', category: categories[0]?.name || 'Cà phê', description: '', image: '', isAvailable: true });
+                    setIsFoodModalOpen(true);
+                  }}
+                  className="px-3.5 sm:px-4 py-2 bg-[#38BDF8] text-[#090D16] font-extrabold text-xs rounded-xl hover:bg-[#0284c7] transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-base">add</span>
+                  <span>Thêm món mới</span>
+                </button>
+              </div>
             </div>
 
             {/* Mobile Card List (< sm: 640px) */}
@@ -2510,11 +3135,11 @@ export default function DashboardPage() {
                   className={`px-3.5 py-2 rounded-xl transition-all flex items-center gap-2 flex-shrink-0 ${
                     selectedTableStatus === st.id
                       ? 'bg-[#38BDF8] text-[#090D16] font-black shadow-sm'
-                      : 'bg-white dark:bg-[#131929] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-[#1e293b]'
+                      : 'bg-white dark:bg-[#131929] text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white border border-slate-300 dark:border-[#1e293b] font-extrabold'
                   }`}
                 >
                   <span>{st.label}</span>
-                  <span className="bg-slate-200 dark:bg-[#090D16]/20 px-2 py-0.5 rounded-full text-[10px]">
+                  <span className="bg-slate-200 dark:bg-[#090D16]/20 text-slate-900 dark:text-slate-200 font-extrabold px-2 py-0.5 rounded-full text-[10px]">
                     {st.count}
                   </span>
                 </button>
@@ -2601,7 +3226,7 @@ export default function DashboardPage() {
               <button
                 onClick={() => {
                   setEditingUser(null);
-                  setUserForm({ name: '', email: '', password: '', role: 'staff' });
+                  setUserForm({ name: '', email: '', password: '', role: 'staff', assignedShift: 'morning' });
                   setIsUserModalOpen(true);
                 }}
                 className="px-3.5 sm:px-4 py-2 bg-[#38BDF8] text-[#090D16] font-extrabold text-xs rounded-xl hover:bg-[#0284c7] transition-all flex items-center gap-1.5 shrink-0"
@@ -2619,7 +3244,7 @@ export default function DashboardPage() {
                     <h4 className="font-extrabold text-slate-900 dark:text-white text-xs truncate">{u.name}</h4>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">{u.email}</p>
                     <span className="inline-block mt-1 px-2.5 py-0.5 bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] rounded-full text-[9.5px] font-bold">
-                      {u.role === 'admin' ? 'Quản trị' : 'Nhân viên'}
+                      {u.role === 'admin' ? 'Quản trị (Admin)' : u.role === 'barista' ? 'Pha chế (Barista)' : u.role === 'waiter' ? 'Phục vụ (Waiter)' : 'Nhân viên'}
                     </span>
                   </div>
 
@@ -2627,7 +3252,7 @@ export default function DashboardPage() {
                     <button
                       onClick={() => {
                         setEditingUser(u);
-                        setUserForm({ name: u.name || '', email: u.email || '', password: '', role: u.role || 'staff' });
+                        setUserForm({ name: u.name || '', email: u.email || '', password: '', role: u.role || 'staff', assignedShift: u.assignedShift || 'morning' });
                         setIsUserModalOpen(true);
                       }}
                       className="p-2 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 rounded-xl hover:text-[#38BDF8] transition-colors"
@@ -2655,6 +3280,7 @@ export default function DashboardPage() {
                     <th className="p-4">Họ tên</th>
                     <th className="p-4">Email</th>
                     <th className="p-4">Vai trò</th>
+                    <th className="p-4">Ca phân công</th>
                     <th className="p-4 text-right">Hành động</th>
                   </tr>
                 </thead>
@@ -2665,14 +3291,41 @@ export default function DashboardPage() {
                       <td className="p-4 text-slate-500 dark:text-slate-400">{u.email}</td>
                       <td className="p-4">
                         <span className="px-2.5 py-1 bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] rounded-full text-[10px] font-bold">
-                          {u.role === 'admin' ? 'Quản trị' : 'Nhân viên'}
+                          {u.role === 'admin' ? 'Quản trị (Admin)' : u.role === 'barista' ? 'Pha chế (Barista)' : u.role === 'waiter' ? 'Phục vụ (Waiter)' : 'Nhân viên'}
                         </span>
+                      </td>
+                      <td className="p-4">
+                        {(() => {
+                          const s = u.assignedShift || 'morning';
+                          if (s === 'morning') {
+                            return (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+                                <span className="material-symbols-outlined text-xs">wb_sunny</span>
+                                <span>Ca Sáng (06h-12h)</span>
+                              </span>
+                            );
+                          }
+                          if (s === 'afternoon') {
+                            return (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                                <span className="material-symbols-outlined text-xs">light_mode</span>
+                                <span>Ca Chiều (12h-18h)</span>
+                              </span>
+                            );
+                          }
+                          return (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                              <span className="material-symbols-outlined text-xs">dark_mode</span>
+                              <span>Ca Tối (18h-23h)</span>
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="p-4 text-right space-x-2">
                         <button
                           onClick={() => {
                             setEditingUser(u);
-                            setUserForm({ name: u.name || '', email: u.email || '', password: '', role: u.role || 'staff' });
+                            setUserForm({ name: u.name || '', email: u.email || '', password: '', role: u.role || 'staff', assignedShift: u.assignedShift || 'morning' });
                             setIsUserModalOpen(true);
                           }}
                           className="p-1.5 text-slate-400 hover:text-[#38BDF8] transition-colors"
@@ -2709,40 +3362,156 @@ export default function DashboardPage() {
                     ? 'Hiển thị dữ liệu chấm công của nhân viên, tùy chỉnh mức lương theo giờ, sửa/xóa bản ghi và thanh toán trừ thẳng vào doanh thu'
                     : 'Lưu trực tiếp lịch sử điểm danh vào MongoDB theo thời gian thực'}
                 </p>
-              </div>
+            </div>
 
-              {/* Only STAFF sees check-in/out buttons */}
-              {user?.role === 'staff' && (
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleCheckIn}
-                    disabled={isCheckingIn}
-                    className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2"
-                  >
-                    <span className="material-symbols-outlined text-base">login</span>
-                    <span>Check-in điểm danh</span>
-                  </button>
-                  <button
-                    onClick={handleCheckOut}
-                    className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2"
-                  >
-                    <span className="material-symbols-outlined text-base">logout</span>
-                    <span>Check-out ca làm</span>
-                  </button>
+            {/* Admin Shift Swap Approval Panel */}
+            {user?.role === 'admin' && (
+              <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-4 space-y-3 shadow-xs">
+                <div className="flex justify-between items-center">
+                  <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                    Yêu cầu đổi ca làm cần duyệt ({shiftSwaps.filter((s) => s.status === 'pending').length})
+                  </h4>
+                </div>
+
+                {shiftSwaps.filter((s) => s.status === 'pending').length === 0 ? (
+                  <p className="text-xs text-slate-400 italic">Không có yêu cầu đổi ca nào đang chờ duyệt</p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {shiftSwaps
+                      .filter((s) => s.status === 'pending')
+                      .map((swap) => {
+                        const curShiftLabel =
+                          swap.currentShift === 'morning' ? 'Ca Sáng' :
+                          swap.currentShift === 'afternoon' ? 'Ca Chiều' : 'Ca Tối';
+                        const reqShiftLabel =
+                          swap.requestedShift === 'morning' ? 'Ca Sáng' :
+                          swap.requestedShift === 'afternoon' ? 'Ca Chiều' : 'Ca Tối';
+
+                        return (
+                          <div key={swap._id} className="p-3 bg-slate-50 dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl space-y-2 text-xs">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <span className="font-extrabold text-slate-900 dark:text-white">{swap.userId?.name || 'Nhân viên'}</span>
+                                <span className="block text-[10px] text-slate-400">{swap.userId?.email}</span>
+                              </div>
+                              <span className="px-2 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-md text-[10px] font-bold">
+                                Chờ duyệt
+                              </span>
+                            </div>
+
+                            <div className="text-[11px] text-slate-700 dark:text-slate-300 font-bold bg-white dark:bg-[#131929] p-2 rounded-lg border border-slate-200/50 dark:border-slate-800/50">
+                              Chuyển từ <strong>{curShiftLabel}</strong> ➔ <strong>{reqShiftLabel}</strong>
+                            </div>
+
+                            {swap.reason && (
+                              <p className="text-[11px] text-slate-500 italic">"{swap.reason}"</p>
+                            )}
+
+                            <div className="flex justify-end gap-2 pt-1">
+                              <button
+                                onClick={() => handleUpdateShiftSwapStatus(swap._id, 'rejected')}
+                                className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-600 dark:text-rose-400 font-bold text-[11px] rounded-lg transition-all cursor-pointer"
+                              >
+                                Từ chối
+                              </button>
+                              <button
+                                onClick={() => handleUpdateShiftSwapStatus(swap._id, 'approved')}
+                                className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[11px] rounded-lg transition-all cursor-pointer"
+                              >
+                                Duyệt đổi ca
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Attendance check-in/out & shift swap buttons */}
+            {user?.role !== 'admin' && (
+                <div className="space-y-3">
+                  {/* Pending Shift Swap Request Banner for Staff */}
+                  {(() => {
+                    const pendingSwap = shiftSwaps.find((s) => s.status === 'pending');
+                    if (pendingSwap) {
+                      const reqShiftLabel =
+                        pendingSwap.requestedShift === 'morning' ? 'Ca Sáng (06h-12h)' :
+                        pendingSwap.requestedShift === 'afternoon' ? 'Ca Chiều (12h-18h)' : 'Ca Tối (18h-23h)';
+                      return (
+                        <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-700 dark:text-amber-300 text-xs font-bold flex items-center justify-between gap-2">
+                          <span>
+                            Đang chờ Admin duyệt đổi sang <strong>{reqShiftLabel}</strong>...
+                          </span>
+                          <span className="px-2.5 py-0.5 bg-amber-500/20 rounded-md text-[10px] uppercase font-black">
+                            Chờ duyệt
+                          </span>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                    {/* Locked Assigned Shift Display */}
+                    <div className="flex items-center gap-2 px-3.5 py-2 bg-slate-100 dark:bg-[#090D16] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold">
+                      <span className="text-slate-500 dark:text-slate-400">Ca làm đăng ký:</span>
+                      {(() => {
+                        const shift = user?.assignedShift || 'morning';
+                        if (shift === 'morning') {
+                          return <span className="px-2.5 py-1 bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] border border-[#38BDF8]/30 rounded-lg font-black">Ca Sáng (06h-12h)</span>;
+                        }
+                        if (shift === 'afternoon') {
+                          return <span className="px-2.5 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-lg font-black">Ca Chiều (12h-18h)</span>;
+                        }
+                        return <span className="px-2.5 py-1 bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 rounded-lg font-black">Ca Tối (18h-23h)</span>;
+                      })()}
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleCheckIn}
+                        disabled={isCheckingIn}
+                        className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-base">login</span>
+                        <span>Check-in điểm danh</span>
+                      </button>
+                      <button
+                        onClick={handleCheckOut}
+                        className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-base">logout</span>
+                        <span>Check-out ca làm</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setRequestedSwapShift(user?.assignedShift === 'morning' ? 'afternoon' : 'morning');
+                          setIsShiftSwapModalOpen(true);
+                        }}
+                        className="px-4 py-2.5 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 text-white font-extrabold text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer"
+                      >
+                        Yêu cầu đổi ca làm
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
 
             {/* Mobile Card List (< sm: 640px) */}
             <div className="grid grid-cols-1 gap-3 sm:hidden">
-              {attendances.length === 0 ? (
+              {displayedAttendances.length === 0 ? (
                 <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-8 text-center text-slate-500 text-xs">
                   Chưa có lịch sử điểm danh nào
                 </div>
               ) : (
-                attendances.map((att) => {
+                displayedAttendances.map((att) => {
                   const staffId = att.userId?._id || att.userId;
                   const staffName = att.userId?.name || 'Nhân viên';
+                  const staffEmail = att.userId?.email || '';
+                  const staffRole = att.userId?.role || 'staff';
                   const checkInTime = att.checkIn ? new Date(att.checkIn) : null;
                   const checkOutTime = att.checkOut ? new Date(att.checkOut) : null;
 
@@ -2757,31 +3526,44 @@ export default function DashboardPage() {
 
                   return (
                     <div key={att._id} className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-4 space-y-3 shadow-xs text-xs">
-                      <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-[#1e293b]">
-                        <span className="font-extrabold text-slate-900 dark:text-white">{staffName}</span>
-                        <span className="text-[10px] text-slate-500">
-                          {att.date || new Date(att.createdAt || Date.now()).toLocaleDateString('vi-VN')}
-                        </span>
+                      <div className="flex justify-between items-start pb-2 border-b border-slate-100 dark:border-[#1e293b]">
+                        <div>
+                          <h4 className="font-extrabold text-slate-900 dark:text-white text-xs">{staffName}</h4>
+                          {staffEmail && <p className="text-[10px] text-slate-400 mt-0.5">{staffEmail}</p>}
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[10px] text-slate-500 block font-semibold">
+                            {att.date || new Date(att.createdAt || Date.now()).toLocaleDateString('vi-VN')}
+                          </span>
+                          <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                            staffRole === 'admin' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20' :
+                            staffRole === 'barista' ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20' :
+                            staffRole === 'waiter' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' :
+                            'bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20'
+                          }`}>
+                            {staffRole === 'admin' ? 'Quản trị' : staffRole === 'barista' ? 'Pha chế' : staffRole === 'waiter' ? 'Phục vụ' : 'Nhân viên'}
+                          </span>
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-2 text-[11px]">
                         <div>
                           <span className="text-slate-400 block">Check-in:</span>
                           <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">
-                            {checkInTime ? checkInTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                            {checkInTime ? checkInTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '--:--:--'}
                           </span>
                         </div>
                         <div>
                           <span className="text-slate-400 block">Check-out:</span>
                           <span className="font-mono text-amber-600 dark:text-amber-400 font-bold">
-                            {checkOutTime ? checkOutTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                            {checkOutTime ? checkOutTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Đang làm ca'}
                           </span>
                         </div>
                       </div>
 
                       <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-[#1e293b]">
                         <div>
-                          <span className="text-slate-400 text-[10px] block">Số giờ: {hoursWorked}h</span>
+                          <span className="text-slate-500 dark:text-slate-400 text-[11px] font-bold block">Tổng giờ: {hoursWorked}h</span>
                           {user?.role === 'admin' && (
                             <span className="font-black text-[#0284c7] dark:text-[#38BDF8] text-xs">
                               Lương: {formatPrice(totalSalary)}
@@ -2831,30 +3613,34 @@ export default function DashboardPage() {
 
             {/* Desktop Table View (>= sm: 640px) */}
             <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl overflow-x-auto shadow-xs">
-              <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[750px]">
+              <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[850px]">
                 <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
                   <tr>
                     <th className="p-4">Ngày</th>
-                    <th className="p-4">Nhân viên</th>
-                    <th className="p-4">Check-in</th>
-                    <th className="p-4">Check-out</th>
-                    <th className="p-4">Số giờ làm</th>
+                    <th className="p-4">Tên Nhân viên</th>
+                    <th className="p-4">Vai trò (Role)</th>
+                    <th className="p-4">Ca làm</th>
+                    <th className="p-4">Giờ Check-in</th>
+                    <th className="p-4">Giờ Check-out</th>
+                    <th className="p-4">Tổng giờ làm</th>
                     {user?.role === 'admin' && <th className="p-4">Mức lương/giờ (VND)</th>}
                     {user?.role === 'admin' && <th className="p-4">Lương tính (VND)</th>}
                     {user?.role === 'admin' && <th className="p-4 text-right">Hành động</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
-                  {attendances.length === 0 ? (
+                  {displayedAttendances.length === 0 ? (
                     <tr>
-                      <td colSpan={user?.role === 'admin' ? 8 : 5} className="p-8 text-center text-slate-500">
+                      <td colSpan={user?.role === 'admin' ? 9 : 6} className="p-8 text-center text-slate-500">
                         Chưa có lịch sử điểm danh nào
                       </td>
                     </tr>
                   ) : (
-                    attendances.map((att) => {
+                    displayedAttendances.map((att) => {
                       const staffId = att.userId?._id || att.userId;
                       const staffName = att.userId?.name || 'Nhân viên';
+                      const staffEmail = att.userId?.email || '';
+                      const staffRole = att.userId?.role || 'staff';
                       const checkInTime = att.checkIn ? new Date(att.checkIn) : null;
                       const checkOutTime = att.checkOut ? new Date(att.checkOut) : null;
 
@@ -2872,14 +3658,54 @@ export default function DashboardPage() {
                           <td className="p-4 font-bold text-slate-900 dark:text-white">
                             {att.date || new Date(att.createdAt || Date.now()).toLocaleDateString('vi-VN')}
                           </td>
-                          <td className="p-4 text-slate-800 dark:text-slate-200 font-semibold">{staffName}</td>
-                          <td className="p-4 text-emerald-600 dark:text-emerald-400 font-mono">
-                            {checkInTime ? checkInTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                          <td className="p-4">
+                            <div className="font-extrabold text-slate-900 dark:text-white">{staffName}</div>
+                            {staffEmail && <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{staffEmail}</div>}
                           </td>
-                          <td className="p-4 text-amber-600 dark:text-amber-400 font-mono">
-                            {checkOutTime ? checkOutTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                          <td className="p-4">
+                            <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
+                              staffRole === 'admin' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20' :
+                              staffRole === 'barista' ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20' :
+                              staffRole === 'waiter' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' :
+                              'bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20'
+                            }`}>
+                              {staffRole === 'admin' ? 'Quản trị (Admin)' : staffRole === 'barista' ? 'Pha chế (Barista)' : staffRole === 'waiter' ? 'Phục vụ (Waiter)' : 'Nhân viên'}
+                            </span>
                           </td>
-                          <td className="p-4 font-bold text-slate-900 dark:text-white">{hoursWorked} giờ</td>
+                          <td className="p-4">
+                            {(() => {
+                              const s = att.shift || 'morning';
+                              if (s === 'morning') {
+                                return (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+                                    <span className="material-symbols-outlined text-xs">wb_sunny</span>
+                                    <span>Ca Sáng (06h-12h)</span>
+                                  </span>
+                                );
+                              }
+                              if (s === 'afternoon') {
+                                return (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                                    <span className="material-symbols-outlined text-xs">light_mode</span>
+                                    <span>Ca Chiều (12h-18h)</span>
+                                  </span>
+                                );
+                              }
+                              return (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                                  <span className="material-symbols-outlined text-xs">dark_mode</span>
+                                  <span>Ca Tối (18h-23h)</span>
+                                </span>
+                              );
+                            })()}
+                          </td>
+                          <td className="p-4 text-emerald-600 dark:text-emerald-400 font-mono font-bold">
+                            {checkInTime ? checkInTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '--:--:--'}
+                          </td>
+                          <td className="p-4 text-amber-600 dark:text-amber-400 font-mono font-bold">
+                            {checkOutTime ? checkOutTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Đang làm ca'}
+                          </td>
+                          <td className="p-4 font-black text-slate-900 dark:text-white">{hoursWorked} giờ</td>
 
                           {user?.role === 'admin' && (
                             <td className="p-4">
@@ -3201,7 +4027,7 @@ export default function DashboardPage() {
                     code: '',
                     type: 'percent',
                     value: '',
-                    maxDiscount: '',
+                    maxUsage: '',
                     minOrderAmount: '',
                     expiresAt: '',
                     isActive: true,
@@ -3229,7 +4055,7 @@ export default function DashboardPage() {
                           {c.code}
                         </span>
                         <span className="text-[11px] text-slate-500 font-semibold">
-                          {c.type === 'percent' ? `Giảm ${c.value}% (Tối đa ${formatPrice(c.maxDiscount || 0)})` : `Giảm cố định ${formatPrice(c.value)}`}
+                          {c.type === 'percent' ? `Giảm ${c.value}%` : `Giảm cố định ${formatPrice(c.value)}`}
                         </span>
                       </div>
                       <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${c.isActive ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-500'}`}>
@@ -3251,7 +4077,7 @@ export default function DashboardPage() {
                             code: c.code || '',
                             type: c.type || 'percent',
                             value: String(c.value || ''),
-                            maxDiscount: String(c.maxDiscount || ''),
+                            maxUsage: String(c.maxUsage || ''),
                             minOrderAmount: String(c.minOrderAmount || ''),
                             expiresAt: formatForDatetimeInput(c.expiresAt),
                             isActive: c.isActive ?? true,
@@ -3420,7 +4246,11 @@ export default function DashboardPage() {
       >
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading">
-            {user?.role === 'admin' ? 'Chấm công realtime' : 'Hoạt động realtime'}
+            {user?.role === 'admin'
+              ? 'Chấm công realtime'
+              : user?.role === 'barista'
+              ? 'Đơn hàng chờ pha chế'
+              : 'Hoạt động realtime'}
           </h3>
           <button
             onClick={() => setIsRealtimeDrawerOpen(false)}
@@ -3445,12 +4275,17 @@ export default function DashboardPage() {
                   d.getFullYear() === now.getFullYear()
                 );
               });
-              const checkedInSet = new Set(
-                todayAttendances.map((att) => (att.userId?._id || att.userId)?.toString())
-              );
-              const staffMembers = usersList.filter((u) => u.role === 'staff');
-              const checkedInCount = staffMembers.filter((u) => checkedInSet.has(String(u._id || ''))).length;
-              const notCheckedInCount = staffMembers.filter((u) => !checkedInSet.has(String(u._id || ''))).length;
+              const checkedInSet = new Set<string>();
+              todayAttendances.forEach((att) => {
+                const uid = (att.userId?._id || att.userId)?.toString();
+                const email = att.userId?.email;
+                if (uid) checkedInSet.add(uid);
+                if (email) checkedInSet.add(email);
+              });
+
+              const staffMembers = usersList.filter((u) => u.role !== 'admin');
+              const checkedInCount = staffMembers.filter((u) => checkedInSet.has(String(u._id || '')) || checkedInSet.has(u.email)).length;
+              const notCheckedInCount = staffMembers.filter((u) => !checkedInSet.has(String(u._id || '')) && !checkedInSet.has(u.email)).length;
 
               return (
                 <div className="flex border-b border-slate-200 dark:border-[#1e293b] mb-4 gap-2 text-[11px] font-bold text-slate-500 dark:text-slate-400">
@@ -3504,12 +4339,14 @@ export default function DashboardPage() {
                 const checkedInMap = new Map<string, any>();
                 todayAttendances.forEach((att) => {
                   const uid = (att.userId?._id || att.userId)?.toString();
+                  const email = att.userId?.email;
                   if (uid) checkedInMap.set(uid, att);
+                  if (email) checkedInMap.set(email, att);
                 });
 
-                const staffMembers = usersList.filter((u) => u.role === 'staff');
-                const checkedInList = staffMembers.filter((u) => checkedInMap.has(String(u._id || '')));
-                const notCheckedInList = staffMembers.filter((u) => !checkedInMap.has(String(u._id || '')));
+                const staffMembers = usersList.filter((u) => u.role !== 'admin');
+                const checkedInList = staffMembers.filter((u) => checkedInMap.has(String(u._id || '')) || checkedInMap.has(u.email));
+                const notCheckedInList = staffMembers.filter((u) => !checkedInMap.has(String(u._id || '')) && !checkedInMap.has(u.email));
 
                 return (
                   <>
@@ -3523,7 +4360,7 @@ export default function DashboardPage() {
                           <p className="text-xs text-slate-400 italic">Chưa có nhân viên nào điểm danh hôm nay</p>
                         ) : (
                           checkedInList.map((st) => {
-                            const attRecord = checkedInMap.get(String(st._id || ''));
+                            const attRecord = checkedInMap.get(String(st._id || '')) || checkedInMap.get(st.email);
                             const cInTime = attRecord?.checkIn
                               ? new Date(attRecord.checkIn).toLocaleTimeString('vi-VN', {
                                   hour: '2-digit',
@@ -3605,6 +4442,124 @@ export default function DashboardPage() {
               })()}
             </div>
           </>
+        ) : user?.role === 'barista' ? (
+          <>
+            {(() => {
+              const confirmedOrders = orders.filter((o) => o.status === 'confirmed');
+              const cookingOrders = orders.filter((o) => o.status === 'cooking');
+              const brewingQueue = orders.filter((o) => o.status === 'confirmed' || o.status === 'cooking');
+
+              return (
+                <>
+                  <div className="flex border-b border-slate-200 dark:border-[#1e293b] mb-4 gap-3 text-xs font-bold text-slate-500 dark:text-slate-400">
+                    <button
+                      onClick={() => setActivityFilter('all')}
+                      className={`pb-2 transition-all ${
+                        activityFilter === 'all'
+                          ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
+                          : 'hover:text-slate-900 dark:hover:text-white'
+                      }`}
+                    >
+                      Tất cả ({brewingQueue.length})
+                    </button>
+                    <button
+                      onClick={() => setActivityFilter('confirmed')}
+                      className={`pb-2 transition-all ${
+                        activityFilter === 'confirmed'
+                          ? 'text-sky-600 dark:text-sky-400 border-b-2 border-sky-400'
+                          : 'hover:text-slate-900 dark:hover:text-white'
+                      }`}
+                    >
+                      Chờ làm ({confirmedOrders.length})
+                    </button>
+                    <button
+                      onClick={() => setActivityFilter('cooking')}
+                      className={`pb-2 transition-all ${
+                        activityFilter === 'cooking'
+                          ? 'text-amber-600 dark:text-amber-400 border-b-2 border-amber-400'
+                          : 'hover:text-slate-900 dark:hover:text-white'
+                      }`}
+                    >
+                      Đang làm ({cookingOrders.length})
+                    </button>
+                  </div>
+
+                  <div className="space-y-3 flex-1 overflow-y-auto scrollbar-none pr-1">
+                    {brewingQueue.length === 0 ? (
+                      <div className="p-6 text-center text-slate-400 text-xs italic">
+                        Hiện chưa có đơn hàng mới nào được Phục vụ xác nhận.
+                      </div>
+                    ) : (
+                      brewingQueue
+                        .filter((o) => {
+                          if (activityFilter === 'confirmed') return o.status === 'confirmed';
+                          if (activityFilter === 'cooking') return o.status === 'cooking';
+                          return true;
+                        })
+                        .map((order) => (
+                          <div
+                            key={order._id}
+                            className={`p-3.5 border rounded-2xl space-y-2 text-xs transition-all shadow-xs ${
+                              order.status === 'confirmed'
+                                ? 'bg-sky-500/10 border-sky-500/30'
+                                : 'bg-amber-500/10 border-amber-500/30'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                                <span className={`w-2 h-2 rounded-full ${order.status === 'confirmed' ? 'bg-sky-400 animate-ping' : 'bg-amber-400 animate-pulse'}`} />
+                                {order.isTakeaway || !order.tableId ? 'Mang về' : order.tableId?.tableName || 'Bàn chọn'}
+                              </span>
+                              <span
+                                className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${
+                                  order.status === 'confirmed'
+                                    ? 'bg-sky-500/20 text-sky-600 dark:text-sky-400'
+                                    : 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
+                                }`}
+                              >
+                                {order.status === 'confirmed' ? 'Phục vụ đã duyệt' : 'Đang pha chế'}
+                              </span>
+                            </div>
+
+                            <div className="space-y-1 py-1 border-t border-b border-slate-200/40 dark:border-slate-800/40">
+                              {order.items?.map((item: any, idx: number) => (
+                                <div key={idx} className="flex justify-between text-[11px]">
+                                  <span className="text-slate-800 dark:text-slate-200 font-bold truncate">
+                                    {item.foodId?.name || 'Món ăn'}
+                                  </span>
+                                  <span className="text-slate-500 dark:text-slate-400 font-black">x{item.quantity}</span>
+                                </div>
+                              ))}
+                            </div>
+
+                            <div className="flex items-center justify-between pt-1">
+                              <span className="text-[10px] text-slate-400 font-mono">
+                                {order.createdAt ? new Date(order.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : ''}
+                              </span>
+                              {order.status === 'confirmed' ? (
+                                <button
+                                  onClick={() => handleUpdateStatus(order._id, 'cooking')}
+                                  className="px-3 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-[10.5px] rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+                                >
+                                  Bắt đầu pha chế
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleUpdateStatus(order._id, 'ready')}
+                                  className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-black text-[10.5px] rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+                                >
+                                  Pha xong (Báo Phục vụ)
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                    )}
+                  </div>
+                </>
+              );
+            })()}
+          </>
         ) : (
           /* Staff View: Support Calls & Recent Orders */
           <>
@@ -3643,13 +4598,35 @@ export default function DashboardPage() {
 
             {/* Timeline Items for Staff */}
             <div className="space-y-4 flex-1 overflow-y-auto scrollbar-none pr-1">
-              {/* Staff Call Support Items */}
+              {/* Drink Ready Notifications for Waiters (Auto-removes when completed) */}
+              {(activityFilter === 'all' || activityFilter === 'support') &&
+                drinkReadyList.map((item) => (
+                  <div key={item.orderId} className="flex gap-3 text-xs p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 mt-1.5 shrink-0 animate-ping" />
+                    <div className="flex-1">
+                      <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono block mb-0.5">
+                        {new Date(item.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                      <p className="font-extrabold text-slate-900 dark:text-white">
+                        {item.tableName} — Pha chế xong món!
+                      </p>
+                      <button
+                        onClick={() => handleUpdateStatus(item.orderId, 'completed')}
+                        className="mt-2 px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white text-[10.5px] font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+                      >
+                        Xác nhận Đã ra món
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+              {/* Staff Call Support Items (Auto-removes when acknowledged) */}
               {(activityFilter === 'all' || activityFilter === 'support') &&
                 staffCalls.map((call) => (
                   <div key={call._id} className="flex gap-3 text-xs">
                     <span className="w-2 h-2 rounded-full bg-[#38BDF8] mt-1.5 shrink-0 animate-pulse" />
                     <div className="flex-1">
-                      <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono block mb-0.5">
+                      <span className="text-[11px] text-slate-700 dark:text-slate-400 font-mono font-bold block mb-0.5">
                         {call.createdAt
                           ? new Date(call.createdAt).toLocaleTimeString('vi-VN', {
                               hour: '2-digit',
@@ -3658,12 +4635,12 @@ export default function DashboardPage() {
                             })
                           : 'Vừa xong'}
                       </span>
-                      <p className="font-bold text-slate-900 dark:text-white">
+                      <p className="font-extrabold text-slate-950 dark:text-white">
                         {call.tableId?.tableName || 'Bàn'} — Yêu cầu hỗ trợ
                       </p>
                       <button
                         onClick={() => handleAcknowledgeCall(call._id)}
-                        className="mt-2 px-3 py-1 bg-slate-100 dark:bg-[#1e293b] hover:bg-[#38BDF8] hover:text-[#090D16] text-slate-700 dark:text-slate-300 text-[10px] font-bold rounded-lg transition-all"
+                        className="mt-2 px-3 py-1 bg-slate-100 dark:bg-[#1e293b] hover:bg-[#38BDF8] hover:text-[#090D16] text-slate-900 dark:text-slate-200 text-[10px] font-extrabold rounded-lg transition-all border border-slate-200 dark:border-slate-800"
                       >
                         Đã tiếp nhận
                       </button>
@@ -3671,42 +4648,200 @@ export default function DashboardPage() {
                   </div>
                 ))}
 
-              {/* Recent Orders Items */}
+              {/* Active Orders Items (Filtered to live active unpaid orders) */}
               {(activityFilter === 'all' || activityFilter === 'payment') &&
-                orders.slice(0, 10).map((order) => (
-                  <div key={order._id} className="flex gap-3 text-xs">
-                    <span
-                      className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
-                        order.status === 'paid' ? 'bg-emerald-500' : 'bg-slate-400'
-                      }`}
-                    />
-                    <div className="flex-1">
-                      <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono block mb-0.5">
-                        {order.createdAt
-                          ? new Date(order.createdAt).toLocaleTimeString('vi-VN', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              second: '2-digit',
-                            })
-                          : 'Vừa xong'}
-                      </span>
-                      <p className="font-semibold text-slate-800 dark:text-slate-200">
-                        {order.tableId?.tableName || 'Bàn'} —{' '}
-                        {order.status === 'paid'
-                          ? 'Thanh toán'
-                          : order.status === 'pending'
-                          ? 'Đặt món mới'
-                          : 'Đang chế biến'}
-                      </p>
+                orders
+                  .filter((o) => o.status !== 'paid')
+                  .slice(0, 10)
+                  .map((order) => (
+                    <div key={order._id} className="flex gap-3 text-xs">
+                      <span
+                        className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
+                          order.status === 'confirmed'
+                            ? 'bg-sky-400 animate-pulse'
+                            : order.status === 'cooking'
+                            ? 'bg-amber-400 animate-pulse'
+                            : order.status === 'ready'
+                            ? 'bg-emerald-400 animate-ping'
+                            : 'bg-slate-400'
+                        }`}
+                      />
+                      <div className="flex-1">
+                        <span className="text-[11px] text-slate-700 dark:text-slate-400 font-mono font-bold block mb-0.5">
+                          {order.createdAt
+                            ? new Date(order.createdAt).toLocaleTimeString('vi-VN', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit',
+                              })
+                            : 'Vừa xong'}
+                        </span>
+                        <p className="font-bold text-slate-900 dark:text-white">
+                          {order.isTakeaway || !order.tableId ? 'Mang về' : order.tableId?.tableName || 'Bàn chọn'} —{' '}
+                          {order.status === 'pending'
+                            ? 'Khách vừa đặt món (Chờ duyệt)'
+                            : order.status === 'confirmed'
+                            ? 'Đã chuyển quầy pha chế'
+                            : order.status === 'cooking'
+                            ? 'Đang pha chế tại quầy'
+                            : 'Đã pha xong (Cần ra món)'}
+                        </p>
+                        <p className="text-[11px] text-[#0284c7] dark:text-[#38BDF8] font-black mt-0.5">
+                          {formatPrice(order.totalAmount || 0)}
+                        </p>
+                      </div>
                     </div>
+                  ))}
+
+              {staffCalls.length === 0 &&
+                drinkReadyList.length === 0 &&
+                orders.filter((o) => o.status !== 'paid').length === 0 && (
+                  <div className="p-6 text-center text-slate-400 text-xs italic">
+                    Hiện chưa có hoạt động realtime nào mới.
                   </div>
-                ))}
+                )}
             </div>
           </>
         )}
       </aside>
 
       {/* ── ALL MODALS & TOAST NOTIFICATIONS ────────────────────────────────── */}
+
+      {/* 0. Category Manager Modal (Admin Only) */}
+      <AnimatePresence>
+        {isCategoryModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCategoryModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-xs" />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-xl bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1e293b]">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 bg-sky-500/10 text-sky-500 rounded-xl">
+                    <span className="material-symbols-outlined text-xl">category</span>
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-slate-900 dark:text-white font-heading">Quản lý Danh mục Thực đơn</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Thêm, chỉnh sửa và xóa danh mục món ăn cho quán</p>
+                  </div>
+                </div>
+                <button onClick={() => setIsCategoryModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              {/* Form Add / Edit Category */}
+              <form onSubmit={handleSaveCategory} className="bg-slate-50 dark:bg-[#090D16] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+                <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                  {editingCategory ? 'Sửa thông tin danh mục' : 'Thêm danh mục mới'}
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Tên danh mục *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="VD: Cà Phê, Trà Trái Cây..."
+                      value={categoryForm.name}
+                      onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                      className="w-full bg-white dark:bg-[#131929] border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-[#38BDF8]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Biểu tượng (Icon)</label>
+                    <select
+                      value={categoryForm.icon}
+                      onChange={(e) => setCategoryForm({ ...categoryForm, icon: e.target.value })}
+                      className="w-full bg-white dark:bg-[#131929] border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-[#38BDF8] cursor-pointer"
+                    >
+                      <option value="local_cafe">local_cafe (Cà phê)</option>
+                      <option value="local_bar">local_bar (Trà / Nước)</option>
+                      <option value="icecream">icecream (Đá xay / Kem)</option>
+                      <option value="bakery_dining">bakery_dining (Bánh ngọt)</option>
+                      <option value="restaurant">restaurant (Đồ ăn)</option>
+                      <option value="star">star (Nổi bật)</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  {editingCategory && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingCategory(null);
+                        setCategoryForm({ name: '', icon: 'local_cafe', order: categories.length + 1, isActive: true });
+                      }}
+                      className="px-3 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                    >
+                      Hủy chỉnh sửa
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black text-xs rounded-xl shadow-md transition-all cursor-pointer"
+                  >
+                    {editingCategory ? 'Lưu cập nhật' : 'Tạo danh mục'}
+                  </button>
+                </div>
+              </form>
+
+              {/* List Existing Categories */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                  Danh sách danh mục hiện có ({categories.length})
+                </h4>
+                <div className="grid grid-cols-1 gap-2.5">
+                  {categories.map((cat) => {
+                    const foodCount = foods.filter((f) => f.category === cat.name).length;
+                    return (
+                      <div
+                        key={cat._id}
+                        className="p-3.5 bg-slate-50 dark:bg-[#090D16] border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center justify-between gap-3 text-xs"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="p-2.5 bg-white dark:bg-[#131929] text-[#0284c7] dark:text-[#38BDF8] rounded-xl shrink-0 border border-slate-200 dark:border-slate-800">
+                            <span className="material-symbols-outlined text-lg">{cat.icon || 'category'}</span>
+                          </div>
+                          <div className="truncate">
+                            <h5 className="font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                              <span>{cat.name}</span>
+                              <span className="px-2 py-0.5 bg-slate-200 dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 text-[10px] rounded-md font-bold">
+                                {foodCount} món
+                              </span>
+                            </h5>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            onClick={() => {
+                              setEditingCategory(cat);
+                              setCategoryForm({
+                                name: cat.name || '',
+                                icon: cat.icon || 'local_cafe',
+                                order: cat.order || 0,
+                                isActive: cat.isActive !== false,
+                              });
+                            }}
+                            className="p-2 text-slate-400 hover:text-[#38BDF8] transition-colors"
+                            title="Chỉnh sửa"
+                          >
+                            <span className="material-symbols-outlined text-base">edit</span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCategory(cat._id)}
+                            className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                            title="Xóa danh mục"
+                          >
+                            <span className="material-symbols-outlined text-base">delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* 1. Food Create / Edit Modal */}
       <AnimatePresence>
@@ -3735,11 +4870,14 @@ export default function DashboardPage() {
                   <div>
                     <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">{t.modalFoodCategory}</label>
                     <select value={foodForm.category} onChange={(e) => setFoodForm({ ...foodForm, category: e.target.value })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-[#38BDF8] cursor-pointer">
-                      <option value="Cà phê" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Cà phê</option>
-                      <option value="Trà trái cây" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Trà trái cây</option>
-                      <option value="Trà sữa" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Trà sữa</option>
-                      <option value="Bánh ngọt" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Bánh ngọt</option>
-                      <option value="Đồ uống khác" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Đồ uống khác</option>
+                      {categories.map((cat) => (
+                        <option key={cat._id} value={cat.name} className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">
+                          {cat.name}
+                        </option>
+                      ))}
+                      {categories.length === 0 && (
+                        <option value="Cà phê" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Cà phê</option>
+                      )}
                     </select>
                   </div>
                 </div>
@@ -3863,6 +5001,66 @@ export default function DashboardPage() {
         )}
       </AnimatePresence>
 
+      {/* 3.8 Employee Shift Swap Request Modal */}
+      <AnimatePresence>
+        {isShiftSwapModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsShiftSwapModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-xs" />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4">
+              <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3">
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading">Gửi Yêu Cầu Đổi Ca Làm</h3>
+                <button onClick={() => setIsShiftSwapModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              <form onSubmit={handleRequestShiftSwap} className="space-y-3 text-xs">
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Ca làm phân công hiện tại</label>
+                  <input
+                    type="text"
+                    disabled
+                    value={
+                      user?.assignedShift === 'morning' ? 'Ca Sáng (06:00 - 12:00)' :
+                      user?.assignedShift === 'afternoon' ? 'Ca Chiều (12:00 - 18:00)' : 'Ca Tối (18:00 - 23:00)'
+                    }
+                    className="w-full bg-slate-100 dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-500 font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Ca làm muốn đổi sang *</label>
+                  <select
+                    value={requestedSwapShift}
+                    onChange={(e) => setRequestedSwapShift(e.target.value as any)}
+                    className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-[#38BDF8] cursor-pointer"
+                  >
+                    <option value="morning">Ca Sáng (06:00 - 12:00)</option>
+                    <option value="afternoon">Ca Chiều (12:00 - 18:00)</option>
+                    <option value="evening">Ca Tối (18:00 - 23:00)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Lý do đổi ca (Không bắt buộc)</label>
+                  <textarea
+                    rows={2}
+                    placeholder="VD: Đổi ca với Nguyễn Văn A cho ca làm hôm nay..."
+                    value={swapReason}
+                    onChange={(e) => setSwapReason(e.target.value)}
+                    className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
+                  />
+                </div>
+
+                <button type="submit" className="w-full py-3 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer">
+                  Gửi Yêu Cầu Cho Admin Duyệt
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* 2.5 Table QR Code Modal */}
       <AnimatePresence>
         {qrTable && (
@@ -3880,12 +5078,15 @@ export default function DashboardPage() {
                 <p className="text-xs text-slate-500 dark:text-slate-400 print:hidden">Khách hàng quét mã QR này tại bàn để xem menu & gọi món trực tiếp</p>
                 <div className="bg-white p-4 rounded-xl border border-slate-200 inline-block shadow-inner">
                   <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(typeof window !== 'undefined' ? `${window.location.origin}/table/${qrTable._id}` : '')}`}
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(typeof window !== 'undefined' ? `${window.location.origin}/table/${qrTable._id}${qrTable.qrToken ? `?token=${qrTable.qrToken}` : ''}` : '')}`}
                     alt={`QR Code ${qrTable.tableName}`}
                     className="w-48 h-48 mx-auto"
                   />
                 </div>
                 <p className="text-sm font-black text-slate-900 dark:text-white">{qrTable.tableName}</p>
+                {qrTable.qrToken && (
+                  <p className="text-[10px] text-emerald-500 font-mono font-bold">Mã QR động: #{qrTable.qrToken.slice(0, 8)}</p>
+                )}
               </div>
 
               <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-[#1e293b] print:hidden text-xs">
@@ -3893,17 +5094,18 @@ export default function DashboardPage() {
                   <input
                     type="text"
                     readOnly
-                    value={typeof window !== 'undefined' ? `${window.location.origin}/table/${qrTable._id}` : ''}
+                    value={typeof window !== 'undefined' ? `${window.location.origin}/table/${qrTable._id}${qrTable.qrToken ? `?token=${qrTable.qrToken}` : ''}` : ''}
                     className="bg-transparent text-slate-700 dark:text-slate-300 text-[11px] truncate flex-1 focus:outline-none"
                   />
                   <button
                     onClick={() => {
                       if (typeof window !== 'undefined') {
-                        navigator.clipboard.writeText(`${window.location.origin}/table/${qrTable._id}`);
+                        const url = `${window.location.origin}/table/${qrTable._id}${qrTable.qrToken ? `?token=${qrTable.qrToken}` : ''}`;
+                        navigator.clipboard.writeText(url);
                         showToast('Đã sao chép link đặt món!', 'success');
                       }
                     }}
-                    className="px-2.5 py-1 bg-[#38BDF8] text-[#090D16] font-bold rounded-lg text-[10px] hover:bg-[#0284c7] transition-all ml-1"
+                    className="px-2.5 py-1 bg-[#38BDF8] text-[#090D16] font-bold rounded-lg text-[10px] hover:bg-[#0284c7] transition-all ml-1 shrink-0 cursor-pointer"
                   >
                     Sao chép
                   </button>
@@ -3911,19 +5113,29 @@ export default function DashboardPage() {
 
                 <div className="flex gap-2">
                   <button
-                    onClick={() => {
-                      if (typeof window !== 'undefined') {
-                        window.open(`${window.location.origin}/table/${qrTable._id}`, '_blank');
+                    onClick={async () => {
+                      try {
+                        const res = await fetch(`${API_BASE}/tables/${qrTable._id}/regenerate-qr`, {
+                          method: 'PATCH',
+                        });
+                        if (res.ok) {
+                          const updated = await res.json();
+                          setQrTable(updated);
+                          setTables((prev) => prev.map((t) => (t._id === qrTable._id ? updated : t)));
+                          showToast('Đã tạo mã QR mới thành công!', 'success');
+                        }
+                      } catch (e) {
+                        showToast('Không thể đổi mã QR!', 'error');
                       }
                     }}
-                    className="flex-1 py-2.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl font-bold flex items-center justify-center gap-1.5"
+                    className="flex-1 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-xl font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all border border-amber-500/30"
                   >
-                    <span className="material-symbols-outlined text-base">open_in_new</span>
-                    <span>Thử đặt món</span>
+                    <span className="material-symbols-outlined text-base">sync</span>
+                    <span>Đổi mã QR mới</span>
                   </button>
                   <button
                     onClick={() => window.print()}
-                    className="flex-1 py-2.5 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-xl flex items-center justify-center gap-1.5"
+                    className="flex-1 py-2.5 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all"
                   >
                     <span className="material-symbols-outlined text-base">print</span>
                     <span>In QR Code</span>
@@ -3966,9 +5178,19 @@ export default function DashboardPage() {
 
                 <div>
                   <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">{t.modalUserRole}</label>
-                  <select value={userForm.role} onChange={(e) => setUserForm({ ...userForm, role: e.target.value as 'admin' | 'staff' })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-[#38BDF8] cursor-pointer">
-                    <option value="staff" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">{t.staffRole}</option>
+                  <select value={userForm.role} onChange={(e) => setUserForm({ ...userForm, role: e.target.value as any })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-[#38BDF8] cursor-pointer">
+                    <option value="waiter" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Phục vụ (Waiter)</option>
+                    <option value="barista" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Pha chế (Barista)</option>
                     <option value="admin" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">{t.adminRole}</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Ca làm phân công mặc định</label>
+                  <select value={userForm.assignedShift} onChange={(e) => setUserForm({ ...userForm, assignedShift: e.target.value as any })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-[#38BDF8] cursor-pointer">
+                    <option value="morning" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Ca Sáng (06:00 - 12:00)</option>
+                    <option value="afternoon" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Ca Chiều (12:00 - 18:00)</option>
+                    <option value="evening" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Ca Tối (18:00 - 23:00)</option>
                   </select>
                 </div>
 
@@ -4467,12 +5689,12 @@ export default function DashboardPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Giảm tối đa (VND)</label>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Số lượt dùng</label>
                     <input
                       type="number"
                       placeholder="0 = không giới hạn"
-                      value={couponForm.maxDiscount}
-                      onChange={(e) => setCouponForm({ ...couponForm, maxDiscount: e.target.value })}
+                      value={couponForm.maxUsage}
+                      onChange={(e) => setCouponForm({ ...couponForm, maxUsage: e.target.value })}
                       className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:border-[#38BDF8]"
                     />
                   </div>
@@ -4527,6 +5749,123 @@ export default function DashboardPage() {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 5.5 Printable Payment Invoice Receipt Modal */}
+      <AnimatePresence>
+        {selectedInvoiceModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedInvoiceModal(null)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-xs"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative z-10 w-full max-w-lg bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-6 shadow-2xl space-y-5"
+            >
+              <div className="text-center border-b border-slate-200 dark:border-[#1e293b] pb-4 space-y-1">
+                <h2 className="text-xl font-black tracking-wide text-slate-900 dark:text-white uppercase">Hóa Đơn Thanh Toán</h2>
+                <p className="text-xs font-bold text-[#38BDF8]">KOHI COFFEE BOUTIQUE</p>
+                <div className="inline-block mt-2 px-3.5 py-1 bg-cyan-500/10 border border-cyan-500/30 rounded-full text-xs font-black text-cyan-600 dark:text-[#38BDF8] font-mono">
+                  MÃ HÓA ĐƠN: {selectedInvoiceModal.invoiceCode}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <span className="text-slate-400 font-medium">Bàn / Vị trí: </span>
+                  <span className="font-extrabold text-slate-900 dark:text-white">{selectedInvoiceModal.tableName}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-slate-400 font-medium">Thời gian: </span>
+                  <span className="font-extrabold text-slate-900 dark:text-white">
+                    {new Date(selectedInvoiceModal.paidAt).toLocaleString('vi-VN')}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400 font-medium">Khách hàng: </span>
+                  <span className="font-extrabold text-slate-900 dark:text-white">{selectedInvoiceModal.customerName || 'Khách vãng lai'}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-slate-400 font-medium">Phương thức: </span>
+                  <span className="font-extrabold text-slate-900 dark:text-white uppercase">
+                    {selectedInvoiceModal.paymentMethod === 'momo' ? 'Ví MoMo' : 'Tiền mặt'}
+                  </span>
+                </div>
+                {selectedInvoiceModal.transactionCode && (
+                  <div className="col-span-2 text-xs text-slate-400">
+                    Mã Giao Dịch: <span className="font-mono text-slate-700 dark:text-slate-300 font-bold">{selectedInvoiceModal.transactionCode}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Itemized Table */}
+              <div className="border border-slate-200 dark:border-[#1e293b] rounded-2xl overflow-hidden">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-slate-50 dark:bg-[#090D16] text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] border-b border-slate-200 dark:border-[#1e293b]">
+                    <tr>
+                      <th className="p-2.5">Món ăn</th>
+                      <th className="p-2.5 text-center">SL</th>
+                      <th className="p-2.5 text-right">Đơn giá</th>
+                      <th className="p-2.5 text-right">Thành tiền</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b] font-medium text-slate-800 dark:text-slate-200">
+                    {selectedInvoiceModal.items?.map((item: any, idx: number) => (
+                      <tr key={idx}>
+                        <td className="p-2.5 font-bold">{item.foodName}</td>
+                        <td className="p-2.5 text-center font-bold">{item.quantity}</td>
+                        <td className="p-2.5 text-right">{formatPrice(item.price)}</td>
+                        <td className="p-2.5 text-right font-extrabold">{formatPrice(item.total)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Financial Summary */}
+              <div className="space-y-1.5 text-xs border-t border-slate-200 dark:border-[#1e293b] pt-3">
+                <div className="flex justify-between text-slate-500">
+                  <span>Tạm tính:</span>
+                  <span className="font-bold">{formatPrice(selectedInvoiceModal.subtotal || selectedInvoiceModal.totalAmount)}</span>
+                </div>
+                {selectedInvoiceModal.discountAmount > 0 && (
+                  <div className="flex justify-between text-emerald-500 font-bold">
+                    <span>Giảm giá ({selectedInvoiceModal.couponCode || 'Voucher'}):</span>
+                    <span>-{formatPrice(selectedInvoiceModal.discountAmount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-base font-black text-slate-900 dark:text-white pt-2 border-t border-dashed border-slate-200 dark:border-[#1e293b]">
+                  <span>TỔNG THANH TOÁN:</span>
+                  <span className="text-[#38BDF8]">{formatPrice(selectedInvoiceModal.totalAmount)}</span>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedInvoiceModal(null)}
+                  className="flex-1 py-2.5 bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer"
+                >
+                  Đóng
+                </button>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="flex-1 py-2.5 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] rounded-xl text-xs font-black transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-base">print</span>
+                  <span>In Hóa Đơn</span>
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

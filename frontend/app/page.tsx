@@ -273,7 +273,7 @@ export default function Home() {
       playWelcomeChime();
       setBookingSuccess(result);
 
-      // ⚡ Reset toàn bộ các giá trị trong form về trạng thái ban đầu
+      // Reset toàn bộ các giá trị trong form về trạng thái ban đầu
       setCustomerName('');
       setCustomerPhone('');
       setGuestCount(2);
@@ -323,9 +323,9 @@ export default function Home() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans flex flex-col justify-between transition-colors duration-300">
+    <div className="min-h-screen bg-[#FFFFFF] dark:bg-[#090D16] text-[var(--text-primary)] font-sans flex flex-col justify-between transition-colors duration-300">
       {/* ── TOP APP HEADER BAR ────────────────────────────────────────────── */}
-      <header className="w-full border-b border-[var(--border-color)] bg-[var(--bg-card)] sticky top-0 z-40 px-4 py-3 sm:px-8 shadow-xs">
+      <header className="w-full border-b border-[#E2E8F0] dark:border-[#222732] bg-[#FFFFFF] dark:bg-[#11141A] sticky top-0 z-40 px-4 py-3 sm:px-8 shadow-xs">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           <BrandLogo onClick={() => router.push('/')} />
 
@@ -345,38 +345,38 @@ export default function Home() {
             {/* Staff / Admin Login Button */}
             <button
               onClick={() => router.push('/login')}
-              className="hidden sm:flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-[var(--bg-card-inner)] border border-[var(--border-color)] text-xs font-bold text-[var(--text-primary)] hover:border-[#2563EB] hover:text-[#2563EB] transition-all min-w-[130px] shrink-0"
+              className="flex items-center justify-center gap-1.5 px-3 py-2 sm:px-3.5 sm:py-2 rounded-xl bg-[#FFFFFF] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] text-xs font-bold text-[var(--text-primary)] hover:border-[#3AA6FF] hover:text-[#3AA6FF] transition-all shrink-0 font-sans cursor-pointer"
             >
               <span className="material-symbols-outlined text-base">login</span>
-              <span>{t.btnLogin}</span>
+              <span className="hidden sm:inline">{t.btnLogin}</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* ── MAIN HERO SECTION ────────────────────────────────────────────── */}
-      <main className="max-w-6xl mx-auto px-4 py-6 sm:py-10 w-full flex-1 space-y-8">
+      <main className="max-w-6xl mx-auto px-4 py-6 sm:py-10 w-full flex-1 space-y-8 font-sans">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <span className="inline-block px-3.5 py-1 bg-[#2563EB]/10 text-[#2563EB] dark:text-[#3B82F6] rounded-full text-xs font-bold tracking-wide uppercase">
+          <span className="inline-block px-3.5 py-1 bg-[#3AA6FF]/10 text-[#3AA6FF] dark:text-[#5B9EFF] border border-[#3AA6FF]/20 rounded-full text-xs font-extrabold tracking-wide uppercase">
             Smart Table Booking & QR Order
           </span>
           <h2 className="text-2xl sm:text-4xl font-extrabold text-[var(--text-primary)] font-heading tracking-tight">
             {t.heroTitle}
           </h2>
-          <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
+          <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed font-sans">
             {t.heroSubtitle}
           </p>
         </div>
 
         {/* Tab Navigation: Đặt Bàn vs Tra Cứu vs Vào Bàn Mã QR */}
-        <div className="flex justify-center border-b border-[var(--border-color)]">
-          <div className="flex gap-4 sm:gap-8 text-xs sm:text-sm font-bold">
+        <div className="flex justify-center border-b border-[var(--border-color)] overflow-x-auto scrollbar-none max-w-full">
+          <div className="flex gap-2 sm:gap-8 text-xs sm:text-sm font-bold whitespace-nowrap px-1">
             <button
               onClick={() => {
                 setActiveTab('reserve');
                 setError('');
               }}
-              className={`pb-3 px-2 flex items-center gap-2 border-b-2 transition-all ${
+              className={`pb-3 px-3.5 flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
                 activeTab === 'reserve'
                   ? 'border-[#2563EB] text-[#2563EB] dark:text-[#3B82F6]'
                   : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -390,7 +390,7 @@ export default function Home() {
                 setActiveTab('lookup');
                 setError('');
               }}
-              className={`pb-3 px-2 flex items-center gap-2 border-b-2 transition-all ${
+              className={`pb-3 px-3.5 flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
                 activeTab === 'lookup'
                   ? 'border-[#2563EB] text-[#2563EB] dark:text-[#3B82F6]'
                   : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -404,7 +404,7 @@ export default function Home() {
                 setActiveTab('qr');
                 setError('');
               }}
-              className={`pb-3 px-2 flex items-center gap-2 border-b-2 transition-all ${
+              className={`pb-3 px-3.5 flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
                 activeTab === 'qr'
                   ? 'border-[#2563EB] text-[#2563EB] dark:text-[#3B82F6]'
                   : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'

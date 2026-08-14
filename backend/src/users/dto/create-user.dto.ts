@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class CreateUserDto {
   @IsString()
@@ -14,6 +14,11 @@ export class CreateUserDto {
   @MinLength(6, { message: 'Mật khẩu phải có ít nhất 6 ký tự.' })
   password: string;
 
-  @IsEnum(['admin', 'staff'], { message: 'Vai trò phải là "admin" hoặc "staff".' })
+  @IsEnum(['admin', 'waiter', 'barista', 'staff'], { message: 'Vai trò không hợp lệ.' })
+  @IsOptional()
   role?: string;
+
+  @IsEnum(['morning', 'afternoon', 'evening'], { message: 'Ca làm không hợp lệ.' })
+  @IsOptional()
+  assignedShift?: string;
 }

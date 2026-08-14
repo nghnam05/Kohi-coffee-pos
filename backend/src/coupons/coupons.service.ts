@@ -83,7 +83,7 @@ export class CouponsService implements OnModuleInit {
     if (!coupon) return { valid: false, discountAmount: 0, message: 'Mã giảm giá không tồn tại hoặc đã bị vô hiệu.' };
     if (new Date() > coupon.expiresAt) return { valid: false, discountAmount: 0, message: 'Mã giảm giá đã hết hạn.' };
     if (coupon.maxUsage > 0 && coupon.usedCount >= coupon.maxUsage) {
-      return { valid: false, discountAmount: 0, message: 'Mã giảm giá đã đạt giới hạn sử dụng.' };
+      return { valid: false, discountAmount: 0, message: 'Mã giảm giá đã hết lượt sử dụng.' };
     }
     if (coupon.minOrderAmount > 0 && orderAmount < coupon.minOrderAmount) {
       return {

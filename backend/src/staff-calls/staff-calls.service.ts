@@ -25,7 +25,8 @@ export class StaffCallsService {
     const now = Date.now();
     const lastCall = this.cooldowns.get(tableKey);
 
-    if (lastCall && now - lastCall < COOLDOWN_MS) {
+    const isPaymentCall = dto.message && dto.message.toLowerCase().includes('thanh toán');
+    if (!isPaymentCall && lastCall && now - lastCall < COOLDOWN_MS) {
       const remaining = Math.ceil((COOLDOWN_MS - (now - lastCall)) / 1000);
       throw new BadRequestException(
         `Vui lòng chờ ${remaining} giây trước khi gọi lại.`,

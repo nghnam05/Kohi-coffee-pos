@@ -39,7 +39,7 @@ export class StaffCallsController {
    * Lấy danh sách yêu cầu đang chờ – chỉ Nhân viên mới có thông báo/danh sách
    */
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin', 'staff')
+  @Roles('admin', 'waiter', 'barista', 'staff')
   @Get()
   async findPending(@Req() req: any) {
     // Nếu là tài khoản Admin thì không lấy danh sách thông báo gọi nhân viên
@@ -54,7 +54,7 @@ export class StaffCallsController {
    * Nhân viên xác nhận đã tiếp nhận – chỉ Admin/Staff
    */
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin', 'staff')
+  @Roles('admin', 'waiter', 'barista', 'staff')
   @Patch(':id/acknowledge')
   async acknowledge(@Param('id') id: string) {
     const updated = await this.staffCallsService.acknowledge(id);

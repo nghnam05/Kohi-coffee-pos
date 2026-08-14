@@ -150,8 +150,8 @@ export const TransferTableModal: React.FC<TransferTableModalProps> = ({
                         </div>
 
                         {isSelected && (
-                          <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[var(--brand-primary)] text-white flex items-center justify-center text-[10px] font-bold shadow-sm">
-                            ✓
+                          <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[var(--brand-primary)] text-white flex items-center justify-center shadow-sm">
+                            <span className="material-symbols-outlined text-[10px] font-bold leading-none">check</span>
                           </div>
                         )}
                       </button>

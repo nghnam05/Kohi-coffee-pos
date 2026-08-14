@@ -15,7 +15,7 @@
   /* Backgrounds */
   --bg-primary:        #FFFFFF;
   --bg-card:           #FFFFFF;
-  --bg-card-inner:     #F8FAFC;
+  --bg-card-inner:     #FFFFFF;
 
   /* Borders */
   --border-color:      #E2E8F0;
@@ -23,9 +23,9 @@
   --border-focus:      #93C5FD;
 
   /* Text */
-  --text-primary:      #000000;
+  --text-primary:      #090D16;
   --text-secondary:    #1F2937;
-  --text-tertiary:     #6B7280;
+  --text-tertiary:     #374151;
 
   /* Brand */
   --brand-primary:       #2563EB;

@@ -31,7 +31,7 @@ export class ReservationsController {
 
   // GET /api/v1/reservations (Cho phép Admin và Staff xem danh sách đặt bàn)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin', 'staff')
+  @Roles('admin', 'waiter', 'barista', 'staff')
   @Get()
   findAll(@Query('status') status?: string) {
     return this.reservationsService.findAll(status);
@@ -39,7 +39,7 @@ export class ReservationsController {
 
   // GET /api/v1/reservations/:id
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin', 'staff')
+  @Roles('admin', 'waiter', 'barista', 'staff')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.reservationsService.findOne(id);
@@ -47,7 +47,7 @@ export class ReservationsController {
 
   // PATCH /api/v1/reservations/:id/status (Admin & Staff cập nhật trạng thái: confirmed, arrived, cancelled)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin', 'staff')
+  @Roles('admin', 'waiter', 'barista', 'staff')
   @Patch(':id/status')
   updateStatus(
     @Param('id') id: string,
@@ -58,7 +58,7 @@ export class ReservationsController {
 
   // DELETE /api/v1/reservations/:id (Admin & Staff xóa đơn đặt bàn)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin', 'staff')
+  @Roles('admin', 'waiter', 'barista', 'staff')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.reservationsService.remove(id);

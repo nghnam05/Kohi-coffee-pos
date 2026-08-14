@@ -115,7 +115,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
               {/* Left Image Section */}
               <div
                 onClick={() => setIsLightboxOpen(true)}
-                className="w-full md:w-[45%] h-48 sm:h-56 md:h-full bg-gray-50 dark:bg-[#0F1115] border-b md:border-b-0 md:border-r border-[var(--border-color)] relative flex-shrink-0 cursor-pointer group p-3 flex items-center justify-center"
+                className="w-full md:w-[45%] h-48 sm:h-56 md:h-full bg-[#FFFFFF] dark:bg-[#0F1115] border-b md:border-b-0 md:border-r border-[var(--border-color)] relative flex-shrink-0 cursor-pointer group p-3 flex items-center justify-center"
               >
                 <Image
                   src={selectedFood.image}

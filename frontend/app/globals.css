@@ -5,20 +5,20 @@
 @tailwind utilities;
 
 @layer base {
-  *, ::before, ::after {
+  *,
+  ::before,
+  ::after {
     box-sizing: border-box;
   }
 
-  html, body, #__next, #root {
+  html,
+  body,
+  #__next,
+  #root {
     margin: 0;
     padding: 0;
     background-color: var(--bg-primary);
     min-height: 100vh;
-  }
-
-  /* Apply Be Vietnam Pro as base font-sans override */
-  :root {
-    --font-sans: var(--font-be-vietnam), 'Be Vietnam Pro', system-ui, sans-serif;
   }
 
   body {
@@ -40,15 +40,18 @@
   }
 }
 
+
 @keyframes popScaleIn {
   0% {
     transform: scale(0.5);
     opacity: 0;
   }
+
   70% {
     transform: scale(1.12);
     opacity: 1;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
@@ -64,6 +67,7 @@
     opacity: 0;
     transform: scale(0.94) translateY(12px);
   }
+
   100% {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -73,7 +77,6 @@
 .animate-modal-in {
   animation: fadeInModal 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-
 
 .material-symbols-outlined {
   font-family: 'Material Symbols Outlined';
@@ -92,8 +95,6 @@
 }
 
 :root {
-  --background: #FFFFFF;
-  --foreground: #000000;
   --accent: #7C3AED;
   --primary: #2563EB;
 }
@@ -548,4 +549,3 @@ html.dark select option {
   color: #ffffff !important;
   font-weight: 700;
 }
-

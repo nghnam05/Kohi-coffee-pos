@@ -15,6 +15,9 @@ import { AttendanceModule } from './attendance/attendance.module.js';
 import { SalariesModule } from './salaries/salaries.module.js';
 import { AiChatModule } from './ai-chat/ai-chat.module.js';
 import { ReservationsModule } from './reservations/reservations.module.js';
+import { CategoriesModule } from './categories/categories.module.js';
+import { ShiftSwapsModule } from './shift-swaps/shift-swaps.module.js';
+import { PaymentsModule } from './payments/payments.module.js';
 
 @Module({
   controllers: [AppController],
@@ -30,6 +33,7 @@ import { ReservationsModule } from './reservations/reservations.module.js';
     AuthModule,
     UsersModule,
     FoodsModule,
+    CategoriesModule,
     TablesModule,
     OrdersModule,
     StaffCallsModule,
@@ -40,6 +44,8 @@ import { ReservationsModule } from './reservations/reservations.module.js';
     SalariesModule,
     AiChatModule,
     ReservationsModule,
+    ShiftSwapsModule,
+    PaymentsModule,
   ],
 })
 export class AppModule {}

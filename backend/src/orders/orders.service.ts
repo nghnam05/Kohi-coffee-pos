@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, OnModuleInit } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, OnModuleInit, Optional, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Order, OrderDocument } from './schemas/order.schema.js';
@@ -8,6 +8,7 @@ import { OrdersGateway } from './orders.gateway.js';
 import { FoodsService } from '../foods/foods.service.js';
 import { TablesService } from '../tables/tables.service.js';
 import { CouponsService } from '../coupons/coupons.service.js';
+import { PaymentsService } from '../payments/payments.service.js';
 
 @Injectable()
 export class OrdersService implements OnModuleInit {
@@ -17,6 +18,7 @@ export class OrdersService implements OnModuleInit {
     private readonly foodsService: FoodsService,
     private readonly tablesService: TablesService,
     private readonly couponsService: CouponsService,
+    @Optional() @Inject(PaymentsService) private readonly paymentsService?: PaymentsService,
   ) {}
 
   async onModuleInit() {
@@ -107,9 +109,15 @@ export class OrdersService implements OnModuleInit {
       await this.couponsService.incrementUsage(couponCode);
     }
 
-    // Cập nhật trạng thái bàn ăn sang 'serving' (có khách)
+    // Cập nhật trạng thái bàn ăn sang 'serving' (có khách) nếu đang empty
     if (createOrderDto.tableId) {
-      await this.tablesService.update(createOrderDto.tableId, { status: 'serving' }).catch(() => {});
+      const table = await this.tablesService.findOne(createOrderDto.tableId).catch(() => null);
+      if (!table || table.status === 'empty') {
+        await this.tablesService.update(createOrderDto.tableId, {
+          status: 'serving',
+          currentSessionStartedAt: new Date(),
+        } as any).catch(() => {});
+      }
     }
 
     // Populate dữ liệu liên quan để trả về client và phát tín hiệu qua Socket
@@ -121,6 +129,9 @@ export class OrdersService implements OnModuleInit {
 
     if (populatedOrder) {
       this.ordersGateway.emitNewOrder(populatedOrder);
+      if (createOrderDto.tableId) {
+        this.ordersGateway.emitClearGroupCart(createOrderDto.tableId.toString());
+      }
       return populatedOrder;
     }
 
@@ -152,12 +163,27 @@ export class OrdersService implements OnModuleInit {
     return order;
   }
 
-  async findByTable(tableId: string): Promise<any[]> {
+  async findByTable(tableId: string, activeOnly = false): Promise<any[]> {
+    const table = await this.tablesService.findOne(tableId).catch(() => null);
+    if (!table || table.status === 'empty') {
+      return [];
+    }
+
+    const query: any = {
+      tableId,
+      status: { $ne: 'cancelled' },
+    };
+
+    if (activeOnly) {
+      query.status = { $nin: ['paid', 'cancelled'] };
+    }
+
+    if (table.currentSessionStartedAt) {
+      query.createdAt = { $gte: new Date(table.currentSessionStartedAt) };
+    }
+
     return this.orderModel
-      .find({
-        tableId,
-        status: { $ne: 'cancelled' },
-      })
+      .find(query)
       .populate('tableId')
       .populate('items.foodId')
       .sort({ createdAt: -1 })
@@ -165,7 +191,11 @@ export class OrdersService implements OnModuleInit {
       .exec() as any;
   }
 
-  async updateStatus(id: string, updateOrderStatusDto: UpdateOrderStatusDto): Promise<OrderDocument> {
+  async updateStatus(id: string, updateOrderStatusDto: UpdateOrderStatusDto, userRole?: string): Promise<OrderDocument> {
+    if (userRole === 'barista' && updateOrderStatusDto.status === 'paid') {
+      throw new ForbiddenException('Nhân viên pha chế không có quyền xác nhận thanh toán đơn hàng.');
+    }
+
     const updatePayload: any = { status: updateOrderStatusDto.status };
     if (updateOrderStatusDto.status === 'paid') {
       updatePayload.paymentStatus = 'paid';
@@ -188,23 +218,34 @@ export class OrdersService implements OnModuleInit {
 
     this.ordersGateway.emitStatusUpdate(id, updateOrderStatusDto.status);
 
-    // Tự động giải phóng bàn về 'empty' nếu không còn đơn hàng active nào khác
-    if (updateOrderStatusDto.status === 'paid' || updateOrderStatusDto.status === 'cancelled') {
-      const tableId = (updatedOrder.tableId as any)?._id || updatedOrder.tableId;
-      if (tableId) {
-        const remainingActiveOrders = await this.orderModel.countDocuments({
-          tableId,
-          _id: { $ne: id },
-          status: { $nin: ['paid', 'cancelled'] },
-        });
-        if (remainingActiveOrders === 0) {
-          await this.tablesService.update(tableId.toString(), { status: 'empty' }).catch(() => {});
-        }
-      }
+    if (updateOrderStatusDto.status === 'ready' || updateOrderStatusDto.status === 'completed') {
+      const tableName = (updatedOrder.tableId as any)?.tableName || 'Bàn';
+      this.ordersGateway.emitDrinkReadyNotification({
+        orderId: updatedOrder._id.toString(),
+        tableName,
+        items: updatedOrder.items,
+      });
     }
 
     if (updateOrderStatusDto.status === 'paid') {
       console.log(`[Payment Completed] Đơn hàng ${id} đã thanh toán thành công và lưu vết vào DB.`);
+      if (this.paymentsService && updatedOrder) {
+        await this.paymentsService.createFromOrder(updatedOrder).catch((err) => {
+          console.error('[Payment Record Error]:', err);
+        });
+      }
+      if (updatedOrder.tableId) {
+        const tableIdStr = (updatedOrder.tableId as any)?._id
+          ? (updatedOrder.tableId as any)._id.toString()
+          : updatedOrder.tableId.toString();
+        if (tableIdStr) {
+          const occupantCount = this.tablesService.getOccupantCount(tableIdStr);
+          if (occupantCount === 0) {
+            await this.tablesService.update(tableIdStr, { status: 'empty' }).catch(() => {});
+            this.ordersGateway.emitTableUpdate(tableIdStr, 'empty');
+          }
+        }
+      }
     }
 
     return updatedOrder;
@@ -217,38 +258,47 @@ export class OrdersService implements OnModuleInit {
       status: { $nin: ['paid', 'cancelled'] },
     });
 
-    if (activeOrders.length === 0) {
-      throw new NotFoundException('Không tìm thấy đơn hàng đang hoạt động nào ở bàn này.');
+    // 2. Cập nhật ID bàn mới cho tất cả các đơn hàng hoạt động đó (nếu có)
+    if (activeOrders.length > 0) {
+      await this.orderModel.updateMany(
+        { tableId: fromTableId, status: { $nin: ['paid', 'cancelled'] } },
+        { tableId: toTableId },
+      );
     }
 
-    // 2. Cập nhật ID bàn mới cho tất cả các đơn hàng hoạt động đó
-    await this.orderModel.updateMany(
-      { tableId: fromTableId, status: { $nin: ['paid', 'cancelled'] } },
-      { tableId: toTableId },
-    );
+    // 3. Chuyển giỏ hàng món ăn đang chọn (Unsubmitted Group Cart) ở bộ nhớ Socket sang bàn mới
+    if (this.ordersGateway) {
+      this.ordersGateway.transferGroupCart(fromTableId, toTableId);
+    }
 
-    // 3. Cập nhật trạng thái hoạt động của 2 bàn thông qua TablesService
+    // 4. Cập nhật trạng thái hoạt động của 2 bàn thông qua TablesService
     await this.tablesService.update(fromTableId, { status: 'empty' });
     await this.tablesService.update(toTableId, { status: 'serving' });
 
-    // 4. Phát tín hiệu qua Socket để các màn hình Dashboard của admin/nhân viên và khách cập nhật lại real-time
-    if (this.ordersGateway.server) {
+    // 5. Phát tín hiệu qua Socket để các màn hình Dashboard của admin/nhân viên và khách cập nhật lại real-time
+    if (this.ordersGateway && this.ordersGateway.server) {
       this.ordersGateway.server.emit('tableTransferred', { fromTableId, toTableId });
     }
 
     return { message: 'Chuyển bàn thành công', fromTableId, toTableId };
   }
 
-  async remove(id: string): Promise<{ message: string }> {
-    const deletedOrder = await this.orderModel.findByIdAndDelete(id).exec();
-    if (!deletedOrder) {
+  async remove(id: string, userRole?: string): Promise<{ message: string }> {
+    const order = await this.orderModel.findById(id).exec();
+    if (!order) {
       throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${id}`);
     }
+
+    if (userRole === 'barista' && ['ready', 'served', 'completed', 'paid'].includes(order.status)) {
+      throw new ForbiddenException('Nhân viên pha chế không có quyền xóa đơn hàng đã hoàn tất ra món.');
+    }
+
+    await this.orderModel.findByIdAndDelete(id).exec();
     this.ordersGateway.emitOrderDeleted(id);
 
     // Tự động giải phóng bàn nếu không còn đơn hàng active nào khác
-    if (deletedOrder.tableId) {
-      const tableId = (deletedOrder.tableId as any)?._id || deletedOrder.tableId;
+    if (order.tableId) {
+      const tableId = (order.tableId as any)?._id || order.tableId;
       const remainingActiveOrders = await this.orderModel.countDocuments({
         tableId,
         status: { $nin: ['paid', 'cancelled'] },
@@ -259,6 +309,36 @@ export class OrdersService implements OnModuleInit {
     }
 
     return { message: `Đã xóa đơn hàng ${id} thành công.` };
+  }
+
+  async removeBulk(ids: string[]): Promise<{ message: string; deletedCount: number }> {
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      throw new BadRequestException('Danh sách ID đơn hàng cần xóa không hợp lệ.');
+    }
+
+    const ordersToDelete = await this.orderModel.find({ _id: { $in: ids } }).exec();
+    const result = await this.orderModel.deleteMany({ _id: { $in: ids } }).exec();
+
+    const affectedTableIds = new Set<string>();
+    for (const ord of ordersToDelete) {
+      this.ordersGateway.emitOrderDeleted(ord._id.toString());
+      if (ord.tableId) {
+        const tid = (ord.tableId as any)?._id || ord.tableId;
+        affectedTableIds.add(tid.toString());
+      }
+    }
+
+    for (const tid of affectedTableIds) {
+      const remaining = await this.orderModel.countDocuments({
+        tableId: tid,
+        status: { $nin: ['paid', 'cancelled'] },
+      });
+      if (remaining === 0) {
+        await this.tablesService.update(tid, { status: 'empty' }).catch(() => {});
+      }
+    }
+
+    return { message: `Đã xóa ${result.deletedCount} đơn hàng thành công.`, deletedCount: result.deletedCount };
   }
 
   async mergeTableOrders(tableId: string): Promise<any> {
@@ -293,14 +373,20 @@ export class OrdersService implements OnModuleInit {
       }
     }
 
-    let newTotalAmount = 0;
+    let grossTotal = 0;
     for (const item of mergedItems) {
       const food = await this.foodsService.findOne(item.foodId.toString());
-      newTotalAmount += (food.price || 0) * item.quantity;
+      grossTotal += (food.price || 0) * item.quantity;
+    }
+
+    let combinedDiscount = primaryOrder.discountAmount || 0;
+    for (const secOrder of secondaryOrders) {
+      combinedDiscount += secOrder.discountAmount || 0;
     }
 
     primaryOrder.items = mergedItems;
-    primaryOrder.totalAmount = newTotalAmount;
+    primaryOrder.discountAmount = combinedDiscount;
+    primaryOrder.totalAmount = Math.max(0, grossTotal - combinedDiscount);
     await primaryOrder.save();
 
     const secondaryIds = secondaryOrders.map((o) => o._id);

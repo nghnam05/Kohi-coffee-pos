@@ -25,6 +25,8 @@ interface CartItem {
   quantity: number;
   note: string;
   unitPrice?: number;
+  addedBy?: string;
+  addedByDeviceId?: string;
 }
 
 type Lang = 'vi' | 'en' | 'zh';
@@ -60,6 +62,8 @@ interface CartSidebarProps {
   t: any;
   isCartOpen?: boolean;
   setIsCartOpen?: (open: boolean) => void;
+  currentDeviceId?: string;
+  customerName?: string;
 }
 
 export const CartSidebar: React.FC<CartSidebarProps> = ({
@@ -87,117 +91,159 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
   t,
   isCartOpen = false,
   setIsCartOpen,
+  currentDeviceId,
+  customerName,
 }) => {
-  const renderCartItems = () => (
-    <div className="flex-1 overflow-y-auto px-4 xl:px-5 py-4 space-y-3 scrollbar-none font-sans">
-      {cart.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-48 text-center gap-2">
-          <span className="material-symbols-outlined text-4xl text-[var(--text-tertiary)]">
-            shopping_bag
-          </span>
-          <p className="text-xs font-semibold text-[var(--text-tertiary)]">
-            {t.emptyCart}
-          </p>
-        </div>
-      ) : (
-        cart.map((item) => {
-          const effectivePrice = item.unitPrice ?? item.food.price;
-          return (
-            <div
-              key={item.food._id}
-              className="p-3 rounded-[var(--radius-md)] bg-[var(--bg-primary)] border border-[var(--border-color)] shadow-xs transition-colors"
-            >
-              <div className="flex justify-between items-start gap-2">
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-xs font-semibold text-[var(--text-primary)] truncate">
-                    {item.food.name}
-                  </h4>
-                  <span className="text-[13px] font-bold text-[var(--price-color)] block mt-0.5">
-                    {formatPrice(effectivePrice, lang)}
-                  </span>
-                </div>
-                <button
-                  onClick={() => handleRemove(item.food._id)}
-                  className="text-[var(--text-tertiary)] hover:text-red-500 transition-colors p-1"
-                  title="Xóa món"
-                >
-                  <span className="material-symbols-outlined text-base">close</span>
-                </button>
-              </div>
-              {item.note && (
-                <p className="text-[12px] font-normal text-[var(--text-secondary)] line-clamp-1 italic mt-1">
-                  Ghi chú: {item.note}
-                </p>
-              )}
-              <div className="flex justify-between items-center mt-2.5">
-                <div className="flex items-center gap-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-full px-2 py-1 shadow-xs">
-                  <button
-                    onClick={() => handleDecrease(item.food._id)}
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors active:scale-95"
-                  >
-                    <span className="material-symbols-outlined text-xs">remove</span>
-                  </button>
-                  <span className="text-xs font-bold text-[var(--text-primary)] min-w-4 text-center">
-                    {item.quantity}
-                  </span>
-                  <button
-                    onClick={() => handleIncrease(item.food)}
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors active:scale-95"
-                  >
-                    <span className="material-symbols-outlined text-xs">add</span>
-                  </button>
-                </div>
-                <span className="text-xs font-black text-[var(--text-primary)]">
-                  {formatPrice(effectivePrice * item.quantity, lang)}
-                </span>
-              </div>
-            </div>
-          );
-        })
-      )}
+  const renderCartItems = () => {
+    const myItems = cart.filter((item) =>
+      currentDeviceId ? item.addedByDeviceId === currentDeviceId : true
+    );
+    const othersItems = cart.filter((item) =>
+      currentDeviceId ? item.addedByDeviceId !== currentDeviceId : false
+    );
 
-      {/* Upsell Recommendation Section */}
-      {cart.length <= 2 && foods.length > 0 && (
-        <div className="pt-2 border-t border-[var(--border-color)]">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.04em] text-[var(--accent)] mb-2.5 flex items-center gap-1.5">
-            <span>Có thể bạn sẽ thích</span>
-          </p>
-          <div className="space-y-2">
-            {foods
-              .filter((f) => !cartMap.has(f._id))
-              .slice(0, 2)
-              .map((recomFood) => (
-                <div
-                  key={recomFood._id}
-                  className="flex items-center justify-between p-2 rounded-[var(--radius-md)] bg-[var(--upsell-card-bg)] border border-[var(--upsell-card-border)] shadow-[var(--upsell-card-shadow)]"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-10 h-10 rounded-[var(--radius-sm)] overflow-hidden bg-[var(--bg-card)] relative flex-shrink-0">
-                      <Image src={recomFood.image} alt={recomFood.name} fill className="object-cover" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold text-[var(--text-primary)] truncate">
-                        {recomFood.name}
-                      </p>
-                      <p className="text-[12px] font-bold text-[var(--price-color)]">
-                        {formatPrice(recomFood.price, lang)}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleIncrease(recomFood)}
-                    className="px-2.5 py-1 bg-[var(--brand-primary-muted)] hover:bg-[var(--brand-primary)] text-[var(--brand-primary)] hover:text-white rounded-[var(--radius-sm)] text-[11px] font-semibold transition-all flex items-center gap-0.5 flex-shrink-0 active:scale-95"
-                  >
-                    <span className="material-symbols-outlined text-[13px]">add</span>
-                    <span>Thêm</span>
-                  </button>
-                </div>
-              ))}
+    const renderSingleItem = (item: CartItem) => {
+      const effectivePrice = item.unitPrice ?? item.food.price;
+      return (
+        <div
+          key={`${item.food._id}_${item.addedByDeviceId || 'local'}`}
+          className="p-3 rounded-[var(--radius-md)] bg-[var(--bg-primary)] border border-[var(--border-color)] shadow-xs transition-colors"
+        >
+          <div className="flex justify-between items-start gap-2">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h4 className="text-xs font-semibold text-[var(--text-primary)] truncate">
+                  {item.food.name}
+                </h4>
+                {item.addedBy && (
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#3AA6FF]/10 text-[#3AA6FF] flex-shrink-0">
+                    👤 {item.addedBy}
+                  </span>
+                )}
+              </div>
+              <span className="text-[13px] font-bold text-[var(--price-color)] block mt-0.5">
+                {formatPrice(effectivePrice, lang)}
+              </span>
+            </div>
+            <button
+              onClick={() => handleRemove(item.food._id)}
+              className="text-[var(--text-tertiary)] hover:text-red-500 transition-colors p-1"
+              title="Xóa món"
+            >
+              <span className="material-symbols-outlined text-base">close</span>
+            </button>
+          </div>
+          {item.note && (
+            <p className="text-[12px] font-normal text-[var(--text-secondary)] line-clamp-1 italic mt-1">
+              Ghi chú: {item.note}
+            </p>
+          )}
+          <div className="flex justify-between items-center mt-2.5">
+            <div className="flex items-center gap-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-full px-2 py-1 shadow-xs">
+              <button
+                onClick={() => handleDecrease(item.food._id)}
+                className="w-5 h-5 rounded-full flex items-center justify-center text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors active:scale-95"
+              >
+                <span className="material-symbols-outlined text-xs">remove</span>
+              </button>
+              <span className="text-xs font-bold text-[var(--text-primary)] min-w-4 text-center">
+                {item.quantity}
+              </span>
+              <button
+                onClick={() => handleIncrease(item.food)}
+                className="w-5 h-5 rounded-full flex items-center justify-center text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors active:scale-95"
+              >
+                <span className="material-symbols-outlined text-xs">add</span>
+              </button>
+            </div>
+            <span className="text-xs font-black text-[var(--text-primary)]">
+              {formatPrice(effectivePrice * item.quantity, lang)}
+            </span>
           </div>
         </div>
-      )}
-    </div>
-  );
+      );
+    };
+
+    return (
+      <div className="flex-1 overflow-y-auto px-4 xl:px-5 py-4 space-y-4 scrollbar-none font-sans">
+        {cart.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-48 text-center gap-2">
+            <span className="material-symbols-outlined text-4xl text-[var(--text-tertiary)]">
+              shopping_bag
+            </span>
+            <p className="text-xs font-semibold text-[var(--text-tertiary)]">
+              {t.emptyCart}
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Section 1: Món của tôi */}
+            {myItems.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-[#3AA6FF]">
+                  <span className="material-symbols-outlined text-sm">person</span>
+                  <span>Món bạn chọn ({myItems.reduce((acc, i) => acc + i.quantity, 0)})</span>
+                </div>
+                {myItems.map(renderSingleItem)}
+              </div>
+            )}
+
+            {/* Section 2: Món người khác chọn trong nhóm */}
+            {othersItems.length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-[var(--border-color)]">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-500">
+                  <span className="material-symbols-outlined text-sm">group</span>
+                  <span>Món người khác chọn ({othersItems.reduce((acc, i) => acc + i.quantity, 0)})</span>
+                </div>
+                {othersItems.map(renderSingleItem)}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Upsell Recommendation Section */}
+        {cart.length <= 2 && foods.length > 0 && (
+          <div className="pt-2 border-t border-[var(--border-color)]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.04em] text-[var(--accent)] mb-2.5 flex items-center gap-1.5">
+              <span>Có thể bạn sẽ thích</span>
+            </p>
+            <div className="space-y-2">
+              {foods
+                .filter((f) => !cartMap.has(f._id))
+                .slice(0, 2)
+                .map((recomFood) => (
+                  <div
+                    key={recomFood._id}
+                    className="flex items-center justify-between p-2 rounded-[var(--radius-md)] bg-[var(--upsell-card-bg)] border border-[var(--upsell-card-border)] shadow-[var(--upsell-card-shadow)]"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-10 h-10 rounded-[var(--radius-sm)] overflow-hidden bg-[var(--bg-card)] relative flex-shrink-0">
+                        <Image src={recomFood.image} alt={recomFood.name} fill className="object-cover" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-[var(--text-primary)] truncate">
+                          {recomFood.name}
+                        </p>
+                        <p className="text-[12px] font-bold text-[var(--price-color)]">
+                          {formatPrice(recomFood.price, lang)}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleIncrease(recomFood)}
+                      className="px-2.5 py-1 bg-[var(--brand-primary-muted)] hover:bg-[var(--brand-primary)] text-[var(--brand-primary)] hover:text-white rounded-[var(--radius-sm)] text-[11px] font-semibold transition-all flex items-center gap-0.5 flex-shrink-0 active:scale-95"
+                    >
+                      <span className="material-symbols-outlined text-[13px]">add</span>
+                      <span>Thêm</span>
+                    </button>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderCheckoutControls = () => (
     <div className="p-4 xl:p-5 bg-[var(--bg-primary)] border-t border-[var(--border-color)] shadow-2xl font-sans">

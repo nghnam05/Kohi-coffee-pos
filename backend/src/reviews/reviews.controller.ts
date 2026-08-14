@@ -19,7 +19,7 @@ export class ReviewsController {
 
   /** GET /api/v1/reviews – Admin/Staff xem tất cả */
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin', 'staff')
+  @Roles('admin', 'waiter', 'barista', 'staff')
   @Get()
   findAll() {
     return this.reviewsService.findAll();

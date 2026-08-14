@@ -33,6 +33,7 @@ interface LeftSidebarProps {
   isAiChatOpen: boolean;
   setIsAiChatOpen: (open: boolean) => void;
   setAiInput: (input: string) => void;
+  handleLeaveTable?: () => void;
 }
 
 export const LeftSidebar: React.FC<LeftSidebarProps> = ({
@@ -55,6 +56,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   isAiChatOpen,
   setIsAiChatOpen,
   setAiInput,
+  handleLeaveTable,
 }) => {
   return (
     <aside
@@ -108,7 +110,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
           placeholder="Tìm kiếm món ăn, cà phê..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-[#F8FAFC] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] rounded-xl py-2 pl-9 pr-3 text-xs text-[#000000] dark:text-[#FFFFFF] focus:outline-none focus:border-[#3AA6FF] transition-colors placeholder-[#64748B]/60 dark:placeholder-[#94A3B8]/60 font-sans font-normal"
+          className="w-full bg-[#FFFFFF] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] rounded-xl py-2 pl-9 pr-3 text-xs text-[#000000] dark:text-[#FFFFFF] focus:outline-none focus:border-[#3AA6FF] transition-colors placeholder-[#64748B]/60 dark:placeholder-[#94A3B8]/60 font-sans font-normal"
         />
       </div>
 
@@ -147,7 +149,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
 
       {/* Utilities Stack */}
       <div className="flex flex-col gap-2.5 mb-4">
-        <div className="flex items-center justify-between gap-3 bg-[#F8FAFC] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] rounded-2xl p-2 shadow-sm">
+        <div className="flex items-center justify-between gap-3 bg-[#FFFFFF] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] rounded-2xl p-2 shadow-sm">
           {/* UIverse Sun/Moon Theme Toggle Switch */}
           <div className="flex items-center gap-2 pl-1">
             <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
@@ -163,14 +165,25 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         {/* Button: Yêu cầu đổi bàn */}
         <button
           onClick={() => setIsTransferModalOpen(true)}
-          className="w-full px-3.5 py-2.5 rounded-xl bg-transparent border-2 border-[#3AA6FF]/60 dark:border-[#5B9EFF]/60 text-[13px] font-[600] text-[#3AA6FF] dark:text-[#5B9EFF] hover:bg-[#3AA6FF] hover:text-white dark:hover:bg-[#5B9EFF] dark:hover:text-white hover:border-transparent hover:shadow-md hover:shadow-[#3AA6FF]/30 transition-all text-left flex items-center gap-2 font-sans"
+          className="w-full px-3.5 py-2 rounded-xl bg-transparent border border-[#3AA6FF]/60 dark:border-[#5B9EFF]/60 text-xs font-semibold text-[#3AA6FF] dark:text-[#5B9EFF] hover:bg-[#3AA6FF] hover:text-white dark:hover:bg-[#5B9EFF] dark:hover:text-white hover:border-transparent hover:shadow-md hover:shadow-[#3AA6FF]/30 transition-all text-left flex items-center gap-2 font-sans cursor-pointer"
         >
           <span className="material-symbols-outlined text-[16px]">swap_horiz</span>
           <span>Yêu cầu đổi bàn</span>
         </button>
 
+        {/* Button: Rời bàn */}
+        {handleLeaveTable && (
+          <button
+            onClick={handleLeaveTable}
+            className="w-full px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-xs font-bold text-rose-500 transition-all text-left flex items-center gap-2 font-sans cursor-pointer active:scale-95"
+          >
+            <span className="material-symbols-outlined text-[16px]">logout</span>
+            <span>Rời bàn (Thoát)</span>
+          </button>
+        )}
+
         {/* AI Chat Bot Widget Box */}
-        <div className="bg-[#F8FAFC] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] rounded-xl p-3 relative overflow-hidden mt-1 shadow-sm">
+        <div className="bg-[#FFFFFF] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] rounded-xl p-3 relative overflow-hidden mt-1 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <span className="material-symbols-outlined text-[#3AA6FF] text-base flex-shrink-0">
               smart_toy
