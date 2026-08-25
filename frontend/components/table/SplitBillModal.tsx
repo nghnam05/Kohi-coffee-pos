@@ -273,9 +273,9 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
             <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-start gap-2.5 text-xs text-amber-500 mb-3 shrink-0">
               <span className="material-symbols-outlined text-lg shrink-0 mt-0.5">hourglass_top</span>
               <div>
-                <span className="font-bold block">Chưa hoàn tất ra món!</span>
+                <span className="font-bold block">Đơn hàng đang được Bếp / Barista chế biến</span>
                 <span className="text-[11px] opacity-90 leading-tight block mt-0.5">
-                  Đơn hàng của bạn đang được Bếp/Barista chuẩn bị. Chỉ có thể thanh toán sau khi tất cả các món ăn được hoàn thành phục vụ.
+                  Bạn có thể tính tiền riêng từng người, chia đều hoặc sao chép nội dung Zalo / Mess bên dưới để chuyển khoản trước hoặc sau khi món ra xong.
                 </span>
               </div>
             </div>

@@ -42,28 +42,8 @@ export class TablesService {
   }
 
   async findAll(): Promise<any[]> {
-    const tables = await this.tableModel.find().lean().exec();
-    const activeReservations = await this.reservationModel
-      .find({ status: { $in: ['pending', 'confirmed'] } })
-      .lean()
-      .exec();
-
-    const reservedTableIds = new Set(
-      activeReservations.map((r) => r.tableId?.toString()).filter(Boolean)
-    );
-
-    return Promise.all(
-      tables.map(async (table) => {
-        const idStr = table._id.toString();
-        if (reservedTableIds.has(idStr) && table.status !== 'serving') {
-          if (table.status !== 'reserved') {
-            await this.tableModel.findByIdAndUpdate(table._id, { status: 'reserved' }).exec();
-          }
-          return { ...table, status: 'reserved' };
-        }
-        return table;
-      })
-    );
+    const tables = await this.tableModel.find().sort({ tableName: 1 }).lean().exec();
+    return tables;
   }
 
   async findOne(id: string): Promise<any> {

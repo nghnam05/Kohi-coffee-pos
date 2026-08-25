@@ -28,21 +28,46 @@ export default function LoginPage() {
     }
   }, [router]);
 
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      setError(lang === 'vi' ? 'Vui lòng điền đầy đủ email và mật khẩu!' : 'Please fill in both email and password!');
-      return;
+    setError('');
+    setEmailError('');
+    setPasswordError('');
+
+    const cleanEmail = email.trim();
+    const cleanPassword = password.trim();
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    let hasError = false;
+
+    if (!cleanEmail) {
+      setEmailError(lang === 'vi' ? 'Email không được để trống.' : 'Email is required.');
+      hasError = true;
+    } else if (!emailRegex.test(cleanEmail)) {
+      setEmailError(lang === 'vi' ? 'Định dạng email không hợp lệ.' : 'Invalid email format.');
+      hasError = true;
     }
 
+    if (!cleanPassword) {
+      setPasswordError(lang === 'vi' ? 'Mật khẩu không được để trống.' : 'Password is required.');
+      hasError = true;
+    } else if (cleanPassword.length < 6) {
+      setPasswordError(lang === 'vi' ? 'Mật khẩu phải có ít nhất 6 ký tự.' : 'Password must be at least 6 characters.');
+      hasError = true;
+    }
+
+    if (hasError) return;
+
     setIsLoading(true);
-    setError('');
 
     try {
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: cleanEmail, password: cleanPassword }),
       });
 
       if (!res.ok) {
@@ -54,7 +79,7 @@ export default function LoginPage() {
       
       // Save user details & token
       localStorage.setItem('token', data.access_token || data.accessToken || data.token);
-      localStorage.setItem('user', JSON.stringify(data.user || { email, role: 'staff' }));
+      localStorage.setItem('user', JSON.stringify(data.user || { email: cleanEmail, role: 'staff' }));
       
       router.push('/dashboard');
     } catch (err) {
@@ -135,18 +160,18 @@ export default function LoginPage() {
             <label htmlFor="email" className="text-xs font-bold text-[var(--text-primary)] font-sans">
               {currText.emailLabel}
             </label>
-            <div className="border border-[#E2E8F0] dark:border-[#222732] bg-[#FFFFFF] dark:bg-[#0B1120] rounded-2xl h-12 flex items-center px-4 transition-all focus-within:border-[#3AA6FF] focus-within:ring-2 focus-within:ring-[#3AA6FF]/20">
+            <div className={`border ${emailError ? 'border-red-500 ring-2 ring-red-500/20' : 'border-[#E2E8F0] dark:border-[#222732]'} bg-[#FFFFFF] dark:bg-[#0B1120] rounded-2xl h-12 flex items-center px-4 transition-all focus-within:border-[#3AA6FF] focus-within:ring-2 focus-within:ring-[#3AA6FF]/20`}>
               <span className="material-symbols-outlined text-[20px] text-[#64748B] dark:text-[#94A3B8] shrink-0">mail</span>
               <input
                 id="email"
                 type="email"
                 placeholder={currText.emailPlaceholder}
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
                 className="ml-3 bg-transparent border-none outline-none w-full text-xs font-semibold text-[var(--text-primary)] placeholder-[#94A3B8] font-sans"
-                required
               />
             </div>
+            {emailError && <p className="text-[11px] text-red-500 font-bold ml-1">{emailError}</p>}
           </div>
 
           {/* Password Field */}
@@ -154,18 +179,18 @@ export default function LoginPage() {
             <label htmlFor="password" className="text-xs font-bold text-[var(--text-primary)] font-sans">
               {currText.passwordLabel}
             </label>
-            <div className="border border-[#E2E8F0] dark:border-[#222732] bg-[#FFFFFF] dark:bg-[#0B1120] rounded-2xl h-12 flex items-center px-4 transition-all focus-within:border-[#3AA6FF] focus-within:ring-2 focus-within:ring-[#3AA6FF]/20">
+            <div className={`border ${passwordError ? 'border-red-500 ring-2 ring-red-500/20' : 'border-[#E2E8F0] dark:border-[#222732]'} bg-[#FFFFFF] dark:bg-[#0B1120] rounded-2xl h-12 flex items-center px-4 transition-all focus-within:border-[#3AA6FF] focus-within:ring-2 focus-within:ring-[#3AA6FF]/20`}>
               <span className="material-symbols-outlined text-[20px] text-[#64748B] dark:text-[#94A3B8] shrink-0">lock</span>
               <input
                 id="password"
                 type="password"
                 placeholder={currText.passwordPlaceholder}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); setPasswordError(''); }}
                 className="ml-3 bg-transparent border-none outline-none w-full text-xs font-semibold text-[var(--text-primary)] placeholder-[#94A3B8] font-sans"
-                required
               />
             </div>
+            {passwordError && <p className="text-[11px] text-red-500 font-bold ml-1">{passwordError}</p>}
           </div>
 
           {/* Remember me & Forgot Password */}

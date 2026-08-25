@@ -6,6 +6,7 @@ import { useTheme } from 'next-themes';
 import { AnimatePresence, motion } from 'framer-motion';
 import { io, Socket } from 'socket.io-client';
 import { playAlertPing } from '../../utils/sound';
+import { toast } from 'react-hot-toast';
 
 import { LeftSidebar } from '@/components/table/LeftSidebar';
 import { Header } from '@/components/table/Header';
@@ -18,6 +19,7 @@ import { TransferTableModal } from '@/components/table/TransferTableModal';
 import { OrderSuccessModal } from '@/components/table/OrderSuccessModal';
 import { NamePromptModal } from '@/components/table/NamePromptModal';
 import { AiChatWidget } from '@/components/table/AiChatWidget';
+import { TableQRModal } from '@/components/table/TableQRModal';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -281,6 +283,7 @@ export default function TableMenuPage() {
   const [isTransferring, setIsTransferring] = useState(false);
   const [callStaffCooldown, setCallStaffCooldown] = useState(0);
   const [isCallingStaff, setIsCallingStaff] = useState(false);
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
   // Coupon
   const [couponInput, setCouponInput] = useState('');
@@ -515,9 +518,9 @@ export default function TableMenuPage() {
       if (res.ok) {
         const data = await res.json();
         if (data.isTableCleared) {
-          alert('Bạn là người cuối cùng rời bàn. Bàn đã được đưa về trạng thái bàn trống.');
+          toast('Bạn là người cuối cùng rời bàn. Bàn đã được đưa về trạng thái bàn trống.', { icon: null });
         } else {
-          alert(`Bạn đã rời bàn thành công. Nhóm của bạn vẫn còn ${data.remainingCount} người đang ở tại bàn.`);
+          toast(`Bạn đã rời bàn thành công. Nhóm của bạn vẫn còn ${data.remainingCount} người đang ở tại bàn.`, { icon: null });
         }
       }
     } catch (err) {
@@ -623,7 +626,7 @@ export default function TableMenuPage() {
         });
       }, 1000);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Lỗi gửi yêu cầu.');
+      toast(err instanceof Error ? err.message : 'Lỗi gửi yêu cầu.', { icon: null });
     } finally {
       setIsCallingStaff(false);
     }
@@ -666,7 +669,7 @@ export default function TableMenuPage() {
       setIsTransferModalOpen(false);
       router.push(`/table/${selectedTransferTableId}`);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Lỗi khi chuyển bàn.');
+      toast(err instanceof Error ? err.message : 'Lỗi khi chuyển bàn.', { icon: null });
     } finally {
       setIsTransferring(false);
     }
@@ -679,28 +682,52 @@ export default function TableMenuPage() {
   const getOrderStatusInfo = (status: string) => {
     switch (status) {
       case 'pending':
-        return { label: 'Đang chờ bếp nhận', color: 'bg-amber-500/10 text-amber-500 border-amber-500/30', step: 1 };
+        return {
+          label: lang === 'en' ? 'Pending Kitchen' : lang === 'zh' ? '等待厨房接单' : 'Đang chờ bếp nhận',
+          color: 'bg-amber-500/10 text-amber-500 border-amber-500/30',
+          step: 1,
+        };
       case 'preparing':
       case 'processing':
       case 'in_progress':
-        return { label: 'Đang pha chế / Làm món', color: 'bg-[var(--brand-primary)]/15 text-[var(--brand-primary)] border-[var(--brand-primary)]/40', step: 2 };
+        return {
+          label: lang === 'en' ? 'Preparing / Brewing' : lang === 'zh' ? '正在制作 / 烹饪' : 'Đang pha chế / Làm món',
+          color: 'bg-[var(--brand-primary)]/15 text-[var(--brand-primary)] border-[var(--brand-primary)]/40',
+          step: 2,
+        };
       case 'ready':
       case 'served':
       case 'completed':
-        return { label: 'Đã hoàn thành / Đã phục vụ', color: 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30', step: 3 };
+        return {
+          label: lang === 'en' ? 'Completed / Served' : lang === 'zh' ? '已完成 / 已上菜' : 'Đã hoàn thành / Đã phục vụ',
+          color: 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30',
+          step: 3,
+        };
       case 'paid':
-        return { label: 'Đã thanh toán', color: 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30', step: 4 };
+        return {
+          label: lang === 'en' ? 'Paid' : lang === 'zh' ? '已结账' : 'Đã thanh toán',
+          color: 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30',
+          step: 4,
+        };
       case 'cancelled':
-        return { label: 'Đã hủy', color: 'bg-red-500/15 text-red-500 border-red-500/30', step: 0 };
+        return {
+          label: lang === 'en' ? 'Cancelled' : lang === 'zh' ? '已取消' : 'Đã hủy',
+          color: 'bg-red-500/15 text-red-500 border-red-500/30',
+          step: 0,
+        };
       default:
-        return { label: 'Đang xử lý', color: 'bg-[var(--brand-primary)]/15 text-[var(--brand-primary)] border-[var(--brand-primary)]/40', step: 1 };
+        return {
+          label: lang === 'en' ? 'Processing' : lang === 'zh' ? '处理中' : 'Đang xử lý',
+          color: 'bg-[var(--brand-primary)]/15 text-[var(--brand-primary)] border-[var(--brand-primary)]/40',
+          step: 1,
+        };
     }
   };
 
   const handleIncrease = useCallback((food: Food) => {
     setCart((prev) => {
       const devId = typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest';
-      const cName = typeof window !== 'undefined' ? localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Khách' : 'Khách';
+      const cName = typeof window !== 'undefined' ? (localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Bạn').trim() : 'Bạn';
       const existing = prev.find((item) => item.food._id === food._id && item.addedByDeviceId === devId);
       let updated: CartItem[];
       if (existing) {
@@ -724,7 +751,7 @@ export default function TableMenuPage() {
   const handleDecrease = useCallback((foodId: string) => {
     setCart((prev) => {
       const devId = typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest';
-      const cName = typeof window !== 'undefined' ? localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Khách' : 'Khách';
+      const cName = typeof window !== 'undefined' ? (localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Bạn').trim() : 'Bạn';
       const existing = prev.find((item) => item.food._id === foodId);
       if (!existing) return prev;
       let updated: CartItem[];
@@ -748,7 +775,7 @@ export default function TableMenuPage() {
 
   const handleRemove = useCallback((foodId: string) => {
     setCart((prev) => {
-      const cName = typeof window !== 'undefined' ? localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Khách' : 'Khách';
+      const cName = typeof window !== 'undefined' ? (localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Bạn').trim() : 'Bạn';
       const updated = prev.filter((item) => item.food._id !== foodId);
       if (socketRef.current && tableId) {
         socketRef.current.emit('updateGroupCart', {
@@ -764,7 +791,7 @@ export default function TableMenuPage() {
   const handleAddFromModal = () => {
     if (!selectedFood) return;
     const devId = typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest';
-    const cName = typeof window !== 'undefined' ? localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Khách' : 'Khách';
+    const cName = typeof window !== 'undefined' ? (localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Bạn').trim() : 'Bạn';
     const addonTotal = selectedAddons.reduce((sum, a) => sum + (ADDON_PRICES[a] ?? 0), 0);
     const adjusted = Math.round(selectedFood.price * SIZE_MULTIPLIERS[selectedSize] + addonTotal);
     setCart((prev) => {
@@ -815,16 +842,20 @@ export default function TableMenuPage() {
     setIsCartOpen(false);
 
     try {
-      const uniqueNames = Array.from(new Set(cart.map((i) => i.addedBy).filter(Boolean)));
+      const resolvedNames = cart.map((i) => (i.addedBy === 'Bạn' ? (customerName || 'Khách') : (i.addedBy || 'Khách')));
+      const uniqueNames = Array.from(new Set(resolvedNames.filter(Boolean)));
       const groupCustomerName = uniqueNames.length > 0 ? uniqueNames.join(', ') : (customerName || 'Nhóm khách');
 
       const payload = {
         tableId,
-        items: cart.map((item) => ({
-          foodId: item.food._id,
-          quantity: item.quantity,
-          note: item.addedBy ? `[${item.addedBy}] ${item.note || ''}`.trim() : item.note || undefined,
-        })),
+        items: cart.map((item) => {
+          const itemCaller = item.addedBy === 'Bạn' ? (customerName || '') : (item.addedBy || '');
+          return {
+            foodId: item.food._id,
+            quantity: item.quantity,
+            note: itemCaller ? `[${itemCaller}] ${item.note || ''}`.trim() : item.note || undefined,
+          };
+        }),
         paymentMethod,
         ...(couponResult?.valid && couponInput ? { couponCode: couponInput.toUpperCase() } : {}),
         customerName: groupCustomerName,
@@ -862,16 +893,23 @@ export default function TableMenuPage() {
   };
 
   const handleValidateCoupon = async () => {
-    if (!couponInput.trim() || isValidatingCoupon) return;
+    const code = couponInput.toUpperCase().trim();
+    if (!code || isValidatingCoupon) return;
+
+    if (code.length < 3) {
+      setCouponResult({ valid: false, discountAmount: 0, message: 'Mã giảm giá phải có ít nhất 3 ký tự.' });
+      return;
+    }
+
     setIsValidatingCoupon(true);
     try {
       const res = await fetch(
-        `${API_BASE}/coupons/validate/${couponInput.trim()}?amount=${totalAmount}`,
+        `${API_BASE}/coupons/validate/${encodeURIComponent(code)}?amount=${totalAmount}`,
       );
       const data = await res.json();
       setCouponResult(data);
     } catch {
-      setCouponResult({ valid: false, discountAmount: 0, message: 'Lỗi kết nối.' });
+      setCouponResult({ valid: false, discountAmount: 0, message: 'Lỗi kết nối kiểm tra mã.' });
     } finally {
       setIsValidatingCoupon(false);
     }
@@ -1044,6 +1082,7 @@ export default function TableMenuPage() {
         setLang={setLang}
         handleOpenOrderHistory={handleOpenOrderHistory}
         activeOrders={activeOrders}
+        onOpenQRModal={() => setIsQRModalOpen(true)}
       />
 
       <div className="min-h-[100dvh] md:h-screen w-full md:w-screen overflow-y-auto md:overflow-hidden flex flex-col md:flex-row bg-[#FFFFFF] dark:bg-[#090D16] text-[var(--text-primary)] font-sans antialiased selection:bg-[#3AA6FF] selection:text-white">
@@ -1069,6 +1108,7 @@ export default function TableMenuPage() {
           setIsAiChatOpen={setIsAiChatOpen}
           setAiInput={setAiInput}
           handleLeaveTable={handleLeaveTable}
+          onOpenQRModal={() => setIsQRModalOpen(true)}
         />
 
         {/* Main Catalog View (Desktop/Tablet Column 2) */}
@@ -1092,6 +1132,7 @@ export default function TableMenuPage() {
             activeOrders={activeOrders}
             viewMode={viewMode}
             setViewMode={setViewMode}
+            lang={lang}
           />
 
           <div className="px-4 md:px-6">
@@ -1105,7 +1146,7 @@ export default function TableMenuPage() {
                     : 'bg-[var(--bg-card)] text-[var(--text-secondary)] border border-[var(--border-color)]'
                 }`}
               >
-                Tất cả
+                {lang === 'en' ? 'All' : lang === 'zh' ? '全部' : 'Tất cả'}
               </button>
               {categories.map((cat) => (
                 <button
@@ -1244,7 +1285,7 @@ export default function TableMenuPage() {
                     {totalQuantity}
                   </span>
                   <span className="text-xs uppercase tracking-wide font-extrabold">
-                    Xem Giỏ Hàng
+                    {lang === 'en' ? 'View Cart' : lang === 'zh' ? '查看购物车' : 'Xem Giỏ Hàng'}
                   </span>
                 </div>
                 <span className="text-sm font-black">{formatPrice(totalAmount, lang)}</span>
@@ -1306,6 +1347,7 @@ export default function TableMenuPage() {
           setSelectedTransferTableId={setSelectedTransferTableId}
           handleTransferTable={handleTransferTable}
           isTransferring={isTransferring}
+          lang={lang}
         />
 
         <OrderSuccessModal
@@ -1314,6 +1356,7 @@ export default function TableMenuPage() {
           latestCreatedOrder={latestCreatedOrder}
           tableId={tableId}
           router={router}
+          lang={lang}
         />
 
         <AiChatWidget
@@ -1325,6 +1368,7 @@ export default function TableMenuPage() {
           aiInput={aiInput}
           setAiInput={setAiInput}
           handleSendAiMessage={handleSendAiMessage}
+          lang={lang}
         />
       </div>
 
@@ -1336,6 +1380,14 @@ export default function TableMenuPage() {
         setNameInput={setNameInput}
         handleConfirmName={handleConfirmName}
         table={table}
+        lang={lang}
+      />
+
+      <TableQRModal
+        isOpen={isQRModalOpen}
+        onClose={() => setIsQRModalOpen(false)}
+        table={table}
+        lang={lang}
       />
     </>
   );

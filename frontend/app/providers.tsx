@@ -4,6 +4,8 @@ import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import { ReactNode, useEffect } from 'react';
 import Lenis from 'lenis';
 
+import { Toaster } from 'react-hot-toast';
+
 export function Providers({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Only initialize Lenis smooth scroll on non-touch (desktop) devices for peak mobile performance
@@ -88,6 +90,24 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <NextThemesProvider attribute="class" defaultTheme="system" enableSystem>
       {children}
+      <Toaster
+        position="top-right"
+        reverseOrder={false}
+        toastOptions={{
+          icon: null,
+          style: {
+            background: '#131929',
+            color: '#F1F5F9',
+            border: '1px solid #1e293b',
+            borderRadius: '12px',
+            fontSize: '13px',
+            fontWeight: '700',
+            padding: '10px 16px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.4)',
+          },
+          duration: 3500,
+        }}
+      />
     </NextThemesProvider>
   );
 }

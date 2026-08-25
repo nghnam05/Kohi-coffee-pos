@@ -8,7 +8,7 @@ import { io, Socket } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { playCashChime, playAlertPing, playMomoChime } from '../../../../utils/sound';
 import { ThemeToggleSwitch } from '@/components/table/ThemeToggleSwitch';
-import { SplitBillModal } from '@/components/table/SplitBillModal';
+import { toast } from 'react-hot-toast';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 const SOCKET_BASE = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
@@ -184,9 +184,9 @@ export default function OrderStatusPage() {
           return prev - 1;
         });
       }, 1000);
-      alert('Đã gửi yêu cầu gọi nhân viên thành công! ');
+      toast('Đã gửi yêu cầu gọi nhân viên thành công!', { icon: null });
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Lỗi khi gọi nhân viên.');
+      toast(err instanceof Error ? err.message : 'Lỗi khi gọi nhân viên.', { icon: null });
     } finally {
       setIsCallingStaff(false);
     }
@@ -199,7 +199,6 @@ export default function OrderStatusPage() {
   const [overallStar, setOverallStar] = useState(5);
   const [overallComment, setOverallComment] = useState('');
   const [foodStars, setFoodStars] = useState<Record<string, number>>({});
-  const [isSplitBillOpen, setIsSplitBillOpen] = useState(false);
 
   const handleSimulateMoMoPayment = async () => {
     if (!orderId) return;
@@ -217,7 +216,7 @@ export default function OrderStatusPage() {
         playMomoChime();
       } catch (e) { }
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Lỗi thanh toán.');
+      toast(e instanceof Error ? e.message : 'Lỗi thanh toán.', { icon: null });
     } finally {
       setIsPaying(false);
     }
@@ -263,7 +262,7 @@ export default function OrderStatusPage() {
       setHasReviewed(true);
       setIsReviewOpen(false);
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Lỗi gửi đánh giá.');
+      toast(e instanceof Error ? e.message : 'Lỗi gửi đánh giá.', { icon: null });
     } finally {
       setIsSubmittingReview(false);
     }
@@ -340,7 +339,7 @@ export default function OrderStatusPage() {
 
   if (!mounted) return null;
 
-  const stepsList: Order['status'][] = ['pending', 'confirmed', 'cooking', 'ready', 'completed', 'paid'];
+  const stepsList: string[] = ['pending', 'confirmed', 'cooking', 'ready', 'completed', 'paid'];
   const currentStepIndex = order ? stepsList.indexOf(order.status) : -1;
 
   const isDark = resolvedTheme === 'dark';
@@ -354,7 +353,7 @@ export default function OrderStatusPage() {
             onClick={() => router.push(`/table/${tableId}`)}
             className="px-3.5 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[#3AA6FF] rounded-xl text-xs font-[700] text-[var(--text-primary)] hover:text-[#3AA6FF] transition-all shadow-xs active:scale-95 cursor-pointer flex items-center gap-1.5"
           >
-            <span>Quay lại thực đơn</span>
+            <span>{t.backToMenu}</span>
           </button>
 
           <div className="flex items-center gap-3">
@@ -406,31 +405,27 @@ export default function OrderStatusPage() {
             <p className="text-xs font-black text-[#64748B] dark:text-[#94A3B8]">{t.loading}</p>
           </div>
         ) : error ? (
-          <div className="text-center py-16 bg-[#FFFFFF] dark:bg-[#181B21] rounded-2xl p-6 shadow-md border border-[#E2E8F0] dark:border-[#222222] transition-colors">
+          <div className="text-center py-16 bg-[#FFFFFF] dark:bg-[#181B21] rounded-2xl p-6 shadow-md border border-[#E2E8F0] dark:border-[#222222] transition-colors max-w-md mx-auto">
             <span className="material-symbols-outlined text-5xl text-amber-500 mb-2">info</span>
-            <h2 className="text-base font-black text-[#000000] dark:text-[#FFFFFF] mt-2">{t.error}</h2>
+            <h2 className="text-base font-black text-[#000000] dark:text-[#FFFFFF] mt-2 mb-4">{t.error}</h2>
             <button
               onClick={() => router.push(`/table/${tableId}`)}
-              className="mt-6 w-full bg-[#3AA6FF] hover:bg-[#3AA6FF]/90 text-white font-black py-3 rounded-xl transition-all active:scale-95 text-xs uppercase tracking-wider shadow-md"
+              className="px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2b97f0] text-white font-bold rounded-xl text-xs shadow-md transition-all active:scale-95 cursor-pointer"
             >
               {t.backToMenu}
             </button>
           </div>
-        ) : order && (
-          <div className="space-y-6">
+        ) : order ? (
+          <div>
             {order.status === 'paid' ? (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-6xl mx-auto items-start font-sans">
-                {/* LEFT COLUMN: BEAUTIFUL INVOICE / RECEIPT COMPONENT FOR CUSTOMER (lg:col-span-7) */}
-                <div className="lg:col-span-7 bg-[var(--bg-card)] rounded-2xl p-6 sm:p-8 shadow-2xl border border-[var(--border-color)] transition-all relative overflow-hidden font-sans">
-                  {/* Dotted Accent Header Top Bar */}
-                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#3AA6FF]" />
-
-                  {/* Stamp "ĐÃ THANH TOÁN" */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.05] pointer-events-none rotate-12 select-none text-center">
-                    <span className="text-5xl sm:text-6xl font-[900] border-8 border-emerald-500 text-emerald-500 rounded-2xl px-6 py-3 tracking-widest uppercase">
-                      ĐÃ THANH TOÁN
-                    </span>
-                  </div>
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-6xl mx-auto font-sans">
+                <div className="lg:col-span-7 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden font-sans">
+                {/* Stamp "ĐÃ THANH TOÁN" */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.05] pointer-events-none rotate-12 select-none text-center">
+                  <span className="text-5xl sm:text-6xl font-[900] border-8 border-emerald-500 text-emerald-500 rounded-2xl px-6 py-3 tracking-widest uppercase">
+                    {lang === 'en' ? 'PAID' : lang === 'zh' ? '已结账' : 'ĐÃ THANH TOÁN'}
+                  </span>
+                </div>
 
                   {/* Receipt Header */}
                   <div className="text-center pb-6 border-b border-dashed border-[var(--border-color)]">
@@ -438,36 +433,36 @@ export default function OrderStatusPage() {
                       <span className="material-symbols-outlined text-2xl">check_circle</span>
                     </div>
                     <h2 className="text-xl font-[700] text-[var(--text-primary)] mt-2 font-heading tracking-tight">
-                      HÓA ĐƠN THANH TOÁN
+                      {lang === 'en' ? 'PAYMENT RECEIPT' : lang === 'zh' ? '结账收据' : 'HÓA ĐƠN THANH TOÁN'}
                     </h2>
                     <p className="text-[11px] font-[500] text-[var(--text-secondary)] mt-1 uppercase tracking-wider font-sans">
-                      Cảm ơn quý khách đã tin dùng Kohi Coffee & Pastry
+                      {lang === 'en' ? 'Thank you for visiting Kohi Coffee & Pastry' : lang === 'zh' ? '感谢您光临 Kohi Coffee & Pastry' : 'Cảm ơn quý khách đã tin dùng Kohi Coffee & Pastry'}
                     </p>
 
                     <div className="grid grid-cols-2 gap-3 mt-6 text-left text-xs text-[var(--text-primary)]">
                       <div>
-                        <p className="text-[var(--text-secondary)] font-normal">Mã hóa đơn:</p>
+                        <p className="text-[var(--text-secondary)] font-normal">{t.orderCode}:</p>
                         <p className="font-bold uppercase text-[#3AA6FF]">#{order._id.slice(-8).toUpperCase()}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[var(--text-secondary)] font-normal">Số bàn & Người gọi:</p>
+                        <p className="text-[var(--text-secondary)] font-normal">{lang === 'en' ? 'Table & Customer:' : lang === 'zh' ? '桌号与顾客:' : 'Số bàn & Người gọi:'}</p>
                         <p className="font-bold">
                           {order.tableId?.tableName || '—'}
                           {order.customerName && <span className="text-[#3AA6FF] font-extrabold ml-1">({order.customerName})</span>}
                         </p>
                       </div>
                       <div className="mt-2">
-                        <p className="text-[var(--text-secondary)] font-normal">Hình thức:</p>
+                        <p className="text-[var(--text-secondary)] font-normal">{lang === 'en' ? 'Payment Method:' : lang === 'zh' ? '支付方式:' : 'Hình thức:'}</p>
                         <span className={`inline-block text-[10.5px] font-bold px-3 py-1 rounded-full mt-1 border ${
                           order.paymentMethod === 'momo'
                             ? 'bg-pink-500/10 text-pink-500 border-pink-500/30'
                             : 'bg-[#3AA6FF]/10 text-[#3AA6FF] border-[#3AA6FF]/30'
                         }`}>
-                          {order.paymentMethod === 'momo' ? 'Ví MoMo' : 'Tiền mặt'}
+                          {order.paymentMethod === 'momo' ? 'Ví MoMo' : (lang === 'en' ? 'Cash' : lang === 'zh' ? '现金' : 'Tiền mặt')}
                         </span>
                       </div>
                       <div className="text-right mt-2">
-                        <p className="text-[var(--text-secondary)] font-normal">Thời gian:</p>
+                        <p className="text-[var(--text-secondary)] font-normal">{lang === 'en' ? 'Time:' : lang === 'zh' ? '时间:' : 'Thời gian:'}</p>
                         <p className="font-bold">{new Date(order.createdAt).toLocaleTimeString('vi-VN')} {new Date(order.createdAt).toLocaleDateString('vi-VN')}</p>
                       </div>
                     </div>
@@ -476,7 +471,7 @@ export default function OrderStatusPage() {
                   {/* Items list */}
                   <div className="py-5 border-b border-dashed border-[var(--border-color)] space-y-3">
                     <p className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-1">
-                      Chi tiết thức uống & bánh
+                      {lang === 'en' ? 'Item Details' : lang === 'zh' ? '商品明细' : 'Chi tiết thức uống & bánh'}
                     </p>
                     {order.items.map((item, idx) => (
                       <div key={idx} className="flex justify-between items-start text-xs text-left">
@@ -487,7 +482,7 @@ export default function OrderStatusPage() {
                           </p>
                           {item.note && (
                             <p className="text-[11px] text-[var(--text-secondary)] font-normal italic mt-0.5 pl-2 border-l border-[#3AA6FF]/40">
-                              Ghi chú: {item.note}
+                              {lang === 'en' ? 'Note:' : lang === 'zh' ? '备注:' : 'Ghi chú:'} {item.note}
                             </p>
                           )}
                         </div>
@@ -501,15 +496,15 @@ export default function OrderStatusPage() {
                   {/* Total section */}
                   <div className="pt-5 pb-2 space-y-2 font-sans">
                     <div className="flex justify-between text-xs text-[var(--text-secondary)] font-normal">
-                      <span>Tổng tiền món:</span>
+                      <span>{lang === 'en' ? 'Subtotal:' : lang === 'zh' ? '小计:' : 'Tổng tiền món:'}</span>
                       <span className="font-bold text-[var(--text-primary)]">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalAmount)}</span>
                     </div>
                     <div className="flex justify-between text-xs text-[var(--text-secondary)] font-normal">
-                      <span>Phí dịch vụ:</span>
-                      <span className="font-bold text-emerald-500">Miễn phí</span>
+                      <span>{lang === 'en' ? 'Service Fee:' : lang === 'zh' ? '服务费:' : 'Phí dịch vụ:'}</span>
+                      <span className="font-bold text-emerald-500">{lang === 'en' ? 'Free' : lang === 'zh' ? '免费' : 'Miễn phí'}</span>
                     </div>
                     <div className="flex justify-between items-center pt-3 border-t border-[var(--border-color)] mt-2">
-                      <span className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider">TỔNG CỘNG:</span>
+                      <span className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider">{t.total.toUpperCase()}:</span>
                       <span className="text-xl font-extrabold text-[#3AA6FF]">
                         {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalAmount)}
                       </span>
@@ -520,27 +515,18 @@ export default function OrderStatusPage() {
                   <div className="mt-6 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center gap-3">
                     <span className="material-symbols-outlined text-emerald-500 text-2xl">verified</span>
                     <div className="text-left">
-                      <h4 className="text-xs font-bold text-emerald-500">Thanh toán hoàn tất!</h4>
+                      <h4 className="text-xs font-bold text-emerald-500">{lang === 'en' ? 'Payment Completed!' : lang === 'zh' ? '支付已完成！' : 'Thanh toán hoàn tất!'}</h4>
                       <p className="text-[11px] font-normal text-[var(--text-secondary)] mt-0.5">
-                        Giao dịch đã được ghi nhận thành công trên hệ thống.
+                        {lang === 'en' ? 'Transaction recorded successfully.' : lang === 'zh' ? '交易已成功记录。' : 'Giao dịch đã được ghi nhận thành công trên hệ thống.'}
                       </p>
                     </div>
                   </div>
-
-                  {/* Share / Split Bill CTA */}
-                  <button
-                    onClick={() => setIsSplitBillOpen(true)}
-                    className="mt-4 w-full h-[48px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 font-bold rounded-xl shadow-xs transition-all text-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-                  >
-                    <span className="material-symbols-outlined text-base">payments</span>
-                    <span>CHIA TIỀN NHÓM / CỦA AI TRẢ NẤY</span>
-                  </button>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                     {/* Leave Table CTA */}
                     <button
                       onClick={async () => {
-                        if (confirm('Bạn có chắc chắn muốn rời bàn? Trạng thái bàn sẽ được lập tức dọn trống cho lượt khách tiếp theo.')) {
+                        if (confirm(lang === 'en' ? 'Are you sure you want to leave the table?' : lang === 'zh' ? '您确定要离开餐桌吗？' : 'Bạn có chắc chắn muốn rời bàn? Trạng thái bàn sẽ được lập tức dọn trống cho lượt khách tiếp theo.')) {
                           try {
                             await fetch(`${API_BASE}/tables/${tableId}`, {
                               method: 'PATCH',
@@ -556,7 +542,7 @@ export default function OrderStatusPage() {
                       className="w-full h-[50px] bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl shadow-md transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 font-sans cursor-pointer active:scale-95"
                     >
                       <span className="material-symbols-outlined text-base">logout</span>
-                      <span>RỜI BÀN</span>
+                      <span>{lang === 'en' ? 'LEAVE TABLE' : lang === 'zh' ? '离开餐桌' : 'RỜI BÀN'}</span>
                     </button>
 
                     {/* Back to Home Page CTA */}
@@ -567,7 +553,7 @@ export default function OrderStatusPage() {
                       className="w-full h-[50px] bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-xl shadow-md hover:shadow-lg transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 font-sans cursor-pointer active:scale-95"
                     >
                       <span className="material-symbols-outlined text-base">home</span>
-                      <span>TRANG CHỦ</span>
+                      <span>{lang === 'en' ? 'HOME PAGE' : lang === 'zh' ? '首页' : 'TRANG CHỦ'}</span>
                     </button>
                   </div>
                 </div>
@@ -703,8 +689,9 @@ export default function OrderStatusPage() {
                                 Lượt #{tableOrders.length - idx}
                               </span>
                               {tOrder.customerName && (
-                                <span className="text-[10px] font-bold px-1.5 py-0.5 bg-[#3AA6FF]/10 text-[#3AA6FF] rounded border border-[#3AA6FF]/20 truncate max-w-[90px]">
-                                  👤 {tOrder.customerName}
+                                <span className="text-[10px] font-bold px-1.5 py-0.5 bg-[#3AA6FF]/10 text-[#3AA6FF] rounded border border-[#3AA6FF]/20 truncate max-w-[90px] inline-flex items-center gap-0.5">
+                                  <span className="material-symbols-outlined text-[11px]">person</span>
+                                  <span>{tOrder.customerName}</span>
                                 </span>
                               )}
                             </div>
@@ -742,7 +729,7 @@ export default function OrderStatusPage() {
 
                     <button
                       onClick={async () => {
-                        if (confirm('Bạn có chắc chắn muốn rời bàn? Trạng thái bàn sẽ được lập tức dọn trống cho lượt khách tiếp theo.')) {
+                        if (confirm(lang === 'en' ? 'Are you sure you want to leave the table?' : lang === 'zh' ? '您确定要离开餐桌吗？' : 'Bạn có chắc chắn muốn rời bàn? Trạng thái bàn sẽ được lập tức dọn trống cho lượt khách tiếp theo.')) {
                           try {
                             await fetch(`${API_BASE}/tables/${tableId}`, {
                               method: 'PATCH',
@@ -758,7 +745,7 @@ export default function OrderStatusPage() {
                       className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
                     >
                       <span className="material-symbols-outlined text-base">logout</span>
-                      <span>RỜI BÀN (RESET PHIÊN DÙNG MÓN)</span>
+                      <span>{lang === 'en' ? 'LEAVE TABLE (RESET SESSION)' : lang === 'zh' ? '离开餐桌 (重置会话)' : 'RỜI BÀN (RESET PHIÊN DÙNG MÓN)'}</span>
                     </button>
                   </div>
                 </div>
@@ -816,11 +803,11 @@ export default function OrderStatusPage() {
                               }`}>
                               <h4 className={`text-xs sm:text-sm font-black uppercase tracking-wider ${isCurrent ? 'text-[#3AA6FF]' : isCompleted ? 'text-[#000000] dark:text-white' : 'text-[#64748B] dark:text-[#64748B]'
                                 }`}>
-                                {t.steps[stepKey]}
+                                { (t.steps as any)[stepKey] }
                               </h4>
                               <p className={`text-xs font-normal mt-1 leading-relaxed ${isCurrent ? 'text-[#000000] dark:text-white/90' : 'text-[#64748B] dark:text-[#94A3B8]'
                                 }`}>
-                                {t.stepDesc[stepKey]}
+                                { (t.stepDesc as any)[stepKey] }
                               </p>
                             </div>
                           </div>
@@ -832,6 +819,7 @@ export default function OrderStatusPage() {
                   {/* Integrated Payment Actions (MoMo/Cash) */}
                   {order.status !== 'cancelled' && (
                     <div className="mt-6 pt-4 border-t border-[#E2E8F0] dark:border-[#222732]">
+
                       {order.paymentMethod === 'momo' ? (
                         <button
                           onClick={handleSimulateMoMoPayment}
@@ -913,14 +901,14 @@ export default function OrderStatusPage() {
                     <button
                       onClick={handleCallStaff}
                       disabled={callStaffCooldown > 0 || isCallingStaff}
-                      className="hidden sm:flex w-full py-4 bg-[#FFFFFF] dark:bg-[#181B21] hover:bg-[#F8FAFC] dark:hover:bg-[#22252C] border border-[#CBD5E1] dark:border-[#333333] hover:border-[#3AA6FF] text-[#000000] dark:text-[#FFFFFF] font-black rounded-xl shadow-md transition-all active:scale-95 text-xs uppercase tracking-wider items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                      className="hidden sm:flex w-full py-3.5 bg-[#FFFFFF] dark:bg-[#181B21] hover:bg-[#F8FAFC] dark:hover:bg-[#22252C] border border-[#CBD5E1] dark:border-[#333333] hover:border-[#3AA6FF] text-[#000000] dark:text-[#FFFFFF] font-black rounded-xl shadow-md transition-all active:scale-95 text-xs uppercase tracking-wider items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                     >
                       <span>
                         {callStaffCooldown > 0
-                          ? `Gọi nhân viên (${callStaffCooldown}s)`
+                          ? `${lang === 'en' ? 'Call Staff' : lang === 'zh' ? '呼叫服务员' : 'Gọi nhân viên'} (${callStaffCooldown}s)`
                           : isCallingStaff
-                            ? 'Đang gửi yêu cầu...'
-                            : 'GỌI NHÂN VIÊN'}
+                            ? (lang === 'en' ? 'Sending...' : lang === 'zh' ? '正在发送...' : 'Đang gửi yêu cầu...')
+                            : (lang === 'en' ? 'CALL STAFF' : lang === 'zh' ? '呼叫服务员' : 'GỌI NHÂN VIÊN')}
                       </span>
                     </button>
                   </div>
@@ -939,25 +927,17 @@ export default function OrderStatusPage() {
                   <span className="material-symbols-outlined text-base text-[#3AA6FF] animate-pulse">notifications</span>
                   <span>
                     {callStaffCooldown > 0
-                      ? `GỌI NHÂN VIÊN (${callStaffCooldown}s)`
+                      ? `${lang === 'en' ? 'CALL STAFF' : lang === 'zh' ? '呼叫服务员' : 'GỌI NHÂN VIÊN'} (${callStaffCooldown}s)`
                       : isCallingStaff
-                        ? 'ĐANG GỬI YÊU CẦU...'
-                        : 'GỌI NHÂN VIÊN'}
+                        ? (lang === 'en' ? 'SENDING REQUEST...' : lang === 'zh' ? '正在发送...' : 'ĐANG GỬI YÊU CẦU...')
+                        : (lang === 'en' ? 'CALL STAFF' : lang === 'zh' ? '呼叫服务员' : 'GỌI NHÂN VIÊN')}
                   </span>
                 </button>
               </div>
             )}
-            {/* Split Bill Modal */}
-            <SplitBillModal
-              isOpen={isSplitBillOpen}
-              onClose={() => setIsSplitBillOpen(false)}
-              table={order?.tableId as any}
-              activeOrders={tableOrders}
-              formatPrice={(price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)}
-              lang={lang}
-            />
+
           </div>
-        )}
+        ) : null}
       </main>
     </div>
   );

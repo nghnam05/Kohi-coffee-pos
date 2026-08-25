@@ -8,6 +8,7 @@ import { playScanBeep, playWelcomeChime } from './utils/sound';
 import { ThemeToggleSwitch } from '@/components/table/ThemeToggleSwitch';
 import { LanguageToggleSwitch, Lang } from '@/components/table/LanguageToggleSwitch';
 import { BrandLogo } from '@/components/table/BrandLogo';
+import { toast } from 'react-hot-toast';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
@@ -17,6 +18,7 @@ const translations = {
     heroTitle: 'Đặt Bàn & Giữ Chỗ Trực Tuyến',
     heroSubtitle: 'Thưởng thức cà phê rang xay thủ công & bánh ngọt tươi mới. Giữ chỗ trước để có vị trí đẹp nhất!',
     btnBookTab: 'Đặt Bàn Trực Tuyến',
+    btnLookupTab: 'Tra Cứu Đặt Bàn',
     btnQrTab: 'Vào Bàn Qua Mã QR',
     btnLogin: 'Đăng nhập Nhân viên',
     selectTableLabel: '1. Chọn bàn ăn phù hợp',
@@ -43,12 +45,21 @@ const translations = {
     helpText: 'Cho phép truy cập camera để tự động quét mã QR trên bàn.',
     errEmpty: 'Vui lòng nhập số bàn hoặc quét mã QR!',
     errNotFound: 'Không tìm thấy bàn nào ứng với số hoặc tên: "{input}"',
+    lookupTitle: 'Tra Cứu & Quản Lý Đơn Đặt Bàn',
+    lookupSubtitle: 'Nhập số điện thoại của bạn để kiểm tra chi tiết đơn đặt bàn và thực hiện hủy nếu cần',
+    lookupPhonePlaceholder: 'Nhập số điện thoại (Ví dụ: 0987654321)...',
+    btnSearchNow: 'Tra cứu ngay',
+    btnSearching: 'Đang tìm...',
+    qrTitle: 'Khách Hàng Đã Ngồi Tại Bàn',
+    qrSubtitle: 'Nhập số bàn hoặc quét mã QR trên mặt bàn để chọn món trực tiếp',
+    doneAndClose: 'HOÀN TẤT & ĐÓNG',
   },
   en: {
     welcome: 'Kohi Coffee & Pastry',
     heroTitle: 'Online Table Reservation & Booking',
     heroSubtitle: 'Enjoy handcrafted specialty coffee & fresh pastries. Book in advance to secure the best seats!',
     btnBookTab: 'Reserve a Table',
+    btnLookupTab: 'Lookup Reservation',
     btnQrTab: 'Enter via Table QR',
     btnLogin: 'Staff Login',
     selectTableLabel: '1. Select Your Table',
@@ -75,12 +86,21 @@ const translations = {
     helpText: 'Allow camera access to automatically scan table QR codes.',
     errEmpty: 'Please enter a table number or scan a QR code!',
     errNotFound: 'No table found matching: "{input}"',
+    lookupTitle: 'Lookup & Manage Reservations',
+    lookupSubtitle: 'Enter your phone number to check reservation details and cancel if needed',
+    lookupPhonePlaceholder: 'Enter phone number (e.g. 0987654321)...',
+    btnSearchNow: 'Search Now',
+    btnSearching: 'Searching...',
+    qrTitle: 'Seated Customers',
+    qrSubtitle: 'Enter table number or scan QR on table to order directly',
+    doneAndClose: 'DONE & CLOSE',
   },
   zh: {
     welcome: 'Kohi Coffee & Pastry',
     heroTitle: '在线预订桌位与留座',
     heroSubtitle: '享用手工精制咖啡与新鲜糕点。提前预订以获得最佳位置！',
     btnBookTab: '在线预订桌位',
+    btnLookupTab: '查询预订',
     btnQrTab: '扫码入座',
     btnLogin: '员工登录',
     selectTableLabel: '1. 选择合适桌位',
@@ -107,6 +127,14 @@ const translations = {
     helpText: '允许使用摄像头以自动扫描桌上的二维码。',
     errEmpty: '请输入桌号或扫描二维码！',
     errNotFound: '未找到匹配桌号："{input}"',
+    lookupTitle: '查询与管理预订',
+    lookupSubtitle: '输入您的电话号码以查看预订详情或进行取消',
+    lookupPhonePlaceholder: '输入电话号码（例如：13800138000）...',
+    btnSearchNow: '立即查询',
+    btnSearching: '正在查询...',
+    qrTitle: '已在桌顾客',
+    qrSubtitle: '输入桌号或扫描桌上二维码直接点餐',
+    doneAndClose: '完成并关闭',
   }
 };
 
@@ -115,7 +143,7 @@ export default function Home() {
   const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [lang, setLang] = useState<Lang>('vi');
-  const [activeTab, setActiveTab] = useState<'reserve' | 'lookup' | 'qr'>('reserve');
+  const [activeTab, setActiveTab] = useState<'reserve' | 'lookup'>('reserve');
 
   // Tables list state
   const [tables, setTables] = useState<any[]>([]);
@@ -185,8 +213,13 @@ export default function Home() {
   const handleLookupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const phone = lookupPhone.trim();
+    const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
     if (!phone) {
       setError('Vui lòng nhập số điện thoại để tra cứu!');
+      return;
+    }
+    if (!phoneRegex.test(phone) && phone.length < 8) {
+      setError('Số điện thoại không hợp lệ (Ví dụ: 0987654321).');
       return;
     }
     setIsSearchingLookup(true);
@@ -220,17 +253,19 @@ export default function Home() {
         throw new Error(errData.message || 'Không thể hủy đơn đặt bàn.');
       }
       playWelcomeChime();
-      alert('Đã hủy đơn đặt bàn thành công!');
+      toast('Đã hủy đơn đặt bàn thành công!', { icon: null });
       handleLookupSubmit({ preventDefault: () => {} } as any);
       fetchTables();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Lỗi khi hủy đơn đặt bàn.');
+      toast(err instanceof Error ? err.message : 'Lỗi khi hủy đơn đặt bàn.', { icon: null });
     }
   };
 
   // Submit Table Reservation
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
     if (!selectedTable) {
       setError(t.noTableSelected);
       return;
@@ -239,8 +274,35 @@ export default function Home() {
       setError(`Bàn ${selectedTable.tableName} đã có khách hoặc được giữ chỗ trước. Vui lòng chọn bàn khác.`);
       return;
     }
-    if (!customerName.trim() || !customerPhone.trim()) {
-      setError(t.errEmpty);
+
+    const cleanName = customerName.trim();
+    const cleanPhone = customerPhone.trim();
+    const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
+
+    if (!cleanName || cleanName.length < 2) {
+      setError('Vui lòng nhập họ và tên khách hàng (tối thiểu 2 ký tự).');
+      return;
+    }
+
+    if (!cleanPhone || !phoneRegex.test(cleanPhone)) {
+      setError('Số điện thoại không hợp lệ. Vui lòng nhập SĐT Việt Nam 10 chữ số (Ví dụ: 0987654321).');
+      return;
+    }
+
+    const numGuests = Number(guestCount);
+    if (isNaN(numGuests) || numGuests < 1 || numGuests > 50) {
+      setError('Số lượng khách phải là số hợp lệ từ 1 đến 50 người.');
+      return;
+    }
+
+    if (!reservationTime) {
+      setError('Vui lòng chọn thời gian đặt bàn.');
+      return;
+    }
+
+    const selectedDate = new Date(reservationTime);
+    if (isNaN(selectedDate.getTime()) || selectedDate.getTime() < Date.now() - 5 * 60 * 1000) {
+      setError('Thời gian đặt bàn không hợp lệ hoặc đã trôi qua trong quá khứ.');
       return;
     }
 
@@ -325,11 +387,11 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#FFFFFF] dark:bg-[#090D16] text-[var(--text-primary)] font-sans flex flex-col justify-between transition-colors duration-300">
       {/* ── TOP APP HEADER BAR ────────────────────────────────────────────── */}
-      <header className="w-full border-b border-[#E2E8F0] dark:border-[#222732] bg-[#FFFFFF] dark:bg-[#11141A] sticky top-0 z-40 px-4 py-3 sm:px-8 shadow-xs">
-        <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
+      <header className="w-full border-b border-[#E2E8F0] dark:border-[#222732] bg-[#FFFFFF]/95 dark:bg-[#11141A]/95 backdrop-blur-md sticky top-0 z-40 px-3 py-2.5 sm:px-8 sm:py-3 shadow-xs">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
           <BrandLogo onClick={() => router.push('/')} />
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {/* Language Switcher Switch */}
             <LanguageToggleSwitch
               lang={lang as Lang}
@@ -345,7 +407,7 @@ export default function Home() {
             {/* Staff / Admin Login Button */}
             <button
               onClick={() => router.push('/login')}
-              className="flex items-center justify-center gap-1.5 px-3 py-2 sm:px-3.5 sm:py-2 rounded-xl bg-[#FFFFFF] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] text-xs font-bold text-[var(--text-primary)] hover:border-[#3AA6FF] hover:text-[#3AA6FF] transition-all shrink-0 font-sans cursor-pointer"
+              className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-[#FFFFFF] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] text-xs font-bold text-[var(--text-primary)] hover:border-[#3AA6FF] hover:text-[#3AA6FF] transition-all shrink-0 font-sans cursor-pointer"
             >
               <span className="material-symbols-outlined text-base">login</span>
               <span className="hidden sm:inline">{t.btnLogin}</span>
@@ -397,21 +459,7 @@ export default function Home() {
               }`}
             >
               <span className="material-symbols-outlined text-lg">search</span>
-              <span>Tra Cứu Đặt Bàn</span>
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab('qr');
-                setError('');
-              }}
-              className={`pb-3 px-3.5 flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
-                activeTab === 'qr'
-                  ? 'border-[#2563EB] text-[#2563EB] dark:text-[#3B82F6]'
-                  : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-              }`}
-            >
-              <span className="material-symbols-outlined text-lg">qr_code_scanner</span>
-              <span>{t.btnQrTab}</span>
+              <span>{t.btnLookupTab}</span>
             </button>
           </div>
         </div>
@@ -627,18 +675,18 @@ export default function Home() {
               </div>
             )}
 
-            <form onSubmit={handleLookupSubmit} className="flex gap-2">
+            <form onSubmit={handleLookupSubmit} className="flex flex-col sm:flex-row gap-2.5 sm:gap-2">
               <input
                 type="text"
                 placeholder="Nhập số điện thoại (Ví dụ: 0987654321)..."
                 value={lookupPhone}
                 onChange={(e) => setLookupPhone(e.target.value)}
-                className="flex-1 bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-2xl px-4 py-3 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#2563EB]"
+                className="w-full sm:flex-1 bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-2xl px-4 py-3 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#2563EB]"
               />
               <button
                 type="submit"
                 disabled={isSearchingLookup}
-                className="px-5 py-3 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-2xl text-xs transition-all shadow-md active:scale-95 flex items-center gap-1.5 shrink-0 cursor-pointer"
+                className="w-full sm:w-auto px-5 py-3 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-2xl text-xs transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
               >
                 <span className="material-symbols-outlined text-base">search</span>
                 <span>{isSearchingLookup ? 'Đang tìm...' : 'Tra cứu ngay'}</span>
@@ -739,48 +787,6 @@ export default function Home() {
                 )}
               </div>
             )}
-          </div>
-        )}
-
-        {/* ── TAB 3: QUICK QR SCAN / MANUAL ENTER ─────────────────────────── */}
-        {activeTab === 'qr' && (
-          <div className="max-w-md mx-auto bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-6 space-y-6 shadow-sm text-center">
-            <div>
-              <h3 className="text-lg font-extrabold text-[var(--text-primary)] font-heading">
-                Khách Hàng Đã Ngồi Tại Bàn
-              </h3>
-              <p className="text-xs text-[var(--text-secondary)] mt-1">
-                Nhập số bàn hoặc quét mã QR trên mặt bàn để chọn món trực tiếp
-              </p>
-            </div>
-
-            {error && (
-              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold flex items-center gap-2">
-                <span className="material-symbols-outlined text-base">error</span>
-                <span>{error}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleManualEnter} className="space-y-4 text-xs text-left">
-              <div>
-                <label className="block font-bold text-[var(--text-primary)] mb-1.5">{t.manualLabel}</label>
-                <input
-                  type="text"
-                  placeholder={t.manualPlaceholder}
-                  value={manualInput}
-                  onChange={(e) => setManualInput(e.target.value)}
-                  className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#2563EB]"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3.5 bg-[#2563EB] hover:bg-blue-700 text-white font-extrabold rounded-2xl text-xs transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-base">qr_code</span>
-                <span>{t.enterButton}</span>
-              </button>
-            </form>
           </div>
         )}
 

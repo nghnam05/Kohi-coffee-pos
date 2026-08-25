@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SplitBillModal } from './SplitBillModal';
 import { FoodReviewModal } from './FoodReviewModal';
 
 interface Table {
@@ -34,7 +33,6 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
   tableId,
   router,
 }) => {
-  const [isSplitBillOpen, setIsSplitBillOpen] = useState(false);
   const [reviewingOrder, setReviewingOrder] = useState<any | null>(null);
 
   return (
@@ -58,21 +56,21 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
             className="relative w-full max-w-2xl bg-[#FFFFFF] dark:bg-[#181B21] border border-[var(--border-color)] rounded-[var(--radius-lg)] p-5 sm:p-6 shadow-2xl z-10 max-h-[90vh] flex flex-col font-sans overflow-hidden"
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-4 mb-4 shrink-0">
+            <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-4 mb-4 shrink-0 text-left">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] flex items-center justify-center border border-[var(--brand-primary)]/20">
                   <span className="material-symbols-outlined text-xl">receipt_long</span>
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-[var(--text-primary)] leading-tight">
-                    Lịch sử & Trạng thái đơn hàng
+                    {lang === 'en' ? 'Order History & Status' : lang === 'zh' ? '历史与订单状态' : 'Lịch sử & Trạng thái đơn hàng'}
                   </h3>
                   <p className="text-xs font-medium text-[var(--text-secondary)] mt-0.5 flex items-center gap-2">
-                    <span>{table?.tableName ?? 'Bàn 05'}</span>
+                    <span>{table?.tableName ?? (lang === 'en' ? 'Table' : lang === 'zh' ? '桌号' : 'Bàn')}</span>
                     <span>•</span>
                     <span className="flex items-center gap-1 text-emerald-500 font-semibold">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      Cập nhật thời gian thực
+                      {lang === 'en' ? 'Live updates' : lang === 'zh' ? '实时更新' : 'Cập nhật thời gian thực'}
                     </span>
                   </p>
                 </div>
@@ -87,17 +85,21 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
             </div>
 
             {/* Modal Body */}
-            <div className="flex-1 overflow-y-auto scrollbar-none space-y-4 pr-1">
+            <div className="flex-1 overflow-y-auto scrollbar-none space-y-4 pr-1 text-left">
               {activeOrders.length === 0 ? (
                 <div className="py-12 text-center text-[var(--text-secondary)]">
                   <div className="w-14 h-14 rounded-full bg-[var(--bg-primary)] text-[var(--text-tertiary)] flex items-center justify-center mx-auto mb-3 border border-[var(--border-color)]">
                     <span className="material-symbols-outlined text-2xl">receipt_long</span>
                   </div>
                   <h4 className="text-base font-bold text-[var(--text-primary)] mb-1">
-                    Chưa có đơn đặt nào
+                    {lang === 'en' ? 'No orders placed yet' : lang === 'zh' ? '暂无订单' : 'Chưa có đơn đặt nào'}
                   </h4>
                   <p className="text-xs font-normal text-[var(--text-secondary)] max-w-sm mx-auto">
-                    Bàn của bạn chưa gửi đơn hàng nào. Hãy chọn món từ thực đơn và bấm "Xác nhận gọi món" nhé!
+                    {lang === 'en'
+                      ? 'Your table has not submitted any orders yet. Select items from the menu and tap "Send Order"!'
+                      : lang === 'zh'
+                      ? '您的桌位尚未提交订单。请从菜单选择商品并点击“确认下单”！'
+                      : 'Bàn của bạn chưa gửi đơn hàng nào. Hãy chọn món từ thực đơn và bấm "Xác nhận gọi món" nhé!'}
                   </p>
                 </div>
               ) : (
@@ -106,7 +108,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                   {(() => {
                     const nameCounts: Record<string, number> = {};
                     activeOrders.forEach((o) => {
-                      const name = o.customerName || 'Khách tại bàn';
+                      const name = o.customerName || (lang === 'en' ? 'Guest' : lang === 'zh' ? '顾客' : 'Khách tại bàn');
                       const count = o.items?.reduce((s: number, i: any) => s + (i.quantity || 1), 0) || 0;
                       nameCounts[name] = (nameCounts[name] || 0) + count;
                     });
@@ -114,14 +116,20 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                       <div className="p-3 bg-[var(--brand-primary)]/10 border border-[var(--brand-primary)]/20 rounded-[var(--radius-md)] flex flex-wrap items-center justify-between gap-2 text-xs">
                         <div className="flex items-center gap-1.5 font-bold text-[var(--text-primary)]">
                           <span className="material-symbols-outlined text-[var(--brand-primary)] text-base">groups</span>
-                          <span>Đơn nhóm theo thành viên ({Object.keys(nameCounts).length} người):</span>
+                          <span>
+                            {lang === 'en'
+                              ? `Group order by member (${Object.keys(nameCounts).length} guests):`
+                              : lang === 'zh'
+                              ? `同桌按成员分组 (${Object.keys(nameCounts).length} 人):`
+                              : `Đơn nhóm theo thành viên (${Object.keys(nameCounts).length} người):`}
+                          </span>
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                           {Object.entries(nameCounts).map(([name, count]) => (
                             <span key={name} className="px-2 py-0.5 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-full text-[11px] font-bold text-[var(--brand-primary)] flex items-center gap-1 shadow-xs">
                               <span className="material-symbols-outlined text-[13px]">person</span>
                               <span>{name}</span>
-                              <span className="text-[var(--text-secondary)]">({count} món)</span>
+                              <span className="text-[var(--text-secondary)]">({count} {lang === 'en' ? 'items' : lang === 'zh' ? '件' : 'món'})</span>
                             </span>
                           ))}
                         </div>
@@ -141,7 +149,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider block">
-                                Mã đơn: #{order._id ? order._id.slice(-6).toUpperCase() : `Lượt ${idx + 1}`}
+                                {lang === 'en' ? 'Order ID:' : lang === 'zh' ? '订单号:' : 'Mã đơn:'} #{order._id ? order._id.slice(-6).toUpperCase() : (lang === 'en' ? `Round ${idx + 1}` : lang === 'zh' ? `第 ${idx + 1} 轮` : `Lượt ${idx + 1}`)}
                               </span>
                               {order.customerName && (
                                 <span className="px-2 py-0.5 bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] border border-[var(--brand-primary)]/20 text-[11px] font-extrabold rounded-md flex items-center gap-1">
@@ -152,11 +160,11 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                             </div>
                             <span className="text-[11px] text-[var(--text-secondary)]">
                               {order.createdAt
-                                ? new Date(order.createdAt).toLocaleTimeString('vi-VN', {
+                                ? new Date(order.createdAt).toLocaleTimeString(lang === 'zh' ? 'zh-CN' : lang === 'en' ? 'en-US' : 'vi-VN', {
                                     hour: '2-digit',
                                     minute: '2-digit',
                                   })
-                                : 'Vừa tạo'}
+                                : (lang === 'en' ? 'Just created' : lang === 'zh' ? '刚刚创建' : 'Vừa tạo')}
                             </span>
                           </div>
 
@@ -174,7 +182,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                         {/* Items */}
                         <div className="space-y-2">
                           {order.items?.map((item: any, i: number) => {
-                            const itemName = item.food?.name || (typeof item.foodId === 'object' && item.foodId?.name) || item.foodName || 'Món ăn';
+                            const itemName = item.food?.name || (typeof item.foodId === 'object' && item.foodId?.name) || item.foodName || (lang === 'en' ? 'Item' : lang === 'zh' ? '商品' : 'Món ăn');
                             const unitPrice = item.unitPrice || item.price || (typeof item.foodId === 'object' && item.foodId?.price) || item.food?.price || 0;
                             return (
                               <div
@@ -190,7 +198,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                                   </span>
                                   {item.note && (
                                     <p className="text-[11px] text-[var(--text-secondary)] italic font-normal">
-                                      Ghi chú: {item.note}
+                                      {lang === 'en' ? 'Note:' : lang === 'zh' ? '备注:' : 'Ghi chú:'} {item.note}
                                     </p>
                                   )}
                                 </div>
@@ -205,7 +213,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                         {/* Footer & Total */}
                         <div className="pt-2 border-t border-[var(--border-color)] flex items-center justify-between">
                           <span className="text-xs font-medium text-[var(--text-secondary)]">
-                            Tổng đợt gọi món:
+                            {lang === 'en' ? 'Round Total:' : lang === 'zh' ? '本轮小计:' : 'Tổng đợt gọi món:'}
                           </span>
                           <span className="text-sm font-bold text-[var(--brand-primary)]">
                             {formatPrice(order.totalAmount || 0, lang)}
@@ -221,7 +229,11 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                             }}
                             className="flex-1 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--brand-primary)] text-[var(--brand-primary)] text-xs font-semibold rounded-[var(--radius-sm)] transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
                           >
-                            <span>{order.status === 'paid' ? 'Xem hóa đơn & Chi tiết' : 'Theo dõi tiến độ chi tiết'}</span>
+                            <span>
+                              {order.status === 'paid'
+                                ? (lang === 'en' ? 'View Invoice & Details' : lang === 'zh' ? '查看收据与详情' : 'Xem hóa đơn & Chi tiết')
+                                : (lang === 'en' ? 'Track Live Progress' : lang === 'zh' ? '追踪实时进度' : 'Theo dõi tiến độ chi tiết')}
+                            </span>
                           </button>
 
                           {['ready', 'served', 'completed', 'paid'].includes(order.status) && (
@@ -230,7 +242,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                               className="px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-500 text-xs font-bold rounded-[var(--radius-sm)] transition-all flex items-center justify-center gap-1 active:scale-95 cursor-pointer shrink-0"
                             >
                               <span className="material-symbols-outlined text-sm">star</span>
-                              <span>Đánh giá món</span>
+                              <span>{lang === 'en' ? 'Review' : lang === 'zh' ? '评价' : 'Đánh giá món'}</span>
                             </button>
                           )}
                         </div>
@@ -242,10 +254,10 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
             </div>
 
             {/* Session Cumulative Total */}
-            <div className="pt-4 border-t border-[var(--border-color)] mt-4 flex flex-wrap items-center justify-between gap-3 shrink-0">
+            <div className="pt-4 border-t border-[var(--border-color)] mt-4 flex flex-wrap items-center justify-between gap-3 shrink-0 text-left">
               <div>
                 <span className="text-xs font-medium text-[var(--text-secondary)] block">
-                  Tổng cộng cả buổi tại bàn:
+                  {lang === 'en' ? 'Total Session Balance:' : lang === 'zh' ? '本桌累计总额:' : 'Tổng cộng cả buổi tại bàn:'}
                 </span>
                 <span className="text-lg font-bold text-[var(--brand-primary)]">
                   {formatPrice(
@@ -258,45 +270,23 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
               <div className="flex items-center gap-2">
                 {(() => {
                   const isAllPaid = activeOrders.length > 0 && activeOrders.every((o) => o.status === 'paid');
-                  const isReadyForPayment = activeOrders.length > 0 && activeOrders.every(
-                    (o) => ['ready', 'served', 'completed', 'paid'].includes(o.status)
-                  );
 
                   if (isAllPaid) {
                     return (
-                      <div className="flex items-center gap-2">
-                        <span className="px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 rounded-full text-xs font-bold flex items-center gap-1">
-                          <span className="material-symbols-outlined text-sm">check_circle</span>
-                          Đã thanh toán
-                        </span>
-                      </div>
+                      <span className="px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 rounded-full text-xs font-bold flex items-center gap-1">
+                        <span className="material-symbols-outlined text-sm">check_circle</span>
+                        {lang === 'en' ? 'Paid' : lang === 'zh' ? '已结账' : 'Đã thanh toán'}
+                      </span>
                     );
                   }
-
-                  return (
-                    <button
-                      disabled={!isReadyForPayment}
-                      onClick={() => setIsSplitBillOpen(true)}
-                      title={!isReadyForPayment ? 'Vui lòng chờ Bếp/Barista hoàn tất ra món để tiến hành thanh toán' : ''}
-                      className={`px-4 py-2.5 rounded-[var(--radius-sm)] text-xs font-bold transition-all flex items-center gap-1.5 ${
-                        isReadyForPayment
-                          ? 'bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-500 cursor-pointer active:scale-95'
-                          : 'bg-gray-500/10 border border-gray-500/20 text-gray-400 cursor-not-allowed opacity-60'
-                      }`}
-                    >
-                      <span className="material-symbols-outlined text-base">
-                        {isReadyForPayment ? 'payments' : 'hourglass_top'}
-                      </span>
-                      <span>{isReadyForPayment ? 'Thanh toán' : 'Chờ hoàn tất món'}</span>
-                    </button>
-                  );
+                  return null;
                 })()}
 
                 <button
                   onClick={() => setIsOrderHistoryModalOpen(false)}
                   className="px-5 py-2.5 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white rounded-[var(--radius-sm)] text-xs font-semibold uppercase tracking-wider shadow-md transition-all active:scale-95 cursor-pointer"
                 >
-                  Đóng
+                  {lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng'}
                 </button>
               </div>
             </div>
@@ -304,15 +294,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
         </div>
       )}
 
-      {/* Split Bill Modal */}
-      <SplitBillModal
-        isOpen={isSplitBillOpen}
-        onClose={() => setIsSplitBillOpen(false)}
-        table={table}
-        activeOrders={activeOrders}
-        formatPrice={formatPrice}
-        lang={lang}
-      />
+
 
       {/* Food Review Modal */}
       <FoodReviewModal

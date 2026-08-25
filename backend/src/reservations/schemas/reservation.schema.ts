@@ -25,6 +25,9 @@ export class Reservation {
 
   @Prop({ type: String, default: '', trim: true })
   note: string;
+
+  @Prop({ type: Boolean, default: false, index: true })
+  isDeleted: boolean;
 }
 
 export const ReservationSchema = SchemaFactory.createForClass(Reservation);
