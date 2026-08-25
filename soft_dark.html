@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kohi - Đơn pha chế realtime</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "inverse-on-surface": "#283141",
+                "error-container": "#93000a",
+                "surface-container-low": "#131c2b",
+                "surface-dim": "#0a1323",
+                "on-primary-fixed": "#061a3d",
+                "outline-variant": "#44474e",
+                "primary-fixed": "#d8e2ff",
+                "surface-container-lowest": "#050e1d",
+                "on-background": "#dae2f9",
+                "on-error": "#690005",
+                "tertiary": "#b9c7e3",
+                "secondary": "#b3c5ff",
+                "surface-bright": "#2C3852",
+                "inverse-surface": "#dae2f9",
+                "surface-main": "#1A2333",
+                "inverse-primary": "#4d5e84",
+                "surface-container": "#232D41",
+                "secondary-fixed-dim": "#b3c5ff",
+                "on-secondary-fixed-variant": "#003fa4",
+                "on-tertiary-fixed": "#0d1c30",
+                "surface": "#0a1323",
+                "on-tertiary-container": "#98a6c1",
+                "primary-fixed-dim": "#b5c6f2",
+                "text-primary": "#F0F4FF",
+                "tertiary-fixed": "#d5e3ff",
+                "surface-variant": "#2c3546",
+                "on-error-container": "#ffdad6",
+                "surface-container-high": "#212a3a",
+                "tertiary-container": "#2e3c52",
+                "on-surface-variant": "#c5c6cf",
+                "on-tertiary-fixed-variant": "#3a475e",
+                "on-secondary-container": "#9eb6ff",
+                "error": "#ffb4ab",
+                "secondary-container": "#0341a8",
+                "on-secondary-fixed": "#001849",
+                "on-tertiary": "#233146",
+                "on-primary-fixed-variant": "#35466b",
+                "secondary-fixed": "#dbe1ff",
+                "on-primary": "#1e3053",
+                "on-secondary": "#002b75",
+                "primary-container": "#2a3b5f",
+                "surface-container-highest": "#2c3546",
+                "on-primary-container": "#95a6d0",
+                "tertiary-fixed-dim": "#b9c7e3",
+                "primary": "#b5c6f2",
+                "on-surface": "#dae2f9",
+                "outline": "#8f9099",
+                "background": "#0a1323",
+                "surface-tint": "#b5c6f2",
+                "text-secondary": "#A8B6D1"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+        },
+        "spacing": {
+                "stack-md": "12px",
+                "margin-desktop": "32px",
+                "stack-lg": "24px",
+                "base": "8px",
+                "margin-mobile": "16px",
+                "gutter": "16px",
+                "stack-sm": "4px"
+        },
+        "fontFamily": {
+                "headline-sm": [
+                        "Inter"
+                ],
+                "headline-lg": [
+                        "Inter"
+                ],
+                "body-lg": [
+                        "Inter"
+                ],
+                "label-sm": [
+                        "Inter"
+                ],
+                "headline-lg-mobile": [
+                        "Inter"
+                ],
+                "label-md": [
+                        "Inter"
+                ],
+                "headline-md": [
+                        "Inter"
+                ],
+                "body-sm": [
+                        "Inter"
+                ],
+                "body-md": [
+                        "Inter"
+                ]
+        },
+        "fontSize": {
+                "headline-sm": [
+                        "20px",
+                        {
+                                "lineHeight": "28px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "headline-lg": [
+                        "32px",
+                        {
+                                "lineHeight": "40px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "body-lg": [
+                        "18px",
+                        {
+                                "lineHeight": "28px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "label-sm": [
+                        "12px",
+                        {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.02em",
+                                "fontWeight": "500"
+                        }
+                ],
+                "headline-lg-mobile": [
+                        "28px",
+                        {
+                                "lineHeight": "36px",
+                                "letterSpacing": "-0.01em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "label-md": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "letterSpacing": "0.01em",
+                                "fontWeight": "500"
+                        }
+                ],
+                "headline-md": [
+                        "24px",
+                        {
+                                "lineHeight": "32px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body-sm": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "body-md": [
+                        "16px",
+                        {
+                                "lineHeight": "24px",
+                                "fontWeight": "400"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style data-purpose="custom-styles">
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .sidebar-active {
+      background-color: #212a3a; /* surface-container-high */
+      color: #b3c5ff; /* secondary */
+    }
+    .sidebar-active svg {
+      fill: #b3c5ff;
+    }
+  </style>
+</head>
+<body class="h-screen flex overflow-hidden bg-background text-on-background">
+<!-- BEGIN: LeftSidebar -->
+<aside class="w-[260px] flex-shrink-0 border-r border-outline-variant flex flex-col justify-between h-full bg-surface-container-lowest relative z-10" data-purpose="left-sidebar">
+<div class="flex-1 overflow-y-auto overflow-x-hidden">
+<!-- Brand Area -->
+<div class="p-6 flex items-center space-x-3 border-b border-outline-variant">
+<div class="w-10 h-10 bg-primary-fixed rounded-lg flex items-center justify-center text-on-primary-fixed font-bold text-xs">
+          Kohi
+        </div>
+<div>
+<h1 class="font-bold text-base leading-tight text-on-background">Kohi</h1>
+<p class="text-[10px] text-secondary font-semibold tracking-wider uppercase">COFFEE &amp; PASTRY</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav aria-label="Sidebar" class="p-3 space-y-1">
+<!-- Active Nav Item -->
+<a class="sidebar-active flex items-center px-3 py-2.5 text-sm font-medium rounded-lg group" href="#">
+<svg aria-hidden="true" class="mr-3 flex-shrink-0 h-5 w-5" fill="currentColor" viewbox="0 0 20 20">
+<path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+<path clip-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" fill-rule="evenodd"></path>
+</svg>
+<span class="flex-1 truncate font-semibold">Đơn pha chế realtime</span>
+<span class="bg-secondary-container text-on-secondary-container ml-auto inline-block py-0.5 px-2 text-xs rounded-full">0</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container hover:text-on-surface flex items-center px-3 py-2.5 text-sm font-medium rounded-lg group" href="#">
+<svg class="mr-3 flex-shrink-0 h-5 w-5 text-outline group-hover:text-on-surface" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="flex-1 truncate">Quản lý thực đơn</span>
+<span class="bg-surface-container-high text-on-surface ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium">60</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container hover:text-on-surface flex items-center px-3 py-2.5 text-sm font-medium rounded-lg group" href="#">
+<svg class="mr-3 flex-shrink-0 h-5 w-5 text-outline group-hover:text-on-surface" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="flex-1 truncate">Quản lý bàn cà phê</span>
+<span class="bg-surface-container-high text-on-surface ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium">5</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container hover:text-on-surface flex items-center px-3 py-2.5 text-sm font-medium rounded-lg group" href="#">
+<svg class="mr-3 flex-shrink-0 h-5 w-5 text-outline group-hover:text-on-surface" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="flex-1 truncate">Quản lý bàn đã đặt</span>
+<span class="bg-surface-container-high text-on-surface ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium">0</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container hover:text-on-surface flex items-center px-3 py-2.5 text-sm font-medium rounded-lg group" href="#">
+<svg class="mr-3 flex-shrink-0 h-5 w-5 text-outline group-hover:text-on-surface" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="flex-1 truncate">Chấm công ca làm</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Actions / User Profile -->
+<div class="border-t border-outline-variant p-4">
+<!-- Language Toggle (simplified representation) -->
+<div class="flex items-center justify-between mb-4 bg-surface-container-low p-1.5 rounded-full border border-outline-variant">
+<div class="flex space-x-1">
+<button class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">VN VI</button>
+<button class="text-on-surface-variant text-[10px] font-semibold px-2 py-1 hover:text-on-surface">GB EN</button>
+<button class="text-on-surface-variant text-[10px] font-semibold px-2 py-1 hover:text-on-surface">CN ZH</button>
+</div>
+<!-- Toggle Switch -->
+<div class="w-10 h-6 bg-secondary-container rounded-full flex items-center justify-end px-1 cursor-pointer">
+<div class="w-4 h-4 bg-on-secondary-container rounded-full flex items-center justify-center shadow">
+<svg class="w-3 h-3 text-secondary-container" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+</div>
+</div>
+<!-- User Info -->
+<div class="flex items-center space-x-3">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-bold text-sm">
+          N
+        </div>
+<div class="flex-1">
+<p class="text-sm font-semibold text-on-background leading-tight">Nhân viên Phục vụ</p>
+<a class="text-xs text-on-surface-variant hover:text-on-surface leading-tight" href="#">Sửa thông tin</a>
+</div>
+<button class="text-outline hover:text-on-surface">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+</aside>
+<!-- END: LeftSidebar -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 flex flex-col min-w-0 bg-background" data-purpose="main-content">
+<!-- Header -->
+<header class="flex-shrink-0 px-8 py-6 flex items-center justify-between border-b border-transparent">
+<h2 class="text-2xl font-bold text-on-background tracking-tight">Đơn pha chế realtime</h2>
+<button class="inline-flex items-center px-4 py-2 border border-outline-variant shadow-sm text-sm font-medium rounded-lg text-on-surface bg-surface-container-low hover:bg-surface-container focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary" type="button">
+<svg class="-ml-1 mr-2 h-5 w-5 text-outline" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+        Thông báo
+      </button>
+</header>
+<!-- Content Area -->
+<div class="flex-1 px-8 overflow-y-auto">
+<!-- Toolbar: Tabs and Actions -->
+<div class="flex items-center justify-between mb-6">
+<!-- Status Tabs -->
+<div class="flex bg-surface-container-lowest border border-outline-variant rounded-full p-1 shadow-sm">
+<button class="bg-surface-container-high text-secondary px-4 py-1.5 rounded-full text-sm font-semibold shadow-sm focus:outline-none">
+            Đang xử lý
+          </button>
+<button class="text-on-surface-variant hover:text-on-surface px-4 py-1.5 rounded-full text-sm font-medium focus:outline-none flex items-center">
+            Đã thanh toán <span class="ml-1.5 bg-surface-container text-on-surface-variant text-[10px] px-1.5 py-0.5 rounded-full">0</span>
+</button>
+<button class="text-on-surface-variant hover:text-on-surface px-4 py-1.5 rounded-full text-sm font-medium focus:outline-none flex items-center">
+            Tất cả <span class="ml-1.5 bg-surface-container text-on-surface-variant text-[10px] px-1.5 py-0.5 rounded-full">0</span>
+</button>
+</div>
+<!-- Action Button -->
+<button class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-semibold rounded-lg text-on-primary bg-primary hover:bg-primary-fixed-dim focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary" type="button">
+          Tạo đơn mang về
+        </button>
+</div>
+<!-- Empty State Card -->
+<div class="border border-outline-variant bg-surface-container-low rounded-xl p-16 text-center shadow-sm">
+<h3 class="mt-2 text-lg font-semibold text-on-background">Chưa có đơn hàng nào</h3>
+<p class="mt-1 text-sm text-on-surface-variant">Các đơn hàng mới của khách hàng quét QR tại bàn sẽ xuất hiện ở đây ngay lập tức.</p>
+</div>
+</div>
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: RightSidebar (Realtime Activity) -->
+<aside class="w-[320px] flex-shrink-0 border-l border-outline-variant bg-surface-container-lowest flex flex-col z-10" data-purpose="right-sidebar">
+<div class="px-6 py-6 border-b border-outline-variant">
+<h2 class="text-base font-bold text-on-background mb-4">Hoạt động realtime</h2>
+<!-- Secondary Tabs -->
+<div class="flex space-x-6 border-b border-outline-variant">
+<button class="text-primary font-semibold text-sm pb-2 border-b-2 border-primary -mb-[1px]">Tất cả</button>
+<button class="text-on-surface-variant hover:text-on-surface font-medium text-sm pb-2 border-b-2 border-transparent hover:border-outline -mb-[1px]">Hỗ trợ</button>
+<button class="text-on-surface-variant hover:text-on-surface font-medium text-sm pb-2 border-b-2 border-transparent hover:border-outline -mb-[1px]">Thanh toán</button>
+</div>
+</div>
+<!-- Empty State for Activity -->
+<div class="flex-1 p-6 flex flex-col items-center pt-10">
+<p class="text-sm text-outline italic text-center max-w-[200px]">
+        Hiện chưa có hoạt động realtime nào mới.
+      </p>
+</div>
+</aside>
+<!-- END: RightSidebar -->
+</body></html>

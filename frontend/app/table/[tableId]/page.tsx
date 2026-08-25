@@ -940,9 +940,20 @@ export default function TableMenuPage() {
         body: JSON.stringify({ question: q }),
       });
       const data = await res.json();
-      setAiMessages((prev) => [...prev, { role: 'ai', text: data.answer || 'Xin lỗi, tôi chưa hiểu câu hỏi.' }]);
+      setAiMessages((prev) => [...prev, { role: 'ai', text: data.answer || 'Dạ, Kohi AI đã nhận thông tin. Bạn có thể chọn món hoặc nhờ nhân viên hỗ trợ nhé! ☕' }]);
     } catch {
-      setAiMessages((prev) => [...prev, { role: 'ai', text: 'Lỗi kết nối. Vui lòng thử lại.' }]);
+      let fallbackText = 'Dạ, Kohi xin chào! ';
+      const lowerQ = q.toLowerCase();
+      if (lowerQ.includes('ngon') || lowerQ.includes('best seller') || lowerQ.includes('bán chạy')) {
+        fallbackText += 'Các món Signature bán chạy nhất tại Kohi bao gồm: Cà phê Muối Huế đặc sản, Matcha Espresso Nhật Bản và Bánh Croissant bơ Pháp giòn rụm ạ! ☕🥐';
+      } else if (lowerQ.includes('giờ') || lowerQ.includes('mở cửa') || lowerQ.includes('hours')) {
+        fallbackText += 'Kohi Coffee mở cửa đón khách từ 07:00 - 22:00 tất cả các ngày trong tuần ạ! ✨';
+      } else if (lowerQ.includes('wifi') || lowerQ.includes('mật khẩu') || lowerQ.includes('pass')) {
+        fallbackText += 'Quán có Wifi tốc độ cao hoàn toàn miễn phí. Bạn có thể nhờ nhân viên phục vụ hỗ trợ nhập mật khẩu tại bàn nhé! 📶';
+      } else {
+        fallbackText += 'Cảm ơn bạn đã hỏi! Bạn có thể xem thực đơn và thêm món vào giỏ hàng, hoặc nhấn "Gọi nhân viên" ở thanh bên trái để được phục vụ trực tiếp ạ! 😊';
+      }
+      setAiMessages((prev) => [...prev, { role: 'ai', text: fallbackText }]);
     } finally {
       setIsAiThinking(false);
     }
@@ -1137,13 +1148,13 @@ export default function TableMenuPage() {
 
           <div className="px-4 md:px-6">
             {/* Mobile Category Horizontal Scroll Bar */}
-            <div className="flex md:hidden gap-2 overflow-x-auto pb-3 mb-3 w-full scrollbar-none border-b border-[var(--border-color)] flex-shrink-0">
+            <div className="-mx-4 px-4 flex md:hidden gap-2 overflow-x-auto pb-3 mb-3.5 scrollbar-none border-b border-[var(--border-color)] flex-shrink-0">
               <button
                 onClick={() => setActiveCategory('')}
-                className={`px-4 py-2 rounded-xl text-[12px] font-[600] tracking-[0.02em] whitespace-nowrap transition-all font-sans ${
+                className={`px-4 py-2 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer ${
                   activeCategory === ''
-                    ? 'bg-[#3AA6FF] text-white shadow-sm'
-                    : 'bg-[var(--bg-card)] text-[var(--text-secondary)] border border-[var(--border-color)]'
+                    ? 'bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] shadow-[0_4px_12px_rgba(0,132,255,0.3)]'
+                    : 'bg-[var(--bg-card)] text-[var(--text-secondary)] border border-[var(--border-color)] hover:text-[var(--text-primary)]'
                 }`}
               >
                 {lang === 'en' ? 'All' : lang === 'zh' ? '全部' : 'Tất cả'}
@@ -1152,10 +1163,10 @@ export default function TableMenuPage() {
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-2 rounded-xl text-[12px] font-[600] tracking-[0.02em] whitespace-nowrap transition-all font-sans ${
+                  className={`px-4 py-2 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer ${
                     activeCategory === cat
-                      ? 'bg-[#3AA6FF] text-white shadow-sm'
-                      : 'bg-[var(--bg-card)] text-[var(--text-secondary)] border border-[var(--border-color)]'
+                      ? 'bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] shadow-[0_4px_12px_rgba(0,132,255,0.3)]'
+                      : 'bg-[var(--bg-card)] text-[var(--text-secondary)] border border-[var(--border-color)] hover:text-[var(--text-primary)]'
                   }`}
                 >
                   {translateCategory(cat)}
@@ -1163,18 +1174,46 @@ export default function TableMenuPage() {
               ))}
             </div>
 
-            {/* Mobile Search Bar */}
-            <div className="relative mb-4 md:hidden flex-shrink-0">
-              <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] text-lg pointer-events-none">
-                search
-              </span>
-              <input
-                type="text"
-                placeholder={t.searchPlaceholder}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl py-2.5 pl-10 pr-3.5 text-[13.5px] font-[400] text-[var(--text-primary)] focus:outline-none focus:border-[#3AA6FF] shadow-xs font-sans placeholder-[var(--text-tertiary)]"
-              />
+            {/* Mobile Search Bar & View Mode Toggle Row */}
+            <div className="flex items-center gap-2 mb-4 md:hidden flex-shrink-0">
+              <div className="relative flex-1">
+                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] text-lg pointer-events-none">
+                  search
+                </span>
+                <input
+                  type="text"
+                  placeholder={t.searchPlaceholder}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl py-2.5 pl-10 pr-3.5 text-[13.5px] font-normal text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)] shadow-2xs font-sans placeholder-[var(--text-tertiary)] transition-colors"
+                />
+              </div>
+
+              {/* Mobile View Mode Toggle (Grid/List) */}
+              <div className="bg-[var(--bg-card)] text-[var(--text-primary)] rounded-xl p-1 border border-[var(--border-color)] shadow-2xs flex items-center shrink-0">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-1.5 rounded-lg transition-colors flex items-center justify-center cursor-pointer ${
+                    viewMode === 'grid'
+                      ? 'bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] shadow-2xs font-bold'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  }`}
+                  title="Dạng lưới"
+                >
+                  <span className="material-symbols-outlined text-lg">grid_view</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-1.5 rounded-lg transition-colors flex items-center justify-center cursor-pointer ${
+                    viewMode === 'list'
+                      ? 'bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] shadow-2xs font-bold'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  }`}
+                  title="Dạng danh sách"
+                >
+                  <span className="material-symbols-outlined text-lg">view_list</span>
+                </button>
+              </div>
             </div>
 
             {/* Food Grid / List */}
@@ -1278,17 +1317,17 @@ export default function TableMenuPage() {
             >
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="w-full bg-[#3AA6FF] dark:bg-[#5B9EFF] text-white p-3.5 rounded-[var(--radius-lg)] font-bold flex items-center justify-between shadow-2xl shadow-[#3AA6FF]/40 active:scale-95 transition-transform"
+                className="w-full bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] p-3.5 rounded-2xl font-bold flex items-center justify-between shadow-2xl shadow-[var(--brand-primary)]/30 active:scale-95 transition-all font-sans cursor-pointer"
               >
                 <div className="flex items-center gap-2">
-                  <span className="bg-white text-[#3AA6FF] dark:text-[#5B9EFF] w-6 h-6 rounded-full text-xs font-black flex items-center justify-center">
+                  <span className="bg-white text-[var(--brand-primary)] w-6 h-6 rounded-full text-xs font-black flex items-center justify-center shadow-xs">
                     {totalQuantity}
                   </span>
-                  <span className="text-xs uppercase tracking-wide font-extrabold">
+                  <span className="text-xs uppercase tracking-wide font-extrabold font-sans">
                     {lang === 'en' ? 'View Cart' : lang === 'zh' ? '查看购物车' : 'Xem Giỏ Hàng'}
                   </span>
                 </div>
-                <span className="text-sm font-black">{formatPrice(totalAmount, lang)}</span>
+                <span className="text-sm font-black font-sans">{formatPrice(totalAmount, lang)}</span>
               </button>
             </motion.div>
           )}

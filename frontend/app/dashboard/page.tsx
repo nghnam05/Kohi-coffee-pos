@@ -2116,13 +2116,13 @@ export default function DashboardPage() {
     : '5.0';
 
   return (
-    <div className="h-screen max-h-screen bg-[#FFFFFF] dark:bg-[#090D16] text-[#000000] dark:text-[#F1F5F9] flex flex-col lg:flex-row overflow-hidden font-sans select-none relative transition-colors duration-300">
+    <div className="h-screen max-h-screen bg-white dark:bg-[#000d41] text-gray-900 dark:text-[#dde1ff] flex flex-col lg:flex-row overflow-hidden font-sans select-none relative transition-colors duration-300">
       {/* ── MOBILE TOP NAVIGATION BAR (Visible on screens < lg) ──────────────── */}
-      <div className="lg:hidden shrink-0 flex items-center justify-between bg-[#FFFFFF]/95 dark:bg-[#11141A]/95 backdrop-blur-md border-b border-[#E2E8F0] dark:border-[#222732] px-4 py-0 h-14 text-[#000000] dark:text-[#F1F5F9] z-30 transition-colors shadow-sm">
+      <div className="lg:hidden shrink-0 flex items-center justify-between bg-white/95 dark:bg-[#000935]/95 backdrop-blur-md border-b border-gray-200 dark:border-[#414754] px-4 py-0 h-14 text-gray-900 dark:text-[#dde1ff] z-30 transition-colors shadow-xs">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-            className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-200 font-extrabold text-xs cursor-pointer active:scale-95 transition-all shrink-0"
+            className="h-10 w-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-[#00175e] text-gray-700 dark:text-[#dde1ff] font-bold text-xs cursor-pointer active:scale-95 transition-all shrink-0"
             aria-label="Mở menu"
           >
             ☰
@@ -2134,13 +2134,13 @@ export default function DashboardPage() {
           <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
           <button
             onClick={() => setIsRealtimeDrawerOpen(!isRealtimeDrawerOpen)}
-            className="relative h-10 w-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-200 hover:text-[#0284c7] dark:hover:text-[#38BDF8] transition-all cursor-pointer active:scale-95 shrink-0"
+            className="relative h-10 w-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-[#00175e] text-gray-700 dark:text-[#dde1ff] hover:text-blue-600 dark:hover:text-[#b1c5ff] transition-all cursor-pointer active:scale-95 shrink-0"
             aria-label="Thông báo realtime"
             title="Xem thông báo realtime"
           >
             <span className="material-symbols-outlined text-lg">notifications</span>
             {(staffCalls.length > 0 || (user?.role === 'barista' && brewingQueue.length > 0) || (user?.role !== 'barista' && user?.role !== 'admin' && drinkReadyList.length > 0)) && (
-              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#38BDF8] animate-pulse" />
+              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#00adef] dark:bg-[#0876ef] animate-pulse" />
             )}
           </button>
         </div>
@@ -2247,10 +2247,10 @@ export default function DashboardPage() {
           onClick={() => setIsMobileSidebarOpen(true)}
           aria-expanded={isMobileSidebarOpen}
           aria-label="Mở menu mở rộng"
-          className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] active:scale-95 ${
+          className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#0059b9] active:scale-95 ${
             ['analytics', 'users', 'coupons', 'reservations'].includes(activeTab as string)
-              ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold'
+              ? 'bg-[#0059b9]/10 dark:bg-[#0059b9]/15 text-[#0059b9] dark:text-[#38BDF8] font-black'
+              : 'text-[#414754] dark:text-slate-400 hover:text-[#181c23] dark:hover:text-white hover:bg-[#f1f3fe] dark:hover:bg-slate-800/50 font-bold'
           }`}
         >
           <span className="material-symbols-outlined text-xl">grid_view</span>
@@ -2274,26 +2274,27 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* ── COLUMN 1: LEFT SIDEBAR (#1A2232 / bg-white) ────────────────────── */}
+      {/* ── COLUMN 1: LEFT SIDEBAR (bg-white / dark:bg-[#050e1d]) ────────────────────── */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-white dark:bg-[#1A2232] border-r border-[#E2E8F0] dark:border-[#293246] flex flex-col justify-between p-4 h-screen transition-all duration-300 ease-in-out ${
+        className={`fixed lg:static inset-y-0 left-0 z-40 w-[260px] shrink-0 bg-white dark:bg-[#050e1d] border-r border-gray-200 dark:border-[#44474e] flex flex-col justify-between h-full transition-all duration-300 ease-in-out ${
           isMobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'
         }`}
+        data-purpose="left-sidebar"
       >
-        <div>
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">
           {/* Brand Header */}
-          <div className="mb-6 px-2 flex justify-between items-center">
+          <div className="p-6 flex items-center justify-between border-b border-gray-100 dark:border-[#44474e]">
             <BrandLogo onClick={() => router.push('/')} />
             <button
               onClick={() => setIsMobileSidebarOpen(false)}
-              className="lg:hidden text-slate-400 hover:text-slate-900 dark:hover:text-white p-1 rounded-lg"
+              className="lg:hidden text-gray-400 hover:text-gray-900 dark:hover:text-white p-1 rounded-lg"
             >
               <span className="material-symbols-outlined">close</span>
             </button>
           </div>
 
-          {/* Navigation Items */}
-          <nav className="space-y-1.5">
+          {/* Navigation Links */}
+          <nav aria-label="Sidebar" className="p-3 space-y-1 font-sans">
             {/* Realtime Orders Tab: BARISTA & WAITER & STAFF ROLES ONLY */}
             {user?.role !== 'admin' && (
               <button
@@ -2301,19 +2302,25 @@ export default function DashboardPage() {
                   setActiveTab('orders');
                   setIsMobileSidebarOpen(false);
                 }}
-                className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
+                className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
                   activeTab === 'orders'
-                    ? 'bg-[#38BDF8]/15 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
-                    : 'text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d] font-extrabold'
+                    ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
+                    : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-lg">
-                    {user?.role === 'barista' ? 'coffee_maker' : 'receipt_long'}
-                  </span>
-                  <span>{user?.role === 'barista' ? 'Quầy pha chế (KDS)' : t.tabOrders}</span>
-                </div>
-                <span className="bg-[#2563EB] dark:bg-[#3B82F6] text-white dark:text-[#0B1120] text-[11px] font-black px-2 py-0.5 rounded-full">
+                <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${
+                  activeTab === 'orders'
+                    ? 'text-[#0284c7] dark:text-[#b3c5ff]'
+                    : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
+                }`}>
+                  {user?.role === 'barista' ? 'coffee_maker' : 'receipt_long'}
+                </span>
+                <span className="flex-1 truncate text-left">{user?.role === 'barista' ? 'Quầy pha chế (KDS)' : t.tabOrders}</span>
+                <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${
+                  activeTab === 'orders'
+                    ? 'bg-blue-600 dark:bg-[#0341a8] text-white dark:text-[#9eb6ff]'
+                    : 'bg-gray-100 text-gray-800 dark:bg-[#212a3a] dark:text-[#dae2f9]'
+                }`}>
                   {activeOrdersList.length}
                 </span>
               </button>
@@ -2326,17 +2333,23 @@ export default function DashboardPage() {
                     setActiveTab('foods');
                     setIsMobileSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
+                  className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
                     activeTab === 'foods'
-                      ? 'bg-[#38BDF8]/15 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
-                      : 'text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d] font-extrabold'
+                      ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
+                      : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-lg">menu_book</span>
-                    <span>{t.tabFoods}</span>
-                  </div>
-                  <span className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-200 text-[11px] font-black px-2 py-0.5 rounded-full">
+                  <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${
+                    activeTab === 'foods'
+                      ? 'text-[#0284c7] dark:text-[#b3c5ff]'
+                      : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
+                  }`}>menu_book</span>
+                  <span className="flex-1 truncate text-left">{t.tabFoods}</span>
+                  <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${
+                    activeTab === 'foods'
+                      ? 'bg-blue-600 dark:bg-[#0341a8] text-white dark:text-[#9eb6ff]'
+                      : 'bg-gray-100 text-gray-800 dark:bg-[#212a3a] dark:text-[#dae2f9]'
+                  }`}>
                     {foods.length}
                   </span>
                 </button>
@@ -2346,17 +2359,23 @@ export default function DashboardPage() {
                     setActiveTab('tables');
                     setIsMobileSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
+                  className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
                     activeTab === 'tables'
-                      ? 'bg-[#38BDF8]/15 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
-                      : 'text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d] font-extrabold'
+                      ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
+                      : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-lg">table_restaurant</span>
-                    <span>{t.tabTables}</span>
-                  </div>
-                  <span className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-200 text-[11px] font-black px-2 py-0.5 rounded-full">
+                  <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${
+                    activeTab === 'tables'
+                      ? 'text-[#0284c7] dark:text-[#b3c5ff]'
+                      : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
+                  }`}>table_restaurant</span>
+                  <span className="flex-1 truncate text-left">{t.tabTables}</span>
+                  <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${
+                    activeTab === 'tables'
+                      ? 'bg-blue-600 dark:bg-[#0341a8] text-white dark:text-[#9eb6ff]'
+                      : 'bg-gray-100 text-gray-800 dark:bg-[#212a3a] dark:text-[#dae2f9]'
+                  }`}>
                     {tables.length}
                   </span>
                 </button>
@@ -2367,17 +2386,23 @@ export default function DashboardPage() {
                     setIsMobileSidebarOpen(false);
                     if (token) fetchReservations(token);
                   }}
-                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
+                  className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
                     activeTab === ('reservations' as any)
-                      ? 'bg-[#38BDF8]/15 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
-                      : 'text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d] font-extrabold'
+                      ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
+                      : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-lg">event_seat</span>
-                    <span>Quản lý bàn đã đặt</span>
-                  </div>
-                  <span className="bg-amber-500/20 text-amber-700 dark:text-amber-400 text-[11px] font-black px-2 py-0.5 rounded-full">
+                  <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${
+                    activeTab === ('reservations' as any)
+                      ? 'text-[#0284c7] dark:text-[#b3c5ff]'
+                      : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
+                  }`}>event_seat</span>
+                  <span className="flex-1 truncate text-left">Quản lý bàn đã đặt</span>
+                  <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${
+                    activeTab === ('reservations' as any)
+                      ? 'bg-blue-600 dark:bg-[#0341a8] text-white dark:text-[#9eb6ff]'
+                      : 'bg-gray-100 text-gray-800 dark:bg-[#212a3a] dark:text-[#dae2f9]'
+                  }`}>
                     {reservations.length}
                   </span>
                 </button>
@@ -2390,16 +2415,18 @@ export default function DashboardPage() {
                 setActiveTab('attendance');
                 setIsMobileSidebarOpen(false);
               }}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
+              className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
                 activeTab === 'attendance'
-                  ? 'bg-[#38BDF8]/15 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
-                  : 'text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d] font-extrabold'
+                  ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
+                  : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
               }`}
             >
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-lg">schedule</span>
-                <span>{user?.role === 'admin' ? 'Chấm công & Trả lương' : 'Chấm công ca làm'}</span>
-              </div>
+              <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${
+                activeTab === 'attendance'
+                  ? 'text-[#0284c7] dark:text-[#b3c5ff]'
+                  : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
+              }`}>schedule</span>
+              <span className="flex-1 truncate text-left">{user?.role === 'admin' ? 'Chấm công & Trả lương' : 'Chấm công ca làm'}</span>
             </button>
 
             {/* Users Management Tab: ADMIN ONLY */}
@@ -2409,16 +2436,18 @@ export default function DashboardPage() {
                   setActiveTab('users');
                   setIsMobileSidebarOpen(false);
                 }}
-                className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
+                className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
                   activeTab === 'users'
-                    ? 'bg-[#38BDF8]/15 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
-                    : 'text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d] font-extrabold'
+                    ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
+                    : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-lg">manage_accounts</span>
-                  <span>{t.tabUsers}</span>
-                </div>
+                <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${
+                  activeTab === 'users'
+                    ? 'text-[#0284c7] dark:text-[#b3c5ff]'
+                    : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
+                }`}>manage_accounts</span>
+                <span className="flex-1 truncate text-left">{t.tabUsers}</span>
               </button>
             )}
 
@@ -2433,16 +2462,18 @@ export default function DashboardPage() {
                     fetchReviews(token);
                   }
                 }}
-                className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
+                className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
                   activeTab === 'analytics'
-                    ? 'bg-[#38BDF8]/15 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
-                    : 'text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d] font-extrabold'
+                    ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
+                    : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-lg">insights</span>
-                  <span>Thống kê doanh thu DB</span>
-                </div>
+                <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${
+                  activeTab === 'analytics'
+                    ? 'text-[#0284c7] dark:text-[#b3c5ff]'
+                    : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
+                }`}>insights</span>
+                <span className="flex-1 truncate text-left">Thống kê doanh thu DB</span>
               </button>
             )}
 
@@ -2454,17 +2485,23 @@ export default function DashboardPage() {
                   setIsMobileSidebarOpen(false);
                   if (token) fetchCoupons(token);
                 }}
-                className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-extrabold transition-all ${
+                className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
                   activeTab === ('coupons' as any)
-                    ? 'bg-[#38BDF8]/15 text-[#0284c7] dark:bg-[#1e293b] dark:text-[#38BDF8] shadow-xs'
-                    : 'text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#151c2d] font-extrabold'
+                    ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
+                    : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-lg">sell</span>
-                  <span>Mã giảm giá</span>
-                </div>
-                <span className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-200 text-[11px] font-black px-2 py-0.5 rounded-full">
+                <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${
+                  activeTab === ('coupons' as any)
+                    ? 'text-[#0284c7] dark:text-[#b3c5ff]'
+                    : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
+                }`}>sell</span>
+                <span className="flex-1 truncate text-left">Mã giảm giá</span>
+                <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${
+                  activeTab === ('coupons' as any)
+                    ? 'bg-blue-600 dark:bg-[#0341a8] text-white dark:text-[#9eb6ff]'
+                    : 'bg-gray-100 text-gray-800 dark:bg-[#212a3a] dark:text-[#dae2f9]'
+                }`}>
                   {coupons.length}
                 </span>
               </button>
@@ -2472,41 +2509,42 @@ export default function DashboardPage() {
           </nav>
         </div>
 
-        {/* Controls: Language & Theme Switches */}
-        <div className="px-2 pt-3 pb-2 border-t border-slate-200 dark:border-[#1e293b] flex items-center justify-between gap-2">
-          <LanguageToggleSwitch lang={lang} setLang={setLang} />
-          <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
-        </div>
+        {/* Controls & Bottom User Profile */}
+        <div className="p-4 border-t border-gray-200 dark:border-[#414754] space-y-3 font-sans">
+          <div className="flex items-center justify-between gap-2">
+            <LanguageToggleSwitch lang={lang} setLang={setLang} />
+            <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
+          </div>
 
-        {/* User Profile & Logout at Bottom */}
-        <div className="border-t border-slate-200 dark:border-[#1e293b] pt-3 px-2 flex items-center justify-between">
-          <button
-            onClick={() => {
-              setIsProfileModalOpen(true);
-              setIsMobileSidebarOpen(false);
-            }}
-            className="flex items-center gap-3 min-w-0 text-left hover:opacity-80 transition-opacity"
-          >
-            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-[#1e293b] text-[#0284c7] dark:text-[#38BDF8] flex items-center justify-center font-bold text-xs">
-              {user?.name ? user.name.charAt(0).toUpperCase() : 'M'}
-            </div>
-            <div className="truncate">
-              <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{user?.name || 'Manager'}</p>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Sửa thông tin</p>
-            </div>
-          </button>
-          <button
-            onClick={handleLogout}
-            className="text-slate-400 hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
-            title="Đăng xuất"
-          >
-            <span className="material-symbols-outlined text-lg">logout</span>
-          </button>
+          <div className="flex items-center justify-between pt-2">
+            <button
+              onClick={() => {
+                setIsProfileModalOpen(true);
+                setIsMobileSidebarOpen(false);
+              }}
+              className="flex items-center gap-3 min-w-0 text-left hover:opacity-80 transition-opacity flex-1"
+            >
+              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-[#005edd] text-blue-600 dark:text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
+                {user?.name ? user.name.charAt(0).toUpperCase() : 'N'}
+              </div>
+              <div className="truncate min-w-0 flex-1">
+                <p className="text-sm font-semibold text-gray-900 dark:text-[#dde1ff] truncate leading-tight">{user?.name || 'Nhân viên Phục vụ'}</p>
+                <p className="text-xs text-gray-500 dark:text-[#c1c6d6] hover:text-gray-700 dark:hover:text-[#dde1ff] truncate leading-tight">Sửa thông tin</p>
+              </div>
+            </button>
+            <button
+              onClick={handleLogout}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-[#dde1ff] transition-colors p-1.5 rounded-lg flex-shrink-0 ml-2"
+              title="Đăng xuất"
+            >
+              <span className="material-symbols-outlined text-lg">logout</span>
+            </button>
+          </div>
         </div>
       </aside>
 
-      {/* ── COLUMN 2: CENTER WORKSPACE (bg-[#FFFFFF] / #090D16) ────────────────── */}
-      <main className="flex-1 min-w-0 bg-[#FFFFFF] dark:bg-[#090D16] text-[var(--text-primary)] flex flex-col h-full max-h-full overflow-hidden px-3 pt-3 pb-3 sm:p-6 lg:pb-6 transition-colors duration-300 font-sans">
+      {/* ── COLUMN 2: CENTER WORKSPACE (bg-white / dark:bg-[#0a1323]) ────────────────── */}
+      <main className="flex-1 min-w-0 bg-white dark:bg-[#0a1323] text-gray-900 dark:text-[#F0F4FF] flex flex-col h-full max-h-full overflow-hidden px-3 pt-3 pb-3 sm:p-6 lg:pb-6 transition-colors duration-300 font-sans">
         {/* Workspace Top Bar (Fixed Header) */}
         <div className="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-200/60 dark:border-[#1e293b]/60">
           <div className="flex items-center gap-3 min-w-0">
@@ -2531,7 +2569,7 @@ export default function DashboardPage() {
               title="Xem thông báo realtime"
             >
               <div className="relative flex items-center justify-center">
-                <span className="material-symbols-outlined text-lg text-[#0284c7] dark:text-[#38BDF8]">notifications</span>
+                <span className="material-symbols-outlined text-lg text-[#0059b9] dark:text-[#38BDF8]">notifications</span>
                 {(staffCalls.length > 0 || (user?.role === 'barista' && brewingQueue.length > 0) || (user?.role !== 'barista' && user?.role !== 'admin' && drinkReadyList.length > 0)) && (
                   <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#38BDF8] border-2 border-white dark:border-[#131929] animate-pulse" />
                 )}
@@ -2581,10 +2619,10 @@ export default function DashboardPage() {
             {user?.role === 'admin' && staffCalls.length > 0 && (
               <button
                 onClick={() => setIsRealtimeDrawerOpen(true)}
-                className="h-10 px-3 flex items-center gap-1.5 rounded-xl bg-[#38BDF8]/15 border border-[#38BDF8]/40 text-[#0284c7] dark:text-[#38BDF8] text-xs font-black cursor-pointer active:scale-95 transition-all shrink-0"
+                className="h-10 px-3 flex items-center gap-1.5 rounded-xl bg-[#0059b9]/10 border border-[#0059b9]/30 text-[#0059b9] dark:text-[#38BDF8] text-xs font-black cursor-pointer active:scale-95 transition-all shrink-0"
                 title="Khách hàng gọi phục vụ"
               >
-                <span className="w-2 h-2 rounded-full bg-[#38BDF8] animate-pulse shrink-0" />
+                <span className="w-2 h-2 rounded-full bg-[#0059b9] animate-pulse shrink-0" />
                 <span>{staffCalls.length} gọi bàn</span>
               </button>
             )}
@@ -2596,7 +2634,7 @@ export default function DashboardPage() {
                 placeholder={t.foodSearchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 sm:w-64 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#38BDF8] shadow-xs"
+                className="flex-1 sm:w-64 bg-white dark:bg-[#131929] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg px-3.5 py-2 text-xs text-[#181c23] dark:text-white placeholder-[#717785] focus:outline-none focus:border-[#0059b9] shadow-xs"
               />
             )}
           </div>
@@ -2609,45 +2647,45 @@ export default function DashboardPage() {
             {/* ── ORDERS TOOLBAR ─────────────────────────────────────────── */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
               {/* Filter Tabs */}
-              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none p-1 bg-slate-100 dark:bg-[#131929] rounded-2xl border border-slate-200 dark:border-[#1e293b]">
+              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none p-1 bg-[#ebedf8] dark:bg-[#131929] rounded-xl border border-[#c1c6d6] dark:border-[#1e293b]">
                 <button
                   onClick={() => setOrderStatusFilter('active')}
-                  className={`flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black transition-all ${
+                  className={`flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
                     orderStatusFilter === 'active'
-                      ? 'bg-white dark:bg-[#1e293b] text-[#0284c7] dark:text-[#38BDF8] shadow-sm'
-                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                      ? 'bg-white dark:bg-[#1e293b] text-[#0059b9] dark:text-[#38BDF8] shadow-xs font-extrabold'
+                      : 'text-[#414754] dark:text-slate-400 hover:text-[#181c23] dark:hover:text-slate-200'
                   }`}
                 >
                   <span className="whitespace-nowrap">Đang xử lý</span>
                   {orders.filter(o => o.status !== 'paid' && o.status !== 'cancelled').length > 0 && (
-                    <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${orderStatusFilter === 'active' ? 'bg-[#38BDF8] text-[#090D16]' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>
+                    <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${orderStatusFilter === 'active' ? 'bg-[#0059b9] text-white' : 'bg-[#acc7fe]/50 text-[#385282]'}`}>
                       {orders.filter(o => o.status !== 'paid' && o.status !== 'cancelled').length}
                     </span>
                   )}
                 </button>
                 <button
                   onClick={() => setOrderStatusFilter('paid')}
-                  className={`flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black transition-all ${
+                  className={`flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
                     orderStatusFilter === 'paid'
-                      ? 'bg-white dark:bg-[#1e293b] text-emerald-600 dark:text-emerald-400 shadow-sm'
-                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                      ? 'bg-white dark:bg-[#1e293b] text-emerald-600 dark:text-emerald-400 shadow-xs font-extrabold'
+                      : 'text-[#414754] dark:text-slate-400 hover:text-[#181c23] dark:hover:text-slate-200'
                   }`}
                 >
                   <span className="whitespace-nowrap">Đã thanh toán</span>
-                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${orderStatusFilter === 'paid' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>
+                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${orderStatusFilter === 'paid' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' : 'bg-[#acc7fe]/50 text-[#385282]'}`}>
                     {paidOrdersList.length}
                   </span>
                 </button>
                 <button
                   onClick={() => setOrderStatusFilter('all')}
-                  className={`flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black transition-all ${
+                  className={`flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
                     orderStatusFilter === 'all'
-                      ? 'bg-white dark:bg-[#1e293b] text-slate-900 dark:text-white shadow-sm'
-                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                      ? 'bg-white dark:bg-[#1e293b] text-[#181c23] dark:text-white shadow-xs font-extrabold'
+                      : 'text-[#414754] dark:text-slate-400 hover:text-[#181c23] dark:hover:text-slate-200'
                   }`}
                 >
                   <span className="whitespace-nowrap">Tất cả</span>
-                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-[#acc7fe]/50 text-[#385282]">
                     {orders.length}
                   </span>
                 </button>
@@ -2664,7 +2702,7 @@ export default function DashboardPage() {
                     setTakeawayCouponCode('');
                     setIsTakeawayModalOpen(true);
                   }}
-                  className="h-10 px-5 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-xl text-xs flex items-center justify-center transition-all shadow-md active:scale-95 shrink-0 cursor-pointer w-full sm:w-auto"
+                  className="h-10 px-5 bg-[#0059b9] hover:bg-[#004591] text-white font-bold rounded-lg text-xs flex items-center justify-center transition-all shadow-xs active:scale-95 shrink-0 cursor-pointer w-full sm:w-auto"
                 >
                   Tạo đơn mang về
                 </button>
@@ -2673,9 +2711,9 @@ export default function DashboardPage() {
 
             {/* Bulk Delete Toolbar */}
             {orderStatusFilter !== 'paid' && (displayedOrders.length > 2 || selectedOrderIds.length > 0) && (
-              <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 rounded-2xl text-xs font-bold shadow-xs">
+              <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-[#131929] border border-[#c1c6d6] dark:border-[#1e293b] p-3.5 rounded-xl text-xs font-bold shadow-xs">
                 {displayedOrders.length > 2 && (
-                  <label className="flex items-center gap-2.5 cursor-pointer select-none text-slate-800 dark:text-slate-200 font-extrabold">
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none text-[#181c23] dark:text-slate-200 font-extrabold">
                     <input
                       type="checkbox"
                       checked={displayedOrders.length > 0 && displayedOrders.every((o) => selectedOrderIds.includes(o._id))}
@@ -2687,15 +2725,15 @@ export default function DashboardPage() {
                           setSelectedOrderIds((prev) => prev.filter(id => !s.has(id)));
                         }
                       }}
-                      className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-[#38BDF8] cursor-pointer"
+                      className="w-4 h-4 rounded border-[#c1c6d6] dark:border-slate-700 text-[#0059b9] cursor-pointer"
                     />
                     <span>{selectedOrderIds.length > 0 ? `Đã chọn ${selectedOrderIds.length} / ${displayedOrders.length}` : `Chọn tất cả (${displayedOrders.length})`}</span>
                   </label>
                 )}
                 {selectedOrderIds.length > 0 && (
                   <div className="flex items-center gap-2 ml-auto">
-                    <button onClick={() => setSelectedOrderIds([])} className="px-3 py-1.5 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-bold cursor-pointer">Bỏ chọn</button>
-                    <button onClick={handleDeleteBulkOrders} className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-black text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer">
+                    <button onClick={() => setSelectedOrderIds([])} className="px-3 py-1.5 text-[#414754] hover:text-[#181c23] dark:hover:text-slate-300 font-bold cursor-pointer">Bỏ chọn</button>
+                    <button onClick={handleDeleteBulkOrders} className="px-4 py-2 bg-[#ba1a1a] hover:bg-[#93000a] text-white font-bold text-xs rounded-lg shadow-xs transition-all active:scale-95 cursor-pointer">
                       Xóa {selectedOrderIds.length} đơn
                     </button>
                   </div>
@@ -4662,23 +4700,23 @@ export default function DashboardPage() {
         )}
       </main>
 
-      {/* ── COLUMN 3: RIGHT REALTIME ACTIVITY SIDEBAR (#1A2232 / bg-white) ────── */}
+      {/* ── COLUMN 3: RIGHT REALTIME ACTIVITY SIDEBAR (bg-white / dark:bg-[#000935]) ────── */}
       <aside
-        className={`fixed xl:static inset-y-0 right-0 z-40 w-80 bg-white dark:bg-[#1A2232] border-l border-[#E2E8F0] dark:border-[#293246] p-5 h-screen flex flex-col overflow-y-auto transition-all duration-300 ease-in-out ${
+        className={`fixed xl:static inset-y-0 right-0 z-40 w-[320px] shrink-0 bg-white dark:bg-[#000935] border-l border-gray-200 dark:border-[#414754] p-6 h-screen flex flex-col overflow-y-auto transition-all duration-300 ease-in-out ${
           isRealtimeDrawerOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full xl:translate-x-0'
         }`}
       >
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading">
+        <div className="flex justify-between items-center mb-4 border-b border-gray-100 dark:border-[#414754] pb-4">
+          <h2 className="text-base font-bold text-gray-900 dark:text-[#dde1ff]">
             {user?.role === 'admin'
               ? 'Chấm công realtime'
               : user?.role === 'barista'
               ? 'Đơn hàng chờ pha chế'
               : 'Hoạt động realtime'}
-          </h3>
+          </h2>
           <button
             onClick={() => setIsRealtimeDrawerOpen(false)}
-            className="xl:hidden text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            className="xl:hidden text-gray-400 hover:text-gray-900 dark:hover:text-white"
           >
             <span className="material-symbols-outlined">close</span>
           </button>
@@ -5190,19 +5228,19 @@ export default function DashboardPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">{t.modalFoodPrice}</label>
-                    <input type="number" required value={foodForm.price} onChange={(e) => setFoodForm({ ...foodForm, price: e.target.value })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]" />
+                    <label className="block text-[#181c23] dark:text-slate-300 font-bold mb-1">{t.modalFoodPrice}</label>
+                    <input type="number" required value={foodForm.price} onChange={(e) => setFoodForm({ ...foodForm, price: e.target.value })} className="w-full bg-[#f1f3fe] dark:bg-[#090D16] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg p-2.5 text-[#181c23] dark:text-white focus:outline-none focus:border-[#0059b9]" />
                   </div>
                   <div>
-                    <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">{t.modalFoodCategory}</label>
-                    <select value={foodForm.category} onChange={(e) => setFoodForm({ ...foodForm, category: e.target.value })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-[#38BDF8] cursor-pointer">
+                    <label className="block text-[#181c23] dark:text-slate-300 font-bold mb-1">{t.modalFoodCategory}</label>
+                    <select value={foodForm.category} onChange={(e) => setFoodForm({ ...foodForm, category: e.target.value })} className="w-full bg-[#f1f3fe] dark:bg-[#090D16] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg p-2.5 text-[#181c23] dark:text-white font-bold focus:outline-none focus:border-[#0059b9] cursor-pointer">
                       {categories.map((cat) => (
-                        <option key={cat._id} value={cat.name} className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">
+                        <option key={cat._id} value={cat.name} className="bg-white dark:bg-[#090D16] text-[#181c23] dark:text-white font-bold py-1">
                           {cat.name}
                         </option>
                       ))}
                       {categories.length === 0 && (
-                        <option value="Cà phê" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Cà phê</option>
+                        <option value="Cà phê" className="bg-white dark:bg-[#090D16] text-[#181c23] dark:text-white font-bold py-1">Cà phê</option>
                       )}
                     </select>
                   </div>
@@ -5212,12 +5250,12 @@ export default function DashboardPage() {
                 {(() => {
                   const isMilkTea = foodForm.category?.toLowerCase().includes('trà sữa') || foodForm.category?.toLowerCase().includes('milk tea');
                   return isMilkTea ? (
-                    <div className="p-3 bg-[#38BDF8]/10 border border-[#38BDF8]/30 rounded-xl text-[11.5px] text-[#38BDF8] font-bold flex items-center gap-2">
+                    <div className="p-3 bg-[#0059b9]/10 border border-[#0059b9]/30 rounded-lg text-[11.5px] text-[#0059b9] font-bold flex items-center gap-2">
                       <span className="material-symbols-outlined text-base">local_drink</span>
                       <span>Danh mục Trà Sữa: Món ăn này sẽ hỗ trợ chọn Topping (Trân châu, thạch, pudding...) khi khách hàng đặt món.</span>
                     </div>
                   ) : (
-                    <div className="p-3 bg-slate-100 dark:bg-[#1e293b]/60 border border-slate-200 dark:border-[#1e293b] rounded-xl text-[11.5px] text-slate-500 dark:text-slate-400 font-medium flex items-center gap-2">
+                    <div className="p-3 bg-[#f1f3fe] dark:bg-[#1e293b]/60 border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg text-[11.5px] text-[#414754] dark:text-slate-400 font-medium flex items-center gap-2">
                       <span className="material-symbols-outlined text-base">info</span>
                       <span>Danh mục món ăn/thức uống này KHÔNG hỗ trợ Topping. Khách hàng chỉ chọn Size & Ghi chú.</span>
                     </div>
@@ -5225,10 +5263,10 @@ export default function DashboardPage() {
                 })()}
 
                 <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">{t.modalFoodImg}</label>
+                  <label className="block text-[#181c23] dark:text-slate-300 font-bold mb-1">{t.modalFoodImg}</label>
                   <div className="flex gap-2 mb-2">
-                    <button type="button" onClick={() => setFoodInputType('upload')} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${foodInputType === 'upload' ? 'bg-[#38BDF8] text-[#090D16]' : 'bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300'}`}>{t.modalFoodUpload}</button>
-                    <button type="button" onClick={() => setFoodInputType('url')} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${foodInputType === 'url' ? 'bg-[#38BDF8] text-[#090D16]' : 'bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300'}`}>{t.modalFoodUrl}</button>
+                    <button type="button" onClick={() => setFoodInputType('upload')} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${foodInputType === 'upload' ? 'bg-[#0059b9] text-white' : 'bg-[#f1f3fe] dark:bg-[#1e293b] text-[#414754] dark:text-slate-300'}`}>{t.modalFoodUpload}</button>
+                    <button type="button" onClick={() => setFoodInputType('url')} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${foodInputType === 'url' ? 'bg-[#0059b9] text-white' : 'bg-[#f1f3fe] dark:bg-[#1e293b] text-[#414754] dark:text-slate-300'}`}>{t.modalFoodUrl}</button>
                   </div>
 
                   {foodInputType === 'upload' ? (
@@ -5252,23 +5290,23 @@ export default function DashboardPage() {
                       <input type="file" id="file" accept="image/*" onChange={handleCloudinaryUpload} />
                     </label>
                   ) : (
-                    <input type="text" placeholder={t.modalFoodUrlPlaceholder} value={foodForm.image} onChange={(e) => setFoodForm({ ...foodForm, image: e.target.value })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]" />
+                    <input type="text" placeholder={t.modalFoodUrlPlaceholder} value={foodForm.image} onChange={(e) => setFoodForm({ ...foodForm, image: e.target.value })} className="w-full bg-[#f1f3fe] dark:bg-[#090D16] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg p-2.5 text-[#181c23] dark:text-white focus:outline-none focus:border-[#0059b9]" />
                   )}
 
                   {/* Live Image Preview Box */}
                   {foodForm.image && (
-                    <div className="mt-3 p-2.5 bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl flex items-center gap-3">
+                    <div className="mt-3 p-2.5 bg-[#f1f3fe] dark:bg-[#090D16] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg flex items-center gap-3">
                       <img
                         src={foodForm.image}
                         alt="Xem trước ảnh món"
-                        className="w-14 h-14 rounded-lg object-cover bg-slate-200 dark:bg-slate-800 border border-slate-200 dark:border-[#1e293b] shrink-0"
+                        className="w-14 h-14 rounded-lg object-cover bg-[#ebedf8] dark:bg-slate-800 border border-[#c1c6d6] dark:border-[#1e293b] shrink-0"
                         onError={(e) => {
                           (e.target as HTMLElement).style.display = 'none';
                         }}
                       />
                       <div className="truncate flex-1">
-                        <span className="text-[11px] font-bold text-slate-900 dark:text-slate-200 block">Xem trước hình ảnh món</span>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate block mt-0.5">{foodForm.image}</span>
+                        <span className="text-[11px] font-bold text-[#181c23] dark:text-slate-200 block">Xem trước hình ảnh món</span>
+                        <span className="text-[10px] text-[#414754] dark:text-slate-400 truncate block mt-0.5">{foodForm.image}</span>
                       </div>
                     </div>
                   )}
@@ -5276,10 +5314,10 @@ export default function DashboardPage() {
 
                 <div className="flex items-center gap-2 pt-1">
                   <input type="checkbox" id="isAvailable" checked={foodForm.isAvailable} onChange={(e) => setFoodForm({ ...foodForm, isAvailable: e.target.checked })} className="rounded" />
-                  <label htmlFor="isAvailable" className="text-slate-700 dark:text-slate-300 font-bold">{t.modalFoodActive}</label>
+                  <label htmlFor="isAvailable" className="text-[#181c23] dark:text-slate-300 font-bold">{t.modalFoodActive}</label>
                 </div>
 
-                <button type="submit" className="w-full py-3 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-xl text-xs transition-all shadow-md mt-4">
+                <button type="submit" className="w-full py-3 bg-[#0059b9] hover:bg-[#004591] text-white font-bold rounded-lg text-xs transition-all shadow-xs mt-4">
                   {t.modalFoodSave}
                 </button>
               </form>
@@ -5293,17 +5331,17 @@ export default function DashboardPage() {
         {isTableModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsTableModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-xs" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4">
-              <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{editingTable ? t.modalTableTitleEdit : t.modalTableTitleAdd}</h3>
-                <button onClick={() => setIsTableModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-[#c1c6d6] dark:border-[#1e293b] rounded-xl p-6 shadow-xl space-y-4">
+              <div className="flex justify-between items-center border-b border-[#c1c6d6] dark:border-[#1e293b] pb-3">
+                <h3 className="text-lg font-bold text-[#181c23] dark:text-white font-heading">{editingTable ? t.modalTableTitleEdit : t.modalTableTitleAdd}</h3>
+                <button onClick={() => setIsTableModalOpen(false)} className="text-[#717785] hover:text-[#181c23] dark:hover:text-white">
                   <span className="material-symbols-outlined">close</span>
                 </button>
               </div>
 
               <form onSubmit={handleCreateOrUpdateTable} className="space-y-3 text-xs">
                 <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Số thứ tự bàn (Chỉ nhập số)</label>
+                  <label className="block text-[#181c23] dark:text-slate-300 font-bold mb-1">Số thứ tự bàn (Chỉ nhập số)</label>
                   <input
                     type="number"
                     min="1"
@@ -5311,9 +5349,9 @@ export default function DashboardPage() {
                     placeholder="Ví dụ: 4 (Tự động lưu là Bàn số 4)"
                     value={tableForm.tableName.replace(/\D/g, '')}
                     onChange={(e) => setTableForm({ ...tableForm, tableName: e.target.value })}
-                    className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
+                    className="w-full bg-[#f1f3fe] dark:bg-[#090D16] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg p-2.5 text-[#181c23] dark:text-white focus:outline-none focus:border-[#0059b9]"
                   />
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                  <p className="text-[11px] text-[#414754] dark:text-slate-400 mt-1">
                     {tableForm.tableName.replace(/\D/g, '')
                       ? `Tên hiển thị: Bàn số ${tableForm.tableName.replace(/\D/g, '')}`
                       : 'Hệ thống tự động thêm chữ "Bàn số "'}
@@ -5321,15 +5359,15 @@ export default function DashboardPage() {
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">{t.modalTableStatus}</label>
-                  <select value={tableForm.status} onChange={(e) => setTableForm({ ...tableForm, status: e.target.value })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-[#38BDF8] cursor-pointer">
-                    <option value="empty" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">{t.tableEmpty}</option>
-                    <option value="serving" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">{t.tableOccupied}</option>
-                    <option value="reserved" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">{t.tableReserved}</option>
+                  <label className="block text-[#181c23] dark:text-slate-300 font-bold mb-1">{t.modalTableStatus}</label>
+                  <select value={tableForm.status} onChange={(e) => setTableForm({ ...tableForm, status: e.target.value })} className="w-full bg-[#f1f3fe] dark:bg-[#090D16] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg p-2.5 text-[#181c23] dark:text-white font-bold focus:outline-none focus:border-[#0059b9] cursor-pointer">
+                    <option value="empty" className="bg-white dark:bg-[#090D16] text-[#181c23] dark:text-white font-bold py-1">{t.tableEmpty}</option>
+                    <option value="serving" className="bg-white dark:bg-[#090D16] text-[#181c23] dark:text-white font-bold py-1">{t.tableOccupied}</option>
+                    <option value="reserved" className="bg-white dark:bg-[#090D16] text-[#181c23] dark:text-white font-bold py-1">{t.tableReserved}</option>
                   </select>
                 </div>
 
-                <button type="submit" className="w-full py-3 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-xl text-xs transition-all shadow-md mt-4">
+                <button type="submit" className="w-full py-3 bg-[#0059b9] hover:bg-[#004591] text-white font-bold rounded-lg text-xs transition-all shadow-xs mt-4">
                   {t.modalFoodSave}
                 </button>
               </form>

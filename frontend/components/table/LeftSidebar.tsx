@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import { ThemeToggleSwitch } from './ThemeToggleSwitch';
 import { LanguageToggleSwitch } from './LanguageToggleSwitch';
 import { BrandLogo } from './BrandLogo';
@@ -63,7 +64,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   return (
     <aside
       data-lenis-prevent
-      className="hidden md:flex flex-col h-full py-5 px-4 w-64 xl:w-72 flex-shrink-0 bg-[#FFFFFF] dark:bg-[#090D16] text-[#000000] dark:text-[#FFFFFF] border-r border-[#E2E8F0] dark:border-[#222732] overflow-y-auto scrollbar-none transition-colors"
+      className="hidden md:flex flex-col h-full py-5 px-4 w-64 xl:w-72 flex-shrink-0 bg-[var(--bg-card)] text-[var(--text-primary)] border-r border-[var(--border-color)] overflow-y-auto scrollbar-none transition-colors font-sans"
     >
       {/* Brand Header */}
       <div className="mb-5">
@@ -76,18 +77,18 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         className="w-full text-left relative mb-3 group cursor-pointer active:scale-[0.98] transition-all"
         title={lang === 'en' ? 'Click to view QR code for this table' : lang === 'zh' ? '点击查看此桌位的二维码' : 'Bấm vào để xem mã QR đặt món của bàn này'}
       >
-        <div className="bg-gradient-to-r from-[#3AA6FF] to-[#5B9EFF] dark:from-[#3AA6FF] dark:to-[#5B9EFF] rounded-xl px-3.5 py-3 flex items-center justify-between shadow-lg shadow-[#3AA6FF]/30 dark:shadow-[#3AA6FF]/25 group-hover:brightness-110 transition-all">
+        <div className="bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] rounded-2xl px-3.5 py-3 flex items-center justify-between shadow-md group-hover:brightness-110 transition-all">
           <div>
-            <p className="text-[9px] font-[500] text-[#FFFFFF]/80 uppercase tracking-[0.08em] mb-0.5">
+            <p className="text-[9px] font-[600] opacity-80 uppercase tracking-[0.08em] mb-0.5 font-sans">
               {lang === 'en' ? 'Current Table' : lang === 'zh' ? '当前位置' : 'Vị trí hiện tại'}
             </p>
-            <span className="text-sm font-[700] text-[#FFFFFF] tracking-tight flex items-center gap-1">
+            <span className="text-sm font-[700] tracking-tight flex items-center gap-1 font-sans">
               {isLoading ? (lang === 'en' ? 'Loading...' : lang === 'zh' ? '加载中...' : 'Đang tải...') : `${table?.tableName ?? 'Bàn 05'} (Tầng 1)`}
             </span>
           </div>
-          <div className="flex items-center gap-1.5 bg-white/10 px-2 py-1 rounded-lg backdrop-blur-xs">
-            <span className="material-symbols-outlined text-sm text-white animate-pulse">qr_code_scanner</span>
-            <span className="text-[10px] font-bold text-[#FFFFFF]">{lang === 'en' ? 'QR Code' : lang === 'zh' ? '二维码' : 'Mã QR'}</span>
+          <div className="flex items-center gap-1.5 bg-black/10 dark:bg-white/10 px-2 py-1 rounded-xl backdrop-blur-xs">
+            <span className="material-symbols-outlined text-sm animate-pulse">qr_code_scanner</span>
+            <span className="text-[10px] font-bold font-sans">{lang === 'en' ? 'QR Code' : lang === 'zh' ? '二维码' : 'Mã QR'}</span>
           </div>
         </div>
       </button>
@@ -97,7 +98,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         <button
           onClick={handleCallStaff}
           disabled={callStaffCooldown > 0 || isCallingStaff}
-          className="w-full uiverse-btn py-3 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-[#3AA6FF]/40 font-[700] text-[13px] font-sans tracking-wide"
+          className="w-full uiverse-btn py-3 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed shadow-md font-[700] text-[13px] font-sans tracking-wide"
         >
           <span className="material-symbols-outlined text-[18px]">support_agent</span>
           <span>
@@ -110,7 +111,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
 
       {/* Search Input Box */}
       <div className="relative mb-4">
-        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B] dark:text-[#94A3B8] text-base pointer-events-none">
+        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] text-base pointer-events-none">
           search
         </span>
         <input
@@ -118,7 +119,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
           placeholder={lang === 'en' ? 'Search coffee, tea, pastry...' : lang === 'zh' ? '搜索咖啡、水果茶、糕点...' : 'Tìm kiếm món ăn, cà phê...'}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-[#FFFFFF] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] rounded-xl py-2 pl-9 pr-3 text-xs text-[#000000] dark:text-[#FFFFFF] focus:outline-none focus:border-[#3AA6FF] transition-colors placeholder-[#64748B]/60 dark:placeholder-[#94A3B8]/60 font-sans font-normal"
+          className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-2xl py-2.5 pl-9 pr-3 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)] transition-colors placeholder-[var(--text-tertiary)] font-sans font-normal"
         />
       </div>
 
@@ -126,10 +127,10 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
       <nav className="flex-col gap-1.5 flex mb-4">
         <button
           onClick={() => setActiveCategory('')}
-          className={`w-full px-3.5 py-2.5 rounded-xl text-xs transition-all text-left ${
+          className={`w-full px-3.5 py-2.5 rounded-2xl text-xs transition-all text-left ${
             activeCategory === ''
-              ? 'bg-[#3AA6FF] text-[#FFFFFF] font-black shadow-md shadow-[#3AA6FF]/20'
-              : 'text-[#64748B] dark:text-[#94A3B8] font-normal hover:bg-[#F8FAFC] dark:hover:bg-[#181B21] hover:text-[#000000] dark:hover:text-[#FFFFFF]'
+              ? 'bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] font-bold shadow-[0_4px_14px_rgba(0,132,255,0.35)]'
+              : 'text-[var(--text-secondary)] font-medium hover:bg-[var(--bg-card-inner)] hover:text-[var(--text-primary)]'
           }`}
         >
           <span className="truncate font-sans">{lang === 'en' ? 'All' : lang === 'zh' ? '全部' : 'Tất cả'}</span>
@@ -140,10 +141,10 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`w-full px-3.5 py-2.5 rounded-xl text-xs transition-all text-left ${
+              className={`w-full px-3.5 py-2.5 rounded-2xl text-xs transition-all text-left ${
                 isActive
-                  ? 'bg-[#3AA6FF] text-[#FFFFFF] font-black shadow-md shadow-[#3AA6FF]/20'
-                  : 'text-[#64748B] dark:text-[#94A3B8] font-normal hover:bg-[#F8FAFC] dark:hover:bg-[#181B21] hover:text-[#000000] dark:hover:text-[#FFFFFF]'
+                  ? 'bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] font-bold shadow-[0_4px_14px_rgba(0,132,255,0.35)]'
+                  : 'text-[var(--text-secondary)] font-medium hover:bg-[var(--bg-card-inner)] hover:text-[var(--text-primary)]'
               }`}
             >
               <span className="truncate font-sans">{translateCategory(cat)}</span>
@@ -153,15 +154,15 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
       </nav>
 
       {/* Divider */}
-      <div className="border-t border-[#E2E8F0] dark:border-[#222732] my-2" />
+      <div className="border-t border-[var(--border-color)] my-2" />
 
       {/* Utilities Stack */}
       <div className="flex flex-col gap-2.5 mb-4">
-        <div className="flex items-center justify-between gap-3 bg-[#FFFFFF] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] rounded-2xl p-2 shadow-sm">
+        <div className="flex items-center justify-between gap-3 bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-2xl p-2 shadow-xs">
           {/* UIverse Sun/Moon Theme Toggle Switch */}
           <div className="flex items-center gap-2 pl-1">
             <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
-            <span className="text-[11px] font-[600] text-[#64748B] dark:text-[#94A3B8] font-sans">
+            <span className="text-[11px] font-[600] text-[var(--text-secondary)] font-sans">
               {isDark ? (lang === 'en' ? 'Dark' : lang === 'zh' ? '深色' : 'Tối') : (lang === 'en' ? 'Light' : lang === 'zh' ? '浅色' : 'Sáng')}
             </span>
           </div>
@@ -173,7 +174,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         {/* Button: Yêu cầu đổi bàn */}
         <button
           onClick={() => setIsTransferModalOpen(true)}
-          className="w-full px-3.5 py-2 rounded-xl bg-transparent border border-[#3AA6FF]/60 dark:border-[#5B9EFF]/60 text-xs font-semibold text-[#3AA6FF] dark:text-[#5B9EFF] hover:bg-[#3AA6FF] hover:text-white dark:hover:bg-[#5B9EFF] dark:hover:text-white hover:border-transparent hover:shadow-md hover:shadow-[#3AA6FF]/30 transition-all text-left flex items-center gap-2 font-sans cursor-pointer"
+          className="w-full px-3.5 py-2 rounded-2xl bg-transparent border border-[var(--brand-primary)]/60 text-xs font-semibold text-[var(--brand-primary)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-primary-fg)] hover:border-transparent hover:shadow-md transition-all text-left flex items-center gap-2 font-sans cursor-pointer"
         >
           <span className="material-symbols-outlined text-[16px]">swap_horiz</span>
           <span>{lang === 'en' ? 'Change Table' : lang === 'zh' ? '更换桌号' : 'Yêu cầu đổi bàn'}</span>
@@ -183,64 +184,93 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         {handleLeaveTable && (
           <button
             onClick={handleLeaveTable}
-            className="w-full px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-xs font-bold text-rose-500 transition-all text-left flex items-center gap-2 font-sans cursor-pointer active:scale-95"
+            className="w-full px-3.5 py-2 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-xs font-bold text-rose-500 transition-all text-left flex items-center gap-2 font-sans cursor-pointer active:scale-95"
           >
             <span className="material-symbols-outlined text-[16px]">logout</span>
             <span>{lang === 'en' ? 'Leave Table' : lang === 'zh' ? '离开餐桌' : 'Rời bàn (Thoát)'}</span>
           </button>
         )}
 
-        {/* AI Chat Bot Widget Box */}
-        <div className="bg-[#FFFFFF] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] rounded-xl p-3 relative overflow-hidden mt-1 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="material-symbols-outlined text-[#3AA6FF] text-base flex-shrink-0">
-              smart_toy
-            </span>
-            <button
-              onClick={() => setIsAiChatOpen(!isAiChatOpen)}
-              className="flex items-center gap-1.5 text-xs font-black text-[#000000] dark:text-[#FFFFFF] hover:text-[#3AA6FF] transition-colors text-left"
-              title={isAiChatOpen ? 'Collapse AI Chat' : 'Open AI Chat'}
-            >
-              <span>{lang === 'en' ? 'Ask Kohi AI Bot' : lang === 'zh' ? '咨询 Kohi AI 助手' : 'Hỏi AI Kohi Bot'}</span>
-              <span className="text-[10px] font-black text-[#3AA6FF] bg-[#3AA6FF]/15 px-1.5 py-0.5 rounded border border-[#3AA6FF]/40">
-                {isAiChatOpen
-                  ? (lang === 'en' ? 'Collapse' : lang === 'zh' ? '折叠' : 'Thu gọn')
-                  : (lang === 'en' ? 'Open AI' : lang === 'zh' ? '开启AI' : 'Mở AI')}
-              </span>
-            </button>
-          </div>
-          <div className="flex flex-col gap-1.5 mt-2">
-            <button
-              onClick={() => {
-                setIsAiChatOpen(true);
-                setAiInput(lang === 'en' ? 'WHAT IS THE BEST SELLER?' : lang === 'zh' ? '招牌推荐是什么？' : 'MÓN NÀO NGON NHẤT?');
-              }}
-              className="w-full bg-[#FFFFFF] dark:bg-[#090D16] hover:bg-[#3AA6FF] hover:text-[#FFFFFF] text-[#000000] dark:text-[#FFFFFF] text-[9px] font-black uppercase tracking-wider py-1.5 px-2 rounded border border-[#E2E8F0] dark:border-[#222732] transition-colors text-center"
-            >
-              {lang === 'en' ? 'BEST SELLERS?' : lang === 'zh' ? '招牌推荐？' : 'MÓN NÀO NGON NHẤT?'}
-            </button>
-            <div className="grid grid-cols-2 gap-1.5">
+        {/* AI Chat Bot Widget Box - Pro Frontend Design */}
+        <motion.div
+          whileHover={{ y: -2 }}
+          transition={{ duration: 0.2 }}
+          className="relative rounded-2xl p-[1px] bg-gradient-to-b from-[var(--brand-primary)]/40 via-[var(--border-color)] to-[var(--brand-primary)]/20 shadow-md mt-2 group"
+        >
+          <div className="bg-gradient-to-br from-[var(--bg-card)] via-[var(--bg-card-inner)] to-[var(--bg-card)] rounded-[15px] p-3.5 backdrop-blur-md relative overflow-hidden">
+            {/* Background Glow Effect */}
+            <div className="absolute -top-10 -right-10 w-24 h-24 bg-[var(--brand-primary)]/15 rounded-full blur-xl pointer-events-none group-hover:bg-[var(--brand-primary)]/25 transition-all duration-500" />
+
+            {/* Header: AI Avatar + Title + Status */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2.5">
+                {/* Glowing Avatar Icon */}
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[var(--brand-primary)] to-sky-400 flex items-center justify-center text-white shadow-[0_0_12px_rgba(0,132,255,0.4)] flex-shrink-0">
+                  <span className="material-symbols-outlined text-[17px] animate-pulse">auto_awesome</span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <h4 className="text-[12.5px] font-bold text-[var(--text-primary)] leading-tight font-sans tracking-tight">
+                      Kohi AI Assistant
+                    </h4>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                  </div>
+                  <p className="text-[10px] font-medium text-[var(--text-secondary)] font-sans mt-0.5">
+                    {lang === 'en' ? 'Smart Menu Guide' : lang === 'zh' ? '智能点餐助手' : 'Trợ lý gọi món thông minh'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Toggle / Open Button */}
               <button
-                onClick={() => {
-                  setIsAiChatOpen(true);
-                  setAiInput(lang === 'en' ? 'OPENING HOURS?' : lang === 'zh' ? '营业时间？' : 'GIỜ MỞ CỬA?');
-                }}
-                className="bg-[#FFFFFF] dark:bg-[#090D16] hover:bg-[#3AA6FF] hover:text-[#FFFFFF] text-[#000000] dark:text-[#FFFFFF] text-[9px] font-black uppercase tracking-wider py-1.5 px-1.5 rounded border border-[#E2E8F0] dark:border-[#222732] transition-colors text-center truncate"
+                onClick={() => setIsAiChatOpen(!isAiChatOpen)}
+                className="px-2 py-1 rounded-lg bg-[var(--brand-primary-muted)] text-[var(--brand-primary)] border border-[var(--brand-primary)]/30 text-[10px] font-bold hover:bg-[var(--brand-primary)] hover:text-[var(--brand-primary-fg)] transition-all font-sans cursor-pointer active:scale-95 flex items-center gap-1"
+                title={isAiChatOpen ? 'Collapse AI Chat' : 'Open AI Chat'}
               >
-                {lang === 'en' ? 'OPENING HOURS?' : lang === 'zh' ? '营业时间？' : 'GIỜ MỞ CỬA?'}
-              </button>
-              <button
-                onClick={() => {
-                  setIsAiChatOpen(true);
-                  setAiInput(lang === 'en' ? 'WIFI PASSWORD?' : lang === 'zh' ? 'WiFi 密码？' : 'CÓ WIFI KHÔNG?');
-                }}
-                className="bg-[#FFFFFF] dark:bg-[#090D16] hover:bg-[#3AA6FF] hover:text-[#FFFFFF] text-[#000000] dark:text-[#FFFFFF] text-[9px] font-black uppercase tracking-wider py-1.5 px-1.5 rounded border border-[#E2E8F0] dark:border-[#222732] transition-colors text-center truncate"
-              >
-                {lang === 'en' ? 'WIFI INFO?' : lang === 'zh' ? 'WiFi 密码？' : 'CÓ WIFI KHÔNG?'}
+                <span>{isAiChatOpen ? (lang === 'en' ? 'Hide' : lang === 'zh' ? 'Ẩn' : 'Thu gọn') : (lang === 'en' ? 'Chat' : lang === 'zh' ? 'Chat' : 'Hỏi AI')}</span>
+                <span className="material-symbols-outlined text-[12px]">
+                  {isAiChatOpen ? 'expand_more' : 'chat_bubble'}
+                </span>
               </button>
             </div>
+
+            {/* Quick Prompt Action Chips */}
+            <div className="flex flex-col gap-1.5 mt-2.5">
+              <button
+                onClick={() => {
+                  setIsAiChatOpen(true);
+                  setAiInput(lang === 'en' ? 'WHAT IS THE BEST SELLER?' : lang === 'zh' ? '招牌推荐是什么？' : 'MÓN NÀO NGON NHẤT?');
+                }}
+                className="w-full bg-[var(--bg-card-inner)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-primary-fg)] text-[var(--text-primary)] text-[10.5px] font-semibold py-1.5 px-2.5 rounded-xl border border-[var(--border-color)] hover:border-[var(--brand-primary)] transition-all duration-200 text-left flex items-center justify-between font-sans group/chip cursor-pointer shadow-2xs"
+              >
+                <span className="truncate">🔥 {lang === 'en' ? 'Best Sellers?' : lang === 'zh' ? '招牌推荐？' : 'Món nào ngon nhất?'}</span>
+                <span className="material-symbols-outlined text-[13px] opacity-0 group-hover/chip:opacity-100 transition-opacity">arrow_forward</span>
+              </button>
+
+              <div className="grid grid-cols-2 gap-1.5">
+                <button
+                  onClick={() => {
+                    setIsAiChatOpen(true);
+                    setAiInput(lang === 'en' ? 'OPENING HOURS?' : lang === 'zh' ? '营业时间？' : 'GIỜ MỞ CỬA?');
+                  }}
+                  className="bg-[var(--bg-card-inner)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-primary-fg)] text-[var(--text-primary)] text-[10px] font-semibold py-1.5 px-2 rounded-xl border border-[var(--border-color)] hover:border-[var(--brand-primary)] transition-all duration-200 text-center truncate font-sans cursor-pointer shadow-2xs"
+                >
+                  ⏰ {lang === 'en' ? 'Hours?' : lang === 'zh' ? '营业时间？' : 'Giờ mở cửa?'}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsAiChatOpen(true);
+                    setAiInput(lang === 'en' ? 'WIFI PASSWORD?' : lang === 'zh' ? 'WiFi 密码？' : 'CÓ WIFI KHÔNG?');
+                  }}
+                  className="bg-[var(--bg-card-inner)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-primary-fg)] text-[var(--text-primary)] text-[10px] font-semibold py-1.5 px-2 rounded-xl border border-[var(--border-color)] hover:border-[var(--brand-primary)] transition-all duration-200 text-center truncate font-sans cursor-pointer shadow-2xs"
+                >
+                  📶 {lang === 'en' ? 'WiFi?' : lang === 'zh' ? 'WiFi 密码？' : 'Mật khẩu WiFi?'}
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </aside>
   );

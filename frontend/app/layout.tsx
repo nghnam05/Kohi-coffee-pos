@@ -1,6 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Be_Vietnam_Pro, Manrope, Noto_Sans, Playfair_Display } from "next/font/google";
+import { Inter, Be_Vietnam_Pro, Manrope, Playfair_Display } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin", "vietnamese"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
@@ -31,10 +37,7 @@ export const viewport: Viewport = {
 import { Providers } from "./providers";
 import { cn } from "@/lib/utils";
 
-const playfairDisplayHeading = Playfair_Display({subsets:['latin'],variable:'--font-heading'});
-
-const notoSans = Noto_Sans({subsets:['latin'],variable:'--font-sans'});
-
+const playfairDisplayHeading = Playfair_Display({ subsets: ['latin'], variable: '--font-heading' });
 
 export default function RootLayout({
   children,
@@ -42,13 +45,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" suppressHydrationWarning className={cn("bg-[#FFFFFF] dark:bg-[#090D16]", "font-sans", notoSans.variable, playfairDisplayHeading.variable)}>
+    <html lang="vi" suppressHydrationWarning className={cn("bg-[#FFFFFF] dark:bg-[#090D16]", "font-sans", inter.variable, playfairDisplayHeading.variable)}>
       <head>
         <meta name="theme-color" content="#090D16" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
       </head>
       <body
-        className={`${beVietnamPro.variable} ${manrope.variable} antialiased bg-[var(--bg-primary)] text-[var(--text-primary)] min-h-screen`}
+        className={`${inter.variable} ${beVietnamPro.variable} ${manrope.variable} font-sans antialiased bg-[var(--bg-primary)] text-[var(--text-primary)] min-h-screen`}
       >
         <Providers>
           {children}
