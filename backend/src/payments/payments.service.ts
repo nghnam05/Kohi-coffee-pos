@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, OnModuleInit, Optional, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, OnModuleInit, Optional, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Payment, PaymentDocument } from './schemas/payment.schema.js';
@@ -51,7 +51,7 @@ export class PaymentsService implements OnModuleInit {
               totalAmount: ord.totalAmount || subtotal,
               paymentMethod: ord.paymentMethod || (i % 2 === 0 ? 'momo' : 'cash'),
               transactionCode: ord.paymentMethod === 'momo' ? `MM-${Math.floor(10000000 + Math.random() * 90000000)}` : null,
-              paidAt: ord.paidAt || ord.createdAt || new Date(),
+              paidAt: ord.paidAt || (ord as any).createdAt || new Date(),
             });
           }
           await this.paymentModel.insertMany(samplePayments);
@@ -119,7 +119,7 @@ export class PaymentsService implements OnModuleInit {
   }
 
   async findAll(query?: string, paymentMethod?: string): Promise<PaymentDocument[]> {
-    const filter: any = {};
+    const filter: any = { isDeleted: { $ne: true } };
 
     if (paymentMethod && paymentMethod !== 'all') {
       filter.paymentMethod = paymentMethod;
@@ -143,6 +143,7 @@ export class PaymentsService implements OnModuleInit {
     const cleanCode = invoiceCode.trim().toUpperCase();
     const payment = await this.paymentModel.findOne({
       invoiceCode: new RegExp(`^${cleanCode}$`, 'i'),
+      isDeleted: { $ne: true },
     }).exec();
 
     if (!payment) {
@@ -153,10 +154,44 @@ export class PaymentsService implements OnModuleInit {
   }
 
   async findOne(id: string): Promise<PaymentDocument> {
-    const payment = await this.paymentModel.findById(id).exec();
+    const payment = await this.paymentModel.findOne({ _id: id, isDeleted: { $ne: true } }).exec();
     if (!payment) {
       throw new NotFoundException(`Không tìm thấy hóa đơn ID: ${id}`);
     }
     return payment;
+  }
+
+  async remove(id: string): Promise<{ message: string }> {
+    const payment = await this.paymentModel.findOne({ _id: id, isDeleted: { $ne: true } }).exec();
+    if (!payment) {
+      throw new NotFoundException(`Không tìm thấy hóa đơn ID: ${id}`);
+    }
+
+    await this.paymentModel.findByIdAndUpdate(id, { isDeleted: true }).exec();
+    if (payment.orderId && this.orderModel) {
+      await this.orderModel.findByIdAndUpdate(payment.orderId, { isDeleted: true }).exec().catch(() => {});
+    }
+
+    return { message: 'Đã xóa hóa đơn thành công.' };
+  }
+
+  async removeBulk(ids: string[]): Promise<{ message: string; deletedCount: number }> {
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      throw new BadRequestException('Danh sách ID hóa đơn cần xóa không hợp lệ.');
+    }
+
+    const payments = await this.paymentModel.find({ _id: { $in: ids }, isDeleted: { $ne: true } }).exec();
+    const orderIds = payments.map((p) => p.orderId).filter(Boolean);
+
+    const result = await this.paymentModel.updateMany({ _id: { $in: ids } }, { isDeleted: true }).exec();
+
+    if (orderIds.length > 0 && this.orderModel) {
+      await this.orderModel.updateMany({ _id: { $in: orderIds } }, { isDeleted: true }).exec().catch(() => {});
+    }
+
+    return {
+      message: `Đã xóa thành công ${result.modifiedCount} hóa đơn.`,
+      deletedCount: result.modifiedCount,
+    };
   }
 }

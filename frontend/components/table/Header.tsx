@@ -26,8 +26,9 @@ interface HeaderProps {
   setTheme: (theme: string) => void;
   lang: Lang;
   setLang: (l: Lang) => void;
-  handleOpenOrderHistory?: () => void;
+  handleOpenOrderHistory: () => void;
   activeOrders?: any[];
+  onOpenQRModal?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -44,6 +45,7 @@ export const Header: React.FC<HeaderProps> = ({
   setLang,
   handleOpenOrderHistory,
   activeOrders = [],
+  onOpenQRModal,
 }) => {
   return (
     <>
@@ -51,11 +53,15 @@ export const Header: React.FC<HeaderProps> = ({
       <header className="fixed top-0 left-0 right-0 z-40 h-16 sm:h-18 px-4 sm:px-5 bg-[var(--bg-primary)]/95 backdrop-blur-md border-b border-[var(--border-color)] flex justify-between items-center md:hidden shadow-sm transition-colors">
         <BrandLogo />
         <div className="flex items-center gap-2.5">
-          {/* Table Badge */}
-          <div className="bg-[var(--bg-card)] border border-[#3AA6FF]/30 rounded-xl px-3 py-1.5 text-[12.5px] font-[700] text-[#3AA6FF] shadow-xs flex items-center gap-1.5 font-sans">
-            <span className="w-2 h-2 rounded-full bg-[#3AA6FF] animate-pulse" />
+          {/* Table Badge (Clickable to open Table QR Modal) */}
+          <button
+            onClick={onOpenQRModal}
+            className="bg-[var(--bg-card)] border border-[#3AA6FF]/30 rounded-xl px-3 py-1.5 text-[12.5px] font-[700] text-[#3AA6FF] shadow-xs flex items-center gap-1.5 font-sans cursor-pointer active:scale-95 transition-all"
+            title="Bấm vào để xem mã QR bàn"
+          >
+            <span className="material-symbols-outlined text-sm text-[#3AA6FF] animate-pulse">qr_code_2</span>
             <span>{table?.tableName ?? 'Bàn 05'}</span>
-          </div>
+          </button>
           {/* Mobile Utility Menu Trigger */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -96,7 +102,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <span className="material-symbols-outlined text-base text-[#3AA6FF]">
                     {activeOrders.length > 0 ? 'notifications_active' : 'notifications'}
                   </span>
-                  <span>{lang === 'vi' ? 'Lịch sử & Trạng thái đơn' : 'Order History & Status'}</span>
+                  <span>{lang === 'vi' ? 'Lịch sử & Trạng thái đơn' : lang === 'zh' ? '点单记录与状态' : 'Order History & Status'}</span>
                 </div>
                 {activeOrders.length > 0 ? (
                   <span className="bg-[#3AA6FF] text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">
@@ -104,7 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                 ) : (
                   <span className="bg-slate-100 dark:bg-slate-800 text-[var(--text-tertiary)] text-[10px] font-semibold px-2 py-0.5 rounded-full border border-[var(--border-color)]">
-                    Chưa có
+                    {lang === 'vi' ? 'Chưa có' : lang === 'zh' ? '无' : 'None'}
                   </span>
                 )}
               </button>
@@ -119,9 +125,11 @@ export const Header: React.FC<HeaderProps> = ({
                 className="w-full text-left px-3.5 py-2.5 text-[13px] font-semibold rounded-[var(--radius-sm)] bg-[var(--bg-primary)] text-[var(--text-primary)] hover:bg-[var(--brand-primary)]/10 hover:text-[var(--brand-primary)] transition-all disabled:opacity-50 font-sans"
               >
                 {callStaffCooldown > 0
-                  ? `${lang === 'vi' ? 'Chờ' : 'Wait'} ${callStaffCooldown}s`
+                  ? `${lang === 'vi' ? 'Chờ' : lang === 'zh' ? '等待' : 'Wait'} ${callStaffCooldown}s`
                   : lang === 'vi'
                   ? 'Gọi nhân viên'
+                  : lang === 'zh'
+                  ? '呼叫服务员'
                   : 'Call Staff'}
               </button>
 
@@ -133,13 +141,15 @@ export const Header: React.FC<HeaderProps> = ({
                 }}
                 className="w-full text-left px-3.5 py-2.5 text-[13px] font-semibold rounded-[var(--radius-sm)] bg-[var(--bg-primary)] text-[var(--text-primary)] hover:bg-[var(--brand-primary)]/10 hover:text-[var(--brand-primary)] transition-all font-sans"
               >
-                {lang === 'vi' ? 'Đổi bàn' : 'Move Table'}
+                {lang === 'vi' ? 'Đổi bàn' : lang === 'zh' ? '换桌' : 'Move Table'}
               </button>
 
               {/* Giao diện Sáng/Tối UIverse Switch */}
               <div className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-[var(--radius-sm)] bg-[var(--bg-primary)] text-[var(--text-primary)]">
                 <span className="text-[13px] font-semibold font-sans">
-                  {isDark ? 'Giao diện Tối' : 'Giao diện Sáng'}
+                  {isDark
+                    ? (lang === 'vi' ? 'Giao diện Tối' : lang === 'zh' ? '深色模式' : 'Dark Mode')
+                    : (lang === 'vi' ? 'Giao diện Sáng' : lang === 'zh' ? '浅色模式' : 'Light Mode')}
                 </span>
                 <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
               </div>

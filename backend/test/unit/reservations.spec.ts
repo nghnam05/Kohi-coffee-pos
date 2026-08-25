@@ -49,6 +49,9 @@ describe('ReservationsService', () => {
       findByIdAndDelete: jest.fn().mockReturnValue({
         exec: jest.fn().mockResolvedValue({ _id: 'res123', tableId: '507f1f77bcf86cd799439011' }),
       }),
+      findByIdAndUpdate: jest.fn().mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ _id: 'res123', tableId: '507f1f77bcf86cd799439011' }),
+      }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -124,9 +127,10 @@ describe('ReservationsService', () => {
     });
   });
 
-  describe('remove - arrived guard', () => {
-    it('should throw BadRequestException when trying to delete an arrived reservation', async () => {
-      await expect(service.remove('res456')).rejects.toThrow(BadRequestException);
+  describe('remove', () => {
+    it('should allow deleting an arrived reservation without throwing BadRequestException', async () => {
+      const result = await service.remove('res456');
+      expect(result).toEqual({ message: 'Đã xóa đơn đặt bàn thành công.' });
     });
 
     it('should throw NotFoundException when reservation does not exist', async () => {

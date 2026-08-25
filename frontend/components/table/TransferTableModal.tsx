@@ -18,6 +18,7 @@ interface TransferTableModalProps {
   setSelectedTransferTableId: React.Dispatch<React.SetStateAction<string>>;
   handleTransferTable: () => void;
   isTransferring: boolean;
+  lang?: 'vi' | 'en' | 'zh';
 }
 
 export const TransferTableModal: React.FC<TransferTableModalProps> = ({
@@ -29,6 +30,7 @@ export const TransferTableModal: React.FC<TransferTableModalProps> = ({
   setSelectedTransferTableId,
   handleTransferTable,
   isTransferring,
+  lang = 'vi',
 }) => {
   return (
     <AnimatePresence>
@@ -46,7 +48,7 @@ export const TransferTableModal: React.FC<TransferTableModalProps> = ({
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            className="relative w-full max-w-2xl bg-[#FFFFFF] dark:bg-[#181B21] border border-[var(--border-color)] rounded-[var(--radius-lg)] p-5 sm:p-6 shadow-2xl z-10 max-h-[90vh] flex flex-col font-sans overflow-hidden"
+            className="relative w-full max-w-2xl bg-[#FFFFFF] dark:bg-[#181B21] border border-[var(--border-color)] rounded-[var(--radius-lg)] p-5 sm:p-6 shadow-2xl z-10 max-h-[90vh] flex flex-col font-sans overflow-hidden text-left"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-4 mb-4 shrink-0">
@@ -56,17 +58,21 @@ export const TransferTableModal: React.FC<TransferTableModalProps> = ({
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-[var(--text-primary)] leading-tight">
-                    Sơ đồ & Chọn bàn đổi
+                    {lang === 'en' ? 'Floor Plan & Table Select' : lang === 'zh' ? '平面图与选择换桌' : 'Sơ đồ & Chọn bàn đổi'}
                   </h3>
                   <p className="text-xs font-medium text-[var(--text-secondary)] mt-0.5">
-                    Chọn bàn trống bạn muốn chuyển đến. Hệ thống sẽ giữ nguyên giỏ hàng.
+                    {lang === 'en'
+                      ? 'Select an available table to move to. Your cart will be preserved.'
+                      : lang === 'zh'
+                      ? '选择要转到的空桌。您的购物车将保持不变。'
+                      : 'Chọn bàn trống bạn muốn chuyển đến. Hệ thống sẽ giữ nguyên giỏ hàng.'}
                   </p>
                 </div>
               </div>
 
               <button
                 onClick={() => setIsTransferModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-color)] flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-full bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-color)] flex items-center justify-center transition-colors cursor-pointer"
               >
                 <span className="material-symbols-outlined text-base">close</span>
               </button>
@@ -76,16 +82,16 @@ export const TransferTableModal: React.FC<TransferTableModalProps> = ({
             <div className="flex flex-wrap items-center gap-4 text-xs mb-4 pb-3 border-b border-[var(--border-color)] shrink-0">
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-emerald-500/20 border border-emerald-500/50 inline-block" />
-                <span className="text-[var(--text-secondary)]">Bàn trống (Có thể chọn)</span>
+                <span className="text-[var(--text-secondary)]">{lang === 'en' ? 'Available Table' : lang === 'zh' ? '空桌（可选择）' : 'Bàn trống (Có thể chọn)'}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/40 inline-block" />
-                <span className="text-[var(--text-secondary)]">Bàn đang có khách</span>
+                <span className="text-[var(--text-secondary)]">{lang === 'en' ? 'Occupied Table' : lang === 'zh' ? '使用中' : 'Bàn đang có khách'}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-[var(--accent)] inline-block shadow-sm" />
                 <span className="text-[var(--text-primary)] font-semibold">
-                  Bàn hiện tại của bạn
+                  {lang === 'en' ? 'Your Current Table' : lang === 'zh' ? '您当前桌位' : 'Bàn hiện tại của bạn'}
                 </span>
               </div>
             </div>
@@ -98,7 +104,7 @@ export const TransferTableModal: React.FC<TransferTableModalProps> = ({
                     storefront
                   </span>
                   <span className="text-[12px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">
-                    Khu vực Trong Nhà (Main Hall)
+                    {lang === 'en' ? 'Main Hall Area' : lang === 'zh' ? '室内区域 (Main Hall)' : 'Khu vực Trong Nhà (Main Hall)'}
                   </span>
                 </div>
 
@@ -137,10 +143,10 @@ export const TransferTableModal: React.FC<TransferTableModalProps> = ({
                           </span>
                           <span className="text-[10px] font-medium block mt-0.5 opacity-80">
                             {isCurrentTable
-                              ? 'Bàn của bạn'
+                              ? (lang === 'en' ? 'Your Table' : lang === 'zh' ? '您的桌位' : 'Bàn của bạn')
                               : isEmpty
-                              ? 'Trống'
-                              : 'Đang có khách'}
+                              ? (lang === 'en' ? 'Available' : lang === 'zh' ? '空桌' : 'Trống')
+                              : (lang === 'en' ? 'Occupied' : lang === 'zh' ? '使用中' : 'Đang có khách')}
                           </span>
                         </div>
 
@@ -165,17 +171,21 @@ export const TransferTableModal: React.FC<TransferTableModalProps> = ({
             <div className="pt-4 border-t border-[var(--border-color)] mt-4 flex items-center justify-end gap-3 shrink-0">
               <button
                 onClick={() => setIsTransferModalOpen(false)}
-                className="px-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-[var(--radius-sm)] text-[13px] font-semibold transition-colors"
+                className="px-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-[var(--radius-sm)] text-[13px] font-semibold transition-colors cursor-pointer"
               >
-                Hủy
+                {lang === 'en' ? 'Cancel' : lang === 'zh' ? '取消' : 'Hủy'}
               </button>
 
               <button
                 onClick={handleTransferTable}
                 disabled={!selectedTransferTableId || isTransferring}
-                className="px-5 py-2.5 uiverse-btn text-white rounded-xl text-[13px] font-semibold uppercase tracking-[0.02em] shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                className="px-5 py-2.5 uiverse-btn text-white rounded-xl text-[13px] font-semibold uppercase tracking-[0.02em] shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2 cursor-pointer"
               >
-                <span>{isTransferring ? 'Đang chuyển bàn...' : 'Xác nhận chuyển bàn'}</span>
+                <span>
+                  {isTransferring
+                    ? (lang === 'en' ? 'Moving Table...' : lang === 'zh' ? '正在换桌...' : 'Đang chuyển bàn...')
+                    : (lang === 'en' ? 'Confirm Transfer' : lang === 'zh' ? '确认换桌' : 'Xác nhận chuyển bàn')}
+                </span>
               </button>
             </div>
           </motion.div>

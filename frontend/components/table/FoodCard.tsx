@@ -91,7 +91,11 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             <span className="material-symbols-outlined text-[15px]">
               {quantity > 0 ? 'check' : 'add'}
             </span>
-            <span>{quantity > 0 ? `Đã chọn (${quantity})` : 'Chọn món'}</span>
+            <span>
+              {quantity > 0
+                ? (lang === 'en' ? `Selected (${quantity})` : lang === 'zh' ? `已选择 (${quantity})` : `Đã chọn (${quantity})`)
+                : (lang === 'en' ? 'Select' : lang === 'zh' ? '选择' : 'Chọn món')}
+            </span>
           </motion.button>
         </div>
       </motion.article>
@@ -169,7 +173,11 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             <span className="material-symbols-outlined text-[15px]">
               {quantity > 0 ? 'check' : 'add'}
             </span>
-            <span>{quantity > 0 ? `Đã chọn (${quantity})` : 'Chọn món'}</span>
+            <span>
+              {quantity > 0
+                ? (lang === 'en' ? `Selected (${quantity})` : lang === 'zh' ? `已选择 (${quantity})` : `Đã chọn (${quantity})`)
+                : (lang === 'en' ? 'Select' : lang === 'zh' ? '选择' : 'Chọn món')}
+            </span>
           </motion.button>
         </div>
       </div>

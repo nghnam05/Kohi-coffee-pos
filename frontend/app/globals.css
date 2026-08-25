@@ -95,8 +95,10 @@
 }
 
 :root {
-  --accent: #7C3AED;
-  --primary: #2563EB;
+  --background: #FFFFFF;
+  --foreground: #000000;
+  --accent: #6366F1;
+  --primary: #0284C7;
 }
 
 [data-theme="dark"],

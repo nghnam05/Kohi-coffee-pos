@@ -19,7 +19,7 @@ export class ReservationsService implements OnModuleInit {
   async syncTableStatusesWithReservations() {
     try {
       const activeReservations = await this.reservationModel
-        .find({ status: { $in: ['pending', 'confirmed'] } })
+        .find({ status: { $in: ['pending', 'confirmed'] }, isDeleted: { $ne: true } })
         .exec();
 
       for (const res of activeReservations) {
@@ -71,7 +71,7 @@ export class ReservationsService implements OnModuleInit {
                 tableId: table1,
                 customerName: 'SYSTEM SEED MARKER',
                 customerPhone: '0000000000_SEED_MARKER',
-                guestCount: 0,
+                guestCount: 1,
                 reservationTime: new Date(),
                 status: 'cancelled',
                 note: 'Prevent auto re-seeding on delete',
@@ -99,6 +99,7 @@ export class ReservationsService implements OnModuleInit {
     const activeExistingRes = await this.reservationModel.findOne({
       tableId: dto.tableId,
       status: { $in: ['pending', 'confirmed'] },
+      isDeleted: { $ne: true },
     });
     if (activeExistingRes || table.status === 'reserved') {
       throw new BadRequestException(`${table.tableName} đã được giữ chỗ trước. Vui lòng chọn bàn trống khác.`);
@@ -134,7 +135,7 @@ export class ReservationsService implements OnModuleInit {
     const cleanPhone = phone.trim();
     if (!cleanPhone) return [];
     return this.reservationModel
-      .find({ customerPhone: cleanPhone })
+      .find({ customerPhone: cleanPhone, isDeleted: { $ne: true } })
       .populate('tableId', 'tableName status')
       .sort({ createdAt: -1 })
       .exec();
@@ -142,7 +143,7 @@ export class ReservationsService implements OnModuleInit {
 
   async findAll(status?: string): Promise<ReservationDocument[]> {
     await this.syncTableStatusesWithReservations().catch(() => {});
-    const filter = status ? { status } : {};
+    const filter = status ? { status, isDeleted: { $ne: true } } : { isDeleted: { $ne: true } };
     return this.reservationModel
       .find(filter)
       .populate('tableId', 'tableName status')
@@ -155,13 +156,13 @@ export class ReservationsService implements OnModuleInit {
       .findById(id)
       .populate('tableId', 'tableName status')
       .exec();
-    if (!res) throw new NotFoundException(`Không tìm thấy đơn đặt bàn ID: ${id}`);
+    if (!res || res.isDeleted) throw new NotFoundException(`Không tìm thấy đơn đặt bàn ID: ${id}`);
     return res;
   }
 
   async updateStatus(id: string, status: string): Promise<ReservationDocument> {
     const resDoc = await this.reservationModel.findById(id).exec();
-    if (!resDoc) throw new NotFoundException(`Không tìm thấy đơn đặt bàn ID: ${id}`);
+    if (!resDoc || resDoc.isDeleted) throw new NotFoundException(`Không tìm thấy đơn đặt bàn ID: ${id}`);
 
     resDoc.status = status;
     const updated = await resDoc.save();
@@ -191,14 +192,9 @@ export class ReservationsService implements OnModuleInit {
 
   async remove(id: string): Promise<{ message: string }> {
     const resDoc = await this.reservationModel.findById(id).exec();
-    if (!resDoc) throw new NotFoundException(`Không tìm thấy đơn đặt bàn ID: ${id}`);
+    if (!resDoc || resDoc.isDeleted) throw new NotFoundException(`Không tìm thấy đơn đặt bàn ID: ${id}`);
 
-    // Bug #4 fix: Không cho phép xóa khi khách đã đến (arrived) - tránh mất tracking
-    if (resDoc.status === 'arrived') {
-      throw new BadRequestException('Khách hàng đã đến quán. Không thể xóa đặt bàn đang hoạt động.');
-    }
-
-    const deleted = await this.reservationModel.findByIdAndDelete(id).exec();
+    const deleted = await this.reservationModel.findByIdAndUpdate(id, { isDeleted: true }, { new: true }).exec();
     if (!deleted) return { message: `Đã xóa đơn đặt bàn thành công.` };
     const tableId = (deleted.tableId as any)?._id || deleted.tableId;
     if (tableId) {

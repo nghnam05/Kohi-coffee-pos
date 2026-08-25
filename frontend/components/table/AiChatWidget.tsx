@@ -17,6 +17,7 @@ interface AiChatWidgetProps {
   aiInput: string;
   setAiInput: (val: string) => void;
   handleSendAiMessage: () => void;
+  lang?: 'vi' | 'en' | 'zh';
 }
 
 export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
@@ -28,6 +29,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
   aiInput,
   setAiInput,
   handleSendAiMessage,
+  lang = 'vi',
 }) => {
   return (
     <div
@@ -69,7 +71,11 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
                     auto_awesome
                   </span>
                   <p className="text-xs text-[var(--text-secondary)] font-medium font-sans">
-                    Xin chào! Bạn cần Kohi AI tư vấn món ăn nào hôm nay?
+                    {lang === 'en'
+                      ? 'Hello! How can Kohi AI assist you today?'
+                      : lang === 'zh'
+                      ? '您好！今天 Kohi AI 能为您推荐什么？'
+                      : 'Xin chào! Bạn cần Kohi AI tư vấn món ăn nào hôm nay?'}
                   </p>
                 </div>
               )}
@@ -92,7 +98,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
               {isAiThinking && (
                 <div className="flex justify-start">
                   <div className="bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-secondary)] text-[12px] p-2.5 rounded-[var(--radius-md)] animate-pulse font-sans">
-                    Kohi AI đang suy nghĩ...
+                    {lang === 'en' ? 'Kohi AI is thinking...' : lang === 'zh' ? 'Kohi AI 正在思考...' : 'Kohi AI đang suy nghĩ...'}
                   </div>
                 </div>
               )}
@@ -105,15 +111,15 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
                 value={aiInput}
                 onChange={(e) => setAiInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendAiMessage()}
-                placeholder="Đặt câu hỏi cho Kohi AI..."
+                placeholder={lang === 'en' ? 'Ask Kohi AI anything...' : lang === 'zh' ? '向 Kohi AI 提问...' : 'Đặt câu hỏi cho Kohi AI...'}
                 className="flex-1 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-sm)] px-3 py-2 text-[12.5px] text-[var(--text-primary)] placeholder-[var(--text-tertiary)] outline-none focus:border-[var(--brand-primary)] font-sans"
               />
               <button
                 onClick={handleSendAiMessage}
                 disabled={!aiInput.trim() || isAiThinking}
-                className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white px-3.5 py-2 rounded-[var(--radius-sm)] text-[12.5px] font-semibold transition-all active:scale-95 disabled:opacity-50 font-sans"
+                className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white px-3.5 py-2 rounded-[var(--radius-sm)] text-[12.5px] font-semibold transition-all active:scale-95 disabled:opacity-50 font-sans cursor-pointer"
               >
-                Gửi
+                {lang === 'en' ? 'Send' : lang === 'zh' ? '发送' : 'Gửi'}
               </button>
             </div>
           </motion.div>
@@ -123,8 +129,8 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
       {/* Floating Action Button (FAB) */}
       <button
         onClick={() => setIsAiChatOpen(!isAiChatOpen)}
-        className="w-12 h-12 rounded-full bg-[#3AA6FF] hover:bg-[#2B96EF] text-white shadow-2xl shadow-[#3AA6FF]/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-white/20"
-        title={isAiChatOpen ? 'Thu gọn Kohi AI' : 'Hỏi Kohi AI'}
+        className="w-12 h-12 rounded-full bg-[#3AA6FF] hover:bg-[#2B96EF] text-white shadow-2xl shadow-[#3AA6FF]/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-white/20 cursor-pointer"
+        title={isAiChatOpen ? 'Kohi AI' : 'Kohi AI'}
       >
         <span className="material-symbols-outlined text-2xl">
           {isAiChatOpen ? 'close' : 'smart_toy'}

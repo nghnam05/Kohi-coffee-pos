@@ -10,51 +10,55 @@
   --font-heading: var(--font-manrope), 'Manrope', system-ui, sans-serif;
 }
 
-/* ── Light Mode (default) ───────────────────────────────── */
+/* ── Light Mode (Modern Professional SaaS Palette) ─────────────── */
 :root {
-  /* Backgrounds */
+  /* Backgrounds & Canvas (Pure White Architecture) */
   --bg-primary:        #FFFFFF;
   --bg-card:           #FFFFFF;
   --bg-card-inner:     #FFFFFF;
+  --bg-subtle:         #F8FAFC;
+  --bg-muted:          #F1F5F9;
 
-  /* Borders */
+  /* Borders (Ultra-crisp slate scale) */
   --border-color:      #E2E8F0;
   --border-strong:     #CBD5E1;
-  --border-focus:      #93C5FD;
+  --border-focus:      #38BDF8;
 
-  /* Text */
-  --text-primary:      #090D16;
-  --text-secondary:    #1F2937;
+  /* Typography (Pure Black Typography) */
+  --text-primary:      #000000;
+  --text-secondary:    #111827;
   --text-tertiary:     #374151;
+  --text-quaternary:   #4B5563;
 
-  /* Brand */
-  --brand-primary:       #2563EB;
-  --brand-primary-hover: #1D4ED8;
+  /* Brand Palette (Sky & Ocean Blue) */
+  --brand-primary:       #0284C7;
+  --brand-primary-hover: #0369A1;
   --brand-primary-fg:    #FFFFFF;
-  --brand-primary-muted: rgba(37, 99, 235, 0.12);
+  --brand-primary-muted: rgba(2, 132, 199, 0.08);
 
-  /* Price — Primary Brand Blue in light, Primary Blue in dark */
-  --price-color:       #2563EB;
+  /* Price Color */
+  --price-color:       #0284C7;
 
-  /* Accent */
-  --accent:            #7C3AED;
+  /* Accent Color (Modern Violet) */
+  --accent:            #6366F1;
 
-  /* Status / Semantic */
+  /* Status / Semantic (Soft badges & high contrast text) */
   --color-success:     #16A34A;
-  --color-success-bg:  #DCFCE7;
+  --color-success-bg:  #F0FDF4;
   --color-warning:     #D97706;
-  --color-warning-bg:  #FEF3C7;
-  --color-danger:      #DC2626;
-  --color-danger-bg:   #FEE2E2;
-  --color-info:        #0891B2;
+  --color-warning-bg:  #FFFBEB;
+  --color-danger:      #E11D48;
+  --color-danger-bg:   #FFF1F2;
+  --color-info:        #0284C7;
+  --color-info-bg:     #F0F9FF;
 
   /* CTA button disabled state */
-  --btn-disabled-bg:   #E2E8F0;
+  --btn-disabled-bg:   #F1F5F9;
   --btn-disabled-text: #94A3B8;
 
-  /* Payment buttons in light */
+  /* Payment buttons in light mode */
   --payment-inactive-bg:     #FFFFFF;
-  --payment-inactive-border: #CBD5E1;
+  --payment-inactive-border: #E2E8F0;
   --payment-inactive-text:   #475569;
 
   /* Radii */
@@ -63,9 +67,10 @@
   --radius-lg: 16px;
   --radius-full: 999px;
 
-  /* Shadows */
-  --shadow-card:       0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-card-hover: 0 6px 16px rgba(37, 99, 235, 0.12);
+  /* Shadows (Subtle elevation & micro-shadows) */
+  --shadow-xs:         0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-card:       0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 10px 25px -5px rgba(2, 132, 199, 0.12), 0 8px 10px -6px rgba(2, 132, 199, 0.08);
   --shadow-sidebar:    1px 0 0 #E2E8F0;
 }
 

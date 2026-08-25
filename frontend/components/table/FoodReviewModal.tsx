@@ -119,10 +119,10 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
               </div>
               <div>
                 <h3 className="text-lg font-bold text-[var(--text-primary)] leading-tight">
-                  Đánh giá trải nghiệm & Món ăn
+                  {lang === 'en' ? 'Rate Experience & Items' : lang === 'zh' ? '评价体验与商品' : 'Đánh giá trải nghiệm & Món ăn'}
                 </h3>
                 <p className="text-xs font-medium text-[var(--text-secondary)] mt-0.5">
-                  Đơn hàng #{order._id ? order._id.slice(-6).toUpperCase() : ''}
+                  {lang === 'en' ? 'Order #' : lang === 'zh' ? '订单 #' : 'Đơn hàng #'}{order._id ? order._id.slice(-6).toUpperCase() : ''}
                 </p>
               </div>
             </div>
@@ -141,16 +141,22 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
                 <span className="material-symbols-outlined text-3xl">task_alt</span>
               </div>
               <div className="space-y-1">
-                <h4 className="text-base font-bold text-[var(--text-primary)]">Cảm ơn bạn đã đánh giá!</h4>
+                <h4 className="text-base font-bold text-[var(--text-primary)]">
+                  {lang === 'en' ? 'Thank you for your feedback!' : lang === 'zh' ? '感谢您的评价！' : 'Cảm ơn bạn đã đánh giá!'}
+                </h4>
                 <p className="text-xs text-[var(--text-secondary)] max-w-xs mx-auto">
-                  Ý kiến đóng góp của bạn giúp Kohi Coffee ngày càng nâng cao chất lượng phục vụ và món ăn.
+                  {lang === 'en'
+                    ? 'Your feedback helps Kohi Coffee continuously improve our service and drinks.'
+                    : lang === 'zh'
+                    ? '您的反馈有助于 Kohi Coffee 不断提升服务与餐品质量。'
+                    : 'Ý kiến đóng góp của bạn giúp Kohi Coffee ngày càng nâng cao chất lượng phục vụ và món ăn.'}
                 </p>
               </div>
               <button
                 onClick={onClose}
                 className="px-6 py-2.5 bg-[var(--brand-primary)] text-white text-xs font-bold rounded-xl shadow-md cursor-pointer hover:bg-[var(--brand-primary-hover)] transition-all"
               >
-                Đóng
+                {lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng'}
               </button>
             </div>
           ) : (
@@ -158,7 +164,7 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
               {/* Overall Star Rating */}
               <div className="p-4 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl text-center space-y-2">
                 <p className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider">
-                  Đánh giá tổng quan chất lượng phục vụ
+                  {lang === 'en' ? 'Overall Service Rating' : lang === 'zh' ? '整体服务评价' : 'Đánh giá tổng quan chất lượng phục vụ'}
                 </p>
                 <div className="flex justify-center items-center gap-2 py-1">
                   {[1, 2, 3, 4, 5].map((s) => (
@@ -181,7 +187,7 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
               {/* Items Individual Rating */}
               <div className="space-y-2.5">
                 <p className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">
-                  Đánh giá chi tiết từng món ăn:
+                  {lang === 'en' ? 'Itemized Item Ratings:' : lang === 'zh' ? '商品详细评价:' : 'Đánh giá chi tiết từng món ăn:'}
                 </p>
                 {items.map((item: any, idx: number) => {
                   const foodId = getItemFoodId(item);
@@ -193,7 +199,7 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
                           {getItemName(item)}
                         </span>
                         <span className="text-[11px] text-[var(--text-secondary)]">
-                          Số lượng: {item.quantity}
+                          {lang === 'en' ? 'Quantity:' : lang === 'zh' ? '数量:' : 'Số lượng:'} {item.quantity}
                         </span>
                       </div>
 
@@ -221,13 +227,13 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
               {/* Comment Input */}
               <div className="space-y-1">
                 <label className="text-xs font-bold text-[var(--text-secondary)]">
-                  Góp ý thêm cho nhà hàng (không bắt buộc):
+                  {lang === 'en' ? 'Additional Comments (Optional):' : lang === 'zh' ? '其他建议（选填）:' : 'Góp ý thêm cho nhà hàng (không bắt buộc):'}
                 </label>
                 <textarea
                   rows={3}
                   value={overallComment}
                   onChange={(e) => setOverallComment(e.target.value)}
-                  placeholder="Hương vị món ăn, thái độ phục vụ..."
+                  placeholder={lang === 'en' ? 'Taste, service quality, recommendations...' : lang === 'zh' ? '餐品口味、服务态度...' : 'Hương vị món ăn, thái độ phục vụ...'}
                   className="w-full p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl text-xs text-[var(--text-primary)] outline-none focus:border-[var(--brand-primary)] transition-all resize-none"
                 />
               </div>
@@ -247,7 +253,11 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
                 }`}
               >
                 <span className="material-symbols-outlined text-base">send</span>
-                <span>{isSubmitting ? 'Đang gửi đánh giá...' : 'Gửi Đánh Giá Ngay'}</span>
+                <span>
+                  {isSubmitting
+                    ? (lang === 'en' ? 'Submitting...' : lang === 'zh' ? '正在提交...' : 'Đang gửi đánh giá...')
+                    : (lang === 'en' ? 'Submit Review' : lang === 'zh' ? '提交评价' : 'Gửi Đánh Giá Ngay')}
+                </span>
               </button>
             </div>
           )}

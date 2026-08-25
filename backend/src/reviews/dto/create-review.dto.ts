@@ -23,8 +23,9 @@ export class CreateReviewDto {
   @IsMongoId()
   orderId: string;
 
+  @IsOptional()
   @IsMongoId()
-  tableId: string;
+  tableId?: string;
 
   @IsArray()
   @ValidateNested({ each: true })

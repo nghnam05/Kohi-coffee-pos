@@ -139,7 +139,7 @@ export class OrdersService implements OnModuleInit {
   }
 
   async findAll(status?: string): Promise<any[]> {
-    const filter = status ? { status } : {};
+    const filter = status ? { status, isDeleted: { $ne: true } } : { isDeleted: { $ne: true } };
     return this.orderModel
       .find(filter)
       .populate('tableId')
@@ -157,7 +157,7 @@ export class OrdersService implements OnModuleInit {
       .lean()
       .exec();
 
-    if (!order) {
+    if (!order || (order as any).isDeleted) {
       throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${id}`);
     }
     return order;
@@ -165,28 +165,31 @@ export class OrdersService implements OnModuleInit {
 
   async findByTable(tableId: string, activeOnly = false): Promise<any[]> {
     const table = await this.tablesService.findOne(tableId).catch(() => null);
-    if (!table || table.status === 'empty') {
+    if (!table) {
       return [];
     }
+
+    const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
+    const sessionTime = table.currentSessionStartedAt
+      ? new Date(table.currentSessionStartedAt)
+      : twelveHoursAgo;
 
     const query: any = {
       tableId,
       status: { $ne: 'cancelled' },
+      isDeleted: { $ne: true },
+      createdAt: { $gte: sessionTime },
     };
 
     if (activeOnly) {
       query.status = { $nin: ['paid', 'cancelled'] };
     }
 
-    if (table.currentSessionStartedAt) {
-      query.createdAt = { $gte: new Date(table.currentSessionStartedAt) };
-    }
-
     return this.orderModel
       .find(query)
       .populate('tableId')
       .populate('items.foodId')
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: 1 })
       .lean()
       .exec() as any;
   }
@@ -285,7 +288,7 @@ export class OrdersService implements OnModuleInit {
 
   async remove(id: string, userRole?: string): Promise<{ message: string }> {
     const order = await this.orderModel.findById(id).exec();
-    if (!order) {
+    if (!order || (order as any).isDeleted) {
       throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${id}`);
     }
 
@@ -293,7 +296,7 @@ export class OrdersService implements OnModuleInit {
       throw new ForbiddenException('Nhân viên pha chế không có quyền xóa đơn hàng đã hoàn tất ra món.');
     }
 
-    await this.orderModel.findByIdAndDelete(id).exec();
+    await this.orderModel.findByIdAndUpdate(id, { isDeleted: true }).exec();
     this.ordersGateway.emitOrderDeleted(id);
 
     // Tự động giải phóng bàn nếu không còn đơn hàng active nào khác
@@ -302,6 +305,7 @@ export class OrdersService implements OnModuleInit {
       const remainingActiveOrders = await this.orderModel.countDocuments({
         tableId,
         status: { $nin: ['paid', 'cancelled'] },
+        isDeleted: { $ne: true },
       });
       if (remainingActiveOrders === 0) {
         await this.tablesService.update(tableId.toString(), { status: 'empty' }).catch(() => {});
@@ -316,8 +320,8 @@ export class OrdersService implements OnModuleInit {
       throw new BadRequestException('Danh sách ID đơn hàng cần xóa không hợp lệ.');
     }
 
-    const ordersToDelete = await this.orderModel.find({ _id: { $in: ids } }).exec();
-    const result = await this.orderModel.deleteMany({ _id: { $in: ids } }).exec();
+    const ordersToDelete = await this.orderModel.find({ _id: { $in: ids }, isDeleted: { $ne: true } }).exec();
+    const result = await this.orderModel.updateMany({ _id: { $in: ids } }, { isDeleted: true }).exec();
 
     const affectedTableIds = new Set<string>();
     for (const ord of ordersToDelete) {
@@ -332,13 +336,16 @@ export class OrdersService implements OnModuleInit {
       const remaining = await this.orderModel.countDocuments({
         tableId: tid,
         status: { $nin: ['paid', 'cancelled'] },
+        isDeleted: { $ne: true },
       });
       if (remaining === 0) {
         await this.tablesService.update(tid, { status: 'empty' }).catch(() => {});
       }
     }
 
-    return { message: `Đã xóa ${result.deletedCount} đơn hàng thành công.`, deletedCount: result.deletedCount };
+    const deletedCount = (result as any)?.deletedCount ?? (result as any)?.modifiedCount ?? ids.length;
+
+    return { message: `Đã xóa ${deletedCount} đơn hàng thành công.`, deletedCount };
   }
 
   async mergeTableOrders(tableId: string): Promise<any> {

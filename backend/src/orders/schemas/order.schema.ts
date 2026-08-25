@@ -90,8 +90,14 @@ export class Order {
   @Prop({ type: String, default: null })
   customerName: string;
 
+  @Prop({ type: String, default: null })
+  customerPhone: string;
+
   @Prop({ type: Date, default: null })
   paidAt: Date;
+
+  @Prop({ type: Boolean, default: false, index: true })
+  isDeleted: boolean;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

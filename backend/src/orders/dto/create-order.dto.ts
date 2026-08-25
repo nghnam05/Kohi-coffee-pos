@@ -53,4 +53,8 @@ export class CreateOrderDto {
   @IsString()
   @IsOptional()
   customerName?: string;
+
+  @IsString()
+  @IsOptional()
+  customerPhone?: string;
 }

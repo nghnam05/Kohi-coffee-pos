@@ -65,6 +65,9 @@ export class Payment {
 
   @Prop({ default: Date.now })
   paidAt: Date;
+
+  @Prop({ type: Boolean, default: false, index: true })
+  isDeleted: boolean;
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);
