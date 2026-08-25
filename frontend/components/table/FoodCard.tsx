@@ -128,7 +128,7 @@ export const FoodCard: React.FC<FoodCardProps> = ({
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-30 group-hover:opacity-10 transition-opacity" />
 
           {/* Category Tag Badge */}
-          <div className="absolute top-[10px] left-[10px] bg-[var(--brand-primary)]/90 text-white text-[10px] font-[500] uppercase tracking-[0.05em] px-2.5 py-1 rounded-[var(--radius-full)] shadow-sm backdrop-blur-md">
+          <div className="absolute top-[10px] left-[10px] bg-[var(--bg-card)]/90 text-[var(--brand-primary)] border border-[var(--brand-primary)]/30 text-[10px] font-[700] uppercase tracking-[0.05em] px-2.5 py-1 rounded-full shadow-sm backdrop-blur-md font-sans">
             {translateCategory(food.category)}
           </div>
         </div>

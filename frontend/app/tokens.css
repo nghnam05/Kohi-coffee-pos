@@ -1,136 +1,158 @@
 /* ──────────────────────────────────────────────────────────
-   KOHI COFFEE & PASTRY — Design Tokens
-   Font: Be Vietnam Pro (body) + Manrope (heading)
-   Palette: Sky Blue #3AA6FF / Black #090D16 / White #FFFFFF
-   ──────────────────────────────────────────────────────────  */
+   INTER-LINK DIGITAL — Design Tokens
+   Font: Inter
+   Theme: Inter-Link Digital Light Mode System
+   ────────────────────────────────────────────────────────── */
 
 /* ── Font variables ─────────────────────────────────────── */
 :root {
-  --font-body: var(--font-be-vietnam), 'Be Vietnam Pro', system-ui, sans-serif;
-  --font-heading: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* ── Light Mode (Modern Professional SaaS Palette) ─────────────── */
+/* ── Light Mode (Inter-Link Digital Design System) ───────── */
 :root {
-  /* Backgrounds & Canvas (Pure White Architecture) */
-  --bg-primary:        #FFFFFF;
-  --bg-card:           #FFFFFF;
-  --bg-card-inner:     #FFFFFF;
-  --bg-subtle:         #F8FAFC;
-  --bg-muted:          #F1F5F9;
+  /* Backgrounds & Canvas (Inter-Link Palette) */
+  --bg-primary:                  #f9f9ff;
+  --bg-surface:                  #f9f9ff;
+  --bg-surface-dim:              #d7dae4;
+  --bg-surface-bright:           #f9f9ff;
+  --bg-container-lowest:         #ffffff; /* Card background */
+  --bg-container-low:            #f1f3fe;
+  --bg-container:                #ebedf8;
+  --bg-container-high:           #e6e8f2;
+  --bg-container-highest:        #e0e2ec;
 
-  /* Borders (Ultra-crisp slate scale) */
-  --border-color:      #E2E8F0;
-  --border-strong:     #CBD5E1;
-  --border-focus:      #38BDF8;
+  --bg-card:                     #ffffff;
+  --bg-card-inner:               #f1f3fe;
+  --bg-subtle:                   #ebedf8;
+  --bg-muted:                    #e0e2ec;
 
-  /* Typography (Pure Black Typography) */
-  --text-primary:      #000000;
-  --text-secondary:    #111827;
-  --text-tertiary:     #374151;
-  --text-quaternary:   #4B5563;
+  /* Borders & Outlines */
+  --border-color:                #c1c6d6; /* outline-variant */
+  --border-strong:               #717785; /* outline */
+  --border-focus:                #005bbd; /* surface-tint */
 
-  /* Brand Palette (Sky & Ocean Blue) */
-  --brand-primary:       #0284C7;
-  --brand-primary-hover: #0369A1;
-  --brand-primary-fg:    #FFFFFF;
-  --brand-primary-muted: rgba(2, 132, 199, 0.08);
+  /* Typography */
+  --text-primary:                #181c23; /* on-surface */
+  --text-secondary:              #414754; /* on-surface-variant */
+  --text-tertiary:               #717785; /* outline */
+  --text-quaternary:             #a0a6b5;
+
+  /* Brand Palette (Primary Vibrant Blue) */
+  --brand-primary:               #0059b9;
+  --brand-primary-hover:         #004591;
+  --brand-primary-fg:            #ffffff;
+  --brand-primary-container:     #0071e7;
+  --brand-on-primary-container:  #fefcff;
+  --brand-primary-muted:         rgba(0, 89, 185, 0.1);
+
+  /* Secondary Palette (Blue-Grey) */
+  --brand-secondary:             #445e8f;
+  --brand-secondary-container:   #acc7fe;
+  --brand-on-secondary-container:#385282;
+
+  /* Tertiary Palette (Burnt Orange Accent) */
+  --accent:                      #9b4000;
+  --accent-container:            #c35200;
+  --accent-on-container:         #fffbff;
 
   /* Price Color */
-  --price-color:       #0284C7;
+  --price-color:                 #0059b9;
 
-  /* Accent Color (Modern Violet) */
-  --accent:            #6366F1;
-
-  /* Status / Semantic (Soft badges & high contrast text) */
-  --color-success:     #16A34A;
-  --color-success-bg:  #F0FDF4;
-  --color-warning:     #D97706;
-  --color-warning-bg:  #FFFBEB;
-  --color-danger:      #E11D48;
-  --color-danger-bg:   #FFF1F2;
-  --color-info:        #0284C7;
-  --color-info-bg:     #F0F9FF;
+  /* Status / Semantic */
+  --color-success:               #16a34a;
+  --color-success-bg:            #e6f4ea;
+  --color-warning:               #9b4000;
+  --color-warning-bg:            #ffdbcb;
+  --color-danger:                #ba1a1a;
+  --color-danger-bg:             #ffdad6;
+  --color-danger-text:           #93000a;
+  --color-info:                  #0059b9;
+  --color-info-bg:               #f1f3fe;
 
   /* CTA button disabled state */
-  --btn-disabled-bg:   #F1F5F9;
-  --btn-disabled-text: #94A3B8;
+  --btn-disabled-bg:             #e0e2ec;
+  --btn-disabled-text:           #717785;
 
-  /* Payment buttons in light mode */
-  --payment-inactive-bg:     #FFFFFF;
-  --payment-inactive-border: #E2E8F0;
-  --payment-inactive-text:   #475569;
+  /* Payment buttons */
+  --payment-inactive-bg:         #ffffff;
+  --payment-inactive-border:     #c1c6d6;
+  --payment-inactive-text:       #414754;
 
-  /* Radii */
-  --radius-sm: 10px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-full: 999px;
+  /* Radii (Soft Shape Language) */
+  --radius-sm:                   0.375rem; /* 6px */
+  --radius-DEFAULT:              0.5rem;   /* 8px */
+  --radius-md:                   0.75rem;  /* 12px */
+  --radius-lg:                   1rem;     /* 16px */
+  --radius-xl:                   1.25rem;  /* 20px */
+  --radius-full:                 9999px;
 
-  /* Shadows (Subtle elevation & micro-shadows) */
-  --shadow-xs:         0 1px 2px 0 rgba(0, 0, 0, 0.03);
-  --shadow-card:       0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
-  --shadow-card-hover: 0 10px 25px -5px rgba(2, 132, 199, 0.12), 0 8px 10px -6px rgba(2, 132, 199, 0.08);
-  --shadow-sidebar:    1px 0 0 #E2E8F0;
+  /* Shadows (Subtle Tonal Depth) */
+  --shadow-xs:                   0 1px 2px 0 rgba(24, 28, 35, 0.04);
+  --shadow-card:                 0 1px 3px 0 rgba(24, 28, 35, 0.05), 0 1px 2px -1px rgba(24, 28, 35, 0.05);
+  --shadow-card-hover:           0 6px 20px -4px rgba(0, 89, 185, 0.12);
+  --shadow-sidebar:              1px 0 0 #e0e2ec;
 }
 
 /* ── Dark Mode ──────────────────────────────────────────── */
 [data-theme="dark"],
 .dark {
-  /* Backgrounds */
-  --bg-primary:        #0B1120;
-  --bg-card:           #111827;
-  --bg-card-inner:     #1A2232;
+  /* Backgrounds (Modern Deep Slate & Navy Palette) */
+  --bg-primary:        #0B0F17; /* Deep midnight slate - rich dark background */
+  --bg-surface:        #111726; /* Surface layer */
+  --bg-card:           #161F30; /* Elevated card background */
+  --bg-card-inner:     #1E2A40; /* Inner container / inputs */
 
   /* Borders */
-  --border-color:      #293246;
-  --border-strong:     #374151;
-  --border-focus:      #3B82F6;
+  --border-color:      #2A3852; /* Clean slate navy border */
+  --border-strong:     #3E5278; /* High contrast border */
+  --border-focus:      #38BDF8; /* Neon electric focus border */
 
   /* Text */
-  --text-primary:      #F1F5F9;
-  --text-secondary:    #94A3B8;
-  --text-tertiary:     #4B5563;
+  --text-primary:      #F8FAFC; /* Bright crisp text */
+  --text-secondary:    #94A3B8; /* Muted cool slate text */
+  --text-tertiary:     #64748B; /* Subtle text */
 
-  /* Brand */
-  --brand-primary:       #3B82F6;
-  --brand-primary-hover: #60A5FA;
-  --brand-primary-fg:    #0B1120;
-  --brand-primary-muted: rgba(59, 130, 246, 0.15);
+  /* Brand (Vibrant Electric Blue - Pops high-tech) */
+  --brand-primary:       #0084FF; /* Electric azure blue */
+  --brand-primary-hover: #38BDF8; /* Neon sky blue hover */
+  --brand-primary-fg:    #FFFFFF; /* Pure white text for high contrast */
+  --brand-primary-muted: rgba(0, 132, 255, 0.18); /* Translucent electric glow */
 
-  /* Price — Blue in dark mode */
-  --price-color:       #60A5FA;
+  /* Price — Bright Electric Cyan Blue */
+  --price-color:       #38BDF8;
 
   /* Accent */
-  --accent:            #8B5CF6;
+  --accent:            #60A5FA;
 
   /* Status / Semantic */
-  --color-success:     #22C55E;
-  --color-success-bg:  #052E16;
+  --color-success:     #10B981;
+  --color-success-bg:  rgba(16, 185, 129, 0.15);
   --color-warning:     #F59E0B;
-  --color-warning-bg:  #451A03;
+  --color-warning-bg:  rgba(245, 158, 11, 0.15);
   --color-danger:      #EF4444;
-  --color-danger-bg:   #450A0A;
-  --color-info:        #22D3EE;
+  --color-danger-bg:   rgba(239, 68, 68, 0.15);
+  --color-info:        #38BDF8;
 
   /* CTA button disabled state */
-  --btn-disabled-bg:   #1F2937;
-  --btn-disabled-text: #4B5563;
+  --btn-disabled-bg:   #1E2A40;
+  --btn-disabled-text: #64748B;
 
   /* Payment buttons in dark */
-  --payment-inactive-bg:     #111827;
-  --payment-inactive-border: #293246;
+  --payment-inactive-bg:     #1E2A40;
+  --payment-inactive-border: #2A3852;
   --payment-inactive-text:   #94A3B8;
 
   /* Upsell card */
-  --upsell-card-bg:    #111827;
-  --upsell-card-border: #293246;
-  --upsell-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --upsell-card-bg:    #1E2A40;
+  --upsell-card-border: #2A3852;
+  --upsell-card-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 
-  /* Shadows */
-  --shadow-card:       0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-card-hover: 0 6px 20px rgba(59, 130, 246, 0.2);
-  --shadow-sidebar:    1px 0 0 #293246;
+  /* Shadows (Glassmorphic glow depth) */
+  --shadow-card:       0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 2px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-card-hover: 0 12px 28px -4px rgba(0, 132, 255, 0.25), 0 0 15px rgba(56, 189, 248, 0.15);
+  --shadow-sidebar:    1px 0 0 #2A3852;
 }
 
 /* ── Base element styles ───────────────────────────────── */

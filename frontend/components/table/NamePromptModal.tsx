@@ -46,10 +46,10 @@ export const NamePromptModal: React.FC<NamePromptModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94, y: 24 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full max-w-md bg-white dark:bg-[#181B21] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden text-left"
+            className="w-full max-w-md bg-[var(--bg-card)] rounded-2xl shadow-2xl border border-[var(--border-color)] overflow-hidden text-left"
           >
             {/* Top accent bar */}
-            <div className="h-1 w-full bg-gradient-to-r from-[#3AA6FF] via-[#5B9EFF] to-[#3AA6FF]" />
+            <div className="h-1 w-full bg-[var(--brand-primary)]" />
 
             <div className="p-8 flex flex-col gap-6">
               {/* Branding */}
@@ -80,14 +80,14 @@ export const NamePromptModal: React.FC<NamePromptModalProps> = ({
                   onKeyDown={(e) => e.key === 'Enter' && handleConfirmName()}
                   placeholder={lang === 'en' ? 'E.g. Alex, Table Group A...' : lang === 'zh' ? '例如：张先生，A组...' : 'Ví dụ: Anh Minh, Nhóm A, Cô Lan...'}
                   maxLength={40}
-                  className="w-full px-4 py-3 text-[15px] font-normal bg-[#FFFFFF] dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-[var(--text-primary)] placeholder-gray-400 outline-none focus:border-[var(--brand-primary)] focus:ring-2 focus:ring-[var(--brand-primary)]/20 transition-all font-sans"
+                  className="w-full px-4 py-3 text-[15px] font-normal bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] placeholder-[var(--text-tertiary)] outline-none focus:border-[var(--brand-primary)] focus:ring-2 focus:ring-[var(--brand-primary)]/20 transition-all font-sans"
                 />
 
                 {/* Action buttons */}
                 <button
                   id="confirm-name-btn"
                   onClick={handleConfirmName}
-                  className="w-full h-[52px] uiverse-btn text-white text-[14px] font-bold uppercase tracking-[0.04em] rounded-xl transition-all active:scale-[0.98] shadow-md shadow-[#3AA6FF]/30 font-sans cursor-pointer"
+                  className="w-full h-[52px] uiverse-btn text-[var(--brand-primary-fg)] text-[14px] font-bold uppercase tracking-[0.04em] rounded-xl transition-all active:scale-[0.98] shadow-md font-sans cursor-pointer"
                 >
                   {nameInput.trim()
                     ? (lang === 'en' ? `Confirm — ${nameInput.trim()}` : lang === 'zh' ? `确认 — ${nameInput.trim()}` : `Xác nhận — ${nameInput.trim()}`)

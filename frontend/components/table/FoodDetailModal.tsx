@@ -107,7 +107,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
               initial={{ opacity: 0, scale: 0.96, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 30 }}
-              className="relative w-full max-w-3xl xl:max-w-[820px] bg-white dark:bg-[#181B21] border border-[var(--border-color)] rounded-t-[var(--radius-lg)] md:rounded-[var(--radius-lg)] shadow-2xl z-10 overflow-hidden flex flex-col md:flex-row max-h-[90vh] md:max-h-[85vh]"
+              className="relative w-full max-w-3xl xl:max-w-[820px] bg-[var(--bg-card)] border border-[var(--border-color)] rounded-t-2xl md:rounded-2xl shadow-2xl z-10 overflow-hidden flex flex-col md:flex-row max-h-[90vh] md:max-h-[85vh]"
             >
               {/* Mobile Drag Handle */}
               <div className="w-10 h-1 bg-[var(--border-color)] rounded-full mx-auto my-2 md:hidden shrink-0" />
@@ -115,7 +115,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
               {/* Left Image Section */}
               <div
                 onClick={() => setIsLightboxOpen(true)}
-                className="w-full md:w-[44%] min-h-[240px] sm:min-h-[280px] md:min-h-[360px] bg-[#0F1115] border-b md:border-b-0 md:border-r border-[var(--border-color)] relative flex-shrink-0 cursor-pointer group flex items-center justify-center overflow-hidden"
+                className="w-full md:w-[44%] min-h-[220px] sm:min-h-[260px] md:min-h-[360px] bg-[var(--bg-primary)] border-b md:border-b-0 md:border-r border-[var(--border-color)] relative flex-shrink-0 cursor-pointer group flex items-center justify-center overflow-hidden"
               >
                 <Image
                   src={selectedFood.image}
@@ -141,13 +141,13 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
               </div>
 
               {/* Right Details Section */}
-              <div className="w-full md:w-[56%] flex flex-col justify-between bg-[#FFFFFF] dark:bg-[#181B21] relative overflow-hidden font-sans">
+              <div className="w-full md:w-[56%] flex flex-col justify-between bg-[var(--bg-card)] relative overflow-hidden font-sans">
                 <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-5 scrollbar-none">
                   <div>
                     <h3 className="text-[20px] sm:text-[22px] font-bold text-[var(--text-primary)] leading-tight">
                       {selectedFood.name}
                     </h3>
-                    <div className="text-[22px] font-bold text-[#3AA6FF] tracking-tight mt-2">
+                    <div className="text-[22px] font-bold text-[var(--brand-primary)] tracking-tight mt-2">
                       {(() => {
                         const isMilkTea = selectedFood.category?.toLowerCase().includes('trà sữa') || selectedFood.category?.toLowerCase().includes('milk tea');
                         const activeAddons = isMilkTea ? selectedAddons : [];
@@ -171,12 +171,12 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                           );
                         }
                       }}
-                      className="mt-2.5 inline-flex items-center gap-2 bg-[#3AA6FF]/10 hover:bg-[#3AA6FF]/20 border border-[#3AA6FF]/30 rounded-[var(--radius-full)] px-3.5 py-2 transition-all active:scale-95 cursor-pointer"
+                      className="mt-2.5 inline-flex items-center gap-2 bg-[var(--brand-primary-muted)] border border-[var(--brand-primary)]/30 rounded-full px-3.5 py-2 transition-all active:scale-95 cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-base text-[#3AA6FF]">
+                      <span className="material-symbols-outlined text-base text-[var(--brand-primary)]">
                         auto_awesome
                       </span>
-                      <span className="text-[13px] font-medium text-[#3AA6FF] font-sans">
+                      <span className="text-[13px] font-semibold text-[var(--brand-primary)] font-sans">
                         {lang === 'en' ? 'Ask AI about this item' : lang === 'zh' ? '询问 AI 关于此商品' : 'Hỏi AI về món này'}
                       </span>
                     </button>
@@ -184,7 +184,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
 
                   {/* Size selector */}
                   <div>
-                    <label className="text-[13px] font-semibold text-[var(--text-primary)] tracking-[0.01em] mb-2 block">
+                    <label className="text-[13px] font-semibold text-[var(--text-primary)] tracking-[0.01em] mb-2 block font-sans">
                       {lang === 'en' ? 'Size Options' : lang === 'zh' ? '规格 / 尺寸' : 'Kích cỡ / Size'}
                     </label>
                     <div className="grid grid-cols-3 gap-2.5">
@@ -194,10 +194,10 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                           <button
                             key={sz}
                             onClick={() => setSelectedSize(sz)}
-                            className={`py-2.5 px-3 text-[13px] font-semibold rounded-[var(--radius-sm)] border transition-all duration-150 ease-in-out ${
+                            className={`py-2.5 px-3 text-[13px] font-semibold rounded-xl border transition-all duration-150 ease-in-out font-sans ${
                               isActive
-                                ? 'border-[#3AA6FF] bg-[#3AA6FF] text-white shadow-sm'
-                                : 'border-[var(--border-color)] bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:border-[#3AA6FF] hover:text-[var(--text-primary)]'
+                                ? 'border-[var(--brand-primary)] bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] shadow-md'
+                                : 'border-[var(--border-color)] bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:border-[var(--brand-primary)] hover:text-[var(--text-primary)]'
                             }`}
                           >
                             Size {sz}
@@ -213,7 +213,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                     if (!isMilkTea) return null;
                     return (
                       <div>
-                        <label className="text-[13px] font-semibold text-[var(--text-primary)] tracking-[0.01em] mb-2 block">
+                        <label className="text-[13px] font-semibold text-[var(--text-primary)] tracking-[0.01em] mb-2 block font-sans">
                           {lang === 'en' ? 'Toppings / Add-ons' : lang === 'zh' ? '配料 / 加料' : 'Topping / Addon'}
                         </label>
                         <div className="space-y-2">
@@ -229,10 +229,10 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                                       : [...prev, addonName]
                                   );
                                 }}
-                                className={`w-full group min-h-[48px] px-[14px] py-2.5 rounded-[var(--radius-sm)] text-[13px] font-medium border flex items-center justify-between transition-all duration-150 ${
+                                className={`w-full group min-h-[48px] px-[14px] py-2.5 rounded-xl text-[13px] font-medium border flex items-center justify-between transition-all duration-150 font-sans ${
                                   isSelected
-                                    ? 'bg-[#3AA6FF]/10 dark:bg-[#3AA6FF]/15 border-[#3AA6FF] text-[var(--text-primary)] shadow-sm'
-                                    : 'bg-[var(--bg-primary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[#3AA6FF] hover:text-[var(--text-primary)]'
+                                    ? 'bg-[var(--brand-primary-muted)] border-[var(--brand-primary)] text-[var(--text-primary)] shadow-xs'
+                                    : 'bg-[var(--bg-primary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--brand-primary)] hover:text-[var(--text-primary)]'
                                 }`}
                               >
                                 <div className="flex items-center min-w-0">
@@ -243,10 +243,10 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                                 </div>
 
                                 <div
-                                  className={`w-8 h-8 rounded-[var(--radius-full)] border flex items-center justify-center flex-shrink-0 transition-all duration-150 ${
+                                  className={`w-8 h-8 rounded-full border flex items-center justify-center flex-shrink-0 transition-all duration-150 ${
                                     isSelected
-                                      ? 'border-[#3AA6FF] bg-[#3AA6FF] text-white shadow-sm'
-                                      : 'border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-secondary)] group-hover:border-[#3AA6FF] group-hover:text-[#3AA6FF]'
+                                      ? 'border-[var(--brand-primary)] bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] shadow-xs'
+                                      : 'border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-secondary)] group-hover:border-[var(--brand-primary)] group-hover:text-[var(--brand-primary)]'
                                   }`}
                                 >
                                   <span className="material-symbols-outlined text-sm font-bold">
@@ -277,7 +277,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                       placeholder={lang === 'en' ? 'e.g. less sugar, less ice...' : lang === 'zh' ? '例如：微糖、少冰、不加奶...' : 'Ví dụ: ít đường, ít đá, không sữa...'}
                       value={modalNote}
                       onChange={(e) => setModalNote(e.target.value.slice(0, 200))}
-                      className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-[var(--radius-sm)] px-[14px] py-[12px] text-[13px] text-[var(--text-primary)] placeholder-[var(--text-tertiary)] outline-none focus:border-[#3AA6FF] focus:ring-2 focus:ring-[#3AA6FF]/15 transition-all shadow-sm font-sans"
+                      className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl px-[14px] py-[12px] text-[13px] text-[var(--text-primary)] placeholder-[var(--text-tertiary)] outline-none focus:border-[var(--brand-primary)] focus:ring-2 focus:ring-[var(--brand-primary)]/15 transition-all shadow-2xs font-sans"
                     />
                   </div>
 
@@ -290,11 +290,11 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                       return null;
                     })()}
                   {foodReviews.length > 0 && (
-                    <div className="bg-[var(--bg-[#FFFFFF])] p-3 rounded-[var(--radius-sm)] border border-[var(--border-color)]">
-                      <p className="text-[11px] font-semibold text-[var(--accent)] mb-1">
+                    <div className="bg-[var(--bg-card-inner)] p-3.5 rounded-xl border border-[var(--border-color)]">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--brand-primary)] mb-1 font-sans">
                         {lang === 'en' ? 'Featured Review' : lang === 'zh' ? '精选评价' : 'Đánh giá nổi bật'}
                       </p>
-                      <p className="text-[11.5px] text-[var(--text-secondary)] italic">
+                      <p className="text-[12px] text-[var(--text-secondary)] italic font-sans">
                         "{foodReviews[0]?.foodRating?.comment || (lang === 'en' ? 'Delicious drink!' : lang === 'zh' ? '非常美味！' : 'Món uống rất ngon!')}"
                       </p>
                     </div>
@@ -302,21 +302,21 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                 </div>
 
                 {/* Sticky Footer */}
-                <div className="p-4 border-t border-[var(--border-color)] bg-[#FFFFFF] dark:bg-[#181B21] flex items-center justify-between gap-3 shadow-[0_-4px_12px_rgba(0,0,0,0.2)] sticky bottom-0 z-20">
-                  <div className="flex items-center gap-1 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-[var(--radius-full)] p-1 shadow-sm">
+                <div className="p-4 border-t border-[var(--border-color)] bg-[var(--bg-card)] flex items-center justify-between gap-3 shadow-lg sticky bottom-0 z-20 font-sans">
+                  <div className="flex items-center gap-1 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-full p-1 shadow-2xs">
                     <button
                       onClick={() => setModalQuantity((q) => Math.max(1, q - 1))}
-                      className="w-8 h-8 rounded-[var(--radius-full)] flex items-center justify-center text-[var(--text-primary)] hover:bg-[var(--bg-card)] transition-colors active:scale-95"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--text-primary)] hover:bg-[var(--bg-card-inner)] transition-colors active:scale-95 cursor-pointer"
                       title="Giảm số lượng"
                     >
                       <span className="material-symbols-outlined text-base">remove</span>
                     </button>
-                    <span className="text-[14px] font-semibold text-[var(--text-primary)] w-6 text-center">
+                    <span className="text-[14px] font-bold text-[var(--text-primary)] w-6 text-center font-sans">
                       {modalQuantity}
                     </span>
                     <button
                       onClick={() => setModalQuantity((q) => q + 1)}
-                      className="w-8 h-8 rounded-[var(--radius-full)] flex items-center justify-center text-[var(--text-primary)] hover:bg-[var(--bg-card)] transition-colors active:scale-95"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--text-primary)] hover:bg-[var(--bg-card-inner)] transition-colors active:scale-95 cursor-pointer"
                       title="Tăng số lượng"
                     >
                       <span className="material-symbols-outlined text-base">add</span>
@@ -325,7 +325,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
 
                   <button
                     onClick={handleAddFromModal}
-                    className="flex-1 uiverse-btn py-3.5 px-6 rounded-xl text-[14px] font-bold uppercase tracking-[0.02em] shadow-md shadow-[#3AA6FF]/30 transition-all active:scale-95 flex items-center justify-center"
+                    className="flex-1 uiverse-btn py-3.5 px-6 rounded-xl text-[14px] font-bold uppercase tracking-[0.02em] shadow-md transition-all active:scale-95 flex items-center justify-center cursor-pointer text-[var(--brand-primary-fg)] font-sans"
                   >
                     <span>{lang === 'en' ? 'ADD TO CART' : lang === 'zh' ? '加入购物车' : 'THÊM VÀO GIỎ'}</span>
                   </button>
@@ -380,11 +380,11 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
               className="relative w-full max-w-2xl bg-[var(--bg-card)] border-t border-x border-[var(--border-color)] rounded-t-[var(--radius-lg)] shadow-2xl z-10 overflow-hidden flex flex-col h-[70vh] max-h-[500px]"
             >
               <div className="p-4 border-b border-[var(--border-color)] flex justify-between items-center bg-[var(--bg-primary)]">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#3AA6FF] text-lg">
+                <div className="flex items-center gap-2 font-sans">
+                  <span className="material-symbols-outlined text-[var(--brand-primary)] text-lg">
                     auto_awesome
                   </span>
-                  <h3 className="text-sm font-semibold text-[var(--text-primary)] truncate">
+                  <h3 className="text-sm font-bold text-[var(--text-primary)] truncate font-sans">
                     Hỏi AI về {selectedFood.name}
                   </h3>
                 </div>

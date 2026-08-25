@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 @import './tokens.css';
 @tailwind base;
 @tailwind components;
@@ -22,7 +22,7 @@
   }
 
   body {
-    font-family: var(--font-be-vietnam), 'Be Vietnam Pro', system-ui, sans-serif;
+    font-family: var(--font-body), 'Inter', system-ui, sans-serif;
     font-weight: 400;
     color: var(--text-primary);
     background: var(--bg-primary);
@@ -36,7 +36,7 @@
   h5,
   h6,
   .font-heading {
-    font-family: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+    font-family: var(--font-heading), 'Inter', system-ui, sans-serif;
   }
 }
 
@@ -95,18 +95,18 @@
 }
 
 :root {
-  --background: #FFFFFF;
-  --foreground: #000000;
-  --accent: #6366F1;
-  --primary: #0284C7;
+  --background: #f9f9ff;
+  --foreground: #181c23;
+  --accent: #9b4000;
+  --primary: #0059b9;
 }
 
 [data-theme="dark"],
 .dark {
-  --background: #0B1120;
-  --foreground: #F1F5F9;
-  --accent: #8B5CF6;
-  --primary: #3B82F6;
+  --background: #0B0F17;
+  --foreground: #F8FAFC;
+  --accent: #38BDF8;
+  --primary: #0084FF;
 }
 
 body {

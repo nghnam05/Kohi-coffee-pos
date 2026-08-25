@@ -124,7 +124,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                   {item.food.name}
                 </h4>
                 {badgeText && (
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#3AA6FF]/10 text-[#3AA6FF] flex items-center gap-1 flex-shrink-0">
+                  <span className="px-1.5 py-0.5 rounded-lg text-[10px] font-bold bg-[var(--brand-primary-muted)] text-[var(--brand-primary)] flex items-center gap-1 flex-shrink-0 font-sans">
                     <span className="material-symbols-outlined text-[12px]">person</span>
                     <span>{badgeText}</span>
                   </span>
@@ -189,7 +189,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             {/* Section 1: Món của tôi */}
             {myItems.length > 0 && (
               <div className="space-y-2">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[#3AA6FF]">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--brand-primary)]">
                   <span className="material-symbols-outlined text-sm">person</span>
                   <span>
                     {lang === 'en' ? 'Your Selection' : lang === 'zh' ? '您选择的商品' : 'Món bạn chọn'} ({myItems.reduce((acc, i) => acc + i.quantity, 0)})
@@ -316,8 +316,8 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             disabled={cart.length === 0}
             className={`flex-1 h-[44px] text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 transition-all font-sans ${
               paymentMethod === 'cash'
-                ? 'bg-[#3AA6FF] text-white shadow-md'
-                : 'bg-[var(--payment-inactive-bg)] border-2 border-[var(--payment-inactive-border)] text-[var(--payment-inactive-text)] hover:border-[#3AA6FF] hover:text-[#3AA6FF]'
+                ? 'bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] shadow-md'
+                : 'bg-[var(--payment-inactive-bg)] border-2 border-[var(--payment-inactive-border)] text-[var(--payment-inactive-text)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)]'
             }`}
           >
             <span className="material-symbols-outlined text-[18px]">payments</span>
@@ -375,7 +375,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
         className={`w-full h-[50px] mt-2 rounded-xl text-[14px] font-bold uppercase tracking-[0.04em] flex items-center justify-center transition-all font-sans shadow-md ${
           cart.length === 0
             ? 'bg-[var(--btn-disabled-bg)] text-[var(--btn-disabled-text)] cursor-not-allowed shadow-none'
-            : 'uiverse-btn shadow-[0_4px_14px_rgba(58,166,255,0.35)]'
+            : 'uiverse-btn shadow-md'
         }`}
       >
         <span>{isSubmitting ? t.submitting : (t.checkoutBtn || (lang === 'en' ? 'CONFIRM ORDER' : lang === 'zh' ? '确认提交订单' : 'GỬI ĐƠN HÀNG NGAY'))}</span>
@@ -393,11 +393,11 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             <h3 className="text-base font-bold text-[var(--text-primary)] leading-tight">
               {t.cartTitle}
             </h3>
-            <p className="text-[10px] font-bold text-[#3AA6FF] uppercase tracking-wider mt-0.5">
+            <p className="text-[10px] font-bold text-[var(--brand-primary)] uppercase tracking-wider mt-0.5">
               {lang === 'en' ? 'TABLE DINE-IN ORDER' : lang === 'zh' ? '堂食订单' : 'ĐƠN HÀNG TẠI BÀN'}
             </p>
           </div>
-          <div className="bg-[var(--bg-primary)] border border-[#3AA6FF]/30 px-3 py-1 rounded-full text-xs font-bold text-[#3AA6FF]">
+          <div className="bg-[var(--bg-primary)] border border-[var(--brand-primary)]/30 px-3 py-1 rounded-full text-xs font-bold text-[var(--brand-primary)]">
             {table?.tableName ?? (lang === 'en' ? 'Table' : lang === 'zh' ? '桌号' : 'Bàn')}
           </div>
         </div>
@@ -436,7 +436,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                   <h3 className="text-base font-bold text-[var(--text-primary)]">
                     {t.cartTitle}
                   </h3>
-                  <span className="bg-[#3AA6FF] text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  <span className="bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] text-xs font-bold px-2.5 py-0.5 rounded-full shadow-2xs font-sans">
                     {totalQuantity} {lang === 'en' ? 'items' : lang === 'zh' ? '件' : 'món'}
                   </span>
                 </div>
