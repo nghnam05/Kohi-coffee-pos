@@ -20,6 +20,7 @@ import { OrderSuccessModal } from '@/components/table/OrderSuccessModal';
 import { NamePromptModal } from '@/components/table/NamePromptModal';
 import { AiChatWidget } from '@/components/table/AiChatWidget';
 import { TableQRModal } from '@/components/table/TableQRModal';
+import { CustomerNotificationModal, NotificationItem } from '@/components/table/CustomerNotificationModal';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -285,6 +286,39 @@ export default function TableMenuPage() {
   const [isCallingStaff, setIsCallingStaff] = useState(false);
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
+  // Customer Notifications State
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [notificationsList, setNotificationsList] = useState<NotificationItem[]>([
+    {
+      id: 'welcome_1',
+      title: 'Chào mừng quý khách!',
+      message: 'Chào mừng bạn đến với Kohi Coffee. Chúc bạn có một trải nghiệm gọi món tuyệt vời.',
+      timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+      type: 'system',
+      read: false,
+    },
+    {
+      id: 'promo_1',
+      title: 'Ưu đãi & Trải nghiệm',
+      message: 'Theo dõi tiến độ chế biến đơn hàng trực tiếp ngay trên điện thoại.',
+      timestamp: 'Hôm nay',
+      type: 'promo',
+      read: false,
+    },
+  ]);
+
+  const unreadNotificationCount = useMemo(() => {
+    return notificationsList.filter((n) => !n.read).length;
+  }, [notificationsList]);
+
+  const handleMarkAllNotificationsAsRead = useCallback(() => {
+    setNotificationsList((prev) => prev.map((n) => ({ ...n, read: true })));
+  }, []);
+
+  const handleClearAllNotifications = useCallback(() => {
+    setNotificationsList([]);
+  }, []);
+
   // Coupon
   const [couponInput, setCouponInput] = useState('');
   const [couponResult, setCouponResult] = useState<{ valid: boolean; discountAmount: number; message?: string } | null>(null);
@@ -429,30 +463,54 @@ export default function TableMenuPage() {
           .filter((o) => o.status !== 'cancelled')
       );
 
+      let notifTitle = '';
+      let notifMessage = '';
+
       if (status === 'preparing' || status === 'processing' || status === 'in_progress') {
         try { playAlertPing(); } catch {}
+        notifTitle = 'Bếp / Barista đang pha chế đơn!';
+        notifMessage = `Đơn hàng #${updatedId ? updatedId.slice(-6).toUpperCase() : ''} đã bắt đầu được làm.`;
         setKitchenNotification({
           show: true,
-          title: 'Bếp / Barista đang pha chế đơn!',
-          message: `Đơn hàng #${updatedId ? updatedId.slice(-6).toUpperCase() : ''} đã bắt đầu được làm.`,
+          title: notifTitle,
+          message: notifMessage,
           orderId: updatedId,
         });
       } else if (status === 'ready' || status === 'served' || status === 'completed') {
         try { playAlertPing(); } catch {}
+        notifTitle = 'Thức uống đã sẵn sàng!';
+        notifMessage = `Đơn hàng #${updatedId ? updatedId.slice(-6).toUpperCase() : ''} đã chuẩn bị xong.`;
         setKitchenNotification({
           show: true,
-          title: 'Thức uống đã sẵn sàng!',
-          message: `Đơn hàng #${updatedId ? updatedId.slice(-6).toUpperCase() : ''} đã chuẩn bị xong.`,
+          title: notifTitle,
+          message: notifMessage,
           orderId: updatedId,
         });
       } else if (status === 'paid') {
         try { playAlertPing(); } catch {}
+        notifTitle = 'Thanh toán thành công!';
+        notifMessage = `Nhân viên đã xác nhận thanh toán hoàn tất cho bàn. Bạn có thể xem lại hóa đơn hoặc chọn rời bàn.`;
         setKitchenNotification({
           show: true,
-          title: 'Thanh toán thành công!',
-          message: `Nhân viên đã xác nhận thanh toán hoàn tất cho bàn. Bạn có thể xem lại hóa đơn hoặc chọn rời bàn.`,
+          title: notifTitle,
+          message: notifMessage,
           orderId: updatedId,
         });
+      }
+
+      if (notifTitle) {
+        setNotificationsList((prev) => [
+          {
+            id: `status_${updatedId}_${Date.now()}`,
+            title: notifTitle,
+            message: notifMessage,
+            timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+            type: 'order',
+            read: false,
+            orderId: updatedId,
+          },
+          ...prev,
+        ]);
       }
     });
 
@@ -1094,6 +1152,10 @@ export default function TableMenuPage() {
         handleOpenOrderHistory={handleOpenOrderHistory}
         activeOrders={activeOrders}
         onOpenQRModal={() => setIsQRModalOpen(true)}
+        setIsCartOpen={setIsCartOpen}
+        totalQuantity={totalQuantity}
+        onOpenNotifications={() => setIsNotificationModalOpen(true)}
+        unreadNotificationCount={unreadNotificationCount}
       />
 
       <div className="min-h-[100dvh] md:h-screen w-full md:w-screen overflow-y-auto md:overflow-hidden flex flex-col md:flex-row bg-[#FFFFFF] dark:bg-[#090D16] text-[var(--text-primary)] font-sans antialiased selection:bg-[#3AA6FF] selection:text-white">
@@ -1306,32 +1368,7 @@ export default function TableMenuPage() {
           customerName={customerName}
         />
 
-        {/* Sticky Mobile/Tablet Cart Bar */}
-        <AnimatePresence>
-          {totalQuantity > 0 && (
-            <motion.div
-              initial={{ y: 50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 50, opacity: 0 }}
-              className="fixed bottom-4 left-4 right-4 z-40 lg:hidden max-w-md mx-auto"
-            >
-              <button
-                onClick={() => setIsCartOpen(true)}
-                className="w-full bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] p-3.5 rounded-2xl font-bold flex items-center justify-between shadow-2xl shadow-[var(--brand-primary)]/30 active:scale-95 transition-all font-sans cursor-pointer"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="bg-white text-[var(--brand-primary)] w-6 h-6 rounded-full text-xs font-black flex items-center justify-center shadow-xs">
-                    {totalQuantity}
-                  </span>
-                  <span className="text-xs uppercase tracking-wide font-extrabold font-sans">
-                    {lang === 'en' ? 'View Cart' : lang === 'zh' ? '查看购物车' : 'Xem Giỏ Hàng'}
-                  </span>
-                </div>
-                <span className="text-sm font-black font-sans">{formatPrice(totalAmount, lang)}</span>
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+
 
         {/* Modals */}
         <FoodDetailModal
@@ -1427,6 +1464,21 @@ export default function TableMenuPage() {
         onClose={() => setIsQRModalOpen(false)}
         table={table}
         lang={lang}
+      />
+
+      <CustomerNotificationModal
+        isOpen={isNotificationModalOpen}
+        onClose={() => setIsNotificationModalOpen(false)}
+        notifications={notificationsList}
+        onMarkAllAsRead={handleMarkAllNotificationsAsRead}
+        onClearAll={handleClearAllNotifications}
+        lang={lang}
+        onNotificationClick={(item) => {
+          setIsNotificationModalOpen(false);
+          if (item.orderId || item.type === 'order') {
+            setIsOrderHistoryModalOpen(true);
+          }
+        }}
       />
     </>
   );

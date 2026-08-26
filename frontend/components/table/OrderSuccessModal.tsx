@@ -69,6 +69,18 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
 
               {/* Action buttons */}
               <div className="flex flex-col gap-2.5">
+                {latestCreatedOrder?.paymentMethod === 'momo' && (
+                  <button
+                    onClick={() => {
+                      setIsOrderSuccessModalOpen(false);
+                      router.push(`/table/${tableId}/order-status/${latestCreatedOrder._id}`);
+                    }}
+                    className="w-full py-3 bg-gradient-to-r from-[#D82D8B] to-[#A50064] text-white rounded-xl text-[13px] font-[700] transition-all active:scale-95 shadow-lg shadow-pink-500/25 cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <span className="material-symbols-outlined text-base">bolt</span>
+                    <span>{lang === 'en' ? 'Pay with MoMo Now' : lang === 'zh' ? '立即 MoMo 支付' : 'Thanh toán MoMo ngay (Giả lập)'}</span>
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     setIsOrderSuccessModalOpen(false);

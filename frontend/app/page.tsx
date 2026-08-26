@@ -407,10 +407,9 @@ export default function Home() {
             {/* Staff / Admin Login Button */}
             <button
               onClick={() => router.push('/login')}
-              className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-[#FFFFFF] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] text-xs font-bold text-[var(--text-primary)] hover:border-[#3AA6FF] hover:text-[#3AA6FF] transition-all shrink-0 font-sans cursor-pointer"
+              className="flex items-center justify-center px-3.5 py-2 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-xs font-bold text-[var(--text-primary)] hover:border-[#38BDF8] hover:text-[#38BDF8] transition-all shrink-0 font-sans cursor-pointer active:scale-95"
             >
-              <span className="material-symbols-outlined text-base">login</span>
-              <span className="hidden sm:inline">{t.btnLogin}</span>
+              <span>{t.btnLogin}</span>
             </button>
           </div>
         </div>
@@ -419,32 +418,31 @@ export default function Home() {
       {/* ── MAIN HERO SECTION ────────────────────────────────────────────── */}
       <main className="max-w-6xl mx-auto px-4 py-6 sm:py-10 w-full flex-1 space-y-8 font-sans">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <span className="inline-block px-3.5 py-1 bg-[#3AA6FF]/10 text-[#3AA6FF] dark:text-[#5B9EFF] border border-[#3AA6FF]/20 rounded-full text-xs font-extrabold tracking-wide uppercase">
+          <span className="inline-block px-3.5 py-1 bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] border border-[#38BDF8]/20 rounded-full text-[11px] font-bold tracking-wider uppercase font-sans">
             Smart Table Booking & QR Order
           </span>
           <h2 className="text-2xl sm:text-4xl font-extrabold text-[var(--text-primary)] font-heading tracking-tight">
             {t.heroTitle}
           </h2>
-          <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed font-sans">
+          <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed font-sans font-normal">
             {t.heroSubtitle}
           </p>
         </div>
 
-        {/* Tab Navigation: Đặt Bàn vs Tra Cứu vs Vào Bàn Mã QR */}
+        {/* Tab Navigation: Đặt Bàn vs Tra Cứu */}
         <div className="flex justify-center border-b border-[var(--border-color)] overflow-x-auto scrollbar-none max-w-full">
-          <div className="flex gap-2 sm:gap-8 text-xs sm:text-sm font-bold whitespace-nowrap px-1">
+          <div className="flex gap-4 sm:gap-8 text-xs sm:text-sm font-bold whitespace-nowrap px-1">
             <button
               onClick={() => {
                 setActiveTab('reserve');
                 setError('');
               }}
-              className={`pb-3 px-3.5 flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+              className={`pb-3 px-4 border-b-2 transition-all cursor-pointer font-sans ${
                 activeTab === 'reserve'
-                  ? 'border-[#2563EB] text-[#2563EB] dark:text-[#3B82F6]'
+                  ? 'border-[#38BDF8] text-[#0284c7] dark:text-[#38BDF8]'
                   : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
-              <span className="material-symbols-outlined text-lg">event_seat</span>
               <span>{t.btnBookTab}</span>
             </button>
             <button
@@ -452,13 +450,12 @@ export default function Home() {
                 setActiveTab('lookup');
                 setError('');
               }}
-              className={`pb-3 px-3.5 flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+              className={`pb-3 px-4 border-b-2 transition-all cursor-pointer font-sans ${
                 activeTab === 'lookup'
-                  ? 'border-[#2563EB] text-[#2563EB] dark:text-[#3B82F6]'
+                  ? 'border-[#38BDF8] text-[#0284c7] dark:text-[#38BDF8]'
                   : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
-              <span className="material-symbols-outlined text-lg">search</span>
               <span>{t.btnLookupTab}</span>
             </button>
           </div>
@@ -474,17 +471,17 @@ export default function Home() {
                   <h3 className="text-base font-extrabold text-[var(--text-primary)] font-heading">
                     {t.selectTableLabel}
                   </h3>
-                  <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                  <p className="text-xs text-[var(--text-secondary)] mt-0.5 font-normal">
                     Bấm vào bàn bạn muốn đặt để giữ chỗ
                   </p>
                 </div>
 
                 <button
                   onClick={fetchTables}
-                  className="p-1.5 rounded-lg bg-[var(--bg-card-inner)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all"
+                  className="px-2.5 py-1 rounded-lg bg-[var(--bg-card-inner)] border border-[var(--border-color)] text-[11px] font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
                   title="Cập nhật sơ đồ bàn"
                 >
-                  <span className="material-symbols-outlined text-sm">refresh</span>
+                  Cập nhật
                 </button>
               </div>
 
@@ -529,7 +526,7 @@ export default function Home() {
                     }
 
                     if (isSelected && isBookable) {
-                      statusBg = 'border-[#2563EB] bg-[#2563EB]/10 ring-2 ring-[#2563EB]/40';
+                      statusBg = 'border-[#38BDF8] bg-[#38BDF8]/10 ring-2 ring-[#38BDF8]/30';
                     }
 
                     return (
@@ -557,30 +554,29 @@ export default function Home() {
                 <h3 className="text-base font-extrabold text-[var(--text-primary)] font-heading">
                   {t.bookingFormTitle}
                 </h3>
-                <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5 font-normal">
                   Vui lòng điền đầy đủ thông tin để nhân viên nhận đơn
                 </p>
               </div>
 
               {error && (
-                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-base">error</span>
+                <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold text-center">
                   <span>{error}</span>
                 </div>
               )}
 
               <form onSubmit={handleBookingSubmit} className="space-y-4 text-xs">
                 {/* Selected Table Info Card */}
-                <div className="p-3.5 rounded-2xl bg-[#2563EB]/10 border border-[#2563EB]/30 flex items-center justify-between">
+                <div className="p-3.5 rounded-2xl bg-[#38BDF8]/10 border border-[#38BDF8]/30 flex items-center justify-between">
                   <div>
                     <span className="text-[10px] uppercase tracking-wider font-bold text-[var(--text-secondary)] block">
                       {t.selectedTableLabel}
                     </span>
-                    <span className="text-sm font-black text-[#2563EB] dark:text-[#3B82F6]">
+                    <span className="text-sm font-black text-[#0284c7] dark:text-[#38BDF8]">
                       {selectedTable ? selectedTable.tableName : t.noTableSelected}
                     </span>
                   </div>
-                  <span className="material-symbols-outlined text-xl text-[#2563EB] dark:text-[#3B82F6]">check_circle</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#38BDF8] animate-pulse" />
                 </div>
 
                 <div>
@@ -591,7 +587,7 @@ export default function Home() {
                     placeholder={t.customerNamePlaceholder}
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#2563EB]"
+                    className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#38BDF8] transition-all font-sans"
                   />
                 </div>
 
@@ -603,7 +599,7 @@ export default function Home() {
                     placeholder={t.customerPhonePlaceholder}
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#2563EB]"
+                    className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#38BDF8] transition-all font-sans"
                   />
                 </div>
 
@@ -615,7 +611,7 @@ export default function Home() {
                       required
                       value={reservationTime}
                       onChange={(e) => setReservationTime(e.target.value)}
-                      className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3 py-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#2563EB]"
+                      className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3 py-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#38BDF8] transition-all font-sans"
                     />
                   </div>
                   <div>
@@ -627,7 +623,7 @@ export default function Home() {
                       required
                       value={guestCount}
                       onChange={(e) => setGuestCount(Number(e.target.value))}
-                      className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3 py-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#2563EB]"
+                      className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3 py-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#38BDF8] transition-all font-sans"
                     />
                   </div>
                 </div>
@@ -639,16 +635,15 @@ export default function Home() {
                     placeholder={t.notePlaceholder}
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3.5 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#2563EB]"
+                    className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3.5 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#38BDF8] transition-all font-sans"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={isSubmitting || !selectedTable}
-                  className="w-full py-3.5 bg-[#2563EB] hover:bg-blue-700 disabled:opacity-50 text-white font-extrabold rounded-2xl text-xs transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-3.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-extrabold rounded-2xl text-xs transition-all shadow-md active:scale-95 flex items-center justify-center cursor-pointer disabled:opacity-50"
                 >
-                  <span className="material-symbols-outlined text-base">event_available</span>
                   <span>{isSubmitting ? 'Đang gửi thông tin...' : t.btnSubmitBooking}</span>
                 </button>
               </form>
@@ -658,65 +653,63 @@ export default function Home() {
 
         {/* ── TAB 2: LOOKUP & CUSTOMER CANCEL RESERVATIONS ──────────────────── */}
         {activeTab === 'lookup' && (
-          <div className="max-w-2xl mx-auto bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
-            <div className="text-center space-y-1">
-              <h3 className="text-lg font-extrabold text-[var(--text-primary)] font-heading">
-                Tra Cứu & Quản Lý Đơn Đặt Bàn
+          <div className="max-w-xl mx-auto bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-6 sm:p-8 space-y-6 shadow-md transition-all font-sans">
+            <div className="text-center space-y-1.5">
+              <h3 className="text-lg font-bold text-[var(--text-primary)] font-heading tracking-tight">
+                {lang === 'en' ? 'Lookup Reservation' : lang === 'zh' ? '查询预订' : 'Tra Cứu Đơn Đặt Bàn'}
               </h3>
-              <p className="text-xs text-[var(--text-secondary)]">
-                Nhập số điện thoại của bạn để kiểm tra chi tiết đơn đặt bàn và thực hiện hủy nếu cần
+              <p className="text-xs text-[var(--text-secondary)] font-sans font-normal">
+                {lang === 'en' ? 'Enter phone number to check reservation details' : lang === 'zh' ? '输入手机号查询预订信息' : 'Nhập số điện thoại để kiểm tra chi tiết và quản lý đơn giữ chỗ'}
               </p>
             </div>
 
             {error && (
-              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold flex items-center gap-2">
-                <span className="material-symbols-outlined text-base">error</span>
+              <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold text-center">
                 <span>{error}</span>
               </div>
             )}
 
-            <form onSubmit={handleLookupSubmit} className="flex flex-col sm:flex-row gap-2.5 sm:gap-2">
+            <form onSubmit={handleLookupSubmit} className="flex flex-col sm:flex-row gap-2.5">
               <input
                 type="text"
-                placeholder="Nhập số điện thoại (Ví dụ: 0987654321)..."
+                placeholder={lang === 'en' ? 'Phone number (e.g. 0987654321)...' : lang === 'zh' ? '请输入手机号...' : 'Nhập số điện thoại (VD: 0987654321)...'}
                 value={lookupPhone}
                 onChange={(e) => setLookupPhone(e.target.value)}
-                className="w-full sm:flex-1 bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-2xl px-4 py-3 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#2563EB]"
+                className="w-full sm:flex-1 bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-2xl px-4 py-3 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#38BDF8] transition-all font-sans placeholder-[var(--text-tertiary)]"
               />
               <button
                 type="submit"
                 disabled={isSearchingLookup}
-                className="w-full sm:w-auto px-5 py-3 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-2xl text-xs transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+                className="w-full sm:w-auto px-6 py-3 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-extrabold rounded-2xl text-xs transition-all shadow-md active:scale-95 flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-50"
               >
-                <span className="material-symbols-outlined text-base">search</span>
-                <span>{isSearchingLookup ? 'Đang tìm...' : 'Tra cứu ngay'}</span>
+                <span>{isSearchingLookup ? (lang === 'en' ? 'Searching...' : lang === 'zh' ? '查询中...' : 'Đang tìm...') : (lang === 'en' ? 'Search Now' : lang === 'zh' ? '立即查询' : 'Tra cứu ngay')}</span>
               </button>
             </form>
 
             {hasSearchedLookup && (
               <div className="space-y-4 pt-2">
                 {lookupResults.length === 0 ? (
-                  <div className="bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-2xl p-6 text-center text-xs text-[var(--text-secondary)]">
-                    Không tìm thấy đơn đặt bàn nào với số điện thoại <span className="font-bold text-[#38BDF8]">{lookupPhone}</span>.
+                  <div className="bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-2xl p-6 text-center text-xs text-[var(--text-secondary)] font-sans">
+                    Không tìm thấy đơn đặt bàn nào gắn liền với số điện thoại <span className="font-bold text-[#38BDF8]">{lookupPhone}</span>.
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <p className="text-xs font-bold text-[var(--text-secondary)]">
+                    <p className="text-xs font-bold text-[var(--text-secondary)] font-sans">
                       Tìm thấy {lookupResults.length} đơn đặt bàn:
                     </p>
 
                     {lookupResults.map((res) => {
-                      let statusBadge = 'bg-amber-500/10 text-amber-500 border-amber-500/30';
+                      let statusBadge = 'bg-amber-500/10 text-amber-500 border-amber-500/20';
                       let statusLabel = 'Chờ xác nhận';
 
                       if (res.status === 'confirmed') {
-                        statusBadge = 'bg-sky-500/10 text-sky-500 border-sky-500/30';
+                        statusBadge = 'bg-sky-500/10 text-sky-500 border-sky-500/20';
                         statusLabel = 'Đã xác nhận';
                       } else if (res.status === 'arrived') {
-                        statusBadge = 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30';
+                        statusBadge = 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
                         statusLabel = 'Khách đã đến';
                       } else if (res.status === 'cancelled') {
-                        statusBadge = 'bg-rose-500/10 text-rose-500 border-rose-500/30';
+                        statusBadge = 'bg-rose-500/10 text-rose-500 border-rose-500/20';
                         statusLabel = 'Đã hủy';
                       }
 
@@ -727,34 +720,34 @@ export default function Home() {
                       return (
                         <div
                           key={res._id}
-                          className="bg-[var(--bg-card-inner)] border border-[var(--border-color)] p-4 sm:p-5 rounded-2xl space-y-3 shadow-xs"
+                          className="bg-[var(--bg-card-inner)] border border-[var(--border-color)] p-4 sm:p-5 rounded-2xl space-y-3 shadow-xs font-sans"
                         >
                           <div className="flex justify-between items-start">
                             <div>
-                              <h4 className="font-black text-[var(--text-primary)] text-sm">
+                              <h4 className="font-extrabold text-[var(--text-primary)] text-sm">
                                 {res.customerName}
                               </h4>
                               <p className="text-xs text-[#38BDF8] font-bold mt-0.5">
                                 {res.customerPhone}
                               </p>
                             </div>
-                            <span className={`px-3 py-1 rounded-full text-[10.5px] font-extrabold border ${statusBadge}`}>
+                            <span className={`px-3 py-1 rounded-full text-[10.5px] font-bold border ${statusBadge}`}>
                               {statusLabel}
                             </span>
                           </div>
 
-                          <div className="py-2 border-t border-b border-[var(--border-color)]/60 space-y-1.5 text-xs">
+                          <div className="py-2.5 border-t border-b border-[var(--border-color)]/60 space-y-1.5 text-xs">
                             <div className="flex justify-between">
-                              <span className="text-[var(--text-secondary)]">Bàn ăn chọn:</span>
-                              <span className="font-black text-[var(--text-primary)]">{res.tableId?.tableName || 'Bàn chọn'}</span>
+                              <span className="text-[var(--text-secondary)] font-normal">Bàn ăn chọn:</span>
+                              <span className="font-bold text-[var(--text-primary)]">{res.tableId?.tableName || 'Bàn chọn'}</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-[var(--text-secondary)]">Thời gian nhận bàn:</span>
-                              <span className="font-extrabold text-[var(--text-primary)]">{new Date(res.reservationTime).toLocaleString('vi-VN')}</span>
+                              <span className="text-[var(--text-secondary)] font-normal">Thời gian nhận bàn:</span>
+                              <span className="font-bold text-[var(--text-primary)]">{new Date(res.reservationTime).toLocaleString('vi-VN')}</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-[var(--text-secondary)]">Số lượng khách:</span>
-                              <span className="font-extrabold text-[var(--text-primary)]">{res.guestCount} người</span>
+                              <span className="text-[var(--text-secondary)] font-normal">Số lượng khách:</span>
+                              <span className="font-bold text-[var(--text-primary)]">{res.guestCount} người</span>
                             </div>
                             {res.note && (
                               <div className="pt-1 text-[11px] text-amber-500 italic">
@@ -766,7 +759,7 @@ export default function Home() {
                           {isArrived && targetTableId && (
                             <button
                               onClick={() => router.push(`/table/${targetTableId}`)}
-                              className="w-full py-2.5 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black text-xs rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                              className="w-full py-2.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-extrabold text-xs rounded-xl transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center"
                             >
                               VÀO BÀN GỌI MÓN ({res.tableId?.tableName || 'BÀN ĐẶT'})
                             </button>
@@ -775,7 +768,7 @@ export default function Home() {
                           {canCancel && (
                             <button
                               onClick={() => handleCustomerCancelReservation(res._id)}
-                              className="w-full py-2 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-500 border border-rose-500/30 text-xs font-bold rounded-xl transition-all flex items-center justify-center cursor-pointer"
+                              className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-500 border border-rose-500/20 text-xs font-bold rounded-xl transition-all flex items-center justify-center cursor-pointer active:scale-95"
                             >
                               HỦY ĐƠN ĐẶT BÀN NÀY
                             </button>
@@ -794,8 +787,8 @@ export default function Home() {
         {bookingSuccess && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
             <div className="relative w-full max-w-md rounded-[28px] bg-[var(--bg-card)] border border-[var(--border-color)] p-6 sm:p-8 text-center space-y-6 shadow-2xl animate-modal-in">
-              <div className="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/10 animate-pop-scale">
-                <span className="material-symbols-outlined text-3xl font-black">check_circle</span>
+              <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 mx-auto flex items-center justify-center font-black text-xl shadow-lg shadow-emerald-500/10">
+                ✓
               </div>
 
               <div className="space-y-2">

@@ -124,17 +124,6 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                   className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
                 />
 
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedFood(null);
-                  }}
-                  className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-md transition-colors shadow-md"
-                  title="Đóng modal"
-                >
-                  <span className="material-symbols-outlined text-base">close</span>
-                </button>
-
                 <div className="absolute bottom-3 right-3 z-10 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center backdrop-blur-sm pointer-events-none shadow-md">
                   <span className="material-symbols-outlined text-base">zoom_in</span>
                 </div>
@@ -142,8 +131,20 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
 
               {/* Right Details Section */}
               <div className="w-full md:w-[56%] flex flex-col justify-between bg-[var(--bg-card)] relative overflow-hidden font-sans">
+                {/* Clean Close Button Top-Right of Right Column */}
+                <button
+                  onClick={() => {
+                    setSelectedFood(null);
+                    setIsModalAiOpen(false);
+                  }}
+                  className="absolute top-4 right-4 z-30 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95"
+                  title="Đóng modal"
+                >
+                  <span className="material-symbols-outlined text-lg">close</span>
+                </button>
+
                 <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-5 scrollbar-none">
-                  <div>
+                  <div className="pr-8">
                     <h3 className="text-[20px] sm:text-[22px] font-bold text-[var(--text-primary)] leading-tight">
                       {selectedFood.name}
                     </h3>

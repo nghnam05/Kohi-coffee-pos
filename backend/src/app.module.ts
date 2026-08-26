@@ -18,6 +18,7 @@ import { ReservationsModule } from './reservations/reservations.module.js';
 import { CategoriesModule } from './categories/categories.module.js';
 import { ShiftSwapsModule } from './shift-swaps/shift-swaps.module.js';
 import { PaymentsModule } from './payments/payments.module.js';
+import { IngredientsModule } from './ingredients/ingredients.module.js';
 
 @Module({
   controllers: [AppController],
@@ -46,6 +47,7 @@ import { PaymentsModule } from './payments/payments.module.js';
     ReservationsModule,
     ShiftSwapsModule,
     PaymentsModule,
+    IngredientsModule,
   ],
 })
 export class AppModule {}

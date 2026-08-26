@@ -124,6 +124,18 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  emitLowStockAlert(ingredient: any): void {
+    if (this.server) {
+      this.server.emit('lowStockAlert', ingredient);
+    }
+  }
+
+  emitIngredientUpdated(ingredient: any): void {
+    if (this.server) {
+      this.server.emit('ingredientUpdated', ingredient);
+    }
+  }
+
   private sharedCarts = new Map<string, any[]>();
 
   @SubscribeMessage('joinTableRoom')

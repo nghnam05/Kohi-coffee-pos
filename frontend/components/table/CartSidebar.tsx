@@ -136,7 +136,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             </div>
             <button
               onClick={() => handleRemove(item.food._id)}
-              className="text-[var(--text-tertiary)] hover:text-red-500 transition-colors p-1"
+              className="w-7 h-7 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center justify-center transition-all cursor-pointer active:scale-95"
               title={lang === 'en' ? 'Remove item' : lang === 'zh' ? '删除' : 'Xóa món'}
             >
               <span className="material-symbols-outlined text-base">close</span>
@@ -442,7 +442,8 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                 </div>
                 <button
                   onClick={() => setIsCartOpen && setIsCartOpen(false)}
-                  className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-full bg-[var(--bg-primary)] border border-[var(--border-color)] transition-colors active:scale-95"
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
+                  title="Đóng giỏ hàng"
                 >
                   <span className="material-symbols-outlined text-lg">close</span>
                 </button>
