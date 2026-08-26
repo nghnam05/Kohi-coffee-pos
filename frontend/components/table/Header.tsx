@@ -29,6 +29,10 @@ interface HeaderProps {
   handleOpenOrderHistory: () => void;
   activeOrders?: any[];
   onOpenQRModal?: () => void;
+  setIsCartOpen?: (open: boolean) => void;
+  totalQuantity?: number;
+  onOpenNotifications?: () => void;
+  unreadNotificationCount?: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -46,6 +50,10 @@ export const Header: React.FC<HeaderProps> = ({
   handleOpenOrderHistory,
   activeOrders = [],
   onOpenQRModal,
+  setIsCartOpen,
+  totalQuantity = 0,
+  onOpenNotifications,
+  unreadNotificationCount = 0,
 }) => {
   return (
     <>
@@ -53,48 +61,119 @@ export const Header: React.FC<HeaderProps> = ({
       <header className="fixed top-0 left-0 right-0 z-40 h-16 px-4 bg-[var(--bg-primary)]/95 backdrop-blur-md border-b border-[var(--border-color)] flex justify-between items-center md:hidden shadow-xs transition-colors">
         <BrandLogo />
         <div className="flex items-center gap-2">
-          {/* Mobile Direct Order History Notification Button */}
+          {/* Notification Button */}
           <button
-            onClick={handleOpenOrderHistory}
-            className="relative p-2 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-primary)] hover:border-[var(--brand-primary)]/50 transition-all active:scale-95 cursor-pointer flex items-center justify-center"
-            title={lang === 'en' ? 'Order History' : lang === 'zh' ? '点单记录' : 'Lịch sử đơn'}
+            type="button"
+            onClick={onOpenNotifications || handleOpenOrderHistory}
+            className="relative w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 hover:text-[#3AA6FF] dark:hover:text-[#3AA6FF] flex items-center justify-center shadow-xs active:scale-95 transition-all cursor-pointer"
+            title="Xem danh sách thông báo"
           >
-            <span className="material-symbols-outlined text-xl text-[var(--brand-primary)]">
-              {activeOrders.length > 0 ? 'notifications_active' : 'notifications'}
-            </span>
-            {activeOrders.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-pulse shadow-xs">
-                {activeOrders.length}
+            <span className="material-symbols-outlined text-xl">notifications</span>
+            {unreadNotificationCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-black bg-[#3AA6FF] text-white rounded-full shadow-xs leading-none animate-pulse">
+                {unreadNotificationCount}
               </span>
             )}
-          </button>
-
-          {/* Table Badge (Clickable to open Table QR Modal) */}
-          <button
-            onClick={onOpenQRModal}
-            className="bg-[var(--bg-card)] border border-[var(--brand-primary)]/30 rounded-xl px-2.5 py-1.5 text-xs font-bold text-[var(--brand-primary)] shadow-xs flex items-center gap-1.5 font-sans cursor-pointer active:scale-95 transition-all"
-            title="Bấm vào để xem mã QR bàn"
-          >
-            <span className="material-symbols-outlined text-base text-[var(--brand-primary)] animate-pulse">qr_code_2</span>
-            <span>{table?.tableName ?? 'Bàn 01'}</span>
-          </button>
-
-          {/* Mobile Utility Menu Trigger */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className={`p-2 transition-colors rounded-xl active:scale-95 ${
-              isMobileMenuOpen
-                ? 'bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] shadow-xs'
-                : 'text-[var(--text-secondary)] hover:text-[var(--brand-primary)] bg-[var(--bg-card)] border border-[var(--border-color)]'
-            }`}
-            title="Menu tiện ích"
-          >
-            <span className="material-symbols-outlined text-xl">more_vert</span>
           </button>
         </div>
       </header>
 
-      {/* ── Mobile Utility Dropdown Menu ───────────────────────────────────── */}
+      {/* ── Mobile Bottom Navigation Bar (Mobile-only, < md) ────────────────── */}
+      <nav
+        aria-label="Thanh điều hướng khách hàng"
+        className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#0c121e]/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-around h-16 px-1 shadow-[0_-4px_24px_rgba(0,0,0,0.12)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.4)] font-sans"
+      >
+        {/* Tab 1: Thực đơn */}
+        <button
+          type="button"
+          onClick={() => {
+            setIsMobileMenuOpen(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none text-[#3AA6FF] font-black active:scale-95"
+        >
+          <span className="material-symbols-outlined text-xl">restaurant_menu</span>
+          <span className="text-[10px] tracking-tight">{lang === 'en' ? 'Menu' : lang === 'zh' ? '菜单' : 'Thực đơn'}</span>
+        </button>
+
+        {/* Tab 2: Giỏ hàng */}
+        <button
+          type="button"
+          onClick={() => {
+            setIsMobileMenuOpen(false);
+            if (setIsCartOpen) setIsCartOpen(true);
+          }}
+          className="flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold active:scale-95"
+        >
+          <div className="relative flex items-center justify-center">
+            <span className="material-symbols-outlined text-xl">shopping_bag</span>
+            {totalQuantity > 0 && (
+              <span className="absolute -top-1 -right-2.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[9px] font-black bg-emerald-500 text-white rounded-full shadow-xs leading-none animate-pulse">
+                {totalQuantity}
+              </span>
+            )}
+          </div>
+          <span className="text-[10px] tracking-tight">{lang === 'en' ? 'Cart' : lang === 'zh' ? '购物车' : 'Giỏ hàng'}</span>
+        </button>
+
+        {/* Tab 3: Đơn hàng (Lịch sử đơn) */}
+        <button
+          type="button"
+          onClick={handleOpenOrderHistory}
+          className="flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold active:scale-95"
+        >
+          <div className="relative flex items-center justify-center">
+            <span className="material-symbols-outlined text-xl">receipt_long</span>
+            {activeOrders.length > 0 && (
+              <span className="absolute -top-1 -right-2.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[9px] font-black bg-[#3AA6FF] text-white rounded-full shadow-xs leading-none animate-pulse">
+                {activeOrders.length}
+              </span>
+            )}
+          </div>
+          <span className="text-[10px] tracking-tight">{lang === 'en' ? 'Orders' : lang === 'zh' ? '订单' : 'Đơn hàng'}</span>
+        </button>
+
+        {/* Tab 4: Gọi nhân viên */}
+        <button
+          type="button"
+          onClick={handleCallStaff}
+          disabled={callStaffCooldown > 0 || isCallingStaff}
+          className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none active:scale-95 ${
+            callStaffCooldown > 0
+              ? 'text-amber-500 font-bold opacity-80'
+              : 'text-amber-500 hover:text-amber-600 font-black'
+          }`}
+        >
+          <span className={`material-symbols-outlined text-xl ${callStaffCooldown === 0 ? 'animate-bounce' : ''}`}>
+            notifications_active
+          </span>
+          <span className="text-[10px] tracking-tight truncate px-1">
+            {callStaffCooldown > 0
+              ? `${callStaffCooldown}s`
+              : lang === 'en'
+              ? 'Call Staff'
+              : lang === 'zh'
+              ? '呼叫服务'
+              : 'Gọi NV'}
+          </span>
+        </button>
+
+        {/* Tab 5: Tiện ích */}
+        <button
+          type="button"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none active:scale-95 ${
+            isMobileMenuOpen
+              ? 'bg-[#3AA6FF]/10 text-[#3AA6FF] font-black'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold'
+          }`}
+        >
+          <span className="material-symbols-outlined text-xl">tune</span>
+          <span className="text-[10px] tracking-tight">{lang === 'en' ? 'Utilities' : lang === 'zh' ? '工具' : 'Tiện ích'}</span>
+        </button>
+      </nav>
+
+      {/* ── Mobile Utilities Bottom Sheet Modal ─────────────────── */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
@@ -102,37 +181,53 @@ export const Header: React.FC<HeaderProps> = ({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs md:hidden"
+              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs md:hidden"
               onClick={() => setIsMobileMenuOpen(false)}
             />
             <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              className="fixed top-16 right-4 z-50 w-64 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-3 shadow-2xl space-y-2 md:hidden font-sans"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              className="fixed bottom-16 inset-x-0 z-50 bg-[var(--bg-card)] border-t border-x border-[var(--border-color)] rounded-t-3xl p-5 shadow-2xl space-y-4 md:hidden font-sans"
             >
-              {/* Gọi nhân viên */}
-              <button
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  handleCallStaff();
-                }}
-                disabled={callStaffCooldown > 0 || isCallingStaff}
-                className="w-full text-left px-3.5 py-2.5 text-[13px] font-bold rounded-xl bg-[var(--bg-card-inner)] border border-[var(--border-color)] text-[var(--text-primary)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-all disabled:opacity-50 font-sans flex items-center gap-2.5 cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-base text-[var(--brand-primary)]">
-                  support_agent
-                </span>
-                <span>
-                  {callStaffCooldown > 0
-                    ? `${lang === 'vi' ? 'Chờ' : lang === 'zh' ? '等待' : 'Wait'} ${callStaffCooldown}s`
-                    : lang === 'vi'
-                    ? 'Gọi nhân viên phục vụ'
-                    : lang === 'zh'
-                    ? '呼叫服务员'
-                    : 'Call Staff'}
-                </span>
-              </button>
+              {/* Drag Handle & Header */}
+              <div className="flex flex-col items-center gap-2 pb-2 border-b border-[var(--border-color)]">
+                <div className="w-10 h-1 bg-[var(--border-color)] rounded-full mb-1" />
+                <div className="w-full flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[#3AA6FF] text-xl">tune</span>
+                    <h3 className="text-sm font-bold text-[var(--text-primary)]">
+                      {lang === 'en' ? 'Utilities & Settings' : lang === 'zh' ? '小工具与设置' : 'Tiện ích & Cài đặt'}
+                    </h3>
+                  </div>
+                  <button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
+                    title="Đóng tiện ích"
+                  >
+                    <span className="material-symbols-outlined text-lg">close</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Table Info Badge */}
+              <div className="bg-[var(--bg-card-inner)] border border-[var(--border-color)] p-3 rounded-2xl flex items-center justify-between shadow-2xs">
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-[var(--text-tertiary)]">Vị trí hiện tại</p>
+                  <p className="text-xs font-black text-[var(--text-primary)] mt-0.5">{table?.tableName ?? 'Bàn 01'} (Tầng 1)</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    if (onOpenQRModal) onOpenQRModal();
+                  }}
+                  className="px-3 py-1.5 bg-[#3AA6FF]/10 text-[#3AA6FF] rounded-xl text-xs font-bold flex items-center gap-1 border border-[#3AA6FF]/30 active:scale-95 transition-all"
+                >
+                  <span className="material-symbols-outlined text-sm">qr_code_2</span>
+                  <span>Mã QR bàn</span>
+                </button>
+              </div>
 
               {/* Đổi bàn */}
               <button
@@ -140,31 +235,34 @@ export const Header: React.FC<HeaderProps> = ({
                   setIsMobileMenuOpen(false);
                   setIsTransferModalOpen(true);
                 }}
-                className="w-full text-left px-3.5 py-2.5 text-[13px] font-bold rounded-xl bg-[var(--bg-card-inner)] border border-[var(--border-color)] text-[var(--text-primary)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-all font-sans flex items-center gap-2.5 cursor-pointer"
+                className="w-full text-left px-4 py-3 text-[13px] font-bold rounded-2xl bg-[var(--bg-card-inner)] border border-[var(--border-color)] text-[var(--text-primary)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-all font-sans flex items-center gap-3 cursor-pointer active:scale-98"
               >
-                <span className="material-symbols-outlined text-base text-[var(--brand-primary)]">
+                <span className="material-symbols-outlined text-lg text-[var(--brand-primary)]">
                   table_restaurant
                 </span>
-                <span>{lang === 'vi' ? 'Đổi vị trí bàn' : lang === 'zh' ? '更换桌位' : 'Move Table'}</span>
+                <span>{lang === 'vi' ? 'Yêu cầu đổi vị trí bàn' : lang === 'zh' ? '更换桌位' : 'Request Table Change'}</span>
               </button>
 
-              {/* Giao diện Sáng/Tối UIverse Switch */}
-              <div className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-[var(--bg-card-inner)] border border-[var(--border-color)] text-[var(--text-primary)]">
-                <div className="flex items-center gap-2.5">
-                  <span className="material-symbols-outlined text-base text-[var(--brand-primary)]">
+              {/* Giao diện Sáng/Tối */}
+              <div className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-[var(--bg-card-inner)] border border-[var(--border-color)] text-[var(--text-primary)]">
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-lg text-[var(--brand-primary)]">
                     {isDark ? 'dark_mode' : 'light_mode'}
                   </span>
                   <span className="text-[13px] font-bold font-sans">
                     {isDark
-                      ? (lang === 'vi' ? 'Giao diện Tối' : lang === 'zh' ? '深色模式' : 'Dark Mode')
+                      ? (lang === 'vi' ? 'Giao diện Tối (Soft Dark)' : lang === 'zh' ? '深色模式' : 'Dark Mode')
                       : (lang === 'vi' ? 'Giao diện Sáng' : lang === 'zh' ? '浅色模式' : 'Light Mode')}
                   </span>
                 </div>
                 <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
               </div>
 
-              {/* Language Switcher Switch */}
-              <div className="pt-2 border-t border-[var(--border-color)] flex justify-center items-center">
+              {/* Ngôn ngữ Switcher */}
+              <div className="pt-2 border-t border-[var(--border-color)] flex items-center justify-between">
+                <span className="text-xs font-bold text-[var(--text-secondary)]">
+                  {lang === 'en' ? 'Language' : lang === 'zh' ? '语言' : 'Ngôn ngữ'}
+                </span>
                 <LanguageToggleSwitch lang={lang} setLang={setLang} />
               </div>
             </motion.div>

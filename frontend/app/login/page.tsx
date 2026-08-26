@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggleSwitch } from '@/components/table/ThemeToggleSwitch';
 import { LanguageToggleSwitch, Lang } from '@/components/table/LanguageToggleSwitch';
 import { BrandLogo } from '@/components/table/BrandLogo';
@@ -16,6 +17,8 @@ export default function LoginPage() {
   const [mounted, setMounted] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isForgotPasswordModalOpen, setIsForgotPasswordModalOpen] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [lang, setLang] = useState<Lang>('vi');
@@ -99,10 +102,13 @@ export default function LoginPage() {
       emailPlaceholder: 'Nhập email của bạn',
       passwordLabel: 'Mật khẩu',
       passwordPlaceholder: 'Nhập mật khẩu của bạn',
-      rememberMe: 'Ghi nhớ đăng nhập',
       forgotPassword: 'Quên mật khẩu?',
-      submitBtn: 'Đăng nhập',
+      submitBtn: 'ĐĂNG NHẬP',
       submittingBtn: 'Đang xử lý...',
+      forgotTitle: 'Liên hệ Quản trị viên (Admin)',
+      forgotDesc: 'Để bảo mật thông tin tài khoản nội bộ, hệ thống không tự động cấp lại mật khẩu tự động.',
+      forgotActionText: 'Vui lòng liên hệ Trực tiếp với Quản trị viên (Admin) hoặc Trưởng ca cửa hàng Kohi Coffee để được tạo lại mật khẩu mới.',
+      closeBtn: 'ĐÃ HIỂU & ĐÓNG',
     },
     en: {
       title: 'System Sign In',
@@ -111,10 +117,13 @@ export default function LoginPage() {
       emailPlaceholder: 'Enter your Email',
       passwordLabel: 'Password',
       passwordPlaceholder: 'Enter your Password',
-      rememberMe: 'Remember me',
       forgotPassword: 'Forgot password?',
-      submitBtn: 'Sign In',
+      submitBtn: 'SIGN IN',
       submittingBtn: 'Signing in...',
+      forgotTitle: 'Contact Administrator',
+      forgotDesc: 'For internal security, system password reset is restricted.',
+      forgotActionText: 'Please contact your Store Administrator (Admin) or Shift Leader directly to reset your password.',
+      closeBtn: 'UNDERSTOOD & CLOSE',
     },
     zh: {
       title: '系统登录',
@@ -123,10 +132,13 @@ export default function LoginPage() {
       emailPlaceholder: '请输入您的邮箱',
       passwordLabel: '密码',
       passwordPlaceholder: '请输入您的密码',
-      rememberMe: '记住登录',
       forgotPassword: '忘记密码？',
       submitBtn: '登录',
       submittingBtn: '正在登录...',
+      forgotTitle: '联系管理员',
+      forgotDesc: '为保障系统安全，密码重置受限。',
+      forgotActionText: '请直接联系 Kohi Coffee 门店管理员或值班经理以重置密码。',
+      closeBtn: '好的，关闭',
     },
   };
 
@@ -161,47 +173,55 @@ export default function LoginPage() {
               {currText.emailLabel}
             </label>
             <div className={`border ${emailError ? 'border-red-500 ring-2 ring-red-500/20' : 'border-[#E2E8F0] dark:border-[#222732]'} bg-[#FFFFFF] dark:bg-[#0B1120] rounded-2xl h-12 flex items-center px-4 transition-all focus-within:border-[#3AA6FF] focus-within:ring-2 focus-within:ring-[#3AA6FF]/20`}>
-              <span className="material-symbols-outlined text-[20px] text-[#64748B] dark:text-[#94A3B8] shrink-0">mail</span>
               <input
                 id="email"
                 type="email"
                 placeholder={currText.emailPlaceholder}
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
-                className="ml-3 bg-transparent border-none outline-none w-full text-xs font-semibold text-[var(--text-primary)] placeholder-[#94A3B8] font-sans"
+                className="bg-transparent border-none outline-none w-full text-xs font-semibold text-[var(--text-primary)] placeholder-[#94A3B8] font-sans"
               />
             </div>
             {emailError && <p className="text-[11px] text-red-500 font-bold ml-1">{emailError}</p>}
           </div>
 
-          {/* Password Field */}
+          {/* Password Field with Show/Hide Toggle */}
           <div className="flex flex-col gap-1.5">
             <label htmlFor="password" className="text-xs font-bold text-[var(--text-primary)] font-sans">
               {currText.passwordLabel}
             </label>
             <div className={`border ${passwordError ? 'border-red-500 ring-2 ring-red-500/20' : 'border-[#E2E8F0] dark:border-[#222732]'} bg-[#FFFFFF] dark:bg-[#0B1120] rounded-2xl h-12 flex items-center px-4 transition-all focus-within:border-[#3AA6FF] focus-within:ring-2 focus-within:ring-[#3AA6FF]/20`}>
-              <span className="material-symbols-outlined text-[20px] text-[#64748B] dark:text-[#94A3B8] shrink-0">lock</span>
               <input
                 id="password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 placeholder={currText.passwordPlaceholder}
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); setPasswordError(''); }}
-                className="ml-3 bg-transparent border-none outline-none w-full text-xs font-semibold text-[var(--text-primary)] placeholder-[#94A3B8] font-sans"
+                className="bg-transparent border-none outline-none w-full text-xs font-semibold text-[var(--text-primary)] placeholder-[#94A3B8] font-sans"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="text-[#64748B] dark:text-[#94A3B8] hover:text-[#3AA6FF] dark:hover:text-[#3AA6FF] transition-colors focus:outline-none cursor-pointer shrink-0 ml-2 flex items-center justify-center"
+                title={showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
+              >
+                <span className="material-symbols-outlined text-[20px]">
+                  {showPassword ? 'visibility_off' : 'visibility'}
+                </span>
+              </button>
             </div>
             {passwordError && <p className="text-[11px] text-red-500 font-bold ml-1">{passwordError}</p>}
           </div>
 
-          {/* Remember me & Forgot Password */}
-          <div className="flex items-center justify-between mt-1 text-xs">
-            <label className="flex items-center gap-2 cursor-pointer text-[var(--text-secondary)]">
-              <input type="checkbox" className="w-4 h-4 rounded border-[#E2E8F0] dark:border-[#222732] text-[#3AA6FF] focus:ring-[#3AA6FF]" />
-              <span className="font-medium">{currText.rememberMe}</span>
-            </label>
-            <span className="text-[#3AA6FF] hover:underline cursor-pointer font-bold">
+          {/* Forgot Password (Remember me removed) */}
+          <div className="flex items-center justify-end mt-1 text-xs">
+            <button
+              type="button"
+              onClick={() => setIsForgotPasswordModalOpen(true)}
+              className="text-[#3AA6FF] hover:underline cursor-pointer font-bold transition-colors"
+            >
               {currText.forgotPassword}
-            </span>
+            </button>
           </div>
 
           {/* Error Banner */}
@@ -229,6 +249,66 @@ export default function LoginPage() {
           </button>
         </form>
       </main>
+
+      {/* Forgot Password Contact Admin Modal */}
+      <AnimatePresence>
+        {isForgotPasswordModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsForgotPasswordModalOpen(false)}
+              className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+            />
+
+            {/* Modal Box */}
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.92, opacity: 0, y: 20 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+              className="relative w-full max-w-sm bg-[#FFFFFF] dark:bg-[#121620] border border-[#E2E8F0] dark:border-[#222732] rounded-3xl shadow-2xl z-10 overflow-hidden text-center font-sans p-6 space-y-5"
+            >
+              {/* Icon badge */}
+              <div className="w-14 h-14 bg-[#3AA6FF]/10 text-[#3AA6FF] border border-[#3AA6FF]/20 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+                <span className="material-symbols-outlined text-3xl">admin_panel_settings</span>
+              </div>
+
+              {/* Title & Info */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-black text-[var(--text-primary)] font-heading">
+                  {currText.forgotTitle}
+                </h3>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                  {currText.forgotDesc}
+                </p>
+              </div>
+
+              {/* Notice Box */}
+              <div className="p-4 bg-[#3AA6FF]/5 dark:bg-[#3AA6FF]/10 border border-[#3AA6FF]/20 rounded-2xl text-left space-y-2 text-xs">
+                <div className="flex items-center gap-2 text-[#3AA6FF] font-bold">
+                  <span className="material-symbols-outlined text-base">info</span>
+                  <span>Hướng dẫn cập nhật mật khẩu:</span>
+                </div>
+                <p className="text-[var(--text-primary)] font-medium leading-relaxed">
+                  {currText.forgotActionText}
+                </p>
+              </div>
+
+              {/* Action Button */}
+              <button
+                onClick={() => setIsForgotPasswordModalOpen(false)}
+                className="w-full py-3.5 bg-[#3AA6FF] hover:bg-[#2b95eb] text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-[#3AA6FF]/25 transition-all active:scale-95 cursor-pointer"
+              >
+                {currText.closeBtn}
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+

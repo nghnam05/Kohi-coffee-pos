@@ -98,9 +98,9 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         <button
           onClick={handleCallStaff}
           disabled={callStaffCooldown > 0 || isCallingStaff}
-          className="w-full uiverse-btn py-3 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed shadow-md font-[700] text-[13px] font-sans tracking-wide"
+          className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-orange-500/25 font-[800] text-[13px] font-sans tracking-wide cursor-pointer"
         >
-          <span className="material-symbols-outlined text-[18px]">support_agent</span>
+          <span className="material-symbols-outlined text-[19px] animate-bounce">notifications_active</span>
           <span>
             {callStaffCooldown > 0
               ? (lang === 'en' ? `WAIT ${callStaffCooldown}S...` : lang === 'zh' ? `请稍等 ${callStaffCooldown} 秒...` : `CHỜ ${callStaffCooldown}S...`)
@@ -174,9 +174,8 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         {/* Button: Yêu cầu đổi bàn */}
         <button
           onClick={() => setIsTransferModalOpen(true)}
-          className="w-full px-3.5 py-2 rounded-2xl bg-transparent border border-[var(--brand-primary)]/60 text-xs font-semibold text-[var(--brand-primary)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-primary-fg)] hover:border-transparent hover:shadow-md transition-all text-left flex items-center gap-2 font-sans cursor-pointer"
+          className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-slate-700/80 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all text-center flex items-center justify-center font-sans cursor-pointer active:scale-95"
         >
-          <span className="material-symbols-outlined text-[16px]">swap_horiz</span>
           <span>{lang === 'en' ? 'Change Table' : lang === 'zh' ? '更换桌号' : 'Yêu cầu đổi bàn'}</span>
         </button>
 
@@ -184,9 +183,8 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         {handleLeaveTable && (
           <button
             onClick={handleLeaveTable}
-            className="w-full px-3.5 py-2 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-xs font-bold text-rose-500 transition-all text-left flex items-center gap-2 font-sans cursor-pointer active:scale-95"
+            className="w-full px-3.5 py-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-xs font-bold text-rose-500 transition-all text-center flex items-center justify-center font-sans cursor-pointer active:scale-95"
           >
-            <span className="material-symbols-outlined text-[16px]">logout</span>
             <span>{lang === 'en' ? 'Leave Table' : lang === 'zh' ? '离开餐桌' : 'Rời bàn (Thoát)'}</span>
           </button>
         )}

@@ -8,6 +8,7 @@ import { io, Socket } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { playCashChime, playAlertPing, playMomoChime } from '../../../../utils/sound';
 import { ThemeToggleSwitch } from '@/components/table/ThemeToggleSwitch';
+import { MomoPayModal } from '@/components/table/MomoPayModal';
 import { toast } from 'react-hot-toast';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
@@ -160,6 +161,7 @@ export default function OrderStatusPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPaying, setIsPaying] = useState(false);
+  const [isMomoModalOpen, setIsMomoModalOpen] = useState(false);
   const [isCallingStaff, setIsCallingStaff] = useState(false);
   const [callStaffCooldown, setCallStaffCooldown] = useState(0);
   const socketRef = useRef<Socket | null>(null);
@@ -539,9 +541,8 @@ export default function OrderStatusPage() {
                           router.push('/');
                         }
                       }}
-                      className="w-full h-[50px] bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl shadow-md transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 font-sans cursor-pointer active:scale-95"
+                      className="w-full h-[48px] bg-rose-500 hover:bg-rose-600 text-white font-extrabold rounded-2xl shadow-md transition-all text-xs uppercase tracking-wider flex items-center justify-center font-sans cursor-pointer active:scale-95"
                     >
-                      <span className="material-symbols-outlined text-base">logout</span>
                       <span>{lang === 'en' ? 'LEAVE TABLE' : lang === 'zh' ? '离开餐桌' : 'RỜI BÀN'}</span>
                     </button>
 
@@ -550,9 +551,8 @@ export default function OrderStatusPage() {
                       onClick={() => {
                         router.push('/');
                       }}
-                      className="w-full h-[50px] bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-xl shadow-md hover:shadow-lg transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 font-sans cursor-pointer active:scale-95"
+                      className="w-full h-[48px] bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-black rounded-2xl shadow-md hover:shadow-lg transition-all text-xs uppercase tracking-wider flex items-center justify-center font-sans cursor-pointer active:scale-95"
                     >
-                      <span className="material-symbols-outlined text-base">home</span>
                       <span>{lang === 'en' ? 'HOME PAGE' : lang === 'zh' ? '首页' : 'TRANG CHỦ'}</span>
                     </button>
                   </div>
@@ -742,9 +742,8 @@ export default function OrderStatusPage() {
                           router.push('/');
                         }
                       }}
-                      className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                      className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 rounded-2xl text-xs font-bold transition-all flex items-center justify-center cursor-pointer active:scale-95"
                     >
-                      <span className="material-symbols-outlined text-base">logout</span>
                       <span>{lang === 'en' ? 'LEAVE TABLE (RESET SESSION)' : lang === 'zh' ? '离开餐桌 (重置会话)' : 'RỜI BÀN (RESET PHIÊN DÙNG MÓN)'}</span>
                     </button>
                   </div>
@@ -822,11 +821,11 @@ export default function OrderStatusPage() {
 
                       {order.paymentMethod === 'momo' ? (
                         <button
-                          onClick={handleSimulateMoMoPayment}
-                          disabled={isPaying}
-                          className="w-full py-3.5 bg-pink-500 hover:bg-pink-600 text-white font-black rounded-xl shadow-md transition-all active:scale-95 text-xs uppercase tracking-wider cursor-pointer"
+                          onClick={() => setIsMomoModalOpen(true)}
+                          className="w-full py-3.5 bg-[#D82D8B] hover:bg-[#c2247b] text-white font-black rounded-xl shadow-lg shadow-pink-500/20 transition-all active:scale-95 text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
                         >
-                          {isPaying ? 'Đang xử lý...' : 'Thanh toán MoMo ngay '}
+                          <span className="material-symbols-outlined text-lg">bolt</span>
+                          <span>Thanh toán MoMo ngay (Giả lập)</span>
                         </button>
                       ) : (
                         <p className="text-xs font-normal text-[#64748B] dark:text-[#94A3B8] text-center">
@@ -901,8 +900,9 @@ export default function OrderStatusPage() {
                     <button
                       onClick={handleCallStaff}
                       disabled={callStaffCooldown > 0 || isCallingStaff}
-                      className="hidden sm:flex w-full py-3.5 bg-[#FFFFFF] dark:bg-[#181B21] hover:bg-[#F8FAFC] dark:hover:bg-[#22252C] border border-[#CBD5E1] dark:border-[#333333] hover:border-[#3AA6FF] text-[#000000] dark:text-[#FFFFFF] font-black rounded-xl shadow-md transition-all active:scale-95 text-xs uppercase tracking-wider items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                      className="hidden sm:flex w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold rounded-xl shadow-lg shadow-orange-500/25 transition-all active:scale-95 text-xs uppercase tracking-wider items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                     >
+                      <span className="material-symbols-outlined text-base animate-bounce text-white">notifications_active</span>
                       <span>
                         {callStaffCooldown > 0
                           ? `${lang === 'en' ? 'Call Staff' : lang === 'zh' ? '呼叫服务员' : 'Gọi nhân viên'} (${callStaffCooldown}s)`
@@ -922,9 +922,9 @@ export default function OrderStatusPage() {
                 <button
                   onClick={handleCallStaff}
                   disabled={callStaffCooldown > 0 || isCallingStaff}
-                  className="w-full py-3.5 bg-[#FFFFFF] dark:bg-[#181B21] hover:bg-[#F8FAFC] dark:hover:bg-[#22252C] border border-[#3AA6FF] text-[#000000] dark:text-[#FFFFFF] font-black rounded-xl shadow-lg active:scale-95 text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold rounded-xl shadow-lg shadow-orange-500/25 active:scale-95 text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
-                  <span className="material-symbols-outlined text-base text-[#3AA6FF] animate-pulse">notifications</span>
+                  <span className="material-symbols-outlined text-base text-white animate-bounce">notifications_active</span>
                   <span>
                     {callStaffCooldown > 0
                       ? `${lang === 'en' ? 'CALL STAFF' : lang === 'zh' ? '呼叫服务员' : 'GỌI NHÂN VIÊN'} (${callStaffCooldown}s)`
@@ -934,8 +934,20 @@ export default function OrderStatusPage() {
                   </span>
                 </button>
               </div>
+            {/* MoMo Simulation Payment Modal */}
+            {order && (
+              <MomoPayModal
+                isOpen={isMomoModalOpen}
+                onClose={() => setIsMomoModalOpen(false)}
+                orderId={order._id}
+                tableName={order.tableId?.tableName || 'Bàn'}
+                totalAmount={order.totalAmount}
+                customerName={order.customerName}
+                onSuccess={() => {
+                  setOrder((prev) => (prev ? { ...prev, status: 'paid' } : null));
+                }}
+              />
             )}
-
           </div>
         ) : null}
       </main>

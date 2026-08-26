@@ -33,9 +33,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
 }) => {
   return (
     <div
-      className={`fixed right-4 lg:right-[380px] z-30 flex flex-col items-end gap-3 md:bottom-6 transition-all duration-300 ${
-        totalQuantity > 0 ? 'bottom-[88px] md:bottom-6' : 'bottom-6'
-      }`}
+      className="fixed right-4 lg:right-[380px] z-30 flex flex-col items-end gap-3 bottom-20 md:bottom-6 transition-all duration-300"
     >
       <AnimatePresence>
         {isAiChatOpen && (
