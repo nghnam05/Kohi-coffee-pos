@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, isValidObjectId } from 'mongoose';
 import { SalaryConfig, SalaryConfigDocument } from './schemas/salary-config.schema.js';
 import { Payroll, PayrollDocument } from './schemas/payroll.schema.js';
 import { AttendanceService } from '../attendance/attendance.service.js';
@@ -20,10 +20,16 @@ export class SalariesService {
   }
 
   async getConfigByUser(userId: string): Promise<SalaryConfigDocument | null> {
+    if (!userId || userId === 'null' || userId === 'undefined' || !isValidObjectId(userId)) {
+      return null;
+    }
     return this.configModel.findOne({ userId }).populate('userId', 'name email role').exec();
   }
 
   async upsertConfig(userId: string, data: Partial<SalaryConfig>): Promise<SalaryConfigDocument> {
+    if (!userId || userId === 'null' || userId === 'undefined' || !isValidObjectId(userId)) {
+      throw new NotFoundException('ID người dùng không hợp lệ.');
+    }
     const existing = await this.configModel.findOne({ userId }).exec();
     if (existing) {
       Object.assign(existing, data);
@@ -37,6 +43,9 @@ export class SalariesService {
 
   /** Tạo / Cập nhật bảng lương tháng từ tổng giờ Chấm công */
   async generatePayroll(userId: string, month: number, year: number): Promise<PayrollDocument> {
+    if (!userId || userId === 'null' || userId === 'undefined' || !isValidObjectId(userId)) {
+      throw new NotFoundException('ID người dùng không hợp lệ.');
+    }
     let config = await this.configModel.findOne({ userId }).exec();
     if (!config) {
       config = await this.configModel.create({
@@ -113,6 +122,9 @@ export class SalariesService {
   }
 
   async findMyPayrolls(userId: string, month?: number, year?: number): Promise<PayrollDocument[]> {
+    if (!userId || userId === 'null' || userId === 'undefined' || !isValidObjectId(userId)) {
+      return [];
+    }
     const filter: any = { userId };
     if (month) filter.month = month;
     if (year) filter.year = year;

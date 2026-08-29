@@ -53,6 +53,7 @@ interface FoodDetailModalProps {
   ADDON_PRICES: Record<string, number>;
   ADDON_ICONS: Record<string, string>;
   formatPrice: (price: number, lang: any) => string;
+  translateCategory?: (cat: string) => string;
   lang: any;
 }
 
@@ -84,6 +85,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
   ADDON_PRICES,
   ADDON_ICONS,
   formatPrice,
+  translateCategory,
   lang,
 }) => {
   return (
@@ -115,16 +117,18 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
               {/* Left Image Section */}
               <div
                 onClick={() => setIsLightboxOpen(true)}
-                className="w-full md:w-[44%] min-h-[220px] sm:min-h-[260px] md:min-h-[360px] bg-[var(--bg-primary)] border-b md:border-b-0 md:border-r border-[var(--border-color)] relative flex-shrink-0 cursor-pointer group flex items-center justify-center overflow-hidden"
+                className="w-full md:w-[44%] min-h-[240px] sm:min-h-[280px] md:min-h-[360px] bg-slate-900/5 dark:bg-slate-900/40 border-b md:border-b-0 md:border-r border-[var(--border-color)] relative flex-shrink-0 cursor-pointer group flex items-center justify-center overflow-hidden"
               >
                 <Image
                   src={selectedFood.image}
                   alt={selectedFood.name}
                   fill
-                  className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                  className="object-cover object-center group-hover:scale-[1.03] transition-transform duration-300"
+                  sizes="(max-width: 768px) 100vw, 400px"
+                  priority
                 />
 
-                <div className="absolute bottom-3 right-3 z-10 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center backdrop-blur-sm pointer-events-none shadow-md">
+                <div className="absolute bottom-3 right-3 z-10 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center backdrop-blur-md pointer-events-none shadow-md">
                   <span className="material-symbols-outlined text-base">zoom_in</span>
                 </div>
               </div>
@@ -145,6 +149,12 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
 
                 <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-5 scrollbar-none">
                   <div className="pr-8">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="inline-flex items-center gap-1.5 bg-slate-950/80 text-amber-300 border border-amber-500/40 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow-md font-sans">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0 shadow-[0_0_6px_#f59e0b]" />
+                        {translateCategory ? translateCategory(selectedFood.category) : selectedFood.category}
+                      </span>
+                    </div>
                     <h3 className="text-[20px] sm:text-[22px] font-bold text-[var(--text-primary)] leading-tight">
                       {selectedFood.name}
                     </h3>
@@ -407,7 +417,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                   <button
                     key={promptText}
                     onClick={() => handleSendModalAiMessage(promptText)}
-                    className="px-3 py-1.5 rounded-[var(--radius-full)] bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[#3AA6FF] text-[11px] font-medium text-[var(--text-secondary)] hover:text-[#3AA6FF] whitespace-nowrap transition-all shadow-sm active:scale-95"
+                    className="px-3 py-1.5 rounded-[var(--radius-full)] bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[#0284c7] dark:hover:border-[#38BDF8] text-[11px] font-medium text-[var(--text-secondary)] hover:text-[#0284c7] dark:hover:text-[#38BDF8] whitespace-nowrap transition-all shadow-sm active:scale-95 cursor-pointer"
                   >
                     {promptText}
                   </button>
@@ -424,7 +434,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                     <div
                       className={`max-w-[85%] p-3 rounded-[var(--radius-md)] text-[13.5px] leading-relaxed ${
                         msg.role === 'user'
-                          ? 'bg-[#3AA6FF] text-white font-medium shadow-sm'
+                          ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 font-medium shadow-sm'
                           : 'bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] shadow-sm'
                       }`}
                     >

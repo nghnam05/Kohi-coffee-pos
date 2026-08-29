@@ -93,7 +93,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                       ? 'Select items from the menu to place an order.'
                       : lang === 'zh'
                       ? '请从菜单选择商品下单。'
-                      : 'Hãy chọn món từ thực đơn và bấm gọi món nhé!'}
+                      : 'Hãy chọn món từ menu và bấm gọi món nhé!'}
                   </p>
                 </div>
               ) : (
@@ -199,17 +199,27 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => {
-                                setIsOrderHistoryModalOpen(false);
-                                router.push(`/table/${tableId}/order-status/${order._id}`);
-                              }}
-                              className="px-3.5 py-1.5 bg-slate-200/70 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer"
-                            >
-                              {order.status === 'paid'
-                                ? (lang === 'en' ? 'Invoice' : lang === 'zh' ? '收据' : 'Xem hóa đơn')
-                                : (lang === 'en' ? 'Track Progress' : lang === 'zh' ? '追踪进度' : 'Theo dõi tiến độ')}
-                            </button>
+                            {order.status === 'paid' ? (
+                              <button
+                                onClick={() => {
+                                  setIsOrderHistoryModalOpen(false);
+                                  router.push(`/table/${tableId}/order-status/${order._id}`);
+                                }}
+                                className="px-3.5 py-1.5 bg-slate-200/70 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer"
+                              >
+                                {lang === 'en' ? 'Invoice' : lang === 'zh' ? '收据' : 'Xem hóa đơn'}
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setIsOrderHistoryModalOpen(false);
+                                  router.push(`/table/${tableId}/order-status/${order._id}`);
+                                }}
+                                className="px-4 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 text-xs font-extrabold rounded-xl transition-all active:scale-95 cursor-pointer shadow-sm"
+                              >
+                                {lang === 'en' ? 'Pay Now' : lang === 'zh' ? '立即支付' : 'Thanh toán'}
+                              </button>
+                            )}
 
                             {['ready', 'served', 'completed', 'paid'].includes(order.status) && (
                               <button
@@ -244,21 +254,38 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
 
               <div className="flex items-center gap-2">
                 {(() => {
-                  const isAllPaid = activeOrders.length > 0 && activeOrders.every((o) => o.status === 'paid');
+                  const unpaidOrders = activeOrders.filter((o) => o.status !== 'paid');
+                  const isAllPaid = activeOrders.length > 0 && unpaidOrders.length === 0;
 
                   if (isAllPaid) {
                     return (
-                      <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full text-xs font-bold">
+                      <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full text-xs font-bold border border-emerald-500/20">
                         {lang === 'en' ? 'Paid' : lang === 'zh' ? '已结账' : 'Đã thanh toán'}
                       </span>
                     );
                   }
+
+                  if (unpaidOrders.length > 0) {
+                    const latestUnpaid = unpaidOrders[0];
+                    return (
+                      <button
+                        onClick={() => {
+                          setIsOrderHistoryModalOpen(false);
+                          router.push(`/table/${tableId}/order-status/${latestUnpaid._id}`);
+                        }}
+                        className="px-5 py-2.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-black rounded-xl text-xs tracking-wide transition-all shadow-md active:scale-95 cursor-pointer"
+                      >
+                        {lang === 'en' ? 'Pay Now' : lang === 'zh' ? '立即支付' : 'Thanh toán'}
+                      </button>
+                    );
+                  }
+
                   return null;
                 })()}
 
                 <button
                   onClick={() => setIsOrderHistoryModalOpen(false)}
-                  className="px-5 py-2.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-black rounded-xl text-xs tracking-wide transition-all shadow-md active:scale-95 cursor-pointer"
+                  className="px-4 py-2.5 bg-slate-200/80 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-xs tracking-wide transition-all active:scale-95 cursor-pointer"
                 >
                   {lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng'}
                 </button>

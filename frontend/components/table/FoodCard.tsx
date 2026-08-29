@@ -54,16 +54,22 @@ export const FoodCard: React.FC<FoodCardProps> = ({
       >
         <div
           onClick={handleClick}
-          className="w-20 h-20 rounded-[var(--radius-md)] overflow-hidden relative bg-[var(--bg-primary)] cursor-pointer flex-shrink-0"
+          className="w-20 h-20 sm:w-24 sm:h-24 rounded-[var(--radius-md)] overflow-hidden relative bg-slate-900/10 dark:bg-slate-900/60 cursor-pointer flex-shrink-0"
         >
           <Image
             src={food.image}
             alt={food.name}
             fill
-            className="object-cover group-hover:scale-[1.04] transition-transform duration-300 ease-out"
+            className="object-cover group-hover:scale-[1.04] transition-transform duration-300 ease-out relative z-0"
           />
         </div>
         <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-flex items-center gap-1 bg-slate-900/80 dark:bg-black/80 text-amber-300 border border-amber-500/30 text-[9.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-xs">
+              <span className="w-1 h-1 rounded-full bg-amber-400 shrink-0" />
+              {translateCategory(food.category)}
+            </span>
+          </div>
           <h3
             onClick={handleClick}
             className="text-[15px] font-[600] text-[var(--text-primary)] group-hover:text-[var(--brand-primary)] transition-colors leading-[1.3] truncate cursor-pointer font-sans mb-1.5"
@@ -82,9 +88,9 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.94 }}
             onClick={handleClick}
-            className={`px-4 py-2.5 rounded-xl text-[13px] font-[600] tracking-[0.02em] flex items-center gap-1.5 shadow-sm transition-all ${
+            className={`min-h-[44px] px-4 py-2.5 rounded-xl text-[13px] font-[600] tracking-[0.02em] flex items-center gap-1.5 shadow-sm transition-all cursor-pointer ${
               quantity > 0
-                ? 'bg-[var(--brand-primary-muted)] text-[var(--brand-primary)] border border-[var(--brand-primary)]/30 hover:bg-[var(--brand-primary)]/20'
+                ? 'bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 hover:bg-[#0284c7]/20 dark:hover:bg-[#38BDF8]/25'
                 : 'uiverse-btn'
             }`}
           >
@@ -116,20 +122,22 @@ export const FoodCard: React.FC<FoodCardProps> = ({
         {/* Image cover */}
         <div
           onClick={handleClick}
-          className="relative h-48 sm:h-52 xl:h-56 w-full overflow-hidden bg-[var(--bg-primary)] cursor-pointer flex-shrink-0 rounded-t-[var(--radius-lg)]"
+          className="relative aspect-[4/3] w-full overflow-hidden bg-slate-900/10 dark:bg-slate-900/60 cursor-pointer flex-shrink-0 rounded-t-[var(--radius-lg)] group"
         >
+          {/* Full width cover image */}
           <Image
             src={food.image}
             alt={food.name}
             fill
-            className="object-cover object-center group-hover:scale-[1.04] transition-transform duration-300 ease-out"
+            className="object-cover group-hover:scale-[1.04] transition-transform duration-300 ease-out relative z-0"
             sizes="(max-width: 768px) 100vw, 350px"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-30 group-hover:opacity-10 transition-opacity" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-20 group-hover:opacity-10 transition-opacity pointer-events-none z-0" />
 
           {/* Category Tag Badge */}
-          <div className="absolute top-[10px] left-[10px] bg-[var(--bg-card)]/90 text-[var(--brand-primary)] border border-[var(--brand-primary)]/30 text-[10px] font-[700] uppercase tracking-[0.05em] px-2.5 py-1 rounded-full shadow-sm backdrop-blur-md font-sans">
-            {translateCategory(food.category)}
+          <div className="absolute top-2.5 left-2.5 z-10 bg-slate-950/80 text-amber-300 border border-amber-500/40 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow-lg backdrop-blur-md font-sans flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0 shadow-[0_0_6px_#f59e0b]" />
+            <span>{translateCategory(food.category)}</span>
           </div>
         </div>
 
@@ -164,9 +172,9 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.94 }}
             onClick={handleClick}
-            className={`px-4 py-2.5 rounded-xl text-[13px] font-[600] tracking-[0.02em] flex items-center gap-1.5 shadow-sm transition-all ${
+            className={`min-h-[44px] px-4 py-2.5 rounded-xl text-[13px] font-[600] tracking-[0.02em] flex items-center gap-1.5 shadow-sm transition-all cursor-pointer ${
               quantity > 0
-                ? 'bg-[var(--brand-primary-muted)] text-[var(--brand-primary)] border border-[var(--brand-primary)]/30 hover:bg-[var(--brand-primary)]/20'
+                ? 'bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 hover:bg-[#0284c7]/20 dark:hover:bg-[#38BDF8]/25'
                 : 'uiverse-btn'
             }`}
           >

@@ -22,6 +22,7 @@ interface HeaderProps {
   callStaffCooldown: number;
   isCallingStaff: boolean;
   setIsTransferModalOpen: (open: boolean) => void;
+  handleLeaveTable?: () => void;
   isDark: boolean;
   setTheme: (theme: string) => void;
   lang: Lang;
@@ -43,6 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
   callStaffCooldown,
   isCallingStaff,
   setIsTransferModalOpen,
+  handleLeaveTable,
   isDark,
   setTheme,
   lang,
@@ -65,12 +67,12 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={onOpenNotifications || handleOpenOrderHistory}
-            className="relative w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 hover:text-[#3AA6FF] dark:hover:text-[#3AA6FF] flex items-center justify-center shadow-xs active:scale-95 transition-all cursor-pointer"
+            className="relative w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 hover:text-[#0284c7] dark:hover:text-[#38BDF8] flex items-center justify-center shadow-xs active:scale-95 transition-all cursor-pointer"
             title="Xem danh sách thông báo"
           >
             <span className="material-symbols-outlined text-xl">notifications</span>
             {unreadNotificationCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-black bg-[#3AA6FF] text-white rounded-full shadow-xs leading-none animate-pulse">
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-black bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 rounded-full shadow-xs leading-none animate-pulse">
                 {unreadNotificationCount}
               </span>
             )}
@@ -93,7 +95,7 @@ export const Header: React.FC<HeaderProps> = ({
           className="flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none text-[#3AA6FF] font-black active:scale-95"
         >
           <span className="material-symbols-outlined text-xl">restaurant_menu</span>
-          <span className="text-[10px] tracking-tight">{lang === 'en' ? 'Menu' : lang === 'zh' ? '菜单' : 'Thực đơn'}</span>
+          <span className="text-[10px] tracking-tight">{lang === 'en' ? 'Menu' : lang === 'zh' ? '菜单' : 'Menu'}</span>
         </button>
 
         {/* Tab 2: Giỏ hàng */}
@@ -138,16 +140,16 @@ export const Header: React.FC<HeaderProps> = ({
           type="button"
           onClick={handleCallStaff}
           disabled={callStaffCooldown > 0 || isCallingStaff}
-          className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none active:scale-95 ${
+          className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all duration-200 cursor-pointer select-none outline-none active:scale-95 group ${
             callStaffCooldown > 0
-              ? 'text-amber-500 font-bold opacity-80'
-              : 'text-amber-500 hover:text-amber-600 font-black'
+              ? 'text-amber-500/70 font-bold opacity-75'
+              : 'text-amber-600 dark:text-amber-400 hover:bg-gradient-to-r hover:from-amber-500 hover:to-orange-500 hover:text-white hover:shadow-md hover:shadow-orange-500/20 font-black'
           }`}
         >
-          <span className={`material-symbols-outlined text-xl ${callStaffCooldown === 0 ? 'animate-bounce' : ''}`}>
+          <span className={`material-symbols-outlined text-xl transition-colors ${callStaffCooldown === 0 ? 'animate-bounce group-hover:text-white' : ''}`}>
             notifications_active
           </span>
-          <span className="text-[10px] tracking-tight truncate px-1">
+          <span className="text-[10px] tracking-tight truncate px-1 transition-colors">
             {callStaffCooldown > 0
               ? `${callStaffCooldown}s`
               : lang === 'en'
@@ -212,17 +214,20 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
 
               {/* Table Info Badge */}
-              <div className="bg-[var(--bg-card-inner)] border border-[var(--border-color)] p-3 rounded-2xl flex items-center justify-between shadow-2xs">
+              <div className="group bg-[var(--bg-card-inner)] hover:bg-gradient-to-r hover:from-[#3AA6FF] hover:to-[#0070F3] border border-[var(--border-color)] hover:border-transparent text-[var(--text-primary)] hover:text-white p-3.5 rounded-2xl flex items-center justify-between shadow-2xs hover:shadow-lg hover:shadow-sky-500/25 transition-all duration-300">
                 <div>
-                  <p className="text-[10px] uppercase font-bold text-[var(--text-tertiary)]">Vị trí hiện tại</p>
-                  <p className="text-xs font-black text-[var(--text-primary)] mt-0.5">{table?.tableName ?? 'Bàn 01'} (Tầng 1)</p>
+                  <p className="text-[10px] uppercase font-bold text-[var(--text-tertiary)] group-hover:text-white/80 transition-colors">Vị trí hiện tại</p>
+                  <p className="text-xs font-black mt-0.5 flex items-center gap-1.5 transition-colors">
+                    <span className="material-symbols-outlined text-sm text-[#3AA6FF] group-hover:text-white transition-colors">location_on</span>
+                    {table?.tableName ?? 'Bàn 01'} (Tầng 1)
+                  </p>
                 </div>
                 <button
                   onClick={() => {
                     setIsMobileMenuOpen(false);
                     if (onOpenQRModal) onOpenQRModal();
                   }}
-                  className="px-3 py-1.5 bg-[#3AA6FF]/10 text-[#3AA6FF] rounded-xl text-xs font-bold flex items-center gap-1 border border-[#3AA6FF]/30 active:scale-95 transition-all"
+                  className="px-3 py-1.5 bg-[#3AA6FF]/10 group-hover:bg-white/20 text-[#3AA6FF] group-hover:text-white rounded-xl text-xs font-bold flex items-center gap-1 border border-[#3AA6FF]/30 group-hover:border-white/30 active:scale-95 transition-all"
                 >
                   <span className="material-symbols-outlined text-sm">qr_code_2</span>
                   <span>Mã QR bàn</span>
@@ -242,6 +247,22 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
                 <span>{lang === 'vi' ? 'Yêu cầu đổi vị trí bàn' : lang === 'zh' ? '更换桌位' : 'Request Table Change'}</span>
               </button>
+
+              {/* Rời khỏi bàn */}
+              {handleLeaveTable && (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    handleLeaveTable();
+                  }}
+                  className="w-full text-left px-4 py-3 text-[13px] font-bold rounded-2xl bg-red-500/10 dark:bg-red-500/15 border border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/20 transition-all font-sans flex items-center gap-3 cursor-pointer active:scale-98"
+                >
+                  <span className="material-symbols-outlined text-lg text-red-500">
+                    logout
+                  </span>
+                  <span>{lang === 'vi' ? 'Rời khỏi bàn' : lang === 'zh' ? '离开桌位' : 'Leave Table'}</span>
+                </button>
+              )}
 
               {/* Giao diện Sáng/Tối */}
               <div className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-[var(--bg-card-inner)] border border-[var(--border-color)] text-[var(--text-primary)]">

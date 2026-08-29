@@ -2,7 +2,7 @@ import {
   Injectable, NotFoundException, BadRequestException, ConflictException, Optional, Inject,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, isValidObjectId } from 'mongoose';
 import { ShiftSwapRequest, ShiftSwapRequestDocument } from './schemas/shift-swap.schema.js';
 import { User, UserDocument } from '../users/schemas/user.schema.js';
 import { CreateShiftSwapDto } from './dto/create-shift-swap.dto.js';
@@ -20,8 +20,11 @@ export class ShiftSwapsService {
   ) {}
 
   /** Tạo yêu cầu đổi ca */
-  async create(userId: string, dto: CreateShiftSwapDto): Promise<ShiftSwapRequestDocument> {
-    const user = await this.userModel.findById(userId).exec();
+  async create(userId: string, dto: CreateShiftSwapDto, email?: string): Promise<ShiftSwapRequestDocument> {
+    let user = isValidObjectId(userId) ? await this.userModel.findById(userId).exec() : null;
+    if (!user && email) {
+      user = await this.userModel.findOne({ email }).exec();
+    }
     if (!user) throw new NotFoundException('Không tìm thấy người dùng.');
 
     const currentShift = user.assignedShift || 'morning';
@@ -30,13 +33,13 @@ export class ShiftSwapsService {
     }
 
     // Kiểm tra xem đã có yêu cầu chờ duyệt chưa
-    const pending = await this.swapModel.findOne({ userId, status: 'pending' }).exec();
+    const pending = await this.swapModel.findOne({ userId: user._id, status: 'pending' }).exec();
     if (pending) {
       throw new ConflictException('Bạn đang có 1 yêu cầu đổi ca chờ Admin duyệt.');
     }
 
     const created = new this.swapModel({
-      userId,
+      userId: user._id,
       currentShift,
       requestedShift: dto.requestedShift,
       reason: dto.reason || '',
@@ -63,9 +66,15 @@ export class ShiftSwapsService {
   }
 
   /** Nhân viên xem danh sách yêu cầu của mình */
-  async findMy(userId: string): Promise<ShiftSwapRequestDocument[]> {
+  async findMy(userId: string, email?: string): Promise<ShiftSwapRequestDocument[]> {
+    let user = isValidObjectId(userId) ? await this.userModel.findById(userId).exec() : null;
+    if (!user && email) {
+      user = await this.userModel.findOne({ email }).exec();
+    }
+    if (!user) return [];
+    const targetUserId = user._id;
     return this.swapModel
-      .find({ userId })
+      .find({ userId: targetUserId })
       .populate('userId', 'name email role assignedShift')
       .sort({ createdAt: -1 })
       .exec();

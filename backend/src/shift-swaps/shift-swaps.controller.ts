@@ -16,14 +16,16 @@ export class ShiftSwapsController {
   @Post()
   create(@Request() req: any, @Body() dto: CreateShiftSwapDto) {
     const userId = req.user?.userId || req.user?._id || req.user?.sub;
-    return this.shiftSwapsService.create(userId, dto);
+    const email = req.user?.email;
+    return this.shiftSwapsService.create(userId, dto, email);
   }
 
   /** GET /api/v1/shift-swaps/my – Nhân viên xem yêu cầu của mình */
   @Get('my')
   findMy(@Request() req: any) {
     const userId = req.user?.userId || req.user?._id || req.user?.sub;
-    return this.shiftSwapsService.findMy(userId);
+    const email = req.user?.email;
+    return this.shiftSwapsService.findMy(userId, email);
   }
 
   /** GET /api/v1/shift-swaps – Admin xem tất cả yêu cầu */

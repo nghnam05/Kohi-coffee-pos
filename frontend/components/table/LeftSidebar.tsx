@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ThemeToggleSwitch } from './ThemeToggleSwitch';
 import { LanguageToggleSwitch } from './LanguageToggleSwitch';
 import { BrandLogo } from './BrandLogo';
+import { formatTableLocation } from '@/utils/format';
 
 interface Table {
   _id: string;
@@ -77,18 +78,19 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         className="w-full text-left relative mb-3 group cursor-pointer active:scale-[0.98] transition-all"
         title={lang === 'en' ? 'Click to view QR code for this table' : lang === 'zh' ? '点击查看此桌位的二维码' : 'Bấm vào để xem mã QR đặt món của bàn này'}
       >
-        <div className="bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] rounded-2xl px-3.5 py-3 flex items-center justify-between shadow-md group-hover:brightness-110 transition-all">
-          <div>
-            <p className="text-[9px] font-[600] opacity-80 uppercase tracking-[0.08em] mb-0.5 font-sans">
+        <div className="bg-[var(--bg-card-inner)] hover:bg-gradient-to-r hover:from-[#0284c7] hover:to-[#0369a1] text-[var(--text-primary)] hover:text-white border border-[var(--border-color)] hover:border-transparent rounded-2xl px-3 py-2.5 flex items-center justify-between shadow-xs hover:shadow-lg hover:shadow-sky-500/25 transition-all duration-300 gap-2">
+          <div className="min-w-0 flex-1">
+            <p className="text-[9px] font-[600] text-[var(--text-tertiary)] group-hover:text-white/80 uppercase tracking-[0.08em] mb-0.5 font-sans transition-colors truncate">
               {lang === 'en' ? 'Current Table' : lang === 'zh' ? '当前位置' : 'Vị trí hiện tại'}
             </p>
-            <span className="text-sm font-[700] tracking-tight flex items-center gap-1 font-sans">
-              {isLoading ? (lang === 'en' ? 'Loading...' : lang === 'zh' ? '加载中...' : 'Đang tải...') : `${table?.tableName ?? 'Bàn 05'} (Tầng 1)`}
+            <span className="text-xs xl:text-sm font-[700] tracking-tight flex items-center gap-1 font-sans text-[var(--text-primary)] group-hover:text-white transition-colors truncate">
+              <span className="material-symbols-outlined text-base text-[#0284c7] dark:text-[#38BDF8] group-hover:text-white transition-colors shrink-0">location_on</span>
+              <span className="truncate">{isLoading ? (lang === 'en' ? 'Loading...' : lang === 'zh' ? '加载中...' : 'Đang tải...') : formatTableLocation(table?.tableName, lang)}</span>
             </span>
           </div>
-          <div className="flex items-center gap-1.5 bg-black/10 dark:bg-white/10 px-2 py-1 rounded-xl backdrop-blur-xs">
-            <span className="material-symbols-outlined text-sm animate-pulse">qr_code_scanner</span>
-            <span className="text-[10px] font-bold font-sans">{lang === 'en' ? 'QR Code' : lang === 'zh' ? '二维码' : 'Mã QR'}</span>
+          <div className="shrink-0 flex items-center gap-1 bg-black/5 dark:bg-white/10 group-hover:bg-white/20 text-[var(--text-secondary)] group-hover:text-white px-2 py-1 rounded-xl backdrop-blur-xs transition-colors">
+            <span className="material-symbols-outlined text-xs animate-pulse">qr_code_scanner</span>
+            <span className="text-[10px] font-bold font-sans whitespace-nowrap">{lang === 'en' ? 'QR Code' : lang === 'zh' ? '二维码' : 'Mã QR'}</span>
           </div>
         </div>
       </button>
@@ -98,9 +100,9 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         <button
           onClick={handleCallStaff}
           disabled={callStaffCooldown > 0 || isCallingStaff}
-          className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-orange-500/25 font-[800] text-[13px] font-sans tracking-wide cursor-pointer"
+          className="w-full group py-3 px-4 bg-amber-500/5 hover:bg-gradient-to-r hover:from-amber-500 hover:to-orange-500 dark:bg-amber-500/10 border-2 border-amber-500/30 dark:border-amber-400/30 hover:border-transparent text-amber-600 dark:text-amber-400 hover:text-white rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-orange-500/30 font-[800] text-[13px] font-sans tracking-wide cursor-pointer"
         >
-          <span className="material-symbols-outlined text-[19px] animate-bounce">notifications_active</span>
+          <span className="material-symbols-outlined text-[19px] text-amber-500 group-hover:text-white transition-colors animate-bounce">notifications_active</span>
           <span>
             {callStaffCooldown > 0
               ? (lang === 'en' ? `WAIT ${callStaffCooldown}S...` : lang === 'zh' ? `请稍等 ${callStaffCooldown} 秒...` : `CHỜ ${callStaffCooldown}S...`)
@@ -241,7 +243,10 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                 }}
                 className="w-full bg-[var(--bg-card-inner)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-primary-fg)] text-[var(--text-primary)] text-[10.5px] font-semibold py-1.5 px-2.5 rounded-xl border border-[var(--border-color)] hover:border-[var(--brand-primary)] transition-all duration-200 text-left flex items-center justify-between font-sans group/chip cursor-pointer shadow-2xs"
               >
-                <span className="truncate">🔥 {lang === 'en' ? 'Best Sellers?' : lang === 'zh' ? '招牌推荐？' : 'Món nào ngon nhất?'}</span>
+                <span className="truncate flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[13px] text-amber-500">local_fire_department</span>
+                  <span>{lang === 'en' ? 'Best Sellers?' : lang === 'zh' ? '招牌推荐？' : 'Món nào ngon nhất?'}</span>
+                </span>
                 <span className="material-symbols-outlined text-[13px] opacity-0 group-hover/chip:opacity-100 transition-opacity">arrow_forward</span>
               </button>
 
@@ -251,9 +256,10 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                     setIsAiChatOpen(true);
                     setAiInput(lang === 'en' ? 'OPENING HOURS?' : lang === 'zh' ? '营业时间？' : 'GIỜ MỞ CỬA?');
                   }}
-                  className="bg-[var(--bg-card-inner)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-primary-fg)] text-[var(--text-primary)] text-[10px] font-semibold py-1.5 px-2 rounded-xl border border-[var(--border-color)] hover:border-[var(--brand-primary)] transition-all duration-200 text-center truncate font-sans cursor-pointer shadow-2xs"
+                  className="bg-[var(--bg-card-inner)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-primary-fg)] text-[var(--text-primary)] text-[10px] font-semibold py-1.5 px-2 rounded-xl border border-[var(--border-color)] hover:border-[var(--brand-primary)] transition-all duration-200 text-center truncate font-sans cursor-pointer shadow-2xs flex items-center justify-center gap-1"
                 >
-                  ⏰ {lang === 'en' ? 'Hours?' : lang === 'zh' ? '营业时间？' : 'Giờ mở cửa?'}
+                  <span className="material-symbols-outlined text-[12px]">schedule</span>
+                  <span>{lang === 'en' ? 'Hours?' : lang === 'zh' ? '营业时间？' : 'Giờ mở cửa?'}</span>
                 </button>
 
                 <button
@@ -261,9 +267,10 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                     setIsAiChatOpen(true);
                     setAiInput(lang === 'en' ? 'WIFI PASSWORD?' : lang === 'zh' ? 'WiFi 密码？' : 'CÓ WIFI KHÔNG?');
                   }}
-                  className="bg-[var(--bg-card-inner)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-primary-fg)] text-[var(--text-primary)] text-[10px] font-semibold py-1.5 px-2 rounded-xl border border-[var(--border-color)] hover:border-[var(--brand-primary)] transition-all duration-200 text-center truncate font-sans cursor-pointer shadow-2xs"
+                  className="bg-[var(--bg-card-inner)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-primary-fg)] text-[var(--text-primary)] text-[10px] font-semibold py-1.5 px-2 rounded-xl border border-[var(--border-color)] hover:border-[var(--brand-primary)] transition-all duration-200 text-center truncate font-sans cursor-pointer shadow-2xs flex items-center justify-center gap-1"
                 >
-                  📶 {lang === 'en' ? 'WiFi?' : lang === 'zh' ? 'WiFi 密码？' : 'Mật khẩu WiFi?'}
+                  <span className="material-symbols-outlined text-[12px]">wifi</span>
+                  <span>{lang === 'en' ? 'WiFi?' : lang === 'zh' ? 'WiFi 密码？' : 'Mật khẩu WiFi?'}</span>
                 </button>
               </div>
             </div>

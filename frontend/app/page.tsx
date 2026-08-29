@@ -3,147 +3,167 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Html5Qrcode } from 'html5-qrcode';
 import { playScanBeep, playWelcomeChime } from './utils/sound';
 import { ThemeToggleSwitch } from '@/components/table/ThemeToggleSwitch';
 import { LanguageToggleSwitch, Lang } from '@/components/table/LanguageToggleSwitch';
 import { BrandLogo } from '@/components/table/BrandLogo';
+import { formatTableName, formatTableLocation } from '@/utils/format';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from '@/context/LanguageContext';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 const translations = {
   vi: {
     welcome: 'Kohi Coffee & Pastry',
+    heroBadge: 'Smart Online Reservation & QR Order',
     heroTitle: 'Đặt Bàn & Giữ Chỗ Trực Tuyến',
-    heroSubtitle: 'Thưởng thức cà phê rang xay thủ công & bánh ngọt tươi mới. Giữ chỗ trước để có vị trí đẹp nhất!',
+    heroSubtitle: 'Thưởng thức cà phê rang xay thủ công & bánh ngọt tươi mới. Giữ chỗ trước để chọn vị trí đẹp nhất!',
     btnBookTab: 'Đặt Bàn Trực Tuyến',
     btnLookupTab: 'Tra Cứu Đặt Bàn',
-    btnQrTab: 'Vào Bàn Qua Mã QR',
     btnLogin: 'Đăng nhập Nhân viên',
     selectTableLabel: '1. Chọn bàn ăn phù hợp',
+    selectTableSub: 'Bấm vào bàn bạn muốn đặt để giữ chỗ',
+    refreshMap: 'Cập nhật sơ đồ',
+    filterAll: 'Tất cả bàn',
+    filterAvailable: 'Chỉ bàn trống',
     tableStatusEmpty: 'Bàn trống',
     tableStatusServing: 'Đang có khách',
     tableStatusReserved: 'Đã giữ chỗ',
     bookingFormTitle: '2. Nhập thông tin đặt bàn',
-    customerNameLabel: 'Họ và tên khách hàng',
+    bookingFormSub: 'Vui lòng điền đầy đủ thông tin để cửa hàng nhận đơn',
+    customerNameLabel: 'HỌ VÀ TÊN KHÁCH HÀNG',
     customerNamePlaceholder: 'Ví dụ: Nguyễn Văn An',
-    customerPhoneLabel: 'Số điện thoại liên hệ',
+    customerPhoneLabel: 'SỐ ĐIỆN THOẠI LIÊN HỆ',
     customerPhonePlaceholder: 'Ví dụ: 0901234567',
-    reservationTimeLabel: 'Thời gian nhận bàn',
-    guestCountLabel: 'Số lượng khách hàng',
-    selectedTableLabel: 'Bàn ăn được chọn',
-    noTableSelected: 'Vui lòng bấm chọn 1 bàn ở sơ đồ bên trái',
-    noteLabel: 'Ghi chú thêm',
+    reservationTimeLabel: 'THỜI GIAN NHẬN BÀN',
+    quickTimePresets: 'Chọn nhanh thời gian:',
+    presetIn1h: '+1 Giờ nữa',
+    presetIn2h: '+2 Giờ nữa',
+    presetTonight: 'Tối nay 19:00',
+    presetTomorrowNoon: 'Trưa mai 12:00',
+    guestCountLabel: 'SỐ LƯỢNG KHÁCH HÀNG',
+    selectedTableLabel: 'BÀN ĂN ĐƯỢC CHỌN',
+    noTableSelected: 'Vui lòng chọn 1 bàn ở sơ đồ bên trái',
+    noteLabel: 'GHI CHÚ THÊM (TÙY CHỌN)',
     notePlaceholder: 'Ví dụ: Cần bàn gần cửa sổ, ghế trẻ em, không gian yên tĩnh...',
     btnSubmitBooking: 'XÁC NHẬN ĐẶT BÀN NGAY',
-    bookingSuccessTitle: 'Đặt bàn thành công!',
-    bookingSuccessSubtitle: 'Đơn đặt bàn của bạn đã được chuyển đến hệ thống Kohi Coffee.',
-    manualLabel: 'HOẶC NHẬP SỐ BÀN THỦ CÔNG',
-    manualPlaceholder: 'Ví dụ: Bàn 1, Bàn 2...',
-    enterButton: 'VÀO BÀN NGAY',
-    helpText: 'Cho phép truy cập camera để tự động quét mã QR trên bàn.',
-    errEmpty: 'Vui lòng nhập số bàn hoặc quét mã QR!',
-    errNotFound: 'Không tìm thấy bàn nào ứng với số hoặc tên: "{input}"',
+    btnSubmitting: 'Đang gửi thông tin...',
+    bookingSuccessTitle: 'Đặt Bàn Thành Công!',
+    bookingSuccessSubtitle: 'Đơn giữ chỗ của bạn đã được chuyển trực tiếp đến hệ thống Kohi Coffee.',
     lookupTitle: 'Tra Cứu & Quản Lý Đơn Đặt Bàn',
-    lookupSubtitle: 'Nhập số điện thoại của bạn để kiểm tra chi tiết đơn đặt bàn và thực hiện hủy nếu cần',
+    lookupSubtitle: 'Nhập số điện thoại của bạn để kiểm tra chi tiết đơn giữ chỗ và hủy nếu cần',
     lookupPhonePlaceholder: 'Nhập số điện thoại (Ví dụ: 0987654321)...',
     btnSearchNow: 'Tra cứu ngay',
     btnSearching: 'Đang tìm...',
-    qrTitle: 'Khách Hàng Đã Ngồi Tại Bàn',
-    qrSubtitle: 'Nhập số bàn hoặc quét mã QR trên mặt bàn để chọn món trực tiếp',
     doneAndClose: 'HOÀN TẤT & ĐÓNG',
+    errEmptyPhone: 'Vui lòng nhập số điện thoại để tra cứu!',
+    errInvalidPhone: 'Số điện thoại không hợp lệ (Phải đúng 10 chữ số).',
   },
   en: {
     welcome: 'Kohi Coffee & Pastry',
-    heroTitle: 'Online Table Reservation & Booking',
-    heroSubtitle: 'Enjoy handcrafted specialty coffee & fresh pastries. Book in advance to secure the best seats!',
+    heroBadge: 'Smart Online Reservation & QR Order',
+    heroTitle: 'Online Table Reservation',
+    heroSubtitle: 'Enjoy handcrafted specialty coffee & fresh pastries. Book in advance to secure your favorite table!',
     btnBookTab: 'Reserve a Table',
     btnLookupTab: 'Lookup Reservation',
-    btnQrTab: 'Enter via Table QR',
     btnLogin: 'Staff Login',
     selectTableLabel: '1. Select Your Table',
+    selectTableSub: 'Click on an available table below to select it',
+    refreshMap: 'Refresh Map',
+    filterAll: 'All Tables',
+    filterAvailable: 'Available Only',
     tableStatusEmpty: 'Available',
     tableStatusServing: 'Occupied',
     tableStatusReserved: 'Reserved',
     bookingFormTitle: '2. Reservation Details',
-    customerNameLabel: 'Full Name',
-    customerNamePlaceholder: 'E.g. John Doe',
-    customerPhoneLabel: 'Phone Number',
-    customerPhonePlaceholder: 'E.g. +84 901 234 567',
-    reservationTimeLabel: 'Reservation Date & Time',
-    guestCountLabel: 'Number of Guests',
-    selectedTableLabel: 'Selected Table',
-    noTableSelected: 'Please click on a table from the left map',
-    noteLabel: 'Special Requests / Notes',
-    notePlaceholder: 'E.g. Window seat, baby chair, quiet area...',
+    bookingFormSub: 'Please fill in your contact information to complete booking',
+    customerNameLabel: 'FULL NAME',
+    customerNamePlaceholder: 'E.g. John Smith',
+    customerPhoneLabel: 'PHONE NUMBER',
+    customerPhonePlaceholder: 'E.g. 0901234567',
+    reservationTimeLabel: 'RESERVATION DATE & TIME',
+    quickTimePresets: 'Quick Time Options:',
+    presetIn1h: 'In 1 Hour',
+    presetIn2h: 'In 2 Hours',
+    presetTonight: 'Tonight 19:00',
+    presetTomorrowNoon: 'Tomorrow 12:00',
+    guestCountLabel: 'NUMBER OF GUESTS',
+    selectedTableLabel: 'SELECTED TABLE',
+    noTableSelected: 'Please select a table from the left floor map',
+    noteLabel: 'SPECIAL REQUESTS / NOTES',
+    notePlaceholder: 'E.g. Window seat, baby high chair, quiet area...',
     btnSubmitBooking: 'CONFIRM RESERVATION NOW',
+    btnSubmitting: 'Submitting booking...',
     bookingSuccessTitle: 'Booking Successful!',
-    bookingSuccessSubtitle: 'Your table reservation has been recorded by Kohi Coffee.',
-    manualLabel: 'OR ENTER TABLE NUMBER MANUALLY',
-    manualPlaceholder: 'E.g. Table 1, Table 2...',
-    enterButton: 'ENTER TABLE NOW',
-    helpText: 'Allow camera access to automatically scan table QR codes.',
-    errEmpty: 'Please enter a table number or scan a QR code!',
-    errNotFound: 'No table found matching: "{input}"',
+    bookingSuccessSubtitle: 'Your reservation has been recorded and submitted to Kohi Coffee.',
     lookupTitle: 'Lookup & Manage Reservations',
-    lookupSubtitle: 'Enter your phone number to check reservation details and cancel if needed',
+    lookupSubtitle: 'Enter your registered phone number to view or manage your reservation',
     lookupPhonePlaceholder: 'Enter phone number (e.g. 0987654321)...',
     btnSearchNow: 'Search Now',
     btnSearching: 'Searching...',
-    qrTitle: 'Seated Customers',
-    qrSubtitle: 'Enter table number or scan QR on table to order directly',
     doneAndClose: 'DONE & CLOSE',
+    errEmptyPhone: 'Please enter your phone number to lookup!',
+    errInvalidPhone: 'Invalid phone number format.',
   },
   zh: {
     welcome: 'Kohi Coffee & Pastry',
+    heroBadge: 'Smart Online Reservation & QR Order',
     heroTitle: '在线预订桌位与留座',
-    heroSubtitle: '享用手工精制咖啡与新鲜糕点。提前预订以获得最佳位置！',
+    heroSubtitle: '享用手工精制咖啡与新鲜糕点。提前预订以获得最佳座位！',
     btnBookTab: '在线预订桌位',
     btnLookupTab: '查询预订',
-    btnQrTab: '扫码入座',
     btnLogin: '员工登录',
     selectTableLabel: '1. 选择合适桌位',
+    selectTableSub: '点击下方空桌进行留座预订',
+    refreshMap: '刷新桌位图',
+    filterAll: '全部桌位',
+    filterAvailable: '仅看空桌',
     tableStatusEmpty: '空桌',
     tableStatusServing: '使用中',
     tableStatusReserved: '已预订',
     bookingFormTitle: '2. 填写预订信息',
+    bookingFormSub: '请填写您的联系信息以便门店确认预订',
     customerNameLabel: '顾客姓名',
     customerNamePlaceholder: '例如：张三',
     customerPhoneLabel: '联系电话',
-    customerPhonePlaceholder: '例如：13800138000',
+    customerPhonePlaceholder: '例如：0901234567',
     reservationTimeLabel: '入座时间',
+    quickTimePresets: '快速选择时间：',
+    presetIn1h: '1小时后',
+    presetIn2h: '2小时后',
+    presetTonight: '今晚 19:00',
+    presetTomorrowNoon: '明天中午 12:00',
     guestCountLabel: '顾客人数',
     selectedTableLabel: '已选桌位',
     noTableSelected: '请在左侧地图中点击选择桌位',
     noteLabel: '特殊要求 / 备注',
     notePlaceholder: '例如：靠窗座位、婴儿椅、安静区域...',
     btnSubmitBooking: '立即确认预订',
+    btnSubmitting: '正在提交预订...',
     bookingSuccessTitle: '预订成功！',
     bookingSuccessSubtitle: '您的预订信息已成功提交至 Kohi Coffee。',
-    manualLabel: '或手动输入桌号',
-    manualPlaceholder: '例如：1号桌，2号桌...',
-    enterButton: '立即入座',
-    helpText: '允许使用摄像头以自动扫描桌上的二维码。',
-    errEmpty: '请输入桌号或扫描二维码！',
-    errNotFound: '未找到匹配桌号："{input}"',
     lookupTitle: '查询与管理预订',
     lookupSubtitle: '输入您的电话号码以查看预订详情或进行取消',
-    lookupPhonePlaceholder: '输入电话号码（例如：13800138000）...',
+    lookupPhonePlaceholder: '输入电话号码（例如：0987654321）...',
     btnSearchNow: '立即查询',
     btnSearching: '正在查询...',
-    qrTitle: '已在桌顾客',
-    qrSubtitle: '输入桌号或扫描桌上二维码直接点餐',
     doneAndClose: '完成并关闭',
+    errEmptyPhone: '请输入手机号以进行查询！',
+    errInvalidPhone: '手机号码格式不正确。',
   }
 };
 
 export default function Home() {
   const router = useRouter();
   const { setTheme, resolvedTheme } = useTheme();
+  const { lang, setLang } = useTranslation();
+  const t = translations[(lang as Lang) || 'vi'] || translations.vi;
   const [mounted, setMounted] = useState(false);
-  const [lang, setLang] = useState<Lang>('vi');
   const [activeTab, setActiveTab] = useState<'reserve' | 'lookup'>('reserve');
+  const [tableFilter, setTableFilter] = useState<'all' | 'available'>('all');
 
   // Tables list state
   const [tables, setTables] = useState<any[]>([]);
@@ -163,30 +183,32 @@ export default function Home() {
   const [lookupResults, setLookupResults] = useState<any[]>([]);
   const [isSearchingLookup, setIsSearchingLookup] = useState(false);
   const [hasSearchedLookup, setHasSearchedLookup] = useState(false);
-
-  // QR Scanning & Manual Enter state
-  const [manualInput, setManualInput] = useState('');
   const [error, setError] = useState('');
-  const [isScanning, setIsScanning] = useState(false);
-  const html5QrcodeRef = useRef<Html5Qrcode | null>(null);
 
-  const t = (translations as any)[lang] || translations.vi;
   const isDark = resolvedTheme === 'dark';
 
   useEffect(() => {
     setMounted(true);
-    const savedLang = localStorage.getItem('pho-beyond-lang') as Lang;
-    if (savedLang && (savedLang === 'vi' || savedLang === 'en' || savedLang === 'zh')) {
-      setLang(savedLang);
-    }
     fetchTables();
 
     // Default datetime input to 2 hours from now
+    setPresetTime(2);
+  }, []);
+
+  const setPresetTime = (hoursFromNow: number) => {
     const now = new Date();
-    now.setHours(now.getHours() + 2);
+    now.setHours(now.getHours() + hoursFromNow);
     const pad = (n: number) => (n < 10 ? '0' + n : n);
     setReservationTime(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`);
-  }, []);
+  };
+
+  const setSpecificTimePreset = (targetHour: number, isTomorrow: boolean = false) => {
+    const d = new Date();
+    if (isTomorrow) d.setDate(d.getDate() + 1);
+    d.setHours(targetHour, 0, 0, 0);
+    const pad = (n: number) => (n < 10 ? '0' + n : n);
+    setReservationTime(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:00`);
+  };
 
   const fetchTables = async () => {
     try {
@@ -195,8 +217,8 @@ export default function Home() {
         const data = await res.json();
         setTables(data);
         if (data.length > 0) {
-          const firstEmpty = data.find((tbl: any) => tbl.status === 'empty') || data[0];
-          setSelectedTable(firstEmpty);
+          const firstEmpty = data.find((tbl: any) => tbl.status === 'empty') || null;
+          if (!selectedTable) setSelectedTable(firstEmpty);
         }
       }
     } catch (err) {
@@ -204,22 +226,17 @@ export default function Home() {
     }
   };
 
-  const changeLanguage = (newLang: 'vi' | 'en') => {
-    setLang(newLang);
-    localStorage.setItem('pho-beyond-lang', newLang);
-  };
-
   // Lookup reservations by phone number
   const handleLookupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const phone = lookupPhone.trim();
-    const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
+    const phoneRegex = /^(0|\+84)?[35789][0-9]{8}$/;
     if (!phone) {
-      setError('Vui lòng nhập số điện thoại để tra cứu!');
+      setError(t.errEmptyPhone);
       return;
     }
     if (!phoneRegex.test(phone) && phone.length < 8) {
-      setError('Số điện thoại không hợp lệ (Ví dụ: 0987654321).');
+      setError(t.errInvalidPhone);
       return;
     }
     setIsSearchingLookup(true);
@@ -243,7 +260,7 @@ export default function Home() {
 
   // Customer cancel reservation
   const handleCustomerCancelReservation = async (id: string) => {
-    if (!confirm('Bạn có chắc chắn muốn hủy đơn đặt bàn này không?')) return;
+    if (!confirm(lang === 'en' ? 'Are you sure you want to cancel this reservation?' : lang === 'zh' ? '您确定要取消此预订吗？' : 'Bạn có chắc chắn muốn hủy đơn đặt bàn này không?')) return;
     try {
       const res = await fetch(`${API_BASE}/reservations/${id}/customer-cancel`, {
         method: 'PATCH',
@@ -253,7 +270,7 @@ export default function Home() {
         throw new Error(errData.message || 'Không thể hủy đơn đặt bàn.');
       }
       playWelcomeChime();
-      toast('Đã hủy đơn đặt bàn thành công!', { icon: null });
+      toast(lang === 'en' ? 'Reservation cancelled successfully!' : 'Đã hủy đơn đặt bàn thành công!', { icon: null });
       handleLookupSubmit({ preventDefault: () => {} } as any);
       fetchTables();
     } catch (err) {
@@ -271,38 +288,42 @@ export default function Home() {
       return;
     }
     if (selectedTable.status === 'reserved' || selectedTable.status === 'serving') {
-      setError(`Bàn ${selectedTable.tableName} đã có khách hoặc được giữ chỗ trước. Vui lòng chọn bàn khác.`);
+      setError(
+        lang === 'en'
+          ? `Table ${selectedTable.tableName} is currently occupied or reserved. Please choose another table.`
+          : `Bàn ${selectedTable.tableName} đã có khách hoặc được giữ chỗ trước. Vui lòng chọn bàn khác.`
+      );
       return;
     }
 
     const cleanName = customerName.trim();
     const cleanPhone = customerPhone.trim();
-    const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
+    const phoneRegex = /^(0|\+84)?[35789][0-9]{8}$/;
 
     if (!cleanName || cleanName.length < 2) {
-      setError('Vui lòng nhập họ và tên khách hàng (tối thiểu 2 ký tự).');
+      setError(lang === 'en' ? 'Please enter full name (at least 2 characters).' : 'Vui lòng nhập họ và tên khách hàng (tối thiểu 2 ký tự).');
       return;
     }
 
     if (!cleanPhone || !phoneRegex.test(cleanPhone)) {
-      setError('Số điện thoại không hợp lệ. Vui lòng nhập SĐT Việt Nam 10 chữ số (Ví dụ: 0987654321).');
+      setError(lang === 'en' ? 'Invalid phone number format (10 digits required).' : 'Số điện thoại không hợp lệ. Vui lòng nhập SĐT Việt Nam 10 chữ số (Ví dụ: 0987654321).');
       return;
     }
 
     const numGuests = Number(guestCount);
     if (isNaN(numGuests) || numGuests < 1 || numGuests > 50) {
-      setError('Số lượng khách phải là số hợp lệ từ 1 đến 50 người.');
+      setError(lang === 'en' ? 'Guest count must be between 1 and 50.' : 'Số lượng khách phải là số hợp lệ từ 1 đến 50 người.');
       return;
     }
 
     if (!reservationTime) {
-      setError('Vui lòng chọn thời gian đặt bàn.');
+      setError(lang === 'en' ? 'Please select reservation date and time.' : 'Vui lòng chọn thời gian đặt bàn.');
       return;
     }
 
     const selectedDate = new Date(reservationTime);
     if (isNaN(selectedDate.getTime()) || selectedDate.getTime() < Date.now() - 5 * 60 * 1000) {
-      setError('Thời gian đặt bàn không hợp lệ hoặc đã trôi qua trong quá khứ.');
+      setError(lang === 'en' ? 'Reservation time cannot be in the past.' : 'Thời gian đặt bàn không hợp lệ hoặc đã trôi qua trong quá khứ.');
       return;
     }
 
@@ -335,15 +356,13 @@ export default function Home() {
       playWelcomeChime();
       setBookingSuccess(result);
 
-      // Reset toàn bộ các giá trị trong form về trạng thái ban đầu
+      // Reset form
       setCustomerName('');
       setCustomerPhone('');
       setGuestCount(2);
       setNote('');
-      const now = new Date();
-      now.setHours(now.getHours() + 2);
-      const pad = (n: number) => (n < 10 ? '0' + n : n);
-      setReservationTime(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`);
+      setSelectedTable(null);
+      setPresetTime(2);
 
       fetchTables();
     } catch (err) {
@@ -353,61 +372,40 @@ export default function Home() {
     }
   };
 
-  // Manual Enter or QR Jump
-  const handleManualEnter = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const input = manualInput.trim();
-    if (!input) {
-      setError(t.errEmpty);
-      return;
-    }
-
-    const isObjectId = /^[0-9a-fA-F]{24}$/.test(input);
-    if (isObjectId) {
-      router.push(`/table/${input}`);
-      return;
-    }
-
-    const matchTable = tables.find(
-      (tbl) =>
-        tbl.tableName?.toLowerCase() === input.toLowerCase() ||
-        String(tbl.tableName).replace(/\D/g, '') === input.replace(/\D/g, '')
-    );
-
-    if (matchTable) {
-      playScanBeep();
-      router.push(`/table/${matchTable._id}`);
-    } else {
-      setError(t.errNotFound.replace('{input}', input));
-    }
-  };
-
   if (!mounted) return null;
 
+  const filteredTables = tables.filter((tbl) => {
+    if (tableFilter === 'available') {
+      return tbl.status === 'empty';
+    }
+    return true;
+  });
+
   return (
-    <div className="min-h-screen bg-[#FFFFFF] dark:bg-[#090D16] text-[var(--text-primary)] font-sans flex flex-col justify-between transition-colors duration-300">
-      {/* ── TOP APP HEADER BAR ────────────────────────────────────────────── */}
-      <header className="w-full border-b border-[#E2E8F0] dark:border-[#222732] bg-[#FFFFFF]/95 dark:bg-[#11141A]/95 backdrop-blur-md sticky top-0 z-40 px-3 py-2.5 sm:px-8 sm:py-3 shadow-xs">
-        <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+    <div className="min-h-screen bg-slate-50/80 dark:bg-[#070A10] text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans flex flex-col justify-between relative antialiased">
+      {/* Top Header Bar */}
+      <header className="bg-white/95 dark:bg-[#0F141F]/95 border-b border-slate-200 dark:border-slate-800 sticky top-0 left-0 w-full z-50 shadow-xs backdrop-blur-md">
+        <div className="flex justify-between items-center w-full px-3 sm:px-6 md:px-12 py-2.5 sm:py-4 max-w-7xl mx-auto gap-2">
           <BrandLogo onClick={() => router.push('/')} />
 
-          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-            {/* Language Switcher Switch */}
-            <LanguageToggleSwitch
-              lang={lang as Lang}
-              setLang={(l) => {
-                setLang(l as any);
-                localStorage.setItem('pho-beyond-lang', l);
-              }}
-            />
+          <div className="flex items-center gap-1.5 sm:gap-3 md:gap-4 shrink-0">
+            <div className="flex items-center">
+              <LanguageToggleSwitch
+                lang={lang as Lang}
+                setLang={(l) => {
+                  setLang(l as any);
+                  localStorage.setItem('pho-beyond-lang', l);
+                }}
+              />
+            </div>
 
-            {/* Theme Switcher */}
-            <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
+            <div className="flex items-center">
+              <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
+            </div>
 
-            {/* Staff / Admin Login Button */}
             <button
               onClick={() => router.push('/login')}
-              className="flex items-center justify-center px-3.5 py-2 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-xs font-bold text-[var(--text-primary)] hover:border-[#38BDF8] hover:text-[#38BDF8] transition-all shrink-0 font-sans cursor-pointer active:scale-95"
+              className="bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 transition-colors duration-200 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-[11px] sm:text-xs md:text-sm font-bold shadow-xs whitespace-nowrap cursor-pointer active:scale-95 min-h-[38px] sm:min-h-[44px]"
             >
               <span>{t.btnLogin}</span>
             </button>
@@ -415,319 +413,444 @@ export default function Home() {
         </div>
       </header>
 
-      {/* ── MAIN HERO SECTION ────────────────────────────────────────────── */}
-      <main className="max-w-6xl mx-auto px-4 py-6 sm:py-10 w-full flex-1 space-y-8 font-sans">
-        <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <span className="inline-block px-3.5 py-1 bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] border border-[#38BDF8]/20 rounded-full text-[11px] font-bold tracking-wider uppercase font-sans">
-            Smart Table Booking & QR Order
-          </span>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-[var(--text-primary)] font-heading tracking-tight">
+      {/* Main Container */}
+      <main className="flex-grow pt-8 sm:pt-12 pb-16 px-4 md:px-12 w-full max-w-7xl mx-auto">
+        {/* Hero Section */}
+        <section className="text-center mb-8 sm:mb-12">
+          <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-sky-500/10 dark:bg-sky-500/20 text-[#0284c7] dark:text-[#38BDF8] text-[11px] sm:text-xs font-bold uppercase tracking-wider mb-4 sm:mb-6 border border-sky-500/20">
+            {t.heroBadge}
+          </div>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white mb-3 sm:mb-4 tracking-tight">
             {t.heroTitle}
           </h2>
-          <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed font-sans font-normal">
+          <p className="text-xs sm:text-sm lg:text-base text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
             {t.heroSubtitle}
           </p>
-        </div>
+        </section>
 
         {/* Tab Navigation: Đặt Bàn vs Tra Cứu */}
-        <div className="flex justify-center border-b border-[var(--border-color)] overflow-x-auto scrollbar-none max-w-full">
-          <div className="flex gap-4 sm:gap-8 text-xs sm:text-sm font-bold whitespace-nowrap px-1">
-            <button
-              onClick={() => {
-                setActiveTab('reserve');
-                setError('');
-              }}
-              className={`pb-3 px-4 border-b-2 transition-all cursor-pointer font-sans ${
-                activeTab === 'reserve'
-                  ? 'border-[#38BDF8] text-[#0284c7] dark:text-[#38BDF8]'
-                  : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-              }`}
-            >
-              <span>{t.btnBookTab}</span>
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab('lookup');
-                setError('');
-              }}
-              className={`pb-3 px-4 border-b-2 transition-all cursor-pointer font-sans ${
-                activeTab === 'lookup'
-                  ? 'border-[#38BDF8] text-[#0284c7] dark:text-[#38BDF8]'
-                  : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-              }`}
-            >
-              <span>{t.btnLookupTab}</span>
-            </button>
-          </div>
-        </div>
+        <nav className="flex justify-center border-b border-slate-200 dark:border-slate-800 mb-8 sm:mb-12">
+          <button
+            onClick={() => {
+              setActiveTab('reserve');
+              setError('');
+            }}
+            className={`px-6 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-bold transition-all border-b-2 cursor-pointer ${
+              activeTab === 'reserve'
+                ? 'text-[#0284c7] dark:text-[#38BDF8] border-[#0284c7] dark:border-[#38BDF8] translate-y-[1px]'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 border-transparent'
+            }`}
+          >
+            <span>{t.btnBookTab}</span>
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('lookup');
+              setError('');
+            }}
+            className={`px-6 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-bold transition-all border-b-2 cursor-pointer ${
+              activeTab === 'lookup'
+                ? 'text-[#0284c7] dark:text-[#38BDF8] border-[#0284c7] dark:border-[#38BDF8] translate-y-[1px]'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 border-transparent'
+            }`}
+          >
+            <span>{t.btnLookupTab}</span>
+          </button>
+        </nav>
 
-        {/* ── TAB 1: TABLE RESERVATION FORM & MAP ──────────────────────────── */}
+        {/* TAB 1: TABLE RESERVATION MAIN GRID */}
         {activeTab === 'reserve' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* LEFT: Table Selection Grid Map (7 cols) */}
-            <div className="lg:col-span-7 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-5 sm:p-6 space-y-4 shadow-sm">
-              <div className="flex justify-between items-center pb-2 border-b border-[var(--border-color)]">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+            {/* LEFT COLUMN: Sơ Đồ Chọn Bàn (7 Cols) */}
+            <div className="lg:col-span-7 bg-white dark:bg-[#0F141F] rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-7 shadow-xs border border-slate-200/90 dark:border-slate-800/90">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 pb-6 border-b border-slate-200 dark:border-slate-800">
                 <div>
-                  <h3 className="text-base font-extrabold text-[var(--text-primary)] font-heading">
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-1">
                     {t.selectTableLabel}
                   </h3>
-                  <p className="text-xs text-[var(--text-secondary)] mt-0.5 font-normal">
-                    Bấm vào bàn bạn muốn đặt để giữ chỗ
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                    {t.selectTableSub}
                   </p>
                 </div>
-
-                <button
-                  onClick={fetchTables}
-                  className="px-2.5 py-1 rounded-lg bg-[var(--bg-card-inner)] border border-[var(--border-color)] text-[11px] font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
-                  title="Cập nhật sơ đồ bàn"
-                >
-                  Cập nhật
-                </button>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-[11px] font-bold">
+                    <button
+                      onClick={() => setTableFilter('all')}
+                      className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                        tableFilter === 'all'
+                          ? 'bg-white dark:bg-[#161D2C] text-[#0284c7] dark:text-[#38BDF8] shadow-xs'
+                          : 'text-slate-500 dark:text-slate-400'
+                      }`}
+                    >
+                      {t.filterAll}
+                    </button>
+                    <button
+                      onClick={() => setTableFilter('available')}
+                      className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                        tableFilter === 'available'
+                          ? 'bg-white dark:bg-[#161D2C] text-[#0284c7] dark:text-[#38BDF8] shadow-xs'
+                          : 'text-slate-500 dark:text-slate-400'
+                      }`}
+                    >
+                      {t.filterAvailable}
+                    </button>
+                  </div>
+                  <button
+                    onClick={fetchTables}
+                    className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer min-h-[36px]"
+                  >
+                    {t.refreshMap}
+                  </button>
+                </div>
               </div>
 
-              {/* Status legend */}
-              <div className="flex gap-4 text-[11px] font-bold text-[var(--text-secondary)]">
-                <div className="flex items-center gap-1.5">
+              {/* Status Legend Row */}
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6 mb-6 sm:mb-8 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                   <span>{t.tableStatusEmpty}</span>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
                   <span>{t.tableStatusReserved}</span>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-slate-400" />
                   <span>{t.tableStatusServing}</span>
                 </div>
               </div>
 
               {/* Table Map Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
-                {tables.length === 0 ? (
-                  <div className="col-span-full text-center py-10 text-xs text-[var(--text-secondary)]">
-                    Đang tải danh sách bàn từ máy chủ...
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 sm:gap-4">
+                {filteredTables.length === 0 ? (
+                  <div className="col-span-full text-center py-12 text-xs text-slate-400 dark:text-slate-500 font-medium">
+                    {tables.length === 0
+                      ? (lang === 'en' ? 'Loading table map...' : 'Đang tải danh sách bàn...')
+                      : (lang === 'en' ? 'No available tables found.' : 'Không có bàn trống nào.')}
                   </div>
                 ) : (
-                  tables.map((tbl) => {
+                  filteredTables.map((tbl) => {
                     const isSelected = selectedTable?._id === tbl._id;
                     const isBookable = tbl.status !== 'reserved' && tbl.status !== 'serving';
-                    let statusBg = 'border-slate-200 dark:border-slate-800 bg-[var(--bg-card-inner)]';
                     let statusDot = 'bg-emerald-500';
                     let statusText = t.tableStatusEmpty;
+                    let statusColorClass = 'text-emerald-600 dark:text-emerald-400';
 
                     if (tbl.status === 'serving') {
                       statusDot = 'bg-slate-400';
                       statusText = t.tableStatusServing;
-                      statusBg = 'border-slate-200 dark:border-slate-800/40 bg-slate-500/5 opacity-60 cursor-not-allowed';
+                      statusColorClass = 'text-slate-400';
                     } else if (tbl.status === 'reserved') {
                       statusDot = 'bg-amber-500';
                       statusText = t.tableStatusReserved;
-                      statusBg = 'border-amber-500/30 bg-amber-500/5 opacity-75 cursor-not-allowed';
+                      statusColorClass = 'text-amber-600 dark:text-amber-400';
                     }
 
+                    const formattedName = formatTableName(tbl.tableName, lang);
+                    const formattedLocation = formatTableLocation(tbl.tableName, lang);
+
                     if (isSelected && isBookable) {
-                      statusBg = 'border-[#38BDF8] bg-[#38BDF8]/10 ring-2 ring-[#38BDF8]/30';
+                      return (
+                        <div
+                          key={tbl._id}
+                          onClick={() => {
+                            setSelectedTable(tbl);
+                            setError('');
+                          }}
+                          className="relative bg-white dark:bg-[#0F141F] border-2 border-[#0284c7] dark:border-[#38BDF8] rounded-xl sm:rounded-2xl p-4 sm:p-5 cursor-pointer shadow-md transition-all group overflow-hidden"
+                        >
+                          <div className="absolute inset-0 bg-[#0284c7]/5 dark:bg-[#38BDF8]/10 pointer-events-none" />
+                          <div className="flex justify-between items-center mb-3 sm:mb-4 relative z-10">
+                            <span className={`w-2 h-2 rounded-full ${statusDot}`} />
+                            <span className="text-[11px] sm:text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                              {statusText}
+                            </span>
+                          </div>
+                          <div className="text-center mb-1 relative z-10">
+                            <span className="text-lg sm:text-xl font-extrabold text-[#0284c7] dark:text-[#38BDF8]">
+                              {formattedName}
+                            </span>
+                          </div>
+                          <div className="text-center text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium relative z-10 truncate">
+                            {formattedLocation}
+                          </div>
+                        </div>
+                      );
                     }
 
                     return (
-                      <div
+                      <button
                         key={tbl._id}
-                        onClick={() => setSelectedTable(tbl)}
-                        className={`p-4 rounded-2xl border text-center space-y-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-95 relative ${statusBg}`}
+                        type="button"
+                        disabled={!isBookable}
+                        onClick={() => {
+                          if (isBookable) {
+                            setSelectedTable(tbl);
+                            setError('');
+                          }
+                        }}
+                        className={`relative rounded-xl sm:rounded-2xl p-4 sm:p-5 text-left transition-all group overflow-hidden border ${
+                          isBookable
+                            ? 'bg-slate-50/80 dark:bg-[#161D2C]/60 border-slate-200 dark:border-slate-800 cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm'
+                            : 'bg-slate-100/50 dark:bg-slate-900/30 border-slate-200/50 dark:border-slate-800/40 opacity-60 cursor-not-allowed'
+                        }`}
                       >
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center mb-3 sm:mb-4">
                           <span className={`w-2 h-2 rounded-full ${statusDot}`} />
-                          <span className="text-[10px] font-bold text-[var(--text-secondary)]">{statusText}</span>
+                          <span className={`text-[11px] sm:text-xs font-medium ${isBookable ? 'text-slate-500 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors' : statusColorClass}`}>
+                            {statusText}
+                          </span>
                         </div>
-                        <h4 className="text-base font-extrabold text-[var(--text-primary)]">{tbl.tableName}</h4>
-                        <span className="text-[10px] text-[var(--text-secondary)] block font-medium">Tầng 1 — Khu máy lạnh</span>
-                      </div>
+                        <div className="text-center mb-1">
+                          <span className={`text-lg sm:text-xl font-bold ${isBookable ? 'text-slate-800 dark:text-slate-200 group-hover:text-[#0284c7] dark:group-hover:text-[#38BDF8] transition-colors' : 'text-slate-400 dark:text-slate-500'}`}>
+                            {formattedName}
+                          </span>
+                        </div>
+                        <div className="text-center text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
+                          {formattedLocation}
+                        </div>
+                      </button>
                     );
                   })
                 )}
               </div>
             </div>
 
-            {/* RIGHT: Booking Form (5 cols) */}
-            <div className="lg:col-span-5 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-5 sm:p-6 space-y-5 shadow-sm">
+            {/* RIGHT COLUMN: Form Nhập Thông Tin Đặt Bàn (5 Cols) */}
+            <div className="lg:col-span-5 bg-white dark:bg-[#0F141F] rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-7 shadow-xs border border-slate-200/90 dark:border-slate-800/90 h-fit lg:sticky lg:top-24 space-y-5">
               <div>
-                <h3 className="text-base font-extrabold text-[var(--text-primary)] font-heading">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-1">
                   {t.bookingFormTitle}
                 </h3>
-                <p className="text-xs text-[var(--text-secondary)] mt-0.5 font-normal">
-                  Vui lòng điền đầy đủ thông tin để nhân viên nhận đơn
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                  {t.bookingFormSub}
                 </p>
               </div>
 
+              {/* Selected Table Banner */}
+              <div className="bg-[#0284c7]/5 dark:bg-[#38BDF8]/10 border border-[#0284c7]/20 dark:border-[#38BDF8]/20 rounded-xl p-4 flex justify-between items-center">
+                <div>
+                  <p className="text-[10.5px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
+                    {t.selectedTableLabel}
+                  </p>
+                  <p className="text-base sm:text-lg font-extrabold text-[#0284c7] dark:text-[#38BDF8] leading-none">
+                    {selectedTable ? formatTableName(selectedTable.tableName, lang) : t.noTableSelected}
+                  </p>
+                </div>
+                <span className="w-3 h-3 rounded-full bg-[#0284c7] dark:bg-[#38BDF8] shadow-xs shrink-0 animate-pulse" />
+              </div>
+
               {error && (
-                <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold text-center">
+                <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold text-center">
                   <span>{error}</span>
                 </div>
               )}
 
-              <form onSubmit={handleBookingSubmit} className="space-y-4 text-xs">
-                {/* Selected Table Info Card */}
-                <div className="p-3.5 rounded-2xl bg-[#38BDF8]/10 border border-[#38BDF8]/30 flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] uppercase tracking-wider font-bold text-[var(--text-secondary)] block">
-                      {t.selectedTableLabel}
-                    </span>
-                    <span className="text-sm font-black text-[#0284c7] dark:text-[#38BDF8]">
-                      {selectedTable ? selectedTable.tableName : t.noTableSelected}
-                    </span>
-                  </div>
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#38BDF8] animate-pulse" />
-                </div>
-
+              <form onSubmit={handleBookingSubmit} className="space-y-4">
+                {/* Full Name */}
                 <div>
-                  <label className="block font-bold text-[var(--text-primary)] mb-1.5">{t.customerNameLabel}</label>
+                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    {t.customerNameLabel}
+                  </label>
                   <input
                     type="text"
                     required
                     placeholder={t.customerNamePlaceholder}
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#38BDF8] transition-all font-sans"
+                    className="w-full bg-slate-50 dark:bg-[#161D2C] border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0284c7] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all"
                   />
                 </div>
 
+                {/* Phone Number */}
                 <div>
-                  <label className="block font-bold text-[var(--text-primary)] mb-1.5">{t.customerPhoneLabel}</label>
+                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    {t.customerPhoneLabel}
+                  </label>
                   <input
                     type="tel"
                     required
                     placeholder={t.customerPhonePlaceholder}
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#38BDF8] transition-all font-sans"
+                    className="w-full bg-slate-50 dark:bg-[#161D2C] border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0284c7] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                {/* Reservation Time & Guest Count Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-bold text-[var(--text-primary)] mb-1.5">{t.reservationTimeLabel}</label>
+                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      {t.reservationTimeLabel}
+                    </label>
                     <input
                       type="datetime-local"
                       required
                       value={reservationTime}
                       onChange={(e) => setReservationTime(e.target.value)}
-                      className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3 py-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#38BDF8] transition-all font-sans"
+                      className="w-full bg-slate-50 dark:bg-[#161D2C] border border-slate-200 dark:border-slate-800 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all"
                     />
                   </div>
+
                   <div>
-                    <label className="block font-bold text-[var(--text-primary)] mb-1.5">{t.guestCountLabel}</label>
+                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      {t.guestCountLabel}
+                    </label>
                     <input
                       type="number"
                       min={1}
-                      max={20}
+                      max={50}
                       required
                       value={guestCount}
                       onChange={(e) => setGuestCount(Number(e.target.value))}
-                      className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3 py-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#38BDF8] transition-all font-sans"
+                      className="w-full bg-slate-50 dark:bg-[#161D2C] border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all"
                     />
                   </div>
                 </div>
 
+                {/* Quick Time Options */}
+                <div className="space-y-1.5 pt-1">
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500 font-bold block">
+                    {t.quickTimePresets}
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setPresetTime(1)}
+                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-[#0284c7] hover:text-white dark:hover:bg-[#38BDF8] dark:hover:text-slate-950 transition-all cursor-pointer"
+                    >
+                      {t.presetIn1h}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPresetTime(2)}
+                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-[#0284c7] hover:text-white dark:hover:bg-[#38BDF8] dark:hover:text-slate-950 transition-all cursor-pointer"
+                    >
+                      {t.presetIn2h}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSpecificTimePreset(19, false)}
+                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-[#0284c7] hover:text-white dark:hover:bg-[#38BDF8] dark:hover:text-slate-950 transition-all cursor-pointer"
+                    >
+                      {t.presetTonight}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSpecificTimePreset(12, true)}
+                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-[#0284c7] hover:text-white dark:hover:bg-[#38BDF8] dark:hover:text-slate-950 transition-all cursor-pointer"
+                    >
+                      {t.presetTomorrowNoon}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Special Requests / Notes */}
                 <div>
-                  <label className="block font-bold text-[var(--text-primary)] mb-1.5">{t.noteLabel}</label>
+                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    {t.noteLabel}
+                  </label>
                   <textarea
-                    rows={2}
+                    rows={3}
                     placeholder={t.notePlaceholder}
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    className="w-full bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl px-3.5 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#38BDF8] transition-all font-sans"
+                    className="w-full bg-slate-50 dark:bg-[#161D2C] border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0284c7] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all resize-none"
                   />
                 </div>
 
+                {/* Submit Button */}
                 <button
                   type="submit"
                   disabled={isSubmitting || !selectedTable}
-                  className="w-full py-3.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-extrabold rounded-2xl text-xs transition-all shadow-md active:scale-95 flex items-center justify-center cursor-pointer disabled:opacity-50"
+                  className="w-full bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 text-xs sm:text-sm font-extrabold py-3.5 sm:py-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 uppercase tracking-wider cursor-pointer active:scale-[0.98] disabled:opacity-50 mt-2 min-h-[44px]"
                 >
-                  <span>{isSubmitting ? 'Đang gửi thông tin...' : t.btnSubmitBooking}</span>
+                  <span>{isSubmitting ? t.btnSubmitting : t.btnSubmitBooking}</span>
                 </button>
               </form>
             </div>
           </div>
         )}
 
-        {/* ── TAB 2: LOOKUP & CUSTOMER CANCEL RESERVATIONS ──────────────────── */}
+        {/* TAB 2: LOOKUP & CUSTOMER CANCEL RESERVATIONS */}
         {activeTab === 'lookup' && (
-          <div className="max-w-xl mx-auto bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-6 sm:p-8 space-y-6 shadow-md transition-all font-sans">
+          <div className="max-w-xl mx-auto bg-white dark:bg-[#0F141F] border border-slate-200/90 dark:border-slate-800/90 rounded-xl sm:rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs transition-all font-sans">
             <div className="text-center space-y-1.5">
-              <h3 className="text-lg font-bold text-[var(--text-primary)] font-heading tracking-tight">
-                {lang === 'en' ? 'Lookup Reservation' : lang === 'zh' ? '查询预订' : 'Tra Cứu Đơn Đặt Bàn'}
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+                {t.lookupTitle}
               </h3>
-              <p className="text-xs text-[var(--text-secondary)] font-sans font-normal">
-                {lang === 'en' ? 'Enter phone number to check reservation details' : lang === 'zh' ? '输入手机号查询预订信息' : 'Nhập số điện thoại để kiểm tra chi tiết và quản lý đơn giữ chỗ'}
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                {t.lookupSubtitle}
               </p>
             </div>
 
             {error && (
-              <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold text-center">
+              <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold text-center">
                 <span>{error}</span>
               </div>
             )}
 
-            <form onSubmit={handleLookupSubmit} className="flex flex-col sm:flex-row gap-2.5">
+            <form onSubmit={handleLookupSubmit} className="flex flex-col sm:flex-row gap-3">
               <input
                 type="text"
-                placeholder={lang === 'en' ? 'Phone number (e.g. 0987654321)...' : lang === 'zh' ? '请输入手机号...' : 'Nhập số điện thoại (VD: 0987654321)...'}
+                placeholder={t.lookupPhonePlaceholder}
                 value={lookupPhone}
                 onChange={(e) => setLookupPhone(e.target.value)}
-                className="w-full sm:flex-1 bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-2xl px-4 py-3 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[#38BDF8] transition-all font-sans placeholder-[var(--text-tertiary)]"
+                className="flex-1 bg-slate-50 dark:bg-[#161D2C] border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0284c7] dark:focus:ring-[#38BDF8]"
               />
               <button
                 type="submit"
                 disabled={isSearchingLookup}
-                className="w-full sm:w-auto px-6 py-3 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-extrabold rounded-2xl text-xs transition-all shadow-md active:scale-95 flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-50"
+                className="h-11 px-6 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-bold rounded-xl text-xs sm:text-sm uppercase tracking-wider transition-all shadow-md active:scale-95 flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-50 min-h-[44px]"
               >
-                <span>{isSearchingLookup ? (lang === 'en' ? 'Searching...' : lang === 'zh' ? '查询中...' : 'Đang tìm...') : (lang === 'en' ? 'Search Now' : lang === 'zh' ? '立即查询' : 'Tra cứu ngay')}</span>
+                <span>{isSearchingLookup ? t.btnSearching : t.btnSearchNow}</span>
               </button>
             </form>
 
             {hasSearchedLookup && (
               <div className="space-y-4 pt-2">
                 {lookupResults.length === 0 ? (
-                  <div className="bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-2xl p-6 text-center text-xs text-[var(--text-secondary)] font-sans">
-                    Không tìm thấy đơn đặt bàn nào gắn liền với số điện thoại <span className="font-bold text-[#38BDF8]">{lookupPhone}</span>.
+                  <div className="bg-slate-50 dark:bg-[#161D2C]/60 border border-slate-200/80 dark:border-slate-800 rounded-xl p-6 text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                    {lang === 'en' ? 'No reservation found matching phone number ' : 'Không tìm thấy đơn đặt bàn nào với số điện thoại '}
+                    <span className="font-bold text-[#0284c7] dark:text-[#38BDF8]">{lookupPhone}</span>.
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <p className="text-xs font-bold text-[var(--text-secondary)] font-sans">
-                      Tìm thấy {lookupResults.length} đơn đặt bàn:
+                    <p className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400">
+                      {lang === 'en' ? `Found ${lookupResults.length} reservation(s):` : `Tìm thấy ${lookupResults.length} đơn đặt bàn:`}
                     </p>
 
                     {lookupResults.map((res) => {
-                      let statusBadge = 'bg-amber-500/10 text-amber-500 border-amber-500/20';
-                      let statusLabel = 'Chờ xác nhận';
+                      let statusBadge = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
+                      let statusLabel = lang === 'en' ? 'Pending' : 'Chờ xác nhận';
 
                       if (res.status === 'confirmed') {
-                        statusBadge = 'bg-sky-500/10 text-sky-500 border-sky-500/20';
-                        statusLabel = 'Đã xác nhận';
+                        statusBadge = 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20';
+                        statusLabel = lang === 'en' ? 'Confirmed' : 'Đã xác nhận';
                       } else if (res.status === 'arrived') {
-                        statusBadge = 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
-                        statusLabel = 'Khách đã đến';
+                        statusBadge = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
+                        statusLabel = lang === 'en' ? 'Arrived' : 'Khách đã đến';
                       } else if (res.status === 'cancelled') {
-                        statusBadge = 'bg-rose-500/10 text-rose-500 border-rose-500/20';
-                        statusLabel = 'Đã hủy';
+                        statusBadge = 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20';
+                        statusLabel = lang === 'en' ? 'Cancelled' : 'Đã hủy';
                       }
 
                       const canCancel = res.status === 'pending' || res.status === 'confirmed';
                       const isArrived = res.status === 'arrived';
                       const targetTableId = res.tableId?._id || res.tableId;
+                      const tableNameStr = formatTableName(res.tableId?.tableName, lang);
 
                       return (
                         <div
                           key={res._id}
-                          className="bg-[var(--bg-card-inner)] border border-[var(--border-color)] p-4 sm:p-5 rounded-2xl space-y-3 shadow-xs font-sans"
+                          className="bg-slate-50/90 dark:bg-[#161D2C]/90 border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-xl space-y-3 shadow-xs"
                         >
                           <div className="flex justify-between items-start">
                             <div>
-                              <h4 className="font-extrabold text-[var(--text-primary)] text-sm">
+                              <h4 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
                                 {res.customerName}
                               </h4>
-                              <p className="text-xs text-[#38BDF8] font-bold mt-0.5">
+                              <p className="text-xs text-[#0284c7] dark:text-[#38BDF8] font-bold mt-0.5">
                                 {res.customerPhone}
                               </p>
                             </div>
@@ -736,41 +859,53 @@ export default function Home() {
                             </span>
                           </div>
 
-                          <div className="py-2.5 border-t border-b border-[var(--border-color)]/60 space-y-1.5 text-xs">
+                          <div className="py-2.5 border-t border-b border-slate-200/80 dark:border-slate-800 space-y-1.5 text-xs sm:text-sm">
                             <div className="flex justify-between">
-                              <span className="text-[var(--text-secondary)] font-normal">Bàn ăn chọn:</span>
-                              <span className="font-bold text-[var(--text-primary)]">{res.tableId?.tableName || 'Bàn chọn'}</span>
+                              <span className="text-slate-500 dark:text-slate-400 font-medium">
+                                {lang === 'en' ? 'Selected Table:' : lang === 'zh' ? '预订桌位：' : 'Bàn ăn chọn:'}
+                              </span>
+                              <span className="font-bold text-slate-900 dark:text-white">{tableNameStr}</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-[var(--text-secondary)] font-normal">Thời gian nhận bàn:</span>
-                              <span className="font-bold text-[var(--text-primary)]">{new Date(res.reservationTime).toLocaleString('vi-VN')}</span>
+                              <span className="text-slate-500 dark:text-slate-400 font-medium">
+                                {lang === 'en' ? 'Reservation Time:' : lang === 'zh' ? '入座时间：' : 'Thời gian nhận bàn:'}
+                              </span>
+                              <span className="font-bold text-slate-900 dark:text-white">
+                                {new Date(res.reservationTime).toLocaleString(lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'vi-VN')}
+                              </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-[var(--text-secondary)] font-normal">Số lượng khách:</span>
-                              <span className="font-bold text-[var(--text-primary)]">{res.guestCount} người</span>
+                              <span className="text-slate-500 dark:text-slate-400 font-medium">
+                                {lang === 'en' ? 'Guest Count:' : lang === 'zh' ? '顾客人数：' : 'Số lượng khách:'}
+                              </span>
+                              <span className="font-bold text-slate-900 dark:text-white">
+                                {res.guestCount} {lang === 'en' ? 'guests' : lang === 'zh' ? '人' : 'người'}
+                              </span>
                             </div>
                             {res.note && (
-                              <div className="pt-1 text-[11px] text-amber-500 italic">
-                                Ghi chú: {res.note}
+                              <div className="pt-1 text-xs text-amber-600 dark:text-amber-400 italic">
+                                {lang === 'en' ? 'Note: ' : lang === 'zh' ? '备注：' : 'Ghi chú: '}{res.note}
                               </div>
                             )}
                           </div>
 
                           {isArrived && targetTableId && (
                             <button
+                              type="button"
                               onClick={() => router.push(`/table/${targetTableId}`)}
-                              className="w-full py-2.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-extrabold text-xs rounded-xl transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center"
+                              className="w-full h-11 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center min-h-[44px]"
                             >
-                              VÀO BÀN GỌI MÓN ({res.tableId?.tableName || 'BÀN ĐẶT'})
+                              {lang === 'en' ? `GO TO TABLE ORDER (${tableNameStr})` : lang === 'zh' ? `进入桌位点餐 (${tableNameStr})` : `VÀO BÀN GỌI MÓN (${tableNameStr})`}
                             </button>
                           )}
 
                           {canCancel && (
                             <button
+                              type="button"
                               onClick={() => handleCustomerCancelReservation(res._id)}
-                              className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-500 border border-rose-500/20 text-xs font-bold rounded-xl transition-all flex items-center justify-center cursor-pointer active:scale-95"
+                              className="w-full h-10 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-500 border border-rose-500/20 text-xs font-bold rounded-xl transition-all flex items-center justify-center cursor-pointer active:scale-95 min-h-[44px]"
                             >
-                              HỦY ĐƠN ĐẶT BÀN NÀY
+                              {lang === 'en' ? 'CANCEL THIS RESERVATION' : lang === 'zh' ? '取消此预订' : 'HỦY ĐƠN ĐẶT BÀN NÀY'}
                             </button>
                           )}
                         </div>
@@ -783,70 +918,109 @@ export default function Home() {
           </div>
         )}
 
-        {/* ── BOOKING SUCCESS MODAL POPUP ──────────────────────────────────── */}
-        {bookingSuccess && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-            <div className="relative w-full max-w-md rounded-[28px] bg-[var(--bg-card)] border border-[var(--border-color)] p-6 sm:p-8 text-center space-y-6 shadow-2xl animate-modal-in">
-              <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 mx-auto flex items-center justify-center font-black text-xl shadow-lg shadow-emerald-500/10">
-                ✓
-              </div>
-
-              <div className="space-y-2">
-                <h3 className="text-2xl font-black text-[var(--text-primary)] font-heading tracking-tight">
-                  {t.bookingSuccessTitle}
-                </h3>
-                <p className="text-xs text-[var(--text-secondary)] leading-relaxed font-medium px-2">
-                  {t.bookingSuccessSubtitle}
-                </p>
-              </div>
-
-              {/* Zebra Stripe / Card Info Container */}
-              <div className="space-y-2 text-xs text-left p-2 rounded-2xl bg-[var(--bg-card-inner)] border border-[var(--border-color)]">
-                {/* Row 1: Khách hàng */}
-                <div className="flex justify-between items-center px-3.5 py-2.5 rounded-xl bg-slate-500/5 border border-slate-500/10">
-                  <span className="text-[var(--text-secondary)] font-bold">Khách hàng</span>
-                  <span className="font-extrabold text-[var(--text-primary)] text-sm">{bookingSuccess.customerName}</span>
-                </div>
-
-                {/* Row 2: Số điện thoại (Accent Skyblue) */}
-                <div className="flex justify-between items-center px-3.5 py-2.5 rounded-xl bg-slate-500/10 border border-slate-500/10">
-                  <span className="text-[var(--text-secondary)] font-bold">Số điện thoại</span>
-                  <span className="font-extrabold text-[#38BDF8]">{bookingSuccess.customerPhone}</span>
-                </div>
-
-                {/* Row 3: Bàn đặt (Highlighted Accent Card) */}
-                <div className="flex justify-between items-center px-3.5 py-2.5 rounded-xl bg-[#38BDF8]/10 border border-[#38BDF8]/25">
-                  <span className="text-[#38BDF8] font-bold">Bàn ăn đặt giữ</span>
-                  <span className="font-black text-[#38BDF8] text-sm tracking-wide">{bookingSuccess.tableId?.tableName || 'Bàn chọn'}</span>
-                </div>
-
-                {/* Row 4: Thời gian nhận bàn */}
-                <div className="flex justify-between items-center px-3.5 py-2.5 rounded-xl bg-slate-500/5 border border-slate-500/10">
-                  <span className="text-[var(--text-secondary)] font-bold">Thời gian nhận bàn</span>
-                  <span className="font-extrabold text-[var(--text-primary)]">{new Date(bookingSuccess.reservationTime).toLocaleString('vi-VN')}</span>
-                </div>
-
-                {/* Row 5: Số lượng khách */}
-                <div className="flex justify-between items-center px-3.5 py-2.5 rounded-xl bg-slate-500/10 border border-slate-500/10">
-                  <span className="text-[var(--text-secondary)] font-bold">Số lượng khách</span>
-                  <span className="font-extrabold text-[var(--text-primary)]">{bookingSuccess.guestCount} người</span>
-                </div>
-              </div>
-
-              <button
+        {/* BOOKING SUCCESS MODAL POPUP */}
+        <AnimatePresence>
+          {bookingSuccess && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 onClick={() => setBookingSuccess(null)}
-                className="w-full py-4 rounded-2xl bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black text-xs sm:text-sm tracking-wide uppercase transition-all duration-200 shadow-lg shadow-[#38BDF8]/20 hover:shadow-xl hover:shadow-[#38BDF8]/30 active:scale-[0.98] cursor-pointer"
+                className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs"
+              />
+
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0, y: 15 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 15 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                className="relative w-full max-w-md rounded-2xl bg-white dark:bg-[#0F141F] border border-slate-200 dark:border-slate-800 p-6 sm:p-8 text-center space-y-6 shadow-2xl z-10 font-sans"
               >
-                HOÀN TẤT & ĐÓNG
-              </button>
+                <div className="space-y-2">
+                  <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                    {t.bookingSuccessTitle}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                    {t.bookingSuccessSubtitle}
+                  </p>
+                </div>
+
+                {/* Card Info Container */}
+                <div className="space-y-2 text-xs sm:text-sm text-left p-3.5 rounded-xl bg-slate-50 dark:bg-[#161D2C] border border-slate-200/80 dark:border-slate-800">
+                  <div className="flex justify-between items-center px-3.5 py-2.5 rounded-lg bg-white dark:bg-[#0F141F] border border-slate-200/60 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400 font-bold">
+                      {lang === 'en' ? 'Customer Name' : lang === 'zh' ? '顾客姓名' : 'Khách hàng'}
+                    </span>
+                    <span className="font-extrabold text-slate-900 dark:text-white">{bookingSuccess.customerName}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center px-3.5 py-2.5 rounded-lg bg-white dark:bg-[#0F141F] border border-slate-200/60 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400 font-bold">
+                      {lang === 'en' ? 'Phone Number' : lang === 'zh' ? '联系电话' : 'Số điện thoại'}
+                    </span>
+                    <span className="font-extrabold text-[#0284c7] dark:text-[#38BDF8]">{bookingSuccess.customerPhone}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center px-3.5 py-2.5 rounded-lg bg-sky-500/10 border border-sky-500/25">
+                    <span className="text-[#0284c7] dark:text-[#38BDF8] font-bold">
+                      {lang === 'en' ? 'Reserved Table' : lang === 'zh' ? '预订桌位' : 'Bàn ăn giữ chỗ'}
+                    </span>
+                    <span className="font-black text-[#0284c7] dark:text-[#38BDF8] tracking-wide">
+                      {formatTableName(bookingSuccess.tableId?.tableName, lang)}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center px-3.5 py-2.5 rounded-lg bg-white dark:bg-[#0F141F] border border-slate-200/60 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400 font-bold">
+                      {lang === 'en' ? 'Reservation Time' : lang === 'zh' ? '入座时间' : 'Thời gian nhận bàn'}
+                    </span>
+                    <span className="font-bold text-slate-900 dark:text-white">
+                      {new Date(bookingSuccess.reservationTime).toLocaleString(lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'vi-VN')}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center px-3.5 py-2.5 rounded-lg bg-white dark:bg-[#0F141F] border border-slate-200/60 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400 font-bold">
+                      {lang === 'en' ? 'Guest Count' : lang === 'zh' ? '顾客人数' : 'Số lượng khách'}
+                    </span>
+                    <span className="font-bold text-slate-900 dark:text-white">
+                      {bookingSuccess.guestCount} {lang === 'en' ? 'guests' : lang === 'zh' ? '人' : 'người'}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setBookingSuccess(null)}
+                  className="w-full h-11 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-extrabold text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center min-h-[44px]"
+                >
+                  <span>{t.doneAndClose}</span>
+                </button>
+              </motion.div>
             </div>
-          </div>
-        )}
+          )}
+        </AnimatePresence>
       </main>
 
-      {/* ── FOOTER ───────────────────────────────────────────────────────── */}
-      <footer className="w-full py-4 text-center text-[11px] font-semibold text-[var(--text-secondary)] border-t border-[var(--border-color)]">
-        © 2026 Kohi Coffee & Pastry • Smart Online Reservation & QR Solution
+      {/* Footer */}
+      <footer className="bg-white dark:bg-[#0F141F] border-t border-slate-200 dark:border-slate-800 mt-auto w-full">
+        <div className="flex flex-col md:flex-row justify-between items-center w-full px-4 md:px-12 py-5 max-w-7xl mx-auto gap-4">
+          <p className="text-xs text-slate-500 dark:text-slate-400 text-center md:text-left font-medium">
+            © {new Date().getFullYear()} Kohi Coffee & Pastry. Smart Online Reservation & QR Solution.
+          </p>
+          <div className="flex gap-6">
+            <a href="#" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#0284c7] dark:hover:text-[#38BDF8] underline transition-colors">
+              Privacy Policy
+            </a>
+            <a href="#" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#0284c7] dark:hover:text-[#38BDF8] underline transition-colors">
+              Terms of Service
+            </a>
+            <a href="#" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#0284c7] dark:hover:text-[#38BDF8] underline transition-colors">
+              Contact Us
+            </a>
+          </div>
+        </div>
       </footer>
     </div>
   );
