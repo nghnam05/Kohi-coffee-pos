@@ -235,7 +235,7 @@ export default function Home() {
       setError(t.errEmptyPhone);
       return;
     }
-    if (!phoneRegex.test(phone) && phone.length < 8) {
+    if (!phoneRegex.test(phone)) {
       setError(t.errInvalidPhone);
       return;
     }
@@ -669,10 +669,18 @@ export default function Home() {
                   </label>
                   <input
                     type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     required
                     placeholder={t.customerPhonePlaceholder}
                     value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    onChange={(e) => {
+                      const onlyDigits = e.target.value.replace(/\D/g, '');
+                      if (onlyDigits.length <= 11) {
+                        setCustomerPhone(onlyDigits);
+                        if (error) setError('');
+                      }
+                    }}
                     className="w-full bg-slate-50 dark:bg-[#161D2C] border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0284c7] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all"
                   />
                 </div>
@@ -792,10 +800,18 @@ export default function Home() {
 
             <form onSubmit={handleLookupSubmit} className="flex flex-col sm:flex-row gap-3">
               <input
-                type="text"
+                type="tel"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 placeholder={t.lookupPhonePlaceholder}
                 value={lookupPhone}
-                onChange={(e) => setLookupPhone(e.target.value)}
+                onChange={(e) => {
+                  const onlyDigits = e.target.value.replace(/\D/g, '');
+                  if (onlyDigits.length <= 11) {
+                    setLookupPhone(onlyDigits);
+                    if (error) setError('');
+                  }
+                }}
                 className="flex-1 bg-slate-50 dark:bg-[#161D2C] border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0284c7] dark:focus:ring-[#38BDF8]"
               />
               <button

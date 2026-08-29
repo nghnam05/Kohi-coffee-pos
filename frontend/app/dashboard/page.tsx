@@ -2396,7 +2396,7 @@ export default function DashboardPage() {
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold'
             }`}
           >
-            <span className="material-symbols-outlined text-xl">menu_book</span>
+            <span className="material-symbols-outlined text-xl">grid_view</span>
             <span className="text-[10px] tracking-tight">Menu</span>
           </button>
         )}
@@ -2413,7 +2413,7 @@ export default function DashboardPage() {
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold'
             }`}
           >
-            <span className="material-symbols-outlined text-xl">table_restaurant</span>
+            <span className="material-symbols-outlined text-xl">chair</span>
             <span className="text-[10px] tracking-tight">Bàn</span>
           </button>
         )}
@@ -2565,7 +2565,7 @@ export default function DashboardPage() {
                     activeTab === 'foods'
                       ? 'text-[#0284c7] dark:text-[#b3c5ff]'
                       : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
-                  }`}>menu_book</span>
+                  }`}>grid_view</span>
                   <span className="flex-1 truncate text-left">{t.tabFoods}</span>
                   {isStaffLocked ? (
                     <span className="material-symbols-outlined text-sm text-amber-500 ml-auto">lock</span>
@@ -2599,7 +2599,7 @@ export default function DashboardPage() {
                     activeTab === 'tables'
                       ? 'text-[#0284c7] dark:text-[#b3c5ff]'
                       : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
-                  }`}>table_restaurant</span>
+                  }`}>chair</span>
                   <span className="flex-1 truncate text-left">{t.tabTables}</span>
                   {isStaffLocked ? (
                     <span className="material-symbols-outlined text-sm text-amber-500 ml-auto">lock</span>
@@ -2634,7 +2634,7 @@ export default function DashboardPage() {
                     activeTab === ('reservations' as any)
                       ? 'text-[#0284c7] dark:text-[#b3c5ff]'
                       : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
-                  }`}>event_seat</span>
+                  }`}>event_available</span>
                   <span className="flex-1 truncate text-left">Quản lý bàn đã đặt</span>
                   {isStaffLocked ? (
                     <span className="material-symbols-outlined text-sm text-amber-500 ml-auto">lock</span>
@@ -2719,7 +2719,7 @@ export default function DashboardPage() {
                   activeTab === 'users'
                     ? 'text-[#0284c7] dark:text-[#b3c5ff]'
                     : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
-                }`}>manage_accounts</span>
+                }`}>group</span>
                 <span className="flex-1 truncate text-left">{t.tabUsers}</span>
               </button>
             )}
@@ -2745,7 +2745,7 @@ export default function DashboardPage() {
                   activeTab === 'analytics'
                     ? 'text-[#0284c7] dark:text-[#b3c5ff]'
                     : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
-                }`}>insights</span>
+                }`}>bar_chart</span>
                 <span className="flex-1 truncate text-left">Thống kê doanh thu DB</span>
               </button>
             )}
@@ -2768,7 +2768,7 @@ export default function DashboardPage() {
                   activeTab === ('coupons' as any)
                     ? 'text-[#0284c7] dark:text-[#b3c5ff]'
                     : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
-                }`}>sell</span>
+                }`}>local_offer</span>
                 <span className="flex-1 truncate text-left">Mã giảm giá</span>
                 <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${
                   activeTab === ('coupons' as any)
@@ -3055,7 +3055,7 @@ export default function DashboardPage() {
                   }}
                   className="px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer w-full sm:w-auto"
                 >
-                  <span className="material-symbols-outlined text-lg sm:text-xl">add_circle</span>
+                  <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
                   <span>Tạo đơn mang về</span>
                 </button>
               )}
@@ -3689,7 +3689,7 @@ export default function DashboardPage() {
                   }}
                   className="px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-lg sm:text-xl">add_circle</span>
+                  <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
                   <span>Thêm món mới</span>
                 </button>
               </div>
@@ -3826,7 +3826,7 @@ export default function DashboardPage() {
                 }}
                 className="px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-lg sm:text-xl">add_circle</span>
+                <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
                 <span>Thêm bàn mới</span>
               </button>
             </div>
@@ -3987,7 +3987,7 @@ export default function DashboardPage() {
                 }}
                 className="px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-lg sm:text-xl">add_circle</span>
+                <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
                 <span>Thêm nhân viên mới</span>
               </button>
             </div>
@@ -4920,7 +4920,7 @@ export default function DashboardPage() {
                 }}
                 className="px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-lg sm:text-xl">add_circle</span>
+                <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
                 <span>Tạo mã mới</span>
               </button>
             </div>
@@ -4994,7 +4994,7 @@ export default function DashboardPage() {
             <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 rounded-2xl flex justify-between items-center shadow-xs">
               <div>
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#0284c7] dark:text-[#38BDF8] text-lg">event_seat</span>
+                  <span className="material-symbols-outlined text-[#0284c7] dark:text-[#38BDF8] text-lg">event_available</span>
                   <span>Quản lý Danh sách Bàn đã đặt (Reservations)</span>
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -6129,7 +6129,7 @@ export default function DashboardPage() {
               <div className="flex justify-between items-center pb-1">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-2xl bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-[#0284c7] dark:text-[#38BDF8] shadow-xs">
-                    <span className="material-symbols-outlined text-xl">manage_accounts</span>
+                    <span className="material-symbols-outlined text-xl">group</span>
                   </div>
                   <div>
                     <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading leading-tight tracking-tight">

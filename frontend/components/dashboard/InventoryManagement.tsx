@@ -294,7 +294,7 @@ export const InventoryManagement: React.FC<InventoryManagementProps> = ({
             onClick={() => setShowAddModal(true)}
             className="px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-lg sm:text-xl">add_circle</span>
+            <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
             <span>Thêm nguyên liệu mới</span>
           </button>
         )}

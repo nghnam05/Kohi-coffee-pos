@@ -243,7 +243,7 @@ export const Header: React.FC<HeaderProps> = ({
                 className="w-full text-left px-4 py-3 text-[13px] font-bold rounded-2xl bg-[var(--bg-card-inner)] border border-[var(--border-color)] text-[var(--text-primary)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-all font-sans flex items-center gap-3 cursor-pointer active:scale-98"
               >
                 <span className="material-symbols-outlined text-lg text-[var(--brand-primary)]">
-                  table_restaurant
+                  chair
                 </span>
                 <span>{lang === 'vi' ? 'Yêu cầu đổi vị trí bàn' : lang === 'zh' ? '更换桌位' : 'Request Table Change'}</span>
               </button>
