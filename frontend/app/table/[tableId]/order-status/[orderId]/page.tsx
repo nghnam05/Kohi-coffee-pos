@@ -13,6 +13,7 @@ import { BrandLogo } from '@/components/table/BrandLogo';
 import { MomoPayModal } from '@/components/table/MomoPayModal';
 import { formatTableName } from '@/utils/format';
 import { toast } from 'react-hot-toast';
+import { LeaveTableModal } from '@/components/table/LeaveTableModal';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 const SOCKET_BASE = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
@@ -164,7 +165,31 @@ export default function OrderStatusPage() {
   const [isMomoModalOpen, setIsMomoModalOpen] = useState(false);
   const [isCallingStaff, setIsCallingStaff] = useState(false);
   const [callStaffCooldown, setCallStaffCooldown] = useState(0);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
   const socketRef = useRef<Socket | null>(null);
+
+  const handleExecuteLeaveTable = async () => {
+    setIsLeaving(true);
+    try {
+      let devId = localStorage.getItem('kohi_device_id');
+      if (!devId) {
+        devId = 'dev_' + Math.random().toString(36).substring(2, 9);
+        localStorage.setItem('kohi_device_id', devId);
+      }
+      await fetch(`${API_BASE}/tables/${tableId}/leave-session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId: devId }),
+      }).catch(() => {});
+    } catch (e) {} finally {
+      setIsLeaving(false);
+      setIsLeaveModalOpen(false);
+    }
+    localStorage.removeItem(`chika_name_${tableId}`);
+    localStorage.removeItem(`chika_name_dismissed_${tableId}`);
+    router.push('/');
+  };
 
   const handleCallStaff = async () => {
     if (callStaffCooldown > 0 || isCallingStaff) return;
@@ -481,25 +506,7 @@ export default function OrderStatusPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
                     {/* Leave Table CTA (Navigates to Table Booking / Home) */}
                     <button
-                      onClick={async () => {
-                        if (confirm(lang === 'en' ? 'Are you sure you want to leave the table?' : lang === 'zh' ? '您确定要离开餐桌吗？' : 'Bạn có chắc chắn muốn rời bàn? Trạng thái bàn sẽ được lập tức dọn trống cho lượt khách tiếp theo.')) {
-                          try {
-                            let devId = localStorage.getItem('kohi_device_id');
-                            if (!devId) {
-                              devId = 'dev_' + Math.random().toString(36).substring(2, 9);
-                              localStorage.setItem('kohi_device_id', devId);
-                            }
-                            await fetch(`${API_BASE}/tables/${tableId}/leave-session`, {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ deviceId: devId }),
-                            }).catch(() => {});
-                          } catch (e) {}
-                          localStorage.removeItem(`chika_name_${tableId}`);
-                          localStorage.removeItem(`chika_name_dismissed_${tableId}`);
-                          router.push('/');
-                        }
-                      }}
+                      onClick={() => setIsLeaveModalOpen(true)}
                       className="w-full h-[48px] bg-rose-500 hover:bg-rose-600 text-white font-black rounded-2xl shadow-md transition-all text-xs uppercase tracking-wider flex items-center justify-center font-sans cursor-pointer active:scale-95"
                     >
                       <span>{lang === 'en' ? 'LEAVE TABLE' : lang === 'zh' ? '离开餐桌' : 'RỜI BÀN (ĐẶT BÀN)'}</span>
@@ -673,7 +680,7 @@ export default function OrderStatusPage() {
                   <div className="pt-4 mt-4 border-t border-[var(--border-color)] flex flex-col gap-3 text-xs">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 font-bold text-[var(--text-primary)]">
-                        <span className="material-symbols-outlined text-base text-[#0284c7] dark:text-[#38BDF8]">table_restaurant</span>
+                        <span className="material-symbols-outlined text-base text-[#0284c7] dark:text-[#38BDF8]">chair</span>
                         <span>{formatTableName(order.tableId?.tableName, lang)}</span>
                       </div>
                       {order.customerName && (
@@ -685,25 +692,7 @@ export default function OrderStatusPage() {
                     </div>
 
                     <button
-                      onClick={async () => {
-                        if (confirm(lang === 'en' ? 'Are you sure you want to leave the table?' : lang === 'zh' ? '您确定要离开餐桌吗？' : 'Bạn có chắc chắn muốn rời bàn? Trạng thái bàn sẽ được lập tức dọn trống cho lượt khách tiếp theo.')) {
-                          try {
-                            let devId = localStorage.getItem('kohi_device_id');
-                            if (!devId) {
-                              devId = 'dev_' + Math.random().toString(36).substring(2, 9);
-                              localStorage.setItem('kohi_device_id', devId);
-                            }
-                            await fetch(`${API_BASE}/tables/${tableId}/leave-session`, {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ deviceId: devId }),
-                            }).catch(() => {});
-                          } catch (e) {}
-                          localStorage.removeItem(`chika_name_${tableId}`);
-                          localStorage.removeItem(`chika_name_dismissed_${tableId}`);
-                          router.push('/');
-                        }
-                      }}
+                      onClick={() => setIsLeaveModalOpen(true)}
                       className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 rounded-2xl text-[11px] font-bold transition-all flex items-center justify-center cursor-pointer active:scale-95"
                     >
                       <span>{lang === 'en' ? 'LEAVE TABLE' : lang === 'zh' ? '离开餐桌' : 'RỜI BÀN (TRANG ĐẶT BÀN)'}</span>
@@ -923,6 +912,15 @@ export default function OrderStatusPage() {
                 }}
               />
             )}
+
+            <LeaveTableModal
+              isOpen={isLeaveModalOpen}
+              onClose={() => setIsLeaveModalOpen(false)}
+              onConfirm={handleExecuteLeaveTable}
+              tableName={order?.tableId?.tableName ? (lang === 'vi' ? `Bàn ${order.tableId.tableName}` : `Table ${order.tableId.tableName}`) : 'Bàn'}
+              lang={lang}
+              isLeaving={isLeaving}
+            />
           </div>
         ) : null}
       </main>

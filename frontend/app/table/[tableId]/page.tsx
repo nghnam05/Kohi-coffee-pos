@@ -21,6 +21,7 @@ import { NamePromptModal } from '@/components/table/NamePromptModal';
 import { AiChatWidget } from '@/components/table/AiChatWidget';
 import { TableQRModal } from '@/components/table/TableQRModal';
 import { CustomerNotificationModal, NotificationItem } from '@/components/table/CustomerNotificationModal';
+import { LeaveTableModal } from '@/components/table/LeaveTableModal';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -285,6 +286,8 @@ export default function TableMenuPage() {
   const [callStaffCooldown, setCallStaffCooldown] = useState(0);
   const [isCallingStaff, setIsCallingStaff] = useState(false);
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const [isLeaveTableModalOpen, setIsLeaveTableModalOpen] = useState(false);
+  const [isLeavingTable, setIsLeavingTable] = useState(false);
 
   // Customer Notifications State
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
@@ -560,9 +563,13 @@ export default function TableMenuPage() {
     }
   }, [tableId]);
 
-  const handleLeaveTable = async () => {
+  const handleLeaveTable = () => {
     setKitchenNotification(null);
-    if (!confirm('Bạn có chắc chắn muốn rời bàn?')) return;
+    setIsLeaveTableModalOpen(true);
+  };
+
+  const executeLeaveTable = async () => {
+    setIsLeavingTable(true);
     try {
       let devId = localStorage.getItem('kohi_device_id');
       if (!devId) {
@@ -584,6 +591,9 @@ export default function TableMenuPage() {
       }
     } catch (err) {
       console.error('Error leaving session:', err);
+    } finally {
+      setIsLeavingTable(false);
+      setIsLeaveTableModalOpen(false);
     }
     localStorage.removeItem(`chika_name_${tableId}`);
     localStorage.removeItem(`chika_name_dismissed_${tableId}`);
@@ -1479,6 +1489,15 @@ export default function TableMenuPage() {
             setIsOrderHistoryModalOpen(true);
           }
         }}
+      />
+
+      <LeaveTableModal
+        isOpen={isLeaveTableModalOpen}
+        onClose={() => setIsLeaveTableModalOpen(false)}
+        onConfirm={executeLeaveTable}
+        tableName={table?.tableName ? (lang === 'vi' ? `Bàn ${table.tableName}` : `Table ${table.tableName}`) : 'Bàn'}
+        lang={lang}
+        isLeaving={isLeavingTable}
       />
     </>
   );
