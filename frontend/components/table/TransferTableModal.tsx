@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatTableName } from '@/utils/format';
 
 interface TableItem {
   _id: string;
@@ -120,7 +121,7 @@ export const TransferTableModal: React.FC<TransferTableModalProps> = ({
                       }`}
                     >
                       <span className="text-sm font-extrabold tracking-tight">
-                        {tItem.tableName}
+                        {formatTableName(tItem.tableName, lang)}
                       </span>
 
                       <span className={`text-[11px] font-semibold ${
@@ -133,12 +134,12 @@ export const TransferTableModal: React.FC<TransferTableModalProps> = ({
                           : 'text-slate-400 dark:text-slate-500'
                       }`}>
                         {isCurrentTable
-                          ? 'Bàn hiện tại'
+                          ? (lang === 'en' ? 'Current Table' : lang === 'zh' ? '当前桌' : 'Bàn hiện tại')
                           : isSelected
-                          ? 'Đã chọn'
+                          ? (lang === 'en' ? 'Selected' : lang === 'zh' ? '已选择' : 'Đã chọn')
                           : isEmpty
-                          ? 'Có thể chọn'
-                          : 'Đang bận'}
+                          ? (lang === 'en' ? 'Available' : lang === 'zh' ? '可选' : 'Có thể chọn')
+                          : (lang === 'en' ? 'Occupied' : lang === 'zh' ? '使用中' : 'Đang bận')}
                       </span>
                     </button>
                   );

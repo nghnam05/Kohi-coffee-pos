@@ -17,6 +17,9 @@ export class Ingredient {
   @Prop({ required: true, default: 0, min: 0 })
   currentQuantity: number;
 
+  @Prop({ required: true, default: 0, min: 0 })
+  unitPrice: number;
+
   @Prop({ required: true, default: 2, min: 0 })
   minThreshold: number;
 

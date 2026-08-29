@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatTableName } from '@/utils/format';
 
 interface Table {
   _id?: string;
@@ -80,14 +81,14 @@ export const TableQRModal: React.FC<TableQRModalProps> = ({
 
               {/* Table Name */}
               <h2 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white font-heading">
-                {table.tableName || (lang === 'en' ? 'Reserved Table' : lang === 'zh' ? '预订桌位' : 'Bàn đặt')}
+                {formatTableName(table.tableName, lang)}
               </h2>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-sans">
                 {lang === 'en'
                   ? 'Scan the QR code below to view menu and order directly'
                   : lang === 'zh'
                   ? '扫描下方二维码打开菜单并直接点餐'
-                  : 'Quét mã bên dưới để mở thực đơn và gọi món trực tiếp'}
+                  : 'Quét mã bên dưới để mở menu và gọi món trực tiếp'}
               </p>
 
               {/* QR Code Display Container */}
@@ -98,7 +99,7 @@ export const TableQRModal: React.FC<TableQRModalProps> = ({
                   className="w-52 h-52 object-contain rounded-lg"
                 />
                 <span className="text-[10px] font-mono text-gray-400 mt-2 font-medium">
-                  {table.tableName} • Kohi Coffee
+                  {formatTableName(table.tableName, lang)} • Kohi Coffee
                 </span>
               </div>
 

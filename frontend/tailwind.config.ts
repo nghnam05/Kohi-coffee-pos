@@ -10,8 +10,8 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-inter)", "'Inter'", "system-ui", "sans-serif"],
-        heading: ["var(--font-inter)", "'Inter'", "system-ui", "sans-serif"],
+        sans: ["var(--font-manrope)", "'Manrope'", "var(--font-inter)", "'Inter'", "system-ui", "sans-serif"],
+        heading: ["var(--font-manrope)", "'Manrope'", "var(--font-inter)", "'Inter'", "system-ui", "sans-serif"],
       },
       colors: {
         background: "var(--background)",

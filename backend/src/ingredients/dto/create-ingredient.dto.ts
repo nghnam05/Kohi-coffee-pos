@@ -14,6 +14,10 @@ export class CreateIngredientDto {
   @IsNumber()
   currentQuantity: number;
 
+  @IsOptional()
+  @IsNumber()
+  unitPrice?: number;
+
   @IsNumber()
   minThreshold: number;
 

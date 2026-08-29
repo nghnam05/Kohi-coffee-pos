@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatTableName } from '@/utils/format';
 
 interface Food {
   _id: string;
@@ -151,18 +152,20 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             <div className="flex items-center gap-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-full px-2 py-1 shadow-xs">
               <button
                 onClick={() => handleDecrease(item.food._id)}
-                className="w-5 h-5 rounded-full flex items-center justify-center text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors active:scale-95"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors active:scale-95 cursor-pointer"
+                title={lang === 'en' ? 'Decrease' : 'Giảm'}
               >
-                <span className="material-symbols-outlined text-xs">remove</span>
+                <span className="material-symbols-outlined text-sm">remove</span>
               </button>
-              <span className="text-xs font-bold text-[var(--text-primary)] min-w-4 text-center">
+              <span className="text-xs font-bold text-[var(--text-primary)] min-w-5 text-center">
                 {item.quantity}
               </span>
               <button
                 onClick={() => handleIncrease(item.food)}
-                className="w-5 h-5 rounded-full flex items-center justify-center text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors active:scale-95"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors active:scale-95 cursor-pointer"
+                title={lang === 'en' ? 'Increase' : 'Tăng'}
               >
-                <span className="material-symbols-outlined text-xs">add</span>
+                <span className="material-symbols-outlined text-sm">add</span>
               </button>
             </div>
             <span className="text-xs font-black text-[var(--text-primary)]">
@@ -398,7 +401,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             </p>
           </div>
           <div className="bg-[var(--bg-primary)] border border-[var(--brand-primary)]/30 px-3 py-1 rounded-full text-xs font-bold text-[var(--brand-primary)]">
-            {table?.tableName ?? (lang === 'en' ? 'Table' : lang === 'zh' ? '桌号' : 'Bàn')}
+            {formatTableName(table?.tableName, lang)}
           </div>
         </div>
 

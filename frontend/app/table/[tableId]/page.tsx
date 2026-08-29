@@ -561,6 +561,7 @@ export default function TableMenuPage() {
   }, [tableId]);
 
   const handleLeaveTable = async () => {
+    setKitchenNotification(null);
     if (!confirm('Bạn có chắc chắn muốn rời bàn?')) return;
     try {
       let devId = localStorage.getItem('kohi_device_id');
@@ -606,9 +607,6 @@ export default function TableMenuPage() {
         const availableFoods = foodsData.filter((f) => f.isAvailable);
         setFoods(availableFoods);
         setTable(tableData);
-
-        const categories = Array.from(new Set(availableFoods.map((f) => f.category)));
-        if (categories.length > 0) setActiveCategory(categories[0]);
       } catch (err) {
         setError(err instanceof Error ? err.message : t.fetchError);
       } finally {
@@ -1098,7 +1096,7 @@ export default function TableMenuPage() {
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: -60, opacity: 0, scale: 0.95 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            className="fixed top-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-50 bg-[#090D16]/95 dark:bg-[#181B21]/95 text-white border border-[#3AA6FF]/50 rounded-2xl p-4 shadow-2xl backdrop-blur-md font-sans"
+            className="fixed top-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-30 bg-[#090D16]/95 dark:bg-[#181B21]/95 text-white border border-[#3AA6FF]/50 rounded-2xl p-4 shadow-2xl backdrop-blur-md font-sans"
           >
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl bg-[#3AA6FF]/20 text-[#3AA6FF] flex items-center justify-center flex-shrink-0 border border-[#3AA6FF]/40 shadow-inner">
@@ -1145,6 +1143,7 @@ export default function TableMenuPage() {
         callStaffCooldown={callStaffCooldown}
         isCallingStaff={isCallingStaff}
         setIsTransferModalOpen={setIsTransferModalOpen}
+        handleLeaveTable={handleLeaveTable}
         isDark={isDark}
         setTheme={setTheme}
         lang={lang}
@@ -1213,7 +1212,7 @@ export default function TableMenuPage() {
             <div className="-mx-4 px-4 flex md:hidden gap-2 overflow-x-auto pb-3 mb-3.5 scrollbar-none border-b border-[var(--border-color)] flex-shrink-0">
               <button
                 onClick={() => setActiveCategory('')}
-                className={`px-4 py-2 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer ${
+                className={`px-4 py-2 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 ${
                   activeCategory === ''
                     ? 'bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] shadow-[0_4px_12px_rgba(0,132,255,0.3)]'
                     : 'bg-[var(--bg-card)] text-[var(--text-secondary)] border border-[var(--border-color)] hover:text-[var(--text-primary)]'
@@ -1225,7 +1224,7 @@ export default function TableMenuPage() {
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-2 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer ${
+                  className={`px-4 py-2 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 ${
                     activeCategory === cat
                       ? 'bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] shadow-[0_4px_12px_rgba(0,132,255,0.3)]'
                       : 'bg-[var(--bg-card)] text-[var(--text-secondary)] border border-[var(--border-color)] hover:text-[var(--text-primary)]'
@@ -1399,6 +1398,7 @@ export default function TableMenuPage() {
           ADDON_PRICES={ADDON_PRICES}
           ADDON_ICONS={ADDON_ICONS}
           formatPrice={formatPrice}
+          translateCategory={translateCategory}
           lang={lang}
         />
 

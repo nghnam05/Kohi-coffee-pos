@@ -1,8 +1,8 @@
 import {
-  Injectable, NotFoundException, BadRequestException, ConflictException, Optional, Inject,
+  Injectable, NotFoundException, BadRequestException, ConflictException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, isValidObjectId } from 'mongoose';
 import { Attendance, AttendanceDocument } from './schemas/attendance.schema.js';
 import { OrdersGateway } from '../orders/orders.gateway.js';
 
@@ -10,11 +10,14 @@ import { OrdersGateway } from '../orders/orders.gateway.js';
 export class AttendanceService {
   constructor(
     @InjectModel(Attendance.name) private readonly attendanceModel: Model<AttendanceDocument>,
-    @Optional() @Inject(OrdersGateway) private readonly ordersGateway?: OrdersGateway,
+    private readonly ordersGateway: OrdersGateway,
   ) {}
 
   /** Nhân viên bấm bắt đầu ca */
   async checkIn(userId: string, requestedShift?: string): Promise<AttendanceDocument> {
+    if (!userId || userId === 'null' || userId === 'undefined' || !isValidObjectId(userId)) {
+      throw new BadRequestException('ID người dùng không hợp lệ.');
+    }
     const now = new Date();
     // Use local date parts to build timezone-safe range (avoids UTC midnight boundary issues)
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
@@ -73,6 +76,9 @@ export class AttendanceService {
 
   /** Nhân viên bấm kết thúc ca */
   async checkOut(userId: string): Promise<AttendanceDocument> {
+    if (!userId || userId === 'null' || userId === 'undefined' || !isValidObjectId(userId)) {
+      throw new BadRequestException('ID người dùng không hợp lệ.');
+    }
     const now = new Date();
     // Use timezone-safe range query (same as checkIn)
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
@@ -110,7 +116,9 @@ export class AttendanceService {
   /** Admin: lấy danh sách chấm công với filter */
   async findAll(userId?: string, month?: string, year?: string): Promise<AttendanceDocument[]> {
     const filter: any = {};
-    if (userId) filter.userId = userId;
+    if (userId && userId !== 'null' && userId !== 'undefined' && isValidObjectId(userId)) {
+      filter.userId = userId;
+    }
     if (month && year) {
       const m = parseInt(month) - 1;
       const y = parseInt(year);

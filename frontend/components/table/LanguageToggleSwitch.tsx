@@ -1,41 +1,46 @@
 'use client';
 
 import React from 'react';
+import { useTranslation, Lang } from '@/context/LanguageContext';
 
-export type Lang = 'vi' | 'en' | 'zh';
+export type { Lang };
 
 interface LanguageToggleSwitchProps {
-  lang: Lang;
-  setLang: (lang: Lang) => void;
+  lang?: Lang;
+  setLang?: (lang: Lang) => void;
 }
 
-export const LanguageToggleSwitch: React.FC<LanguageToggleSwitchProps> = ({ lang, setLang }) => {
-  const languages: { id: Lang; label: string; flag: string }[] = [
-    { id: 'vi', label: 'VI', flag: '🇻🇳' },
-    { id: 'en', label: 'EN', flag: '🇬🇧' },
-    { id: 'zh', label: 'ZH', flag: '🇨🇳' },
-  ];
+export const LanguageToggleSwitch: React.FC<LanguageToggleSwitchProps> = ({
+  lang: propLang,
+  setLang: propSetLang,
+}) => {
+  const context = useTranslation();
+  const lang = propLang || context.lang;
+  const setLang = propSetLang || context.setLang;
+
+  const cycleLang = () => {
+    if (lang === 'vi') setLang('en');
+    else if (lang === 'en') setLang('zh');
+    else setLang('vi');
+  };
+
+  const getLangLabel = () => {
+    if (lang === 'en') return 'EN';
+    if (lang === 'zh') return 'ZH';
+    return 'VI';
+  };
 
   return (
-    <div className="flex items-center gap-0.5 p-1 bg-slate-100 dark:bg-[#151c2d] border border-slate-200/80 dark:border-slate-800/80 rounded-xl max-w-full overflow-hidden shrink">
-      {languages.map((l) => {
-        const isActive = lang === l.id;
-        return (
-          <button
-            key={l.id}
-            type="button"
-            onClick={() => setLang(l.id)}
-            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10.5px] font-black tracking-tight transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] active:scale-95 shrink-0 ${
-              isActive
-                ? 'bg-[#38BDF8] text-slate-950 shadow-xs'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60'
-            }`}
-          >
-            <span className="text-[10px] leading-none">{l.flag}</span>
-            <span>{l.label}</span>
-          </button>
-        );
-      })}
-    </div>
+    <button
+      type="button"
+      onClick={cycleLang}
+      className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#151c2d] border border-slate-200/80 dark:border-slate-800/80 text-xs font-black text-[#0284c7] dark:text-[#38BDF8] hover:border-[#38BDF8]/60 active:scale-95 transition-all cursor-pointer min-h-[36px] select-none shadow-xs shrink-0"
+      title="Chuyển đổi ngôn ngữ (VI / EN / ZH)"
+      aria-label="Chuyển đổi ngôn ngữ"
+    >
+      <span className="uppercase tracking-wide font-extrabold">{getLangLabel()}</span>
+      <span className="material-symbols-outlined text-[14px] opacity-80">translate</span>
+    </button>
   );
 };
+

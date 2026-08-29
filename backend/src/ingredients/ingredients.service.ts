@@ -17,12 +17,12 @@ export class IngredientsService {
     let items = await this.ingredientModel.find().sort({ updatedAt: -1 }).exec();
     if (items.length === 0) {
       const defaultIngredients = [
-        { name: 'Hạt Cà Phê Robusta', category: 'Cà phê & Đồ uống', unit: 'kg', currentQuantity: 15, minThreshold: 3, status: 'in_stock', lastUpdatedBy: 'Hệ thống' },
-        { name: 'Sữa Tươi Thanh Trùng', category: 'Sữa & Kem', unit: 'lít', currentQuantity: 1.5, minThreshold: 5, status: 'low_stock', lastUpdatedBy: 'Nguyễn Văn Barista' },
-        { name: 'Đường Nước Tinh Luyện', category: 'Gia vị & Đường', unit: 'lít', currentQuantity: 0.8, minThreshold: 2, status: 'low_stock', lastUpdatedBy: 'Trần Thị Pha Chế' },
-        { name: 'Siro Vanilla Pháp', category: 'Gia vị & Đường', unit: 'chai', currentQuantity: 0, minThreshold: 1, status: 'out_of_stock', lastUpdatedBy: 'Hệ thống' },
-        { name: 'Bột Matcha Uji Nhật', category: 'Trà & Bột', unit: 'kg', currentQuantity: 4.5, minThreshold: 1, status: 'in_stock', lastUpdatedBy: 'Hệ thống' },
-        { name: 'Kem Béo Rich', category: 'Sữa & Kem', unit: 'hộp', currentQuantity: 8, minThreshold: 2, status: 'in_stock', lastUpdatedBy: 'Hệ thống' },
+        { name: 'Hạt Cà Phê Robusta', category: 'Cà phê & Đồ uống', unit: 'kg', currentQuantity: 15, unitPrice: 180000, minThreshold: 3, status: 'in_stock', lastUpdatedBy: 'Hệ thống' },
+        { name: 'Sữa Tươi Thanh Trùng', category: 'Sữa & Kem', unit: 'lít', currentQuantity: 1.5, unitPrice: 35000, minThreshold: 5, status: 'low_stock', lastUpdatedBy: 'Nguyễn Văn Barista' },
+        { name: 'Đường Nước Tinh Luyện', category: 'Gia vị & Đường', unit: 'lít', currentQuantity: 0.8, unitPrice: 20000, minThreshold: 2, status: 'low_stock', lastUpdatedBy: 'Trần Thị Pha Chế' },
+        { name: 'Siro Vanilla Pháp', category: 'Gia vị & Đường', unit: 'chai', currentQuantity: 0, unitPrice: 150000, minThreshold: 1, status: 'out_of_stock', lastUpdatedBy: 'Hệ thống' },
+        { name: 'Bột Matcha Uji Nhật', category: 'Trà & Bột', unit: 'kg', currentQuantity: 4.5, unitPrice: 450000, minThreshold: 1, status: 'in_stock', lastUpdatedBy: 'Hệ thống' },
+        { name: 'Kem Béo Rich', category: 'Sữa & Kem', unit: 'hộp', currentQuantity: 8, unitPrice: 28000, minThreshold: 2, status: 'in_stock', lastUpdatedBy: 'Hệ thống' },
       ];
       await this.ingredientModel.insertMany(defaultIngredients);
       items = await this.ingredientModel.find().sort({ updatedAt: -1 }).exec();
@@ -48,6 +48,7 @@ export class IngredientsService {
 
     const created = new this.ingredientModel({
       ...dto,
+      unitPrice: dto.unitPrice || 0,
       status,
       lastUpdatedBy: dto.lastUpdatedBy || 'Quản trị viên',
     });
@@ -91,6 +92,7 @@ export class IngredientsService {
     existing.category = dto.category !== undefined ? dto.category : existing.category;
     existing.unit = dto.unit !== undefined ? dto.unit : existing.unit;
     existing.currentQuantity = newQuantity;
+    existing.unitPrice = dto.unitPrice !== undefined ? dto.unitPrice : existing.unitPrice;
     existing.minThreshold = minThreshold;
     existing.status = status;
     existing.lastUpdatedBy = dto.lastUpdatedBy || 'Nhân viên';

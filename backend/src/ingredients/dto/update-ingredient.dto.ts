@@ -19,6 +19,10 @@ export class UpdateIngredientDto {
 
   @IsOptional()
   @IsNumber()
+  unitPrice?: number;
+
+  @IsOptional()
+  @IsNumber()
   minThreshold?: number;
 
   @IsOptional()

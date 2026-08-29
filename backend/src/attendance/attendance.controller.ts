@@ -48,15 +48,22 @@ export class AttendanceController {
     return this.attendanceService.getMonthlySummary(userId, month, year);
   }
 
-  /** GET /api/v1/attendance?userId=&month=&year= – Admin */
+  /** GET /api/v1/attendance?userId=&month=&year= – Admin xem tất cả, Staff xem của mình */
   @UseGuards(RolesGuard)
   @Roles('admin', 'waiter', 'barista', 'staff')
   @Get()
   findAll(
+    @Request() req: any,
     @Query('userId') userId?: string,
     @Query('month') month?: string,
     @Query('year') year?: string,
   ) {
+    const userRole = req.user?.role;
+    const currentUserId = req.user?.userId || req.user?._id || req.user?.sub;
+
+    if (userRole !== 'admin') {
+      return this.attendanceService.findMyAttendance(currentUserId, month, year);
+    }
     return this.attendanceService.findAll(userId, month, year);
   }
 

@@ -37,52 +37,20 @@ export class ReservationsService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    const marker = await this.reservationModel.findOne({ customerPhone: '0000000000_SEED_MARKER' }).exec();
-    if (!marker) {
-      const count = await this.reservationModel.countDocuments();
-      if (count === 0) {
-        try {
-          const tables = await this.tablesService.findAll();
-          if (tables.length > 0) {
-            const now = new Date();
-            const table1 = tables[0]._id;
-            const table2 = tables[1] ? tables[1]._id : table1;
-
-            await this.reservationModel.insertMany([
-              {
-                tableId: table1,
-                customerName: 'Nguyễn Văn An',
-                customerPhone: '0901234567',
-                guestCount: 4,
-                reservationTime: new Date(now.getTime() + 2 * 3600 * 1000),
-                status: 'confirmed',
-                note: 'Đặt bàn họp nhóm công ty, cần góc yên tĩnh',
-              },
-              {
-                tableId: table2,
-                customerName: 'Trần Thị Mai',
-                customerPhone: '0987654321',
-                guestCount: 2,
-                reservationTime: new Date(now.getTime() + 5 * 3600 * 1000),
-                status: 'pending',
-                note: 'Bàn hẹn hò gần cửa sổ',
-              },
-              {
-                tableId: table1,
-                customerName: 'SYSTEM SEED MARKER',
-                customerPhone: '0000000000_SEED_MARKER',
-                guestCount: 1,
-                reservationTime: new Date(),
-                status: 'cancelled',
-                note: 'Prevent auto re-seeding on delete',
-              },
-            ]);
-            console.log('[Seed] Sample Table Reservations initialized in Database.');
-          }
-        } catch (err) {
-          console.error('[Seed Error] Failed to seed reservations:', err);
-        }
+    try {
+      // Clear sample reservations from database
+      const result = await this.reservationModel.deleteMany({
+        $or: [
+          { customerPhone: '0000000000_SEED_MARKER' },
+          { customerName: { $in: ['Nguyễn Văn An', 'Trần Thị Mai'] } },
+          { note: { $regex: /Đặt bàn họp nhóm|Bàn hẹn hò/i } },
+        ]
+      });
+      if (result.deletedCount > 0) {
+        console.log(`[Clean] Cleared ${result.deletedCount} seed reservations from database.`);
       }
+    } catch (err) {
+      console.error('[Clean Error] Failed to clear seed reservations:', err);
     }
     await this.syncTableStatusesWithReservations();
   }

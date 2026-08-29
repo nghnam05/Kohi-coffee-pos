@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { io, Socket } from 'socket.io-client';
@@ -61,7 +61,7 @@ const DICTIONARY = {
     updateAccount: 'Cập nhật thông tin tài khoản',
     logout: 'Đăng xuất',
     tabOrders: 'Đơn pha chế realtime',
-    tabFoods: 'Quản lý thực đơn',
+    tabFoods: 'Quản lý Menu',
     tabTables: 'Quản lý bàn cà phê',
     tabUsers: 'Đội ngũ Barista & phục vụ',
     tabInventory: 'Quản lý kho nguyên liệu',
@@ -78,14 +78,14 @@ const DICTIONARY = {
     orderCode: 'Mã đơn',
     orderDeleteConfirm: 'Bạn có chắc chắn muốn xoá đơn hàng này không?',
     toastDeleteOrder: 'Đơn hàng đã được xóa khỏi hệ thống!',
-    toastDeleteFood: 'Đã xóa món khỏi thực đơn thành công!',
+    toastDeleteFood: 'Đã xóa món khỏi Menu thành công!',
     toastDeleteUser: 'Đã xóa tài khoản nhân viên thành công!',
     toastDeleteTable: 'Đã xóa bàn cà phê thành công!',
     toastDeleteConfirmTitle: 'Xác nhận xóa',
     deleteOrderTitle: 'Xóa đơn hàng',
     deleteOrderDesc: 'Hành động này sẽ xóa vĩnh viễn đơn hàng của {tableName} khỏi hệ thống.',
     deleteFoodTitle: 'Xóa món',
-    deleteFoodDesc: 'Hành động này sẽ xóa vĩnh viễn món {foodName} khỏi thực đơn.',
+    deleteFoodDesc: 'Hành động này sẽ xóa vĩnh viễn món {foodName} khỏi Menu.',
     deleteUserTitle: 'Xóa nhân viên',
     deleteUserDesc: 'Hành động này sẽ xóa tài khoản nhân viên {userName}.',
     deleteTableTitle: 'Xóa bàn',
@@ -135,7 +135,7 @@ const DICTIONARY = {
     modalFoodTitleEdit: 'Cập Nhật Thức Uống / Bánh',
     modalFoodName: 'Tên thức uống / bánh',
     modalFoodPrice: 'Giá tiền (VND)',
-    modalFoodCategory: 'Danh mục thực đơn',
+    modalFoodCategory: 'Danh mục Menu',
     modalFoodDesc: 'Mô tả chi tiết',
     modalFoodImg: 'Hình ảnh món',
     modalFoodUpload: 'Chọn ảnh từ thiết bị',
@@ -144,9 +144,9 @@ const DICTIONARY = {
     modalFoodPreset: 'Ý tưởng ảnh món',
     modalFoodActive: 'Hiển thị phục vụ khách hàng',
     modalFoodSave: 'Lưu thay đổi',
-    modalTableTitleAdd: 'Thêm Bàn Ăn Mới',
-    modalTableTitleEdit: 'Cập Nhật Bàn Ăn',
-    modalTableName: 'Tên bàn ăn (Ví dụ: Bàn số 1)',
+    modalTableTitleAdd: 'Thêm Bàn Cà Phê Mới',
+    modalTableTitleEdit: 'Cập Nhật Bàn Cà Phê',
+    modalTableName: 'Tên bàn (Ví dụ: Bàn 01 - Tầng 1)',
     modalTableStatus: 'Trạng thái hoạt động',
     modalUserTitleAdd: 'Thêm Nhân Viên Mới',
     modalUserTitleEdit: 'Cập Nhật Nhân Viên',
@@ -507,7 +507,7 @@ export default function DashboardPage() {
   const [tables, setTables] = useState<any[]>([]);
   const [usersList, setUsersList] = useState<User[]>([]);
   const [staffCalls, setStaffCalls] = useState<StaffCall[]>([]);
-  const [activeTab, setActiveTab] = useState<'orders' | 'foods' | 'tables' | 'users' | 'attendance' | 'analytics' | 'inventory'>('foods');
+  const [activeTab, setActiveTab] = useState<'orders' | 'foods' | 'tables' | 'users' | 'attendance' | 'analytics' | 'inventory'>('attendance');
   const [activityFilter, setActivityFilter] = useState<'all' | 'support' | 'payment' | 'checkedIn' | 'notCheckedIn' | 'confirmed' | 'cooking'>('all');
   const [drinkReadyList, setDrinkReadyList] = useState<{ orderId: string; tableName: string; timestamp: Date }[]>([]);
   const [selectedShift, setSelectedShift] = useState<'morning' | 'afternoon' | 'evening'>(() => {
@@ -523,7 +523,7 @@ export default function DashboardPage() {
   const [isShiftSwapModalOpen, setIsShiftSwapModalOpen] = useState(false);
   const [requestedSwapShift, setRequestedSwapShift] = useState<'morning' | 'afternoon' | 'evening'>('morning');
   const [swapReason, setSwapReason] = useState('');
-  const [orderStatusFilter, setOrderStatusFilter] = useState<'active' | 'paid' | 'all'>('active');
+  const [orderStatusFilter, setOrderStatusFilter] = useState<'active' | 'unpaid' | 'paid' | 'all'>('active');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedTableStatus, setSelectedTableStatus] = useState<string>('all');
 
@@ -650,12 +650,15 @@ export default function DashboardPage() {
           setSelectedShift(u.assignedShift as any);
         }
 
-        // Standardize Admin tab vs Staff tab
+        // Default tab upon login: Admin -> analytics (Thống kê), Staff -> attendance (Chấm công)
         if (u.role === 'admin') {
           setActiveTab('analytics');
         } else {
-          setActiveTab('orders');
+          setActiveTab('attendance');
         }
+
+        // Fetch attendance with explicit user role as soon as session is parsed
+        fetchAttendance(storedToken, u.role);
       } catch (e) {
         console.error('Failed to parse user session', e);
       }
@@ -672,14 +675,14 @@ export default function DashboardPage() {
     fetchCategories();
     fetchTables(token);
 
+    fetchUsers(token);
     if (user?.role === 'admin') {
-      fetchUsers(token);
       fetchAnalytics(token);
       fetchReviews(token);
       fetchPayrolls(token);
       fetchSalaryConfigs(token);
     }
-    fetchAttendance(token);
+    fetchAttendance(token, user?.role || 'admin');
     fetchReservations(token);
     fetchShiftSwaps(token);
 
@@ -784,9 +787,12 @@ export default function DashboardPage() {
     });
 
     socketRef.current.on('attendanceUpdated', (data: any) => {
-      if (token) fetchAttendance(token);
+      if (token) {
+        fetchAttendance(token, user?.role);
+        fetchUsers(token);
+      }
 
-      if (data.attendance) {
+      if (data?.attendance) {
         setAttendances((prev) => {
           const exists = prev.some((a) => a._id === data.attendance._id);
           if (exists) {
@@ -796,22 +802,20 @@ export default function DashboardPage() {
         });
       }
 
-      if (user?.role === 'admin') {
-        const roleLabel =
-          data.userRole === 'barista' ? 'Pha chế' :
-          data.userRole === 'waiter' ? 'Phục vụ' :
-          data.userRole === 'admin' ? 'Quản trị' : 'Nhân viên';
-        const actionText = data.type === 'check-in' ? 'Check-in điểm danh ca làm' : 'Check-out ca làm';
-        const timeStr = data.timestamp ? new Date(data.timestamp).toLocaleTimeString('vi-VN') : new Date().toLocaleTimeString('vi-VN');
-        
-        try {
-          const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-          audio.volume = 0.7;
-          audio.play().catch(() => {});
-        } catch (_) {}
+      const roleLabel =
+        data.userRole === 'barista' ? 'Pha chế' :
+        data.userRole === 'waiter' ? 'Phục vụ' :
+        data.userRole === 'admin' ? 'Quản trị' : 'Nhân viên';
+      const actionText = data.type === 'check-in' ? 'Check-in điểm danh ca làm' : 'Check-out ca làm';
+      const timeStr = data.timestamp ? new Date(data.timestamp).toLocaleTimeString('vi-VN') : new Date().toLocaleTimeString('vi-VN');
+      
+      try {
+        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        audio.volume = 0.8;
+        audio.play().catch(() => {});
+      } catch (_) {}
 
-        showToast(`${roleLabel} ${data.userName || ''} vừa ${actionText} lúc ${timeStr}!`, 'info');
-      }
+      showToast(`🔔 ${roleLabel} ${data.userName || ''} vừa ${actionText} lúc ${timeStr}!`, 'info');
     });
 
     socketRef.current.on('drinkReadyNotification', (data: { orderId: string; tableName?: string; items?: any[] }) => {
@@ -829,15 +833,30 @@ export default function DashboardPage() {
       });
     });
 
-    socketRef.current.on('shiftSwapCreated', () => {
+    socketRef.current.on('shiftSwapCreated', (data: any) => {
       if (token) fetchShiftSwaps(token);
+      if (user?.role === 'admin') {
+        const staffName = data?.userId?.name || 'Nhân viên';
+        const reqShiftLabel =
+          data?.requestedShift === 'morning' ? 'Ca Sáng' :
+          data?.requestedShift === 'afternoon' ? 'Ca Chiều' : 'Ca Tối';
+        showToast(`YÊU CẦU ĐỔI CA: ${staffName} vừa xin chuyển sang ${reqShiftLabel}!`, 'info');
+        try {
+          const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+          audio.volume = 0.8;
+          audio.play().catch(() => {});
+        } catch (_) {}
+      }
     });
 
-    socketRef.current.on('shiftSwapUpdated', () => {
+    socketRef.current.on('shiftSwapUpdated', (data: any) => {
       if (token) {
         fetchShiftSwaps(token);
         fetchUsers(token);
       }
+      const staffName = data?.userId?.name || 'Nhân viên';
+      const statusText = data?.status === 'approved' ? 'đã được DUYỆT' : 'bị TỪ CHỐI';
+      showToast(`Yêu cầu đổi ca của ${staffName} ${statusText}!`, data?.status === 'approved' ? 'success' : 'error');
     });
 
     return () => {
@@ -904,14 +923,29 @@ export default function DashboardPage() {
     } catch (err) {}
   };
 
-  const fetchAttendance = async (tok: string) => {
+  const fetchAttendance = async (tok: string, overrideRole?: string) => {
     try {
-      const endpoint = user?.role === 'admin' ? `${API_BASE}/attendance` : `${API_BASE}/attendance/my`;
-      const res = await fetch(endpoint, {
+      const activeRole = overrideRole || user?.role;
+      const primaryUrl = activeRole === 'admin' ? `${API_BASE}/attendance` : `${API_BASE}/attendance/my`;
+      const fallbackUrl = activeRole === 'admin' ? `${API_BASE}/attendance/my` : `${API_BASE}/attendance`;
+
+      let res = await fetch(primaryUrl, {
         headers: { Authorization: `Bearer ${tok}` },
       });
-      if (res.ok) setAttendances(await res.json());
-    } catch (e) {}
+
+      if (!res.ok) {
+        res = await fetch(fallbackUrl, {
+          headers: { Authorization: `Bearer ${tok}` },
+        });
+      }
+
+      if (res.ok) {
+        const data = await res.json();
+        setAttendances(Array.isArray(data) ? data : []);
+      }
+    } catch (e) {
+      console.error('Failed to fetch attendance:', e);
+    }
   };
 
   const fetchAnalytics = async (tok: string) => {
@@ -1310,13 +1344,20 @@ export default function DashboardPage() {
         },
         body: JSON.stringify({ shift: user?.assignedShift || 'morning' }),
       });
-      if (!res.ok) throw new Error('Chưa thể check-in hoặc bạn đã điểm danh hôm nay.');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Chưa thể check-in hoặc bạn đã điểm danh hôm nay.');
+      }
+      const data = await res.json();
       showToast('Check-in điểm danh thành công!', 'success');
-      fetchAttendance(token);
+      if (data && data._id) {
+        setAttendances((prev) => [data, ...prev.filter((a) => a._id !== data._id)]);
+      }
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Lỗi check-in.', 'error');
     } finally {
       setIsCheckingIn(false);
+      if (token) fetchAttendance(token, user?.role);
     }
   };
 
@@ -1327,11 +1368,21 @@ export default function DashboardPage() {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error('Chưa thể check-out.');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Chưa thể check-out.');
+      }
+      const data = await res.json();
       showToast('Check-out thành công!', 'success');
-      fetchAttendance(token);
+      if (data && data._id) {
+        setAttendances((prev) =>
+          prev.map((att) => (att._id === data._id ? data : att))
+        );
+      }
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Lỗi check-out.', 'error');
+    } finally {
+      if (token) fetchAttendance(token, user?.role);
     }
   };
 
@@ -1378,12 +1429,55 @@ export default function DashboardPage() {
         method: 'POST',
         body: formData,
       });
-      if (!res.ok) throw new Error('Không thể tải ảnh lên.');
+      if (!res.ok) throw new Error('Không thể tải ảnh lên Cloudinary.');
       const data = await res.json();
-      setFoodForm((prev) => ({ ...prev, image: data.secure_url }));
-      showToast('Tải ảnh lên thành công!', 'success');
+      if (data && data.secure_url) {
+        setFoodForm((prev) => ({ ...prev, image: data.secure_url }));
+        showToast('Tải ảnh lên thành công!', 'success');
+        return;
+      }
+      throw new Error('Cloudinary không trả về URL hợp lệ.');
     } catch (err) {
-      showToast('Lỗi tải ảnh lên Cloudinary.', 'error');
+      // Fallback with Canvas Compression: Read file and compress to compact JPEG Base64 Data URL
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 1024;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+            setFoodForm((prev) => ({ ...prev, image: compressedBase64 }));
+            showToast('Tải và nén ảnh thành công!', 'success');
+          } else {
+            setFoodForm((prev) => ({ ...prev, image: event.target?.result as string }));
+            showToast('Tải ảnh thành công!', 'success');
+          }
+        };
+        img.onerror = () => {
+          showToast('Lỗi đọc dữ liệu tệp ảnh.', 'error');
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.onerror = () => {
+        showToast('Lỗi đọc tệp ảnh từ thiết bị.', 'error');
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -1952,7 +2046,7 @@ export default function DashboardPage() {
       const payload: any = { name: profileName, email: profileEmail };
       if (profilePassword.trim()) payload.password = profilePassword;
 
-      const userId = user?._id || user?.id;
+      const userId = (user as any)?._id || (user as any)?.id;
       const res = await fetch(`${API_BASE}/users/${userId}`, {
         method: 'PATCH',
         headers: {
@@ -2132,14 +2226,62 @@ export default function DashboardPage() {
   const brewingQueue = orders.filter((o) => o.status === 'confirmed' || o.status === 'cooking');
 
   const displayedAttendances = attendances.filter((att) => {
+    if (!att) return false;
     if (user?.role === 'admin') return true;
-    const attUserId = (att.userId?._id || att.userId)?.toString();
-    const currentUserId = user?._id?.toString();
-    return attUserId === currentUserId || att.userId?.email === user?.email;
+    // For staff users, /attendance/my endpoint already returns only their records
+    return true;
   });
+
+  const myTodayAttendance = (() => {
+    if (!user || user.role === 'admin') return null;
+    const now = new Date();
+    const myId = String(user._id || (user as any).id || '');
+    const myEmail = String(user.email || '').toLowerCase();
+
+    // Helper to verify if an attendance record belongs to current staff user
+    const isMyRecord = (att: any) => {
+      if (!att) return false;
+      const rawUser = att.userId;
+      if (!rawUser) return true; // Default to true for staff endpoint results
+      let uId = '';
+      let uEmail = '';
+      if (typeof rawUser === 'object' && rawUser !== null) {
+        uId = String(rawUser._id || rawUser.id || '');
+        uEmail = String(rawUser.email || '').toLowerCase();
+      } else {
+        uId = String(rawUser);
+      }
+      if (myId && uId && uId === myId) return true;
+      if (myEmail && uEmail && uEmail === myEmail) return true;
+      // If user is staff, all returned attendances are theirs
+      return true;
+    };
+
+    // 1. First check if there is an ACTIVE shift currently open (checkIn exists & no checkOut)
+    const activeAtt = attendances.find((att) => att && att.checkIn && !att.checkOut && isMyRecord(att));
+    if (activeAtt) return activeAtt;
+
+    // 2. Otherwise find today's attendance record
+    return attendances.find((att) => {
+      if (!att || !att.checkIn || !isMyRecord(att)) return false;
+      const d = new Date(att.checkIn);
+      return (
+        d.getDate() === now.getDate() &&
+        d.getMonth() === now.getMonth() &&
+        d.getFullYear() === now.getFullYear()
+      );
+    });
+  })();
+
+  const isStaff = Boolean(user && user.role !== 'admin');
+  const isCheckedIn = Boolean(myTodayAttendance && !myTodayAttendance.checkOut);
+  const isCheckedOut = Boolean(myTodayAttendance && myTodayAttendance.checkOut);
+  const isStaffLocked = isStaff && (!myTodayAttendance || isCheckedOut);
 
   const displayedOrders =
     orderStatusFilter === 'active'
+      ? orders.filter((o) => ['pending', 'confirmed', 'cooking', 'ready'].includes(o.status))
+      : orderStatusFilter === 'unpaid'
       ? orders.filter((o) => o.status !== 'paid' && o.status !== 'cancelled')
       : orderStatusFilter === 'paid'
       ? paidOrdersList
@@ -2255,7 +2397,7 @@ export default function DashboardPage() {
             }`}
           >
             <span className="material-symbols-outlined text-xl">menu_book</span>
-            <span className="text-[10px] tracking-tight">Thực đơn</span>
+            <span className="text-[10px] tracking-tight">Menu</span>
           </button>
         )}
 
@@ -2365,12 +2507,16 @@ export default function DashboardPage() {
             {/* Realtime Orders Tab: BARISTA & WAITER & STAFF ROLES ONLY */}
             {user?.role !== 'admin' && (
               <button
+                disabled={isStaffLocked}
                 onClick={() => {
+                  if (isStaffLocked) return;
                   setActiveTab('orders');
                   setIsMobileSidebarOpen(false);
                 }}
                 className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
-                  activeTab === 'orders'
+                  isStaffLocked
+                    ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
+                    : activeTab === 'orders'
                     ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
                     : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
                 }`}
@@ -2383,25 +2529,34 @@ export default function DashboardPage() {
                   {user?.role === 'barista' ? 'coffee_maker' : 'receipt_long'}
                 </span>
                 <span className="flex-1 truncate text-left">{user?.role === 'barista' ? 'Quầy pha chế (KDS)' : t.tabOrders}</span>
-                <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${
-                  activeTab === 'orders'
-                    ? 'bg-blue-600 dark:bg-[#0341a8] text-white dark:text-[#9eb6ff]'
-                    : 'bg-gray-100 text-gray-800 dark:bg-[#212a3a] dark:text-[#dae2f9]'
-                }`}>
-                  {activeOrdersList.length}
-                </span>
+                {isStaffLocked ? (
+                  <span className="material-symbols-outlined text-sm text-amber-500 ml-auto">lock</span>
+                ) : (
+                  <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${
+                    activeTab === 'orders'
+                      ? 'bg-blue-600 dark:bg-[#0341a8] text-white dark:text-[#9eb6ff]'
+                      : 'bg-gray-100 text-gray-800 dark:bg-[#212a3a] dark:text-[#dae2f9]'
+                  }`}>
+                    {activeOrdersList.length}
+                  </span>
+                )}
               </button>
             )}
 
+            {/* Foods, Tables & Reservations Tabs (Hidden for Barista) */}
             {user?.role !== 'barista' && (
               <>
                 <button
+                  disabled={isStaffLocked}
                   onClick={() => {
+                    if (isStaffLocked) return;
                     setActiveTab('foods');
                     setIsMobileSidebarOpen(false);
                   }}
                   className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
-                    activeTab === 'foods'
+                    isStaffLocked
+                      ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
+                      : activeTab === 'foods'
                       ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
                       : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
                   }`}
@@ -2412,22 +2567,30 @@ export default function DashboardPage() {
                       : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
                   }`}>menu_book</span>
                   <span className="flex-1 truncate text-left">{t.tabFoods}</span>
-                  <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${
-                    activeTab === 'foods'
-                      ? 'bg-blue-600 dark:bg-[#0341a8] text-white dark:text-[#9eb6ff]'
-                      : 'bg-gray-100 text-gray-800 dark:bg-[#212a3a] dark:text-[#dae2f9]'
-                  }`}>
-                    {foods.length}
-                  </span>
+                  {isStaffLocked ? (
+                    <span className="material-symbols-outlined text-sm text-amber-500 ml-auto">lock</span>
+                  ) : (
+                    <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${
+                      activeTab === 'foods'
+                        ? 'bg-blue-600 dark:bg-[#0341a8] text-white dark:text-[#9eb6ff]'
+                        : 'bg-gray-100 text-gray-800 dark:bg-[#212a3a] dark:text-[#dae2f9]'
+                    }`}>
+                      {foods.length}
+                    </span>
+                  )}
                 </button>
 
                 <button
+                  disabled={isStaffLocked}
                   onClick={() => {
+                    if (isStaffLocked) return;
                     setActiveTab('tables');
                     setIsMobileSidebarOpen(false);
                   }}
                   className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
-                    activeTab === 'tables'
+                    isStaffLocked
+                      ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
+                      : activeTab === 'tables'
                       ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
                       : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
                   }`}
@@ -2438,23 +2601,31 @@ export default function DashboardPage() {
                       : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
                   }`}>table_restaurant</span>
                   <span className="flex-1 truncate text-left">{t.tabTables}</span>
-                  <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${
-                    activeTab === 'tables'
-                      ? 'bg-blue-600 dark:bg-[#0341a8] text-white dark:text-[#9eb6ff]'
-                      : 'bg-gray-100 text-gray-800 dark:bg-[#212a3a] dark:text-[#dae2f9]'
-                  }`}>
-                    {tables.length}
-                  </span>
+                  {isStaffLocked ? (
+                    <span className="material-symbols-outlined text-sm text-amber-500 ml-auto">lock</span>
+                  ) : (
+                    <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${
+                      activeTab === 'tables'
+                        ? 'bg-blue-600 dark:bg-[#0341a8] text-white dark:text-[#9eb6ff]'
+                        : 'bg-gray-100 text-gray-800 dark:bg-[#212a3a] dark:text-[#dae2f9]'
+                    }`}>
+                      {tables.length}
+                    </span>
+                  )}
                 </button>
 
                 <button
+                  disabled={isStaffLocked}
                   onClick={() => {
+                    if (isStaffLocked) return;
                     setActiveTab('reservations' as any);
                     setIsMobileSidebarOpen(false);
                     if (token) fetchReservations(token);
                   }}
                   className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
-                    activeTab === ('reservations' as any)
+                    isStaffLocked
+                      ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
+                      : activeTab === ('reservations' as any)
                       ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
                       : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
                   }`}
@@ -2465,18 +2636,22 @@ export default function DashboardPage() {
                       : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
                   }`}>event_seat</span>
                   <span className="flex-1 truncate text-left">Quản lý bàn đã đặt</span>
-                  <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${
-                    activeTab === ('reservations' as any)
-                      ? 'bg-blue-600 dark:bg-[#0341a8] text-white dark:text-[#9eb6ff]'
-                      : 'bg-gray-100 text-gray-800 dark:bg-[#212a3a] dark:text-[#dae2f9]'
-                  }`}>
-                    {reservations.length}
-                  </span>
+                  {isStaffLocked ? (
+                    <span className="material-symbols-outlined text-sm text-amber-500 ml-auto">lock</span>
+                  ) : (
+                    <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${
+                      activeTab === ('reservations' as any)
+                        ? 'bg-blue-600 dark:bg-[#0341a8] text-white dark:text-[#9eb6ff]'
+                        : 'bg-gray-100 text-gray-800 dark:bg-[#212a3a] dark:text-[#dae2f9]'
+                    }`}>
+                      {reservations.length}
+                    </span>
+                  )}
                 </button>
               </>
             )}
 
-            {/* Attendance Tab */}
+            {/* Attendance Tab: ALWAYS UNLOCKED & HIGHLIGHTED */}
             <button
               onClick={() => {
                 setActiveTab('attendance');
@@ -2484,7 +2659,7 @@ export default function DashboardPage() {
               }}
               className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
                 activeTab === 'attendance'
-                  ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
+                  ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold ring-2 ring-blue-500/50'
                   : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
               }`}
             >
@@ -2494,17 +2669,26 @@ export default function DashboardPage() {
                   : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
               }`}>schedule</span>
               <span className="flex-1 truncate text-left">{user?.role === 'admin' ? 'Chấm công & Trả lương' : 'Chấm công ca làm'}</span>
+              {isStaffLocked && (
+                <span className="ml-auto px-2 py-0.5 text-[10px] font-black bg-amber-500 text-white rounded-full animate-pulse shadow-xs">
+                  Cần Check-in
+                </span>
+              )}
             </button>
 
             {/* Inventory Management Tab: BARISTA & ADMIN ONLY */}
             {(user?.role === 'admin' || user?.role === 'barista') && (
               <button
+                disabled={isStaffLocked}
                 onClick={() => {
+                  if (isStaffLocked) return;
                   setActiveTab('inventory');
                   setIsMobileSidebarOpen(false);
                 }}
                 className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
-                  activeTab === 'inventory'
+                  isStaffLocked
+                    ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
+                    : activeTab === 'inventory'
                     ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#38BDF8] font-semibold'
                     : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
                 }`}
@@ -2644,7 +2828,7 @@ export default function DashboardPage() {
               {activeTab === 'users' && t.tabUsers}
               {activeTab === 'attendance' && (user?.role === 'admin' ? 'Chấm công & Thanh toán Lương Nhân viên' : 'Chấm công ca làm')}
               {activeTab === 'analytics' && 'Thống kê Doanh thu & Đánh giá Khách hàng'}
-              {activeTab === 'inventory' && (t.tabInventory || 'Quản lý kho nguyên liệu')}
+              {activeTab === 'inventory' && ((t as any).tabInventory || 'Quản lý kho nguyên liệu')}
               {activeTab === ('coupons' as any) && 'Quản lý Mã giảm giá (Coupons)'}
               {activeTab === ('reservations' as any) && 'Quản lý Bàn đã đặt (Reservations)'}
             </h2>
@@ -2717,6 +2901,19 @@ export default function DashboardPage() {
               </button>
             )}
 
+            {user?.role === 'admin' && shiftSwaps.filter((s) => s.status === 'pending').length > 0 && (
+              <button
+                onClick={() => setActiveTab('attendance')}
+                className="h-10 px-3 flex items-center gap-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-black cursor-pointer active:scale-95 transition-all shrink-0 animate-pulse"
+                title="Yêu cầu đổi ca chờ Admin duyệt"
+              >
+                <span className="material-symbols-outlined text-base">published_with_changes</span>
+                <span>{shiftSwaps.filter((s) => s.status === 'pending').length} đổi ca</span>
+              </button>
+            )}
+
+
+
             {/* Search Input for foods/tables */}
             {activeTab === 'foods' && (
               <input
@@ -2730,8 +2927,70 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Realtime Orders View */}
-        {activeTab === 'orders' && (
+        {/* Staff Shift Lock Screen OR Main Tab Views */}
+        {isStaffLocked && activeTab !== 'attendance' ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-12 text-center bg-white/80 dark:bg-[#131929]/90 backdrop-blur-xl border border-slate-200 dark:border-[#1e293b] rounded-3xl shadow-2xl my-auto mx-auto max-w-2xl relative overflow-hidden my-8">
+            <div className="absolute -top-24 -right-24 w-60 h-60 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -left-24 w-60 h-60 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            {!myTodayAttendance ? (
+              <>
+                <div className="w-20 h-20 rounded-3xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center mb-5 text-amber-500 shadow-inner">
+                  <span className="material-symbols-outlined text-4xl animate-bounce">lock_clock</span>
+                </div>
+                <span className="px-3.5 py-1 rounded-full text-xs font-black bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 mb-3 uppercase tracking-wider">
+                  Yêu cầu điểm danh ca làm
+                </span>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">
+                  Bạn chưa Bắt đầu ca (Check-in) hôm nay!
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-300 max-w-md mb-6 leading-relaxed">
+                  Để ghi nhận thời gian làm việc và đảm bảo an toàn quy trình, bạn cần bấm <strong className="text-amber-500">"Bắt đầu ca"</strong> trước khi truy cập các chức năng quản lý đơn hàng, quầy pha chế và sơ đồ bàn.
+                </p>
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-xs">
+                  <button
+                    onClick={handleCheckIn}
+                    disabled={isCheckingIn}
+                    className="w-full h-12 px-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-lg shadow-emerald-500/25 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined">login</span>
+                    <span>{isCheckingIn ? 'Đang xử lý...' : 'BẮT ĐẦU CA NGAY (CHECK-IN)'}</span>
+                  </button>
+                </div>
+                <button
+                  onClick={() => setActiveTab('attendance')}
+                  className="mt-5 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white underline cursor-pointer"
+                >
+                  Xem chi tiết ca làm & đổi ca
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="w-20 h-20 rounded-3xl bg-slate-500/15 border border-slate-500/30 flex items-center justify-center mb-5 text-slate-400 shadow-inner">
+                  <span className="material-symbols-outlined text-4xl">verified_user</span>
+                </div>
+                <span className="px-3.5 py-1 rounded-full text-xs font-black bg-slate-500/15 text-slate-400 border border-slate-500/30 mb-3 uppercase tracking-wider">
+                  Ca làm việc đã kết thúc
+                </span>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">
+                  Bạn đã Check-out kết thúc ca!
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-300 max-w-md mb-6 leading-relaxed">
+                  Bạn đã Check-out vào lúc <strong className="text-emerald-500">{new Date(myTodayAttendance.checkOut).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</strong>. Cảm ơn bạn đã làm việc chăm chỉ! Các chức năng thao tác đã được khóa cho tới ca tiếp theo.
+                </p>
+                <button
+                  onClick={() => setActiveTab('attendance')}
+                  className="h-10 px-5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl hover:bg-slate-300 dark:hover:bg-slate-700 transition-all cursor-pointer"
+                >
+                  Xem lịch sử ca làm của tôi
+                </button>
+              </>
+            )}
+          </div>
+        ) : (
+          <>
+            {/* Realtime Orders View */}
+            {activeTab === 'orders' && (
           <div className="flex-1 overflow-y-auto space-y-4 pr-1 pb-24 lg:pb-10 scrollbar-thin">
 
             {/* ── ORDERS TOOLBAR ─────────────────────────────────────────── */}
@@ -2747,8 +3006,23 @@ export default function DashboardPage() {
                   }`}
                 >
                   <span className="whitespace-nowrap">Đang xử lý</span>
-                  {orders.filter(o => o.status !== 'paid' && o.status !== 'cancelled').length > 0 && (
+                  {orders.filter(o => ['pending', 'confirmed', 'cooking', 'ready'].includes(o.status)).length > 0 && (
                     <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${orderStatusFilter === 'active' ? 'bg-[#0059b9] text-white' : 'bg-[#acc7fe]/50 text-[#385282]'}`}>
+                      {orders.filter(o => ['pending', 'confirmed', 'cooking', 'ready'].includes(o.status)).length}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setOrderStatusFilter('unpaid')}
+                  className={`flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+                    orderStatusFilter === 'unpaid'
+                      ? 'bg-white dark:bg-[#1e293b] text-amber-600 dark:text-amber-400 shadow-xs font-extrabold'
+                      : 'text-[#414754] dark:text-slate-400 hover:text-[#181c23] dark:hover:text-slate-200'
+                  }`}
+                >
+                  <span className="whitespace-nowrap">Đang chờ thanh toán</span>
+                  {orders.filter(o => o.status !== 'paid' && o.status !== 'cancelled').length > 0 && (
+                    <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${orderStatusFilter === 'unpaid' ? 'bg-amber-500 text-white' : 'bg-[#acc7fe]/50 text-[#385282]'}`}>
                       {orders.filter(o => o.status !== 'paid' && o.status !== 'cancelled').length}
                     </span>
                   )}
@@ -2761,22 +3035,9 @@ export default function DashboardPage() {
                       : 'text-[#414754] dark:text-slate-400 hover:text-[#181c23] dark:hover:text-slate-200'
                   }`}
                 >
-                  <span className="whitespace-nowrap">Đã thanh toán</span>
+                  <span className="whitespace-nowrap">Tất cả (chỉ đơn hàng đã thanh toán)</span>
                   <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${orderStatusFilter === 'paid' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' : 'bg-[#acc7fe]/50 text-[#385282]'}`}>
                     {paidOrdersList.length}
-                  </span>
-                </button>
-                <button
-                  onClick={() => setOrderStatusFilter('all')}
-                  className={`flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
-                    orderStatusFilter === 'all'
-                      ? 'bg-white dark:bg-[#1e293b] text-[#181c23] dark:text-white shadow-xs font-extrabold'
-                      : 'text-[#414754] dark:text-slate-400 hover:text-[#181c23] dark:hover:text-slate-200'
-                  }`}
-                >
-                  <span className="whitespace-nowrap">Tất cả</span>
-                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-[#acc7fe]/50 text-[#385282]">
-                    {orders.length}
                   </span>
                 </button>
               </div>
@@ -2792,9 +3053,10 @@ export default function DashboardPage() {
                     setTakeawayCouponCode('');
                     setIsTakeawayModalOpen(true);
                   }}
-                  className="h-10 px-5 bg-[#0059b9] hover:bg-[#004591] text-white font-bold rounded-lg text-xs flex items-center justify-center transition-all shadow-xs active:scale-95 shrink-0 cursor-pointer w-full sm:w-auto"
+                  className="px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer w-full sm:w-auto"
                 >
-                  Tạo đơn mang về
+                  <span className="material-symbols-outlined text-lg sm:text-xl">add_circle</span>
+                  <span>Tạo đơn mang về</span>
                 </button>
               )}
             </div>
@@ -3425,9 +3687,9 @@ export default function DashboardPage() {
                     setFoodForm({ name: '', price: '', category: categories[0]?.name || 'Cà phê', description: '', image: '', isAvailable: true });
                     setIsFoodModalOpen(true);
                   }}
-                  className="px-3.5 sm:px-4 py-2 bg-[#38BDF8] text-[#090D16] font-extrabold text-xs rounded-xl hover:bg-[#0284c7] transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
+                  className="px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-base">add</span>
+                  <span className="material-symbols-outlined text-lg sm:text-xl">add_circle</span>
                   <span>Thêm món mới</span>
                 </button>
               </div>
@@ -3562,9 +3824,9 @@ export default function DashboardPage() {
                   setTableForm({ tableName: '', status: 'empty' });
                   setIsTableModalOpen(true);
                 }}
-                className="px-4 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs rounded-xl shadow-md shadow-[#3AA6FF]/20 transition-all active:scale-95 flex items-center gap-2 shrink-0 cursor-pointer"
+                className="px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-lg">add_circle</span>
+                <span className="material-symbols-outlined text-lg sm:text-xl">add_circle</span>
                 <span>Thêm bàn mới</span>
               </button>
             </div>
@@ -3723,9 +3985,9 @@ export default function DashboardPage() {
                   setUserForm({ name: '', email: '', password: '', role: 'staff', assignedShift: 'morning' });
                   setIsUserModalOpen(true);
                 }}
-                className="px-3.5 sm:px-4 py-2 bg-[#38BDF8] text-[#090D16] font-extrabold text-xs rounded-xl hover:bg-[#0284c7] transition-all flex items-center gap-1.5 shrink-0"
+                className="px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-base">add</span>
+                <span className="material-symbols-outlined text-lg sm:text-xl">add_circle</span>
                 <span>Thêm nhân viên mới</span>
               </button>
             </div>
@@ -4332,18 +4594,88 @@ export default function DashboardPage() {
         {/* Analytics View: ADMIN ONLY */}
         {activeTab === 'analytics' && user?.role === 'admin' && (
           <div className="flex-1 overflow-y-auto space-y-6 pb-24 lg:pb-10 scrollbar-thin">
-            {/* Overview Summary Cards with Net Revenue */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-5 rounded-2xl shadow-xs">
-                <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold block">Lợi nhuận ròng hôm nay</span>
-                <span className="text-xl sm:text-2xl font-black text-[#0284c7] dark:text-[#38BDF8] mt-1 block font-heading">
-                  {formatPrice(analyticsSummary?.today || 0)}
-                </span>
-                <span className="text-[10px] text-slate-500 block mt-1">
-                  Doanh thu: {formatPrice(analyticsSummary?.todayGross || 0)} — Trừ lương: {formatPrice(analyticsSummary?.todaySalary || 0)}
+            {/* ── DAILY FINANCIAL KPI DASHBOARD ────────────────────────────────────────── */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-heading">
+                  <span className="material-symbols-outlined text-[#38BDF8] text-base">query_stats</span>
+                  <span>Báo Cáo Tài Chính Realtime Hôm Nay</span>
+                </h3>
+                <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-[#1e293b] px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-800">
+                  Cập nhật tự động từ Đơn hàng, Chấm công & Kho
                 </span>
               </div>
-              <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-5 rounded-2xl shadow-xs">
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                {/* Card 1: Gross Revenue */}
+                <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 sm:p-5 rounded-2xl shadow-xs hover:border-emerald-500/40 transition-all group relative overflow-hidden">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 dark:text-slate-400 text-xs font-bold">1. Tổng Doanh Thu</span>
+                    <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                      <span className="material-symbols-outlined text-xl">payments</span>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-heading tracking-tight">
+                      {formatPrice(analyticsSummary?.todayGross || 0)}
+                    </span>
+                    <p className="text-[10.5px] text-slate-400 mt-1 font-medium">Tổng thu từ tất cả đơn hàng hôm nay</p>
+                  </div>
+                </div>
+
+                {/* Card 2: Salary Costs */}
+                <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 sm:p-5 rounded-2xl shadow-xs hover:border-amber-500/40 transition-all group relative overflow-hidden">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 dark:text-slate-400 text-xs font-bold">2. Tổng Tiền Lương</span>
+                    <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl">
+                      <span className="material-symbols-outlined text-xl">badge</span>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <span className="text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400 font-heading tracking-tight">
+                      {formatPrice(analyticsSummary?.todaySalary || 0)}
+                    </span>
+                    <p className="text-[10.5px] text-slate-400 mt-1 font-medium">Lương nhân viên chấm công hôm nay</p>
+                  </div>
+                </div>
+
+                {/* Card 3: Ingredient Costs */}
+                <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 sm:p-5 rounded-2xl shadow-xs hover:border-sky-500/40 transition-all group relative overflow-hidden">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 dark:text-slate-400 text-xs font-bold">3. Tiền Nguyên Liệu</span>
+                    <div className="p-2 bg-sky-500/10 text-[#0284c7] dark:text-[#38BDF8] rounded-xl">
+                      <span className="material-symbols-outlined text-xl">inventory_2</span>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <span className="text-2xl sm:text-3xl font-black text-[#0284c7] dark:text-[#38BDF8] font-heading tracking-tight">
+                      {formatPrice(analyticsSummary?.todayIngredientCost || 0)}
+                    </span>
+                    <p className="text-[10.5px] text-slate-400 mt-1 font-medium">Chi phí nguyên vật liệu tiêu hao</p>
+                  </div>
+                </div>
+
+                {/* Card 4: Net Profit */}
+                <div className="bg-white dark:bg-[#131929] border border-emerald-500/30 dark:border-emerald-500/20 p-4 sm:p-5 rounded-2xl shadow-xs hover:border-emerald-500 transition-all group relative overflow-hidden bg-gradient-to-br from-emerald-500/5 to-transparent">
+                  <div className="flex items-center justify-between">
+                    <span className="text-emerald-600 dark:text-emerald-400 text-xs font-extrabold">4. Lợi Nhuận Hôm Nay</span>
+                    <div className="p-2 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                      <span className="material-symbols-outlined text-xl">trending_up</span>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <span className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 font-heading tracking-tight">
+                      {formatPrice(analyticsSummary?.todayNetProfit ?? analyticsSummary?.today ?? 0)}
+                    </span>
+                    <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-1 font-medium">Doanh thu trừ Lương & Nguyên liệu</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Overview Weekly/Monthly & Review Indicators */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl shadow-xs">
                 <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold block">Lợi nhuận ròng tuần này</span>
                 <span className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block font-heading">
                   {formatPrice(analyticsSummary?.week || 0)}
@@ -4352,7 +4684,7 @@ export default function DashboardPage() {
                   Doanh thu: {formatPrice(analyticsSummary?.weekGross || 0)} — Trừ lương: {formatPrice(analyticsSummary?.weekSalary || 0)}
                 </span>
               </div>
-              <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-5 rounded-2xl shadow-xs">
+              <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl shadow-xs">
                 <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold block">Lợi nhuận ròng tháng này</span>
                 <span className="text-xl sm:text-2xl font-black text-purple-600 dark:text-purple-400 mt-1 block font-heading">
                   {formatPrice(analyticsSummary?.month || 0)}
@@ -4361,7 +4693,7 @@ export default function DashboardPage() {
                   Doanh thu: {formatPrice(analyticsSummary?.monthGross || 0)} — Trừ lương: {formatPrice(analyticsSummary?.monthSalary || 0)}
                 </span>
               </div>
-              <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-5 rounded-2xl shadow-xs">
+              <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl shadow-xs">
                 <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold block">Đánh giá trung bình</span>
                 <span className="text-xl sm:text-2xl font-black text-amber-500 dark:text-amber-400 mt-1 flex items-center gap-1 font-heading">
                   <span className="material-symbols-outlined text-amber-500 text-lg sm:text-xl">star</span>
@@ -4586,9 +4918,9 @@ export default function DashboardPage() {
                   });
                   setIsCouponModalOpen(true);
                 }}
-                className="px-3.5 sm:px-4 py-2 bg-[#38BDF8] text-[#090D16] font-extrabold text-xs rounded-xl hover:bg-[#0284c7] transition-all flex items-center gap-1.5 shrink-0"
+                className="px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-base">add</span>
+                <span className="material-symbols-outlined text-lg sm:text-xl">add_circle</span>
                 <span>Tạo mã mới</span>
               </button>
             </div>
@@ -4800,6 +5132,8 @@ export default function DashboardPage() {
             />
           </div>
         )}
+          </>
+        )}
       </main>
 
       {/* ── COLUMN 3: RIGHT REALTIME ACTIVITY SIDEBAR (bg-white / dark:bg-[#000935]) ────── */}
@@ -4832,7 +5166,7 @@ export default function DashboardPage() {
               {(() => {
                 const now = new Date();
                 const todayAttendances = attendances.filter((att) => {
-                  if (!att.checkIn) return false;
+                  if (!att || !att.checkIn) return false;
                   const d = new Date(att.checkIn);
                   return (
                     d.getDate() === now.getDate() &&
@@ -4842,15 +5176,30 @@ export default function DashboardPage() {
                 });
                 const checkedInMap = new Map<string, any>();
                 todayAttendances.forEach((att) => {
-                  const uid = (att.userId?._id || att.userId)?.toString();
-                  const email = att.userId?.email;
-                  if (uid) checkedInMap.set(uid, att);
-                  if (email) checkedInMap.set(email, att);
+                  const rawUser = att.userId;
+                  let uId = '';
+                  let uEmail = '';
+                  if (typeof rawUser === 'object' && rawUser !== null) {
+                    uId = String((rawUser as any)._id || (rawUser as any).id || '');
+                    uEmail = String((rawUser as any).email || '').toLowerCase();
+                  } else if (rawUser) {
+                    uId = String(rawUser);
+                  }
+                  if (uId) checkedInMap.set(uId, att);
+                  if (uEmail) checkedInMap.set(uEmail, att);
                 });
 
                 const staffMembers = usersList.filter((u) => u.role !== 'admin');
-                const checkedInList = staffMembers.filter((u) => checkedInMap.has(String(u._id || '')) || checkedInMap.has(u.email));
-                const notCheckedInList = staffMembers.filter((u) => !checkedInMap.has(String(u._id || '')) && !checkedInMap.has(u.email));
+                const checkedInList = staffMembers.filter((u) => {
+                  const uId = String(u._id || (u as any).id || '');
+                  const uEmail = String(u.email || '').toLowerCase();
+                  return (uId && checkedInMap.has(uId)) || (uEmail && checkedInMap.has(uEmail));
+                });
+                const notCheckedInList = staffMembers.filter((u) => {
+                  const uId = String(u._id || (u as any).id || '');
+                  const uEmail = String(u.email || '').toLowerCase();
+                  return (!uId || !checkedInMap.has(uId)) && (!uEmail || !checkedInMap.has(uEmail));
+                });
 
                 return (
                   <>
@@ -4864,7 +5213,9 @@ export default function DashboardPage() {
                           <p className="text-xs text-slate-400 italic">Chưa có nhân viên nào điểm danh hôm nay</p>
                         ) : (
                           checkedInList.map((st) => {
-                            const attRecord = checkedInMap.get(String(st._id || '')) || checkedInMap.get(st.email);
+                            const uId = String(st._id || (st as any).id || '');
+                            const uEmail = String(st.email || '').toLowerCase();
+                            const attRecord = (uId ? checkedInMap.get(uId) : null) || (uEmail ? checkedInMap.get(uEmail) : null);
                             const cInTime = attRecord?.checkIn
                               ? new Date(attRecord.checkIn).toLocaleTimeString('vi-VN', {
                                   hour: '2-digit',
@@ -5176,9 +5527,9 @@ export default function DashboardPage() {
       {/* 0. Category Manager Modal (Admin Only) */}
       <AnimatePresence>
         {isCategoryModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCategoryModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-xs" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-xl bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCategoryModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-xl bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5 my-auto max-h-[85vh] overflow-y-auto scrollbar-thin">
               <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1e293b]">
                 <div className="flex items-center gap-2.5">
                   <div className="p-2 bg-sky-500/10 text-sky-500 rounded-xl">
@@ -5189,13 +5540,13 @@ export default function DashboardPage() {
                     <p className="text-xs text-slate-500 dark:text-slate-400">Thêm, chỉnh sửa và xóa danh mục món ăn cho quán</p>
                   </div>
                 </div>
-                <button onClick={() => setIsCategoryModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                <button onClick={() => setIsCategoryModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
                   <span className="material-symbols-outlined">close</span>
                 </button>
               </div>
 
               {/* Form Add / Edit Category */}
-              <form onSubmit={handleSaveCategory} className="bg-white dark:bg-[#090D16] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+              <form onSubmit={handleSaveCategory} className="bg-slate-50 dark:bg-[#090D16] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-4">
                 <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
                   {editingCategory ? 'Sửa thông tin danh mục' : 'Thêm danh mục mới'}
                 </h4>
@@ -5235,16 +5586,17 @@ export default function DashboardPage() {
                         setEditingCategory(null);
                         setCategoryForm({ name: '', icon: 'local_cafe', order: categories.length + 1, isActive: true });
                       }}
-                      className="px-3 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                      className="px-3 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer"
                     >
                       Hủy chỉnh sửa
                     </button>
                   )}
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black text-xs rounded-xl shadow-md transition-all cursor-pointer"
+                    className="px-4 py-2 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
                   >
-                    {editingCategory ? 'Lưu cập nhật' : 'Tạo danh mục'}
+                    <span className="material-symbols-outlined text-base">check_circle</span>
+                    <span>{editingCategory ? 'Lưu cập nhật' : 'Tạo danh mục'}</span>
                   </button>
                 </div>
               </form>
@@ -5257,14 +5609,22 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-1 gap-2.5">
                   {categories.map((cat) => {
                     const foodCount = foods.filter((f) => f.category === cat.name).length;
+                    const isValidIcon = ['local_cafe', 'local_bar', 'icecream', 'bakery_dining', 'restaurant', 'star', 'coffee', 'local_drink', 'cake', 'category', 'emoji_food_beverage', 'fastfood'].includes(cat.icon);
+                    const isImg = cat.icon && (cat.icon.startsWith('http') || cat.icon.startsWith('/') || cat.icon.includes('.'));
                     return (
                       <div
                         key={cat._id}
-                        className="p-3.5 bg-white dark:bg-[#090D16] border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center justify-between gap-3 text-xs"
+                        className="p-3.5 bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200/80 dark:border-slate-800 rounded-2xl flex items-center justify-between gap-3 text-xs"
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="p-2.5 bg-white dark:bg-[#131929] text-[#0284c7] dark:text-[#38BDF8] rounded-xl shrink-0 border border-slate-200 dark:border-slate-800">
-                            <span className="material-symbols-outlined text-lg">{cat.icon || 'category'}</span>
+                          <div className="p-2.5 bg-white dark:bg-[#131929] text-[#0284c7] dark:text-[#38BDF8] rounded-xl shrink-0 border border-slate-200 dark:border-slate-800 flex items-center justify-center w-10 h-10">
+                            {isImg ? (
+                              <img src={cat.icon} alt={cat.name} className="w-5 h-5 object-contain" />
+                            ) : (
+                              <span className="material-symbols-outlined text-lg">
+                                {isValidIcon ? cat.icon : 'category'}
+                              </span>
+                            )}
                           </div>
                           <div className="truncate">
                             <h5 className="font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
@@ -5281,19 +5641,19 @@ export default function DashboardPage() {
                               setEditingCategory(cat);
                               setCategoryForm({
                                 name: cat.name || '',
-                                icon: cat.icon || 'local_cafe',
+                                icon: isValidIcon ? cat.icon : 'local_cafe',
                                 order: cat.order || 0,
                                 isActive: cat.isActive !== false,
                               });
                             }}
-                            className="p-2 text-slate-400 hover:text-[#38BDF8] transition-colors"
+                            className="p-2 text-slate-400 hover:text-[#38BDF8] transition-colors cursor-pointer"
                             title="Chỉnh sửa"
                           >
                             <span className="material-symbols-outlined text-base">edit</span>
                           </button>
                           <button
                             onClick={() => handleDeleteCategory(cat._id)}
-                            className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                            className="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
                             title="Xóa danh mục"
                           >
                             <span className="material-symbols-outlined text-base">delete</span>
@@ -5312,12 +5672,12 @@ export default function DashboardPage() {
       {/* 1. Food Create / Edit Modal */}
       <AnimatePresence>
         {isFoodModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsFoodModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-xs" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-lg bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsFoodModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-lg bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[85vh] overflow-y-auto scrollbar-thin">
               <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{editingFood ? t.modalFoodTitleEdit : t.modalFoodTitleAdd}</h3>
-                <button onClick={() => setIsFoodModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white font-heading">{editingFood ? t.modalFoodTitleEdit : t.modalFoodTitleAdd}</h3>
+                <button onClick={() => setIsFoodModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
                   <span className="material-symbols-outlined">close</span>
                 </button>
               </div>
@@ -5419,8 +5779,9 @@ export default function DashboardPage() {
                   <label htmlFor="isAvailable" className="text-[#181c23] dark:text-slate-300 font-bold">{t.modalFoodActive}</label>
                 </div>
 
-                <button type="submit" className="w-full py-3 bg-[#0059b9] hover:bg-[#004591] text-white font-bold rounded-lg text-xs transition-all shadow-xs mt-4">
-                  {t.modalFoodSave}
+                <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
+                  <span className="material-symbols-outlined text-base">check_circle</span>
+                  <span>{t.modalFoodSave}</span>
                 </button>
               </form>
             </motion.div>
@@ -5431,12 +5792,12 @@ export default function DashboardPage() {
       {/* 2. Table Create / Edit Modal */}
       <AnimatePresence>
         {isTableModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsTableModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-xs" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-[#c1c6d6] dark:border-[#1e293b] rounded-xl p-6 shadow-xl space-y-4">
+          <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsTableModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-[#c1c6d6] dark:border-[#1e293b] rounded-2xl p-6 shadow-xl space-y-4 my-auto max-h-[85vh] overflow-y-auto scrollbar-thin">
               <div className="flex justify-between items-center border-b border-[#c1c6d6] dark:border-[#1e293b] pb-3">
                 <h3 className="text-lg font-bold text-[#181c23] dark:text-white font-heading">{editingTable ? t.modalTableTitleEdit : t.modalTableTitleAdd}</h3>
-                <button onClick={() => setIsTableModalOpen(false)} className="text-[#717785] hover:text-[#181c23] dark:hover:text-white">
+                <button onClick={() => setIsTableModalOpen(false)} className="text-[#717785] hover:text-[#181c23] dark:hover:text-white cursor-pointer">
                   <span className="material-symbols-outlined">close</span>
                 </button>
               </div>
@@ -5469,8 +5830,9 @@ export default function DashboardPage() {
                   </select>
                 </div>
 
-                <button type="submit" className="w-full py-3 bg-[#0059b9] hover:bg-[#004591] text-white font-bold rounded-lg text-xs transition-all shadow-xs mt-4">
-                  {t.modalFoodSave}
+                <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
+                  <span className="material-symbols-outlined text-base">check_circle</span>
+                  <span>{t.modalFoodSave}</span>
                 </button>
               </form>
             </motion.div>
@@ -5481,9 +5843,9 @@ export default function DashboardPage() {
       {/* 3.8 Employee Shift Swap Request Modal */}
       <AnimatePresence>
         {isShiftSwapModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsShiftSwapModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-xs" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4">
+          <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsShiftSwapModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[85vh] overflow-y-auto scrollbar-thin">
               <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3">
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading">Gửi Yêu Cầu Đổi Ca Làm</h3>
                 <button onClick={() => setIsShiftSwapModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
@@ -5529,8 +5891,9 @@ export default function DashboardPage() {
                   />
                 </div>
 
-                <button type="submit" className="w-full py-3 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer">
-                  Gửi Yêu Cầu Cho Admin Duyệt
+                <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
+                  <span className="material-symbols-outlined text-base">send</span>
+                  <span>Gửi Yêu Cầu Cho Admin Duyệt</span>
                 </button>
               </form>
             </motion.div>
@@ -5541,12 +5904,12 @@ export default function DashboardPage() {
       {/* 2.5 Table QR Code Modal */}
       <AnimatePresence>
         {qrTable && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setQrTable(null)} className="absolute inset-0 bg-black/80 backdrop-blur-xs print:hidden" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 text-center">
+          <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setQrTable(null)} className="fixed inset-0 bg-black/80 backdrop-blur-xs print:hidden" />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 text-center my-auto max-h-[85vh] overflow-y-auto scrollbar-thin printable-modal">
               <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3 print:hidden">
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">Mã QR Đặt Món — {qrTable.tableName}</h3>
-                <button onClick={() => setQrTable(null)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white font-heading">Mã QR Đặt Món — {qrTable.tableName}</h3>
+                <button onClick={() => setQrTable(null)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
                   <span className="material-symbols-outlined">close</span>
                 </button>
               </div>
@@ -5582,7 +5945,7 @@ export default function DashboardPage() {
                         showToast('Đã sao chép link đặt món!', 'success');
                       }
                     }}
-                    className="px-2.5 py-1 bg-[#38BDF8] text-[#090D16] font-bold rounded-lg text-[10px] hover:bg-[#0284c7] transition-all ml-1 shrink-0 cursor-pointer"
+                    className="px-2.5 py-1 bg-[#3AA6FF] text-white font-bold rounded-lg text-[10px] hover:bg-[#2593e8] transition-all ml-1 shrink-0 cursor-pointer"
                   >
                     Sao chép
                   </button>
@@ -5612,7 +5975,7 @@ export default function DashboardPage() {
                   </button>
                   <button
                     onClick={() => window.print()}
-                    className="flex-1 py-2.5 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+                    className="flex-1 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-md"
                   >
                     <span className="material-symbols-outlined text-base">print</span>
                     <span>In QR Code</span>
@@ -5627,12 +5990,12 @@ export default function DashboardPage() {
       {/* 3. User Create / Edit Modal */}
       <AnimatePresence>
         {isUserModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsUserModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-xs" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4">
+          <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsUserModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[85vh] overflow-y-auto scrollbar-thin">
               <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{editingUser ? t.modalUserTitleEdit : t.modalUserTitleAdd}</h3>
-                <button onClick={() => setIsUserModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white font-heading">{editingUser ? t.modalUserTitleEdit : t.modalUserTitleAdd}</h3>
+                <button onClick={() => setIsUserModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
                   <span className="material-symbols-outlined">close</span>
                 </button>
               </div>
@@ -5671,8 +6034,9 @@ export default function DashboardPage() {
                   </select>
                 </div>
 
-                <button type="submit" className="w-full py-3 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-xl text-xs transition-all shadow-md mt-4">
-                  {t.modalFoodSave}
+                <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
+                  <span className="material-symbols-outlined text-base">check_circle</span>
+                  <span>{t.modalFoodSave}</span>
                 </button>
               </form>
             </motion.div>
@@ -5683,12 +6047,12 @@ export default function DashboardPage() {
       {/* 3.5 Attendance Edit Modal */}
       <AnimatePresence>
         {isAttendanceModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsAttendanceModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-xs" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4">
+          <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsAttendanceModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[85vh] overflow-y-auto scrollbar-thin">
               <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Cập Nhật Giờ Chấm Công</h3>
-                <button onClick={() => setIsAttendanceModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white font-heading">Cập Nhật Giờ Chấm Công</h3>
+                <button onClick={() => setIsAttendanceModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
                   <span className="material-symbols-outlined">close</span>
                 </button>
               </div>
@@ -5727,8 +6091,9 @@ export default function DashboardPage() {
                   />
                 </div>
 
-                <button type="submit" className="w-full py-3 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black rounded-xl text-xs transition-all shadow-md mt-4">
-                  Lưu thay đổi chấm công
+                <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
+                  <span className="material-symbols-outlined text-base">check_circle</span>
+                  <span>Lưu thay đổi chấm công</span>
                 </button>
               </form>
             </motion.div>
@@ -5925,46 +6290,76 @@ export default function DashboardPage() {
       <AnimatePresence>
         {activeInvoice && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setActiveInvoice(null)} className="absolute inset-0 bg-black/80 backdrop-blur-xs print:hidden" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-md bg-white text-black rounded-2xl p-6 shadow-2xl space-y-4 font-mono print:p-0 print:shadow-none print:w-full">
-              <div className="text-center border-b pb-3">
-                <h3 className="text-lg font-black">{t.hubTitle}</h3>
-                <p className="text-xs text-gray-600">{t.invoiceTitle}</p>
-                <p className="text-[11px] text-gray-500 mt-1">
-                  {t.invoiceTable}: {activeInvoice.tableId?.tableName || t.unknownTable} | {t.orderCode}: #{activeInvoice._id.slice(-6).toUpperCase()}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setActiveInvoice(null)}
+              className="absolute inset-0 bg-black/75 backdrop-blur-xs print:hidden"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative z-10 w-full max-w-md bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] text-slate-900 dark:text-white rounded-3xl p-6 shadow-2xl space-y-4 font-mono printable-modal"
+            >
+              {/* Header */}
+              <div className="text-center border-b border-slate-200 dark:border-[#1e293b] pb-3 space-y-1">
+                <h3 className="text-lg font-black tracking-tight text-slate-900 dark:text-white uppercase font-heading">
+                  {t.hubTitle}
+                </h3>
+                <p className="text-xs font-bold text-[#0284c7] dark:text-[#38BDF8] uppercase tracking-wider">
+                  {t.invoiceTitle}
                 </p>
+                <div className="inline-block mt-2 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-[11px] font-bold text-cyan-600 dark:text-[#38BDF8]">
+                  {t.invoiceTable}: <span className="font-extrabold">{activeInvoice.tableId?.tableName || t.unknownTable}</span> | #{activeInvoice._id.slice(-6).toUpperCase()}
+                </div>
               </div>
 
-              <table className="w-full text-xs border-collapse">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-1">{t.invoiceFoodName}</th>
-                    <th className="text-center py-1">{t.invoiceQty}</th>
-                    <th className="text-right py-1">{t.invoiceSubtotal}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {activeInvoice.items?.map((item, i) => (
-                    <tr key={i} className="border-b border-gray-100">
-                      <td className="py-1.5">{item.foodId?.name || 'Món'}</td>
-                      <td className="text-center py-1.5">x{item.quantity}</td>
-                      <td className="text-right py-1.5">{formatPrice((item.foodId?.price || 0) * item.quantity)}</td>
+              {/* Items Table */}
+              <div className="border border-slate-200 dark:border-[#1e293b] rounded-2xl overflow-hidden">
+                <table className="w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 dark:bg-[#090D16] text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] border-b border-slate-200 dark:border-[#1e293b]">
+                      <th className="text-left p-2.5">{t.invoiceFoodName}</th>
+                      <th className="text-center p-2.5">{t.invoiceQty}</th>
+                      <th className="text-right p-2.5">{t.invoiceSubtotal}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              <div className="pt-2 border-t flex justify-between font-black text-sm">
-                <span>{t.invoiceTotal}:</span>
-                <span>{formatPrice(activeInvoice.totalAmount)}</span>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b]">
+                    {activeInvoice.items?.map((item, i) => (
+                      <tr key={i} className="text-slate-800 dark:text-slate-200">
+                        <td className="p-2.5 font-bold">{item.foodId?.name || 'Món'}</td>
+                        <td className="text-center p-2.5 font-bold">x{item.quantity}</td>
+                        <td className="text-right p-2.5 font-bold">{formatPrice((item.foodId?.price || 0) * item.quantity)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
 
-              <div className="flex gap-2 pt-4 print:hidden">
-                <button onClick={() => setActiveInvoice(null)} className="flex-1 py-2 bg-gray-200 text-gray-800 rounded-xl text-xs font-bold hover:bg-gray-300">
+              {/* Summary */}
+              <div className="pt-2 border-t border-slate-200 dark:border-[#1e293b] flex justify-between font-black text-sm text-slate-900 dark:text-white">
+                <span>{t.invoiceTotal}:</span>
+                <span className="text-[#0284c7] dark:text-[#38BDF8] text-base">{formatPrice(activeInvoice.totalAmount)}</span>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2.5 pt-2 print:hidden">
+                <button
+                  type="button"
+                  onClick={() => setActiveInvoice(null)}
+                  className="flex-1 py-2.5 bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer"
+                >
                   {t.invoiceBack}
                 </button>
-                <button onClick={handlePrintInvoice} className="flex-1 py-2 bg-[#38BDF8] text-[#090D16] font-black rounded-xl text-xs hover:bg-[#0284c7]">
-                  {t.invoicePrintBtn}
+                <button
+                  type="button"
+                  onClick={handlePrintInvoice}
+                  className="flex-1 py-2.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-black rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                >
+                  <span className="material-symbols-outlined text-base">print</span>
+                  <span>{t.invoicePrintBtn}</span>
                 </button>
               </div>
             </motion.div>
@@ -6395,7 +6790,7 @@ export default function DashboardPage() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative z-10 w-full max-w-lg bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-6 shadow-2xl space-y-5"
+              className="relative z-10 w-full max-w-lg bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-6 shadow-2xl space-y-5 printable-modal"
             >
               <div className="text-center border-b border-slate-200 dark:border-[#1e293b] pb-4 space-y-1">
                 <h2 className="text-xl font-black tracking-wide text-slate-900 dark:text-white uppercase">Hóa Đơn Thanh Toán</h2>

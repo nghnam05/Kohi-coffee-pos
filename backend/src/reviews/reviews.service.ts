@@ -17,30 +17,19 @@ export class ReviewsService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    const count = await this.reviewModel.countDocuments();
-    if (count === 0) {
-      try {
-        const orders = await this.orderModel.find({ status: 'paid' }).limit(5).exec();
-        if (orders.length > 0) {
-          const sampleReviews: any[] = [];
-          for (let i = 0; i < orders.length; i++) {
-            const ord = orders[i];
-            const foodId = ord.items?.[0]?.foodId || null;
-            sampleReviews.push({
-              orderId: ord._id,
-              tableId: ord.tableId || null,
-              overallStar: 5 - (i % 2),
-              overallComment: i % 2 === 0 ? 'Cà phê rất thơm ngon, phục vụ nhanh nhạy!' : 'Bánh ngọt tươi mới, không khí quán tuyệt vời!',
-              ratings: foodId ? [{ foodId, star: 5, comment: 'Hương vị tuyệt vời!' }] : [],
-              createdAt: (ord as any).createdAt || new Date(),
-            });
-          }
-          await this.reviewModel.insertMany(sampleReviews);
-          console.log('[Seed] Sample Customer Reviews initialized in Database.');
-        }
-      } catch (err) {
-        console.error('[Seed Error] Failed to seed sample reviews:', err);
+    try {
+      // Clear existing seed reviews from database
+      const result = await this.reviewModel.deleteMany({
+        $or: [
+          { overallComment: { $regex: /Cà phê rất thơm ngon|Bánh ngọt tươi mới/i } },
+          { 'ratings.comment': 'Hương vị tuyệt vời!' }
+        ]
+      });
+      if (result.deletedCount > 0) {
+        console.log(`[Clean] Cleared ${result.deletedCount} seed reviews from database.`);
       }
+    } catch (err) {
+      console.error('[Clean Error] Failed to clear seed reviews:', err);
     }
   }
 
