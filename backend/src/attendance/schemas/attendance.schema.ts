@@ -28,6 +28,12 @@ export class Attendance {
 
   @Prop({ type: Boolean, default: false })
   isManualEdit: boolean; // Admin chỉnh tay
+
+  @Prop({ type: Boolean, default: false })
+  isPaid: boolean; // Đã thanh toán lương cho ca này chưa
+
+  @Prop({ type: Date, default: null })
+  paidAt: Date; // Thời điểm thanh toán
 }
 
 export const AttendanceSchema = SchemaFactory.createForClass(Attendance);

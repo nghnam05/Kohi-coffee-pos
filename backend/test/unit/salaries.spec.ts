@@ -12,8 +12,11 @@ describe('SalariesService', () => {
   let payrollModelMock: any;
   let attendanceServiceMock: any;
 
+  const validUserId = '507f191e810c19729de860ea';
+  const validPayrollId = '507f191e810c19729de860eb';
+
   const mockConfig = {
-    userId: 'user123',
+    userId: validUserId,
     type: 'hourly',
     baseSalary: 30000,
     overtimeRate: 1.5,
@@ -24,8 +27,8 @@ describe('SalariesService', () => {
   };
 
   const mockPayroll = {
-    _id: 'payroll123',
-    userId: 'user123',
+    _id: validPayrollId,
+    userId: validUserId,
     month: 8,
     year: 2026,
     totalHoursWorked: 100,
@@ -47,7 +50,7 @@ describe('SalariesService', () => {
     configModelMock = function (dto: any) {
       return {
         ...dto,
-        save: jest.fn().mockResolvedValue({ ...dto, _id: 'config123' }),
+        save: jest.fn().mockResolvedValue({ ...dto, _id: '507f191e810c19729de860ec' }),
       };
     };
     configModelMock.find = jest.fn().mockReturnValue({
@@ -65,7 +68,7 @@ describe('SalariesService', () => {
         ...dto,
         save: jest.fn().mockResolvedValue({
           ...dto,
-          _id: 'payroll123',
+          _id: validPayrollId,
           populate: jest.fn().mockResolvedValue(dto),
         }),
       };
@@ -108,17 +111,17 @@ describe('SalariesService', () => {
 
   describe('generatePayroll', () => {
     it('should generate hourly payroll correctly based on attendance hours', async () => {
-      const result = await service.generatePayroll('user123', 8, 2026);
-      expect(attendanceServiceMock.getMonthlySummary).toHaveBeenCalledWith('user123', '8', '2026');
+      const result = await service.generatePayroll(validUserId, 8, 2026);
+      expect(attendanceServiceMock.getMonthlySummary).toHaveBeenCalledWith(validUserId, '8', '2026');
       expect(result.netSalary).toBe(3000000);
     });
   });
 
   describe('markPaid', () => {
     it('should update status to paid and record payment method', async () => {
-      const result = await service.markPaid('payroll123', 'cash');
+      const result = await service.markPaid(validPayrollId, 'cash');
       expect(payrollModelMock.findByIdAndUpdate).toHaveBeenCalledWith(
-        'payroll123',
+        validPayrollId,
         expect.objectContaining({ status: 'paid', paidMethod: 'cash' }),
         { new: true },
       );
@@ -130,7 +133,7 @@ describe('SalariesService', () => {
         populate: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(null),
       });
-      await expect(service.markPaid('invalid', 'cash')).rejects.toThrow(NotFoundException);
+      await expect(service.markPaid('507f191e810c19729de860ed', 'cash')).rejects.toThrow(NotFoundException);
     });
   });
 });

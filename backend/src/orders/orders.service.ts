@@ -202,6 +202,7 @@ export class OrdersService implements OnModuleInit {
     const updatePayload: any = { status: updateOrderStatusDto.status };
     if (updateOrderStatusDto.status === 'paid') {
       updatePayload.paymentStatus = 'paid';
+      updatePayload.paymentNotified = false;
       updatePayload.paidAt = new Date();
     }
 
@@ -249,6 +250,28 @@ export class OrdersService implements OnModuleInit {
           }
         }
       }
+    }
+
+    return updatedOrder;
+  }
+
+  async notifyPayment(id: string): Promise<OrderDocument> {
+    const updatedOrder = await this.orderModel
+      .findByIdAndUpdate(
+        id,
+        { paymentNotified: true, paymentMethod: 'bank_transfer' },
+        { new: true }
+      )
+      .populate('tableId')
+      .populate('items.foodId')
+      .exec();
+
+    if (!updatedOrder) {
+      throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${id}`);
+    }
+
+    if (this.ordersGateway) {
+      this.ordersGateway.emitPaymentNotified(updatedOrder);
     }
 
     return updatedOrder;

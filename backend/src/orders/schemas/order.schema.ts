@@ -78,7 +78,7 @@ export class Order {
   })
   paymentStatus: string;
 
-  @Prop({ type: String, enum: ['cash', 'momo'], default: 'cash' })
+  @Prop({ type: String, enum: ['cash', 'momo', 'bank_transfer', 'bank'], default: 'cash' })
   paymentMethod: string;
 
   @Prop({ type: String, default: null })
@@ -95,6 +95,9 @@ export class Order {
 
   @Prop({ type: Date, default: null })
   paidAt: Date;
+
+  @Prop({ type: Boolean, default: false })
+  paymentNotified: boolean;
 
   @Prop({ type: Boolean, default: false, index: true })
   isDeleted: boolean;

@@ -66,6 +66,12 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.emit('statusUpdated', { orderId, status });
   }
 
+  emitPaymentNotified(order: any): void {
+    if (this.server) {
+      this.server.emit('paymentNotified', order);
+    }
+  }
+
   emitOrderDeleted(orderId: string): void {
     this.server.emit('orderDeleted', { orderId });
   }
@@ -121,6 +127,20 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   emitTableUpdate(tableId: string, status: string): void {
     if (this.server) {
       this.server.emit('tableUpdated', { tableId, status });
+    }
+  }
+
+  emitGuestJoined(data: { tableId: string; tableName: string }): void {
+    if (this.server) {
+      this.server.emit('guestJoined', data);
+      this.server.emit('tableUpdated', { tableId: data.tableId, status: 'serving' });
+    }
+  }
+
+  emitGuestLeft(data: { tableId: string; tableName: string }): void {
+    if (this.server) {
+      this.server.emit('guestLeft', data);
+      this.server.emit('tableUpdated', { tableId: data.tableId, status: 'empty' });
     }
   }
 

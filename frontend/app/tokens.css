@@ -35,9 +35,9 @@
 
   /* Typography */
   --text-primary:                #181c23; /* on-surface */
-  --text-secondary:              #414754; /* on-surface-variant */
-  --text-tertiary:               #717785; /* outline */
-  --text-quaternary:             #a0a6b5;
+  --text-secondary:              #333842; /* high contrast on-surface-variant */
+  --text-tertiary:               #525866; /* WCAG AA compliant 6.8:1 contrast */
+  --text-quaternary:             #717785;
 
   /* Brand Palette (Primary Vibrant Blue) */
   --brand-primary:               #0059b9;
@@ -111,8 +111,8 @@
 
   /* Text */
   --text-primary:      #F8FAFC; /* Bright crisp text */
-  --text-secondary:    #94A3B8; /* Muted cool slate text */
-  --text-tertiary:     #64748B; /* Subtle text */
+  --text-secondary:    #CBD5E1; /* High contrast text */
+  --text-tertiary:     #94A3B8; /* WCAG AA compliant contrast */
 
   /* Brand (Vibrant Electric Blue - Pops high-tech) */
   --brand-primary:       #0084FF; /* Electric azure blue */

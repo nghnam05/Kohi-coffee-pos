@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Html5Qrcode } from 'html5-qrcode';
@@ -385,29 +386,24 @@ export default function Home() {
     <div className="min-h-screen bg-slate-50/80 dark:bg-[#070A10] text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans flex flex-col justify-between relative antialiased">
       {/* Top Header Bar */}
       <header className="bg-white/95 dark:bg-[#0F141F]/95 border-b border-slate-200 dark:border-slate-800 sticky top-0 left-0 w-full z-50 shadow-xs backdrop-blur-md">
-        <div className="flex justify-between items-center w-full px-3 sm:px-6 md:px-12 py-2.5 sm:py-4 max-w-7xl mx-auto gap-2">
+        <div className="flex justify-between items-center w-full px-3 sm:px-6 md:px-12 py-2.5 sm:py-3.5 max-w-7xl mx-auto gap-2">
           <BrandLogo onClick={() => router.push('/')} />
 
-          <div className="flex items-center gap-1.5 sm:gap-3 md:gap-4 shrink-0">
-            <div className="flex items-center">
-              <LanguageToggleSwitch
-                lang={lang as Lang}
-                setLang={(l) => {
-                  setLang(l as any);
-                  localStorage.setItem('pho-beyond-lang', l);
-                }}
-              />
-            </div>
-
-            <div className="flex items-center">
-              <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
-            </div>
-
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <LanguageToggleSwitch
+              lang={lang as Lang}
+              setLang={(l) => {
+                setLang(l as any);
+                localStorage.setItem('pho-beyond-lang', l);
+              }}
+            />
+            <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
             <button
               onClick={() => router.push('/login')}
-              className="bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 transition-colors duration-200 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-[11px] sm:text-xs md:text-sm font-bold shadow-xs whitespace-nowrap cursor-pointer active:scale-95 min-h-[38px] sm:min-h-[44px]"
+              className="bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 transition-colors duration-200 px-3 sm:px-4 h-[28px] sm:h-[34px] rounded-full text-[11px] sm:text-xs font-bold shadow-xs whitespace-nowrap cursor-pointer active:scale-95 flex items-center shrink-0"
             >
-              <span>{t.btnLogin}</span>
+              <span className="sm:hidden">Đăng nhập</span>
+              <span className="hidden sm:inline">{t.btnLogin}</span>
             </button>
           </div>
         </div>
@@ -649,10 +645,11 @@ export default function Home() {
               <form onSubmit={handleBookingSubmit} className="space-y-4">
                 {/* Full Name */}
                 <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label htmlFor="customer-name-input" className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                     {t.customerNameLabel}
                   </label>
                   <input
+                    id="customer-name-input"
                     type="text"
                     required
                     placeholder={t.customerNamePlaceholder}
@@ -664,10 +661,11 @@ export default function Home() {
 
                 {/* Phone Number */}
                 <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label htmlFor="customer-phone-input" className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                     {t.customerPhoneLabel}
                   </label>
                   <input
+                    id="customer-phone-input"
                     type="tel"
                     inputMode="numeric"
                     pattern="[0-9]*"
@@ -688,10 +686,11 @@ export default function Home() {
                 {/* Reservation Time & Guest Count Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    <label htmlFor="reservation-time-input" className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                       {t.reservationTimeLabel}
                     </label>
                     <input
+                      id="reservation-time-input"
                       type="datetime-local"
                       required
                       value={reservationTime}
@@ -701,10 +700,11 @@ export default function Home() {
                   </div>
 
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    <label htmlFor="guest-count-input" className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                       {t.guestCountLabel}
                     </label>
                     <input
+                      id="guest-count-input"
                       type="number"
                       min={1}
                       max={50}
@@ -800,6 +800,8 @@ export default function Home() {
 
             <form onSubmit={handleLookupSubmit} className="flex flex-col sm:flex-row gap-3">
               <input
+                id="lookup-phone-input"
+                aria-label={t.lookupPhonePlaceholder}
                 type="tel"
                 inputMode="numeric"
                 pattern="[0-9]*"
@@ -1026,15 +1028,15 @@ export default function Home() {
             © {new Date().getFullYear()} Kohi Coffee & Pastry. Smart Online Reservation & QR Solution.
           </p>
           <div className="flex gap-6">
-            <a href="#" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#0284c7] dark:hover:text-[#38BDF8] underline transition-colors">
-              Privacy Policy
-            </a>
-            <a href="#" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#0284c7] dark:hover:text-[#38BDF8] underline transition-colors">
-              Terms of Service
-            </a>
-            <a href="#" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#0284c7] dark:hover:text-[#38BDF8] underline transition-colors">
-              Contact Us
-            </a>
+            <Link href="/privacy" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#0284c7] dark:hover:text-[#38BDF8] underline transition-colors">
+              {lang === 'en' ? 'Privacy Policy' : lang === 'zh' ? '隐私政策' : 'Chính sách bảo mật'}
+            </Link>
+            <Link href="/terms" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#0284c7] dark:hover:text-[#38BDF8] underline transition-colors">
+              {lang === 'en' ? 'Terms of Service' : lang === 'zh' ? '服务条款' : 'Điều khoản dịch vụ'}
+            </Link>
+            <Link href="/contact" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#0284c7] dark:hover:text-[#38BDF8] underline transition-colors">
+              {lang === 'en' ? 'Contact Us' : lang === 'zh' ? '联系我们' : 'Liên hệ chúng tôi'}
+            </Link>
           </div>
         </div>
       </footer>

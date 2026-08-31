@@ -73,6 +73,11 @@ export class OrdersController {
     return this.ordersService.updateStatus(id, updateOrderStatusDto, req.user?.role);
   }
 
+  @Patch(':id/notify-payment')
+  async notifyPayment(@Param('id') id: string): Promise<OrderDocument> {
+    return this.ordersService.notifyPayment(id);
+  }
+
   @Patch(':id/pay')
   async simulatePayment(@Param('id') id: string): Promise<OrderDocument> {
     return this.ordersService.updateStatus(id, { status: 'paid' });

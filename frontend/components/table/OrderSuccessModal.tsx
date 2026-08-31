@@ -10,6 +10,7 @@ interface OrderSuccessModalProps {
   tableId: string;
   router: any;
   lang?: 'vi' | 'en' | 'zh';
+  onOpenBankPayModal?: (order: any) => void;
 }
 
 export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
@@ -19,6 +20,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
   tableId,
   router,
   lang = 'vi',
+  onOpenBankPayModal,
 }) => {
   return (
     <AnimatePresence>
@@ -69,30 +71,31 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
 
               {/* Action buttons */}
               <div className="flex flex-col gap-2.5">
-                {latestCreatedOrder?.paymentMethod === 'momo' && (
+                {onOpenBankPayModal && (latestCreatedOrder?.paymentMethod === 'bank_transfer' || latestCreatedOrder?.paymentMethod === 'momo') && (
                   <button
                     onClick={() => {
                       setIsOrderSuccessModalOpen(false);
-                      router.push(`/table/${tableId}/order-status/${latestCreatedOrder._id}`);
+                      onOpenBankPayModal(latestCreatedOrder);
                     }}
-                    className="w-full py-3 bg-gradient-to-r from-[#D82D8B] to-[#A50064] text-white rounded-xl text-[13px] font-[700] transition-all active:scale-95 shadow-lg shadow-pink-500/25 cursor-pointer flex items-center justify-center gap-1.5"
+                    className="w-full py-3 bg-[#0284c7] hover:bg-[#0369a1] text-white rounded-xl text-[13.5px] font-bold transition-all active:scale-95 shadow-lg cursor-pointer flex items-center justify-center"
                   >
-                    <span className="material-symbols-outlined text-base">bolt</span>
-                    <span>{lang === 'en' ? 'Pay with MoMo Now' : lang === 'zh' ? '立即 MoMo 支付' : 'Thanh toán MoMo ngay (Giả lập)'}</span>
+                    <span>{lang === 'en' ? 'Pay via VietQR' : lang === 'zh' ? '扫码银行转账' : 'Thanh toán VietQR'}</span>
                   </button>
                 )}
+
                 <button
                   onClick={() => {
                     setIsOrderSuccessModalOpen(false);
                     router.push(`/table/${tableId}/order-status/${latestCreatedOrder._id}`);
                   }}
-                  className="w-full py-3 uiverse-btn text-white rounded-xl text-[13px] font-[600] transition-all active:scale-95 shadow-lg shadow-[#3AA6FF]/25 cursor-pointer"
+                  className="w-full py-3 uiverse-btn text-white rounded-xl text-[13.5px] font-bold transition-all active:scale-95 shadow-lg shadow-[#3AA6FF]/25 cursor-pointer flex items-center justify-center"
                 >
-                  {lang === 'en' ? 'Track Order Status' : lang === 'zh' ? '追踪订单进度' : 'Theo dõi tiến độ'}
+                  <span>{lang === 'en' ? 'Track Order Status' : lang === 'zh' ? '追踪订单进度' : 'Theo dõi tiến độ'}</span>
                 </button>
+
                 <button
                   onClick={() => setIsOrderSuccessModalOpen(false)}
-                  className="w-full py-3 bg-transparent border border-[#E2E8F0] dark:border-[#222732] text-[#64748B] dark:text-[#9CA3AF] hover:text-[#3AA6FF] dark:hover:text-[#5B9EFF] hover:border-[#3AA6FF]/40 dark:hover:border-[#5B9EFF]/40 rounded-xl text-[13px] font-[500] transition-all cursor-pointer"
+                  className="w-full py-3 bg-transparent border border-[#E2E8F0] dark:border-[#222732] text-[#64748B] dark:text-[#9CA3AF] hover:text-[#3AA6FF] dark:hover:text-[#5B9EFF] hover:border-[#3AA6FF]/40 dark:hover:border-[#5B9EFF]/40 rounded-xl text-[13px] font-semibold transition-all cursor-pointer"
                 >
                   {lang === 'en' ? 'Order More Items' : lang === 'zh' ? '加点其他商品' : 'Chọn thêm món khác'}
                 </button>
