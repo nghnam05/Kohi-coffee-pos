@@ -34,13 +34,12 @@ export const LanguageToggleSwitch: React.FC<LanguageToggleSwitchProps> = ({
     <button
       type="button"
       onClick={cycleLang}
-      className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#151c2d] border border-slate-200/80 dark:border-slate-800/80 text-xs font-black text-[#0284c7] dark:text-[#38BDF8] hover:border-[#38BDF8]/60 active:scale-95 transition-all cursor-pointer min-h-[36px] select-none shadow-xs shrink-0"
+      className="flex items-center justify-center gap-1 px-2.5 h-[28px] rounded-full bg-slate-100 dark:bg-[#0F172A] border border-slate-200/80 dark:border-slate-700/80 text-[11px] font-extrabold text-[#0284c7] dark:text-[#38BDF8] hover:border-[#38BDF8]/60 active:scale-95 transition-all cursor-pointer select-none shadow-xs shrink-0"
       title="Chuyển đổi ngôn ngữ (VI / EN / ZH)"
       aria-label="Chuyển đổi ngôn ngữ"
     >
-      <span className="uppercase tracking-wide font-extrabold">{getLangLabel()}</span>
-      <span className="material-symbols-outlined text-[14px] opacity-80">translate</span>
+      <span className="uppercase tracking-wide font-black">{getLangLabel()}</span>
+      <span className="material-symbols-outlined text-[13px] opacity-80">translate</span>
     </button>
   );
 };
-

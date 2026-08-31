@@ -28,6 +28,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#FFFFFF" },
     { media: "(prefers-color-scheme: dark)", color: "#090D16" },
@@ -47,8 +49,13 @@ export default function RootLayout({
   return (
     <html lang="vi" suppressHydrationWarning className={cn("bg-[#FFFFFF] dark:bg-[#090D16]", "font-sans", manrope.variable, inter.variable, playfairDisplayHeading.variable)}>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap"
+        />
         <meta name="theme-color" content="#090D16" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
       </head>
       <body
         className={`${manrope.variable} ${inter.variable} ${beVietnamPro.variable} font-sans antialiased bg-[var(--bg-primary)] text-[var(--text-primary)] min-h-screen`}

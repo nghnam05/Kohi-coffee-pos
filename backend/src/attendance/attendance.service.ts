@@ -160,7 +160,7 @@ export class AttendanceService {
   }
 
   /** Admin chỉnh sửa thủ công */
-  async adminEdit(id: string, checkIn?: string, checkOut?: string, note?: string, shift?: string): Promise<AttendanceDocument> {
+  async adminEdit(id: string, checkIn?: string, checkOut?: string, note?: string, shift?: string, isPaid?: boolean): Promise<AttendanceDocument> {
     const record = await this.attendanceModel.findById(id).exec();
     if (!record) throw new NotFoundException('Không tìm thấy bản ghi chấm công.');
 
@@ -190,8 +190,23 @@ export class AttendanceService {
     if (note !== undefined) {
       record.note = note;
     }
+    if (isPaid !== undefined) {
+      record.isPaid = isPaid;
+      if (isPaid) record.paidAt = new Date();
+    }
     record.isManualEdit = true;
     return record.save();
+  }
+
+  /** Admin đánh dấu thanh toán lương hàng loạt ca */
+  async markPaidBulk(ids: string[]): Promise<{ modifiedCount: number }> {
+    if (!ids || ids.length === 0) return { modifiedCount: 0 };
+    const validIds = ids.filter((id) => isValidObjectId(id));
+    const res = await this.attendanceModel.updateMany(
+      { _id: { $in: validIds } },
+      { $set: { isPaid: true, paidAt: new Date() } },
+    ).exec();
+    return { modifiedCount: res.modifiedCount };
   }
 
   /** Admin xóa bản ghi chấm công */

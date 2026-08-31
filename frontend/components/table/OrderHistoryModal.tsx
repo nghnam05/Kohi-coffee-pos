@@ -20,6 +20,7 @@ interface OrderHistoryModalProps {
   lang: any;
   tableId: string;
   router: any;
+  onOpenBankPayModal?: (order: any) => void;
 }
 
 export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
@@ -32,6 +33,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
   lang,
   tableId,
   router,
+  onOpenBankPayModal,
 }) => {
   const [reviewingOrder, setReviewingOrder] = useState<any | null>(null);
 
@@ -199,26 +201,41 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                           </div>
 
                           <div className="flex items-center gap-2">
+                            {/* Nút Theo dõi tiến độ - Luôn hiển thị để khách hàng chuyển tới trang tiến độ */}
+                            <button
+                              onClick={() => {
+                                setIsOrderHistoryModalOpen(false);
+                                router.push(`/table/${tableId}/order-status/${order._id}`);
+                              }}
+                              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer"
+                              title={lang === 'en' ? 'Track Progress' : lang === 'zh' ? '追踪进度' : 'Theo dõi tiến độ đơn hàng'}
+                            >
+                              <span>{lang === 'en' ? 'Track' : lang === 'zh' ? '进度' : 'Theo dõi tiến độ'}</span>
+                            </button>
+
+                            {/* Nút Thanh toán hoặc Nhãn Đã thanh toán */}
                             {order.status === 'paid' ? (
-                              <button
-                                onClick={() => {
-                                  setIsOrderHistoryModalOpen(false);
-                                  router.push(`/table/${tableId}/order-status/${order._id}`);
-                                }}
-                                className="px-3.5 py-1.5 bg-slate-200/70 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer"
-                              >
-                                {lang === 'en' ? 'Invoice' : lang === 'zh' ? '收据' : 'Xem hóa đơn'}
-                              </button>
+                              <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-bold border border-emerald-500/20">
+                                {lang === 'en' ? 'Paid' : lang === 'zh' ? '已结账' : 'Đã thanh toán'}
+                              </span>
                             ) : (
-                              <button
-                                onClick={() => {
-                                  setIsOrderHistoryModalOpen(false);
-                                  router.push(`/table/${tableId}/order-status/${order._id}`);
-                                }}
-                                className="px-4 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 text-xs font-extrabold rounded-xl transition-all active:scale-95 cursor-pointer shadow-sm"
-                              >
-                                {lang === 'en' ? 'Pay Now' : lang === 'zh' ? '立即支付' : 'Thanh toán'}
-                              </button>
+                              <div className="flex items-center gap-1.5">
+                                <span className="px-2 py-0.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 rounded-lg text-[10.5px] font-bold">
+                                  {lang === 'en' ? 'Unpaid' : lang === 'zh' ? '未支付' : 'Chưa thanh toán'}
+                                </span>
+                                <button
+                                  onClick={() => {
+                                    if (onOpenBankPayModal) {
+                                      onOpenBankPayModal(order);
+                                    } else {
+                                      router.push(`/table/${tableId}/order-status/${order._id}`);
+                                    }
+                                  }}
+                                  className="px-3.5 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 text-xs font-extrabold rounded-xl transition-all active:scale-95 cursor-pointer shadow-sm"
+                                >
+                                  <span>{lang === 'en' ? 'Pay Now' : lang === 'zh' ? '立即支付' : 'Thanh toán'}</span>
+                                </button>
+                              </div>
                             )}
 
                             {['ready', 'served', 'completed', 'paid'].includes(order.status) && (
@@ -270,12 +287,15 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                     return (
                       <button
                         onClick={() => {
-                          setIsOrderHistoryModalOpen(false);
-                          router.push(`/table/${tableId}/order-status/${latestUnpaid._id}`);
+                          if (onOpenBankPayModal) {
+                            onOpenBankPayModal(latestUnpaid);
+                          } else {
+                            router.push(`/table/${tableId}/order-status/${latestUnpaid._id}`);
+                          }
                         }}
-                        className="px-5 py-2.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-black rounded-xl text-xs tracking-wide transition-all shadow-md active:scale-95 cursor-pointer"
+                        className="px-4 py-2.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-black rounded-xl text-xs tracking-wide transition-all shadow-md active:scale-95 cursor-pointer"
                       >
-                        {lang === 'en' ? 'Pay Now' : lang === 'zh' ? '立即支付' : 'Thanh toán'}
+                        <span>{lang === 'en' ? 'Pay Now' : lang === 'zh' ? '立即支付' : 'Thanh toán'}</span>
                       </button>
                     );
                   }

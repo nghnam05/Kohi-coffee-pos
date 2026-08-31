@@ -11,8 +11,11 @@ describe('ShiftSwapsService', () => {
   let swapModelMock: any;
   let userModelMock: any;
 
+  const validUserId = '507f191e810c19729de860ea';
+  const validSwapId = '507f191e810c19729de860eb';
+
   const mockUser = {
-    _id: 'user123',
+    _id: validUserId,
     name: 'Pham Thi B',
     email: 'staff@kohi.vn',
     role: 'waiter',
@@ -20,15 +23,15 @@ describe('ShiftSwapsService', () => {
   };
 
   const mockSwapRequest = {
-    _id: 'swap001',
+    _id: validSwapId,
     userId: mockUser,
     currentShift: 'morning',
     requestedShift: 'afternoon',
     reason: 'Ly do chuyen ca',
     status: 'pending',
     save: jest.fn().mockResolvedValue({
-      _id: 'swap001',
-      userId: 'user123',
+      _id: validSwapId,
+      userId: validUserId,
       currentShift: 'morning',
       requestedShift: 'afternoon',
       status: 'approved',
@@ -48,7 +51,7 @@ describe('ShiftSwapsService', () => {
 
     function MockSwapModel(this: any, dto: any) {
       Object.assign(this, dto);
-      this.save = jest.fn().mockResolvedValue({ _id: 'swap001', ...dto });
+      this.save = jest.fn().mockResolvedValue({ _id: validSwapId, ...dto });
     }
     Object.assign(MockSwapModel, swapModelMock);
 
@@ -77,22 +80,22 @@ describe('ShiftSwapsService', () => {
     it('should throw NotFoundException if user does not exist', async () => {
       userModelMock.findById.mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(null) });
       await expect(
-        service.create('nonexistent', { requestedShift: 'afternoon', reason: '' }),
+        service.create('507f191e810c19729de860ec', { requestedShift: 'afternoon', reason: '' }),
       ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw BadRequestException if requested shift equals current shift', async () => {
       await expect(
-        service.create('user123', { requestedShift: 'morning', reason: '' }),
+        service.create(validUserId, { requestedShift: 'morning', reason: '' }),
       ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw ConflictException if employee already has a pending request', async () => {
       swapModelMock.findOne.mockReturnValueOnce({
-        exec: jest.fn().mockResolvedValue({ _id: 'existing_swap', status: 'pending' }),
+        exec: jest.fn().mockResolvedValue({ _id: '507f191e810c19729de860ed', status: 'pending' }),
       });
       await expect(
-        service.create('user123', { requestedShift: 'evening', reason: '' }),
+        service.create(validUserId, { requestedShift: 'evening', reason: '' }),
       ).rejects.toThrow(ConflictException);
     });
 
@@ -101,7 +104,7 @@ describe('ShiftSwapsService', () => {
         populate: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue({ ...mockSwapRequest, userId: mockUser }),
       });
-      const result = await service.create('user123', { requestedShift: 'afternoon', reason: 'Hop gia dinh' });
+      const result = await service.create(validUserId, { requestedShift: 'afternoon', reason: 'Hop gia dinh' });
       expect(result).toBeDefined();
     });
   });
@@ -109,14 +112,14 @@ describe('ShiftSwapsService', () => {
   describe('updateStatus', () => {
     it('should throw BadRequestException for invalid status values', async () => {
       await expect(
-        service.updateStatus('swap001', 'invalid_status' as any, 'admin001'),
+        service.updateStatus(validSwapId, 'invalid_status' as any, '507f191e810c19729de860ee'),
       ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw NotFoundException if swap request does not exist', async () => {
       swapModelMock.findById.mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(null) });
       await expect(
-        service.updateStatus('notfound', 'approved', 'admin001'),
+        service.updateStatus('507f191e810c19729de860ef', 'approved', '507f191e810c19729de860ee'),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -128,7 +131,7 @@ describe('ShiftSwapsService', () => {
           exec: jest.fn().mockResolvedValue({ ...mockSwapRequest, status: 'approved' }),
         });
 
-      await service.updateStatus('swap001', 'approved', 'admin001');
+      await service.updateStatus(validSwapId, 'approved', '507f191e810c19729de860ee');
       expect(userModelMock.findByIdAndUpdate).toHaveBeenCalledWith(
         mockSwapRequest.userId,
         { assignedShift: 'afternoon' },
@@ -143,14 +146,14 @@ describe('ShiftSwapsService', () => {
           exec: jest.fn().mockResolvedValue({ ...mockSwapRequest, status: 'rejected' }),
         });
 
-      await service.updateStatus('swap001', 'rejected', 'admin001');
+      await service.updateStatus(validSwapId, 'rejected', '507f191e810c19729de860ee');
       expect(userModelMock.findByIdAndUpdate).not.toHaveBeenCalled();
     });
   });
 
   describe('findMy', () => {
     it('should return shift swap requests for a specific user', async () => {
-      const result = await service.findMy('user123');
+      const result = await service.findMy(validUserId);
       expect(Array.isArray(result)).toBe(true);
     });
   });

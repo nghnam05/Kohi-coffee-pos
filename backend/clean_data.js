@@ -24,6 +24,7 @@ if (!MONGODB_URI) {
   process.exit(1);
 }
 
+const TableSchema = new mongoose.Schema({}, { strict: false });
 const AttendanceSchema = new mongoose.Schema({}, { strict: false });
 const PayrollSchema = new mongoose.Schema({}, { strict: false });
 const OrderSchema = new mongoose.Schema({}, { strict: false });
@@ -33,6 +34,7 @@ const ReservationSchema = new mongoose.Schema({}, { strict: false });
 const ShiftSwapSchema = new mongoose.Schema({}, { strict: false });
 const ReviewSchema = new mongoose.Schema({}, { strict: false });
 
+const Table = mongoose.model('Table', TableSchema);
 const Attendance = mongoose.model('Attendance', AttendanceSchema);
 const Payroll = mongoose.model('Payroll', PayrollSchema);
 const Order = mongoose.model('Order', OrderSchema);
@@ -49,6 +51,9 @@ async function cleanStatsAndSalaries() {
     console.log('[DB] Connected successfully.');
 
     console.log('[Clean] Deleting statistical, salary, attendance, and test transactional data...');
+
+    const resTable = await Table.updateMany({}, { status: 'empty' });
+    console.log(` - Table (Trạng thái bàn): Đã reset ${resTable.modifiedCount || 0} bàn về trạng thái bàn trống.`);
 
     const resAttendance = await Attendance.deleteMany({});
     console.log(` - Attendance (Bản ghi chấm công): Đã xóa ${resAttendance.deletedCount} bản ghi.`);

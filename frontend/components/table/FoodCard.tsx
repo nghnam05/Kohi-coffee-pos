@@ -60,6 +60,7 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             src={food.image}
             alt={food.name}
             fill
+            sizes="(max-width: 640px) 96px, 120px"
             className="object-cover group-hover:scale-[1.04] transition-transform duration-300 ease-out relative z-0"
           />
         </div>
@@ -146,14 +147,14 @@ export const FoodCard: React.FC<FoodCardProps> = ({
           <div>
             <h3
               onClick={handleClick}
-              className="text-[15px] font-[600] text-[var(--text-primary)] group-hover:text-[var(--brand-primary)] transition-colors leading-[1.3] truncate mb-1.5 cursor-pointer font-sans"
+              className="text-[15px] sm:text-[16px] font-bold text-slate-900 dark:text-white group-hover:text-[#0284c7] dark:group-hover:text-[#38bdf8] transition-colors leading-[1.3] truncate mb-1.5 cursor-pointer font-sans"
               title={food.name}
             >
               {food.name}
             </h3>
 
             {food.description && (
-              <p className="text-[13px] font-[400] leading-[1.55] text-[var(--text-secondary)] line-clamp-3 mb-3 break-words font-sans min-h-[2.5rem]">
+              <p className="text-[12.5px] sm:text-[13px] font-medium leading-[1.5] text-slate-600 dark:text-slate-300 line-clamp-3 mb-3 break-words font-sans min-h-[2.5rem]">
                 {food.description}
               </p>
             )}
@@ -163,8 +164,8 @@ export const FoodCard: React.FC<FoodCardProps> = ({
 
       {/* Footer Actions */}
       <div className="p-4 pt-0 mt-auto">
-        <div className="border-t border-[var(--border-color)] my-3 pt-3 flex items-center justify-between">
-          <span className="text-[16px] font-[700] text-[var(--price-color)] tracking-tight font-sans">
+        <div className="border-t border-slate-200 dark:border-slate-800 my-3 pt-3 flex items-center justify-between">
+          <span className="text-[16px] sm:text-[18px] font-extrabold text-[#0284c7] dark:text-[#38bdf8] tracking-tight font-sans">
             {formatPrice(food.price, lang)}
           </span>
 
@@ -172,9 +173,9 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.94 }}
             onClick={handleClick}
-            className={`min-h-[44px] px-4 py-2.5 rounded-xl text-[13px] font-[600] tracking-[0.02em] flex items-center gap-1.5 shadow-sm transition-all cursor-pointer ${
+            className={`min-h-[42px] px-4 py-2 rounded-xl text-[13px] font-bold tracking-[0.02em] flex items-center gap-1.5 shadow-sm transition-all cursor-pointer ${
               quantity > 0
-                ? 'bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 hover:bg-[#0284c7]/20 dark:hover:bg-[#38BDF8]/25'
+                ? 'bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 hover:bg-[#0284c7]/20 dark:hover:bg-[#38BDF8]/25 font-bold'
                 : 'uiverse-btn'
             }`}
           >

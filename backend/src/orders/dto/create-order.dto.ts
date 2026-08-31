@@ -42,7 +42,7 @@ export class CreateOrderDto {
   @Type(() => OrderItemDto)
   items: OrderItemDto[];
 
-  @IsEnum(['cash', 'momo'], { message: 'Phương thức thanh toán phải là "cash" hoặc "momo".' })
+  @IsEnum(['cash', 'momo', 'bank_transfer', 'bank'], { message: 'Phương thức thanh toán phải là "cash", "bank_transfer" hoặc "momo".' })
   @IsOptional()
   paymentMethod?: string;
 

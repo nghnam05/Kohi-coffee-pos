@@ -121,10 +121,15 @@ export class TablesService {
       this.activeOccupantsMap.set(tableId, new Set());
     }
     const currentCount = this.activeOccupantsMap.get(tableId)!.size;
+    const table = await this.findOne(tableId).catch(() => null);
+    const tableName = table?.tableName || `Bàn số ${tableId.slice(-4)}`;
+
     if (currentCount === 0) {
-      const table = await this.findOne(tableId).catch(() => null);
       if (table && table.status === 'empty') {
         await this.update(tableId, { status: 'serving', currentSessionStartedAt: new Date() } as any);
+      }
+      if (this.ordersGateway) {
+        this.ordersGateway.emitGuestJoined({ tableId, tableName });
       }
     }
     if (deviceId) {
@@ -134,22 +139,38 @@ export class TablesService {
   }
 
   async leaveSession(tableId: string, deviceId?: string): Promise<{ isTableCleared: boolean; remainingCount: number }> {
+    const table = await this.findOne(tableId).catch(() => null);
+    const tableName = table?.tableName || `Bàn số ${tableId.slice(-4)}`;
+
     if (deviceId && this.activeOccupantsMap.has(tableId)) {
       this.activeOccupantsMap.get(tableId)!.delete(deviceId);
     }
-    const remainingCount = this.activeOccupantsMap.get(tableId)?.size || 0;
-    if (remainingCount === 0) {
-      if (this.orderModel) {
-        const activeOrdersCount = await this.orderModel.countDocuments({
+
+    // Kiểm tra số lượng đơn hàng chưa thanh toán còn lại của bàn
+    const activeOrdersCount = this.orderModel
+      ? await this.orderModel.countDocuments({
           tableId,
           status: { $nin: ['paid', 'cancelled'] },
-        }).exec().catch(() => 0);
+          isDeleted: { $ne: true },
+        }).exec().catch(() => 0)
+      : 0;
 
-        if (activeOrdersCount > 0) {
-          return { isTableCleared: false, remainingCount: 0 };
-        }
-      }
+    // Nếu không còn đơn hàng nào chưa thanh toán, tự động dọn dẹp bàn về trạng thái 'empty'
+    if (activeOrdersCount === 0) {
+      this.activeOccupantsMap.delete(tableId);
       await this.update(tableId, { status: 'empty' });
+      if (this.ordersGateway) {
+        this.ordersGateway.emitGuestLeft({ tableId, tableName });
+      }
+      return { isTableCleared: true, remainingCount: 0 };
+    }
+
+    const remainingCount = this.activeOccupantsMap.get(tableId)?.size || 0;
+    if (remainingCount === 0) {
+      await this.update(tableId, { status: 'empty' });
+      if (this.ordersGateway) {
+        this.ordersGateway.emitGuestLeft({ tableId, tableName });
+      }
       return { isTableCleared: true, remainingCount: 0 };
     }
     return { isTableCleared: false, remainingCount };

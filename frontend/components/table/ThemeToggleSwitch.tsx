@@ -22,46 +22,32 @@ export const ThemeToggleSwitch: React.FC<ThemeToggleSwitchProps> = ({
     <button
       type="button"
       onClick={toggleTheme}
-      className={`relative inline-flex items-center w-[60px] h-[30px] p-[4px] rounded-full border transition-all duration-300 ease-in-out cursor-pointer select-none font-sans active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] ${
+      className={`relative inline-flex items-center shrink-0 w-[50px] h-[28px] p-[3px] rounded-full border transition-colors duration-300 cursor-pointer select-none active:scale-95 focus:outline-none ${
         isDark
-          ? 'bg-[#0B0F17] border-slate-700/80 shadow-inner hover:border-slate-600'
-          : 'bg-slate-200/90 border-slate-300/90 shadow-inner hover:border-slate-400'
+          ? 'bg-[#0F172A] border-slate-700/80'
+          : 'bg-slate-200/90 border-slate-300/90'
       } ${className}`}
       title={isDark ? 'Chuyển sang giao diện Sáng' : 'Chuyển sang giao diện Tối'}
       aria-label="Chuyển đổi giao diện Sáng/Tối"
     >
-      {/* Background Ambient Icons */}
-      <div className="w-full flex items-center justify-between px-1.5 pointer-events-none select-none">
-        <span className={`material-symbols-outlined text-[12px] transition-all duration-300 ${
-          isDark ? 'text-slate-500 opacity-60' : 'text-amber-500 opacity-0'
-        }`}>
-          light_mode
-        </span>
-        <span className={`material-symbols-outlined text-[12px] transition-all duration-300 ${
-          isDark ? 'text-sky-400 opacity-0' : 'text-slate-400 opacity-60'
-        }`}>
-          dark_mode
-        </span>
-      </div>
-
-      {/* Sliding Thumb Indicator (Exact 4px padding on Top, Bottom, Left, Right) */}
+      {/* Sliding Thumb Indicator with Active Icon inside */}
       <motion.div
-        className={`absolute top-[3px] left-[4px] w-[22px] h-[22px] rounded-full flex items-center justify-center shadow-md transition-colors duration-300 ${
+        className={`w-[20px] h-[20px] rounded-full flex items-center justify-center shadow-xs transition-colors duration-300 ${
           isDark
             ? 'bg-slate-800 border border-slate-600/80 text-amber-400'
             : 'bg-white border border-slate-200/80 text-amber-500'
         }`}
         animate={{
-          x: isDark ? 30 : 0,
+          x: isDark ? 22 : 0,
         }}
-        transition={{ type: 'spring', stiffness: 450, damping: 28 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
       >
         <motion.span
           key={isDark ? 'dark' : 'light'}
-          initial={{ scale: 0.5, rotate: -60, opacity: 0 }}
+          initial={{ scale: 0.5, rotate: -90, opacity: 0 }}
           animate={{ scale: 1, rotate: 0, opacity: 1 }}
-          transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="material-symbols-outlined text-[13px] leading-none select-none font-bold"
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+          className="material-symbols-outlined text-[13px] font-bold select-none leading-none"
         >
           {isDark ? 'dark_mode' : 'light_mode'}
         </motion.span>

@@ -40,12 +40,12 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
   };
 
   return (
-    <div className="sticky top-0 z-30 bg-[var(--bg-primary)]/95 backdrop-blur-md px-4 md:px-6 pt-3 pb-3 md:pt-6 md:pb-5 border-b border-[var(--border-color)] mb-4 md:mb-8 flex justify-between items-center transition-all shadow-2xs">
+    <div className="sticky top-0 z-30 bg-[var(--bg-primary)]/95 backdrop-blur-md px-4 md:px-6 pt-3 pb-3 md:pt-6 md:pb-5 border-b border-slate-200 dark:border-slate-800 mb-4 md:mb-8 flex justify-between items-center transition-all shadow-2xs">
       <div>
-        <h2 className="text-lg sm:text-2xl md:text-3xl lg:text-[32px] font-bold text-[var(--text-primary)] tracking-[-0.02em] leading-tight font-heading">
+        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-[32px] font-extrabold text-slate-900 dark:text-white tracking-[-0.02em] leading-tight font-heading">
           {t.welcome ?? 'Hôm nay chúng ta uống gì?'}
         </h2>
-        <p className="text-xs sm:text-[13px] md:text-[13.5px] font-normal text-[var(--text-secondary)] mt-0.5 sm:mt-1.5 leading-relaxed font-sans max-w-xl">
+        <p className="text-xs sm:text-[13.5px] md:text-[14px] font-semibold text-slate-600 dark:text-slate-300 mt-1 sm:mt-1.5 leading-relaxed font-sans max-w-xl">
           {getSubtitle()}
         </p>
       </div>
@@ -83,6 +83,7 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
             title="Dạng lưới"
+            aria-label="Dạng lưới"
           >
             <span className="material-symbols-outlined text-lg">grid_view</span>
           </button>
@@ -94,6 +95,7 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
             title="Dạng danh sách"
+            aria-label="Dạng danh sách"
           >
             <span className="material-symbols-outlined text-lg">view_list</span>
           </button>

@@ -67,6 +67,14 @@ export class AttendanceController {
     return this.attendanceService.findAll(userId, month, year);
   }
 
+  /** PATCH /api/v1/attendance/pay-bulk – Admin đánh dấu thanh toán nhiều ca */
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @Patch('pay-bulk')
+  markPaidBulk(@Body('attendanceIds') ids: string[]) {
+    return this.attendanceService.markPaidBulk(ids);
+  }
+
   /** PUT /api/v1/attendance/:id – Admin chỉnh thủ công */
   @UseGuards(RolesGuard)
   @Roles('admin')
@@ -77,8 +85,9 @@ export class AttendanceController {
     @Body('checkOut') checkOut?: string,
     @Body('note') note?: string,
     @Body('shift') shift?: string,
+    @Body('isPaid') isPaid?: boolean,
   ) {
-    return this.attendanceService.adminEdit(id, checkIn, checkOut, note, shift);
+    return this.attendanceService.adminEdit(id, checkIn, checkOut, note, shift, isPaid);
   }
 
   /** PATCH /api/v1/attendance/:id – Admin chỉnh thủ công */
@@ -91,8 +100,9 @@ export class AttendanceController {
     @Body('checkOut') checkOut?: string,
     @Body('note') note?: string,
     @Body('shift') shift?: string,
+    @Body('isPaid') isPaid?: boolean,
   ) {
-    return this.attendanceService.adminEdit(id, checkIn, checkOut, note, shift);
+    return this.attendanceService.adminEdit(id, checkIn, checkOut, note, shift, isPaid);
   }
 
   /** DELETE /api/v1/attendance/:id – Admin xóa bản ghi */

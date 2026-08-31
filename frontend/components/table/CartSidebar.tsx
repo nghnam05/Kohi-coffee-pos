@@ -56,8 +56,8 @@ interface CartSidebarProps {
   setCouponResult: (res: CouponResult | null) => void;
   handleValidateCoupon: () => void;
   isValidatingCoupon: boolean;
-  paymentMethod: 'cash' | 'momo';
-  setPaymentMethod: (m: 'cash' | 'momo') => void;
+  paymentMethod: 'cash' | 'momo' | 'bank_transfer' | string;
+  setPaymentMethod: (m: 'cash' | 'bank_transfer' | 'momo') => void;
   handleSubmitOrder: () => void;
   isSubmitting: boolean;
   t: any;
@@ -317,48 +317,48 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
           <button
             onClick={() => setPaymentMethod('cash')}
             disabled={cart.length === 0}
-            className={`flex-1 h-[44px] text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 transition-all font-sans ${
+            className={`flex-1 h-[44px] text-[13px] font-bold rounded-xl flex items-center justify-center gap-2 transition-all font-sans cursor-pointer ${
               paymentMethod === 'cash'
-                ? 'bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] shadow-md'
-                : 'bg-[var(--payment-inactive-bg)] border-2 border-[var(--payment-inactive-border)] text-[var(--payment-inactive-text)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)]'
+                ? 'bg-[#0059b9] dark:bg-[#0084FF] text-white shadow-md'
+                : 'bg-slate-100 dark:bg-slate-800/80 border-2 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-[#0059b9] dark:hover:border-[#0084FF] hover:text-[#0059b9]'
             }`}
           >
             <span className="material-symbols-outlined text-[18px]">payments</span>
             {t.cash || (lang === 'en' ? 'Cash' : lang === 'zh' ? '现金' : 'Tiền mặt')}
           </button>
           <button
-            onClick={() => setPaymentMethod('momo')}
+            onClick={() => setPaymentMethod('bank_transfer')}
             disabled={cart.length === 0}
-            className={`flex-1 h-[44px] text-[13px] font-semibold rounded-xl flex items-center justify-center gap-2 transition-all font-sans ${
-              paymentMethod === 'momo'
-                ? 'bg-[#A50064] dark:bg-[#D94FAF] text-white shadow-md'
-                : 'bg-[var(--payment-inactive-bg)] border-2 border-[#A50064]/50 dark:border-[#D94FAF]/50 text-[#A50064] dark:text-[#D94FAF] hover:border-[#A50064] dark:hover:border-[#D94FAF] hover:bg-[#A50064]/5'
+            className={`flex-1 h-[44px] text-[13px] font-bold rounded-xl flex items-center justify-center gap-2 transition-all font-sans cursor-pointer ${
+              paymentMethod === 'bank_transfer' || paymentMethod === 'momo'
+                ? 'bg-[#0284c7] text-white shadow-md'
+                : 'bg-slate-100 dark:bg-slate-800/80 border-2 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-[#0284c7] hover:text-[#0284c7]'
             }`}
           >
-            <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
-            {t.momoQr || (lang === 'en' ? 'MoMo QR' : lang === 'zh' ? 'MoMo 扫码' : 'MoMo QR')}
+            <span className="material-symbols-outlined text-[18px]">account_balance</span>
+            {t.bankTransfer || (lang === 'en' ? 'Bank QR' : lang === 'zh' ? '银行转账' : 'CK Ngân hàng')}
           </button>
         </div>
 
-        <div className="border-t border-[var(--border-color)] my-3" />
+        <div className="border-t border-slate-200 dark:border-slate-800 my-3" />
 
         {/* Summary Details */}
-        <div className="space-y-1.5 mb-4">
-          <div className="flex justify-between text-[13.5px] font-normal text-[var(--text-secondary)] font-sans">
+        <div className="space-y-2 mb-4">
+          <div className="flex justify-between text-[13.5px] font-semibold text-slate-700 dark:text-slate-300 font-sans">
             <span>{t.subtotal || (lang === 'en' ? 'Subtotal' : lang === 'zh' ? '小计' : 'Tạm tính')} ({totalQuantity} {lang === 'en' ? 'items' : lang === 'zh' ? '件' : 'món'})</span>
-            <span>{formatPrice(totalAmount, lang)}</span>
+            <span className="font-bold text-slate-900 dark:text-white">{formatPrice(totalAmount, lang)}</span>
           </div>
           {couponResult?.valid && couponResult.discountAmount > 0 && (
-            <div className="flex justify-between text-[13.5px] font-medium text-emerald-600 dark:text-emerald-400 font-sans">
+            <div className="flex justify-between text-[13.5px] font-bold text-emerald-600 dark:text-emerald-400 font-sans">
               <span>{lang === 'en' ? 'Discount' : lang === 'zh' ? '优惠' : 'Khuyến mãi'}</span>
               <span>-{formatPrice(couponResult.discountAmount, lang)}</span>
             </div>
           )}
           <div className="flex justify-between items-baseline pt-1">
-            <span className="text-[14px] font-normal text-[var(--text-primary)] font-sans">
+            <span className="text-[15px] font-extrabold text-slate-900 dark:text-white font-sans">
               {t.total || (lang === 'en' ? 'Total' : lang === 'zh' ? '总计' : 'Tổng cộng')}
             </span>
-            <span className="text-[20px] font-black text-[var(--price-color)] tracking-tight font-sans">
+            <span className="text-[22px] font-black text-[#0284c7] dark:text-[#38bdf8] tracking-tight font-sans">
               {formatPrice(
                 Math.max(
                   0,
@@ -375,13 +375,13 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
       <button
         onClick={handleSubmitOrder}
         disabled={cart.length === 0 || isSubmitting}
-        className={`w-full h-[50px] mt-2 rounded-xl text-[14px] font-bold uppercase tracking-[0.04em] flex items-center justify-center transition-all font-sans shadow-md ${
+        className={`w-full h-[52px] mt-2 rounded-xl text-[14px] font-extrabold uppercase tracking-[0.04em] flex items-center justify-center transition-all font-sans shadow-md ${
           cart.length === 0
-            ? 'bg-[var(--btn-disabled-bg)] text-[var(--btn-disabled-text)] cursor-not-allowed shadow-none'
-            : 'uiverse-btn shadow-md'
+            ? 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed shadow-none'
+            : 'uiverse-btn shadow-lg'
         }`}
       >
-        <span>{isSubmitting ? t.submitting : (t.checkoutBtn || (lang === 'en' ? 'CONFIRM ORDER' : lang === 'zh' ? '确认提交订单' : 'GỬI ĐƠN HÀNG NGAY'))}</span>
+        <span>{isSubmitting ? t.submitting : (t.checkoutBtn || (lang === 'en' ? 'CONFIRM ORDER' : lang === 'zh' ? '确认提交订单' : 'XÁC NHẬN GỌI MÓN'))}</span>
       </button>
     </div>
   );

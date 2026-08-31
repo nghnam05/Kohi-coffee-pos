@@ -129,10 +129,10 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
       <nav className="flex-col gap-1.5 flex mb-4">
         <button
           onClick={() => setActiveCategory('')}
-          className={`w-full px-3.5 py-2.5 rounded-2xl text-xs transition-all text-left ${
+          className={`w-full px-3.5 py-2.5 rounded-2xl text-[13px] transition-all text-left font-sans ${
             activeCategory === ''
-              ? 'bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] font-bold shadow-[0_4px_14px_rgba(0,132,255,0.35)]'
-              : 'text-[var(--text-secondary)] font-medium hover:bg-[var(--bg-card-inner)] hover:text-[var(--text-primary)]'
+              ? 'bg-[var(--brand-primary)] text-white font-extrabold shadow-[0_4px_14px_rgba(0,132,255,0.35)]'
+              : 'text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           <span className="truncate font-sans">{lang === 'en' ? 'All' : lang === 'zh' ? '全部' : 'Tất cả'}</span>
@@ -143,10 +143,10 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`w-full px-3.5 py-2.5 rounded-2xl text-xs transition-all text-left ${
+              className={`w-full px-3.5 py-2.5 rounded-2xl text-[13px] transition-all text-left font-sans ${
                 isActive
-                  ? 'bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] font-bold shadow-[0_4px_14px_rgba(0,132,255,0.35)]'
-                  : 'text-[var(--text-secondary)] font-medium hover:bg-[var(--bg-card-inner)] hover:text-[var(--text-primary)]'
+                  ? 'bg-[var(--brand-primary)] text-white font-extrabold shadow-[0_4px_14px_rgba(0,132,255,0.35)]'
+                  : 'text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <span className="truncate font-sans">{translateCategory(cat)}</span>

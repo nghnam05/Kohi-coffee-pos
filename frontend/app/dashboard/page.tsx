@@ -9,12 +9,14 @@ import { toast } from 'react-hot-toast';
 import { ThemeToggleSwitch } from '@/components/table/ThemeToggleSwitch';
 import { LanguageToggleSwitch } from '@/components/table/LanguageToggleSwitch';
 import { BrandLogo } from '@/components/table/BrandLogo';
-import { InventoryManagement } from '@/components/dashboard/InventoryManagement';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select } from '@/components/ui/select';
+import dynamic from 'next/dynamic';
+
+const InventoryManagement = dynamic(() => import('@/components/dashboard/InventoryManagement').then(m => m.InventoryManagement), { ssr: false });
 
 import {
   Chart as ChartJS,
@@ -427,7 +429,8 @@ interface Order {
   totalAmount: number;
   status: 'pending' | 'confirmed' | 'cooking' | 'ready' | 'completed' | 'cancelled' | 'paid';
   paymentStatus?: 'unpaid' | 'paid';
-  paymentMethod: 'cash' | 'momo';
+  paymentMethod: 'cash' | 'momo' | 'bank_transfer';
+  paymentNotified?: boolean;
   isTakeaway?: boolean;
   customerName?: string;
   customerPhone?: string;
@@ -487,6 +490,7 @@ export default function DashboardPage() {
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     toast(message, {
+      id: message,
       icon: null,
       style: {
         background: type === 'error' ? '#881337' : type === 'info' ? '#0369a1' : '#065f46',
@@ -508,7 +512,10 @@ export default function DashboardPage() {
   const [usersList, setUsersList] = useState<User[]>([]);
   const [staffCalls, setStaffCalls] = useState<StaffCall[]>([]);
   const [activeTab, setActiveTab] = useState<'orders' | 'foods' | 'tables' | 'users' | 'attendance' | 'analytics' | 'inventory'>('attendance');
-  const [activityFilter, setActivityFilter] = useState<'all' | 'support' | 'payment' | 'checkedIn' | 'notCheckedIn' | 'confirmed' | 'cooking'>('all');
+  const [activityFilter, setActivityFilter] = useState<'all' | 'table' | 'support' | 'payment' | 'checkedIn' | 'notCheckedIn' | 'confirmed' | 'cooking'>('all');
+  const [tableActivities, setTableActivities] = useState<
+    Array<{ id: string; tableId: string; tableName: string; type: 'joined' | 'left'; timestamp: Date }>
+  >([]);
   const [drinkReadyList, setDrinkReadyList] = useState<{ orderId: string; tableName: string; timestamp: Date }[]>([]);
   const [selectedShift, setSelectedShift] = useState<'morning' | 'afternoon' | 'evening'>(() => {
     const hour = new Date().getHours();
@@ -543,6 +550,106 @@ export default function DashboardPage() {
   // Salary management state (for admin)
   const [payrolls, setPayrolls] = useState<any[]>([]);
   const [staffHourlyRates, setStaffHourlyRates] = useState<Record<string, number>>({});
+  const [payrollViewMode, setPayrollViewMode] = useState<'weekly' | 'daily'>('weekly');
+
+  const weeklyPayrolls = useMemo(() => {
+    const map: Record<string, {
+      key: string;
+      staffId: string;
+      staffName: string;
+      staffEmail: string;
+      staffRole: string;
+      weekLabel: string;
+      totalShifts: number;
+      totalHours: number;
+      paidShifts: number;
+      paidHours: number;
+      unpaidHours: number;
+      hourlyRate: number;
+      totalSalary: number;
+      alreadyPaidSalary: number;
+      unpaidSalary: number;
+      attendances: any[];
+      unpaidAttendances: any[];
+    }> = {};
+
+    attendances.forEach((att) => {
+      const staffId = att.userId?._id || att.userId || 'unknown';
+      const staffName = att.userId?.name || 'Nhân viên';
+      const staffEmail = att.userId?.email || '';
+      const staffRole = att.userId?.role || 'staff';
+
+      const rawDate = att.date || att.createdAt;
+      const d = rawDate ? new Date(rawDate) : new Date();
+
+      const dateCopy = new Date(d);
+      const day = dateCopy.getDay();
+      const diff = dateCopy.getDate() - day + (day === 0 ? -6 : 1);
+      const monday = new Date(dateCopy.setDate(diff));
+      monday.setHours(0, 0, 0, 0);
+
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      sunday.setHours(23, 59, 59, 999);
+
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const weekLabel = `Tuần (${pad(monday.getDate())}/${pad(monday.getMonth() + 1)} - ${pad(sunday.getDate())}/${pad(sunday.getMonth() + 1)}/${monday.getFullYear()})`;
+
+      const key = `${staffId}_${monday.toISOString().slice(0, 10)}`;
+
+      const checkInTime = att.checkIn ? new Date(att.checkIn) : null;
+      const checkOutTime = att.checkOut ? new Date(att.checkOut) : null;
+      let hours = att.hoursWorked || att.totalHours || 0;
+      if (!hours && checkInTime && checkOutTime) {
+        hours = Math.max(0, (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60));
+      }
+
+      const hourlyRate = staffHourlyRates[staffId] || 25000;
+
+      if (!map[key]) {
+        map[key] = {
+          key,
+          staffId,
+          staffName,
+          staffEmail,
+          staffRole,
+          weekLabel,
+          totalShifts: 0,
+          totalHours: 0,
+          paidShifts: 0,
+          paidHours: 0,
+          unpaidHours: 0,
+          hourlyRate,
+          totalSalary: 0,
+          alreadyPaidSalary: 0,
+          unpaidSalary: 0,
+          attendances: [],
+          unpaidAttendances: [],
+        };
+      }
+
+      map[key].totalShifts += 1;
+      map[key].totalHours += hours;
+      map[key].attendances.push(att);
+
+      if (att.isPaid) {
+        map[key].paidShifts += 1;
+        map[key].paidHours += hours;
+      } else {
+        map[key].unpaidAttendances.push(att);
+      }
+    });
+
+    return Object.values(map).map((item) => {
+      item.totalHours = Number(item.totalHours.toFixed(2));
+      item.paidHours = Number(item.paidHours.toFixed(2));
+      item.unpaidHours = Number(Math.max(0, item.totalHours - item.paidHours).toFixed(2));
+      item.totalSalary = Math.round(item.totalHours * item.hourlyRate);
+      item.alreadyPaidSalary = Math.round(item.paidHours * item.hourlyRate);
+      item.unpaidSalary = Math.round(item.unpaidHours * item.hourlyRate);
+      return item;
+    });
+  }, [attendances, staffHourlyRates]);
 
   // Coupons state (for admin)
   const [coupons, setCoupons] = useState<any[]>([]);
@@ -686,6 +793,13 @@ export default function DashboardPage() {
     fetchReservations(token);
     fetchShiftSwaps(token);
 
+    const playAlertPing = () => {
+      try {
+        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/911/911-84.wav');
+        audio.play().catch(() => {});
+      } catch (e) {}
+    };
+
     // Socket.io initialization
     socketRef.current = io(SOCKET_BASE, {
       auth: { token },
@@ -757,6 +871,40 @@ export default function DashboardPage() {
 
     socketRef.current.on('tableUpdated', () => {
       fetchTables(token);
+    });
+
+    socketRef.current.on('paymentNotified', (notifiedOrder: any) => {
+      fetchOrders(token);
+      try {
+        playAlertPing();
+      } catch (e) {}
+      toast.success(`Khách tại ${notifiedOrder?.tableId?.tableName || 'bàn'} vừa bấm Xác nhận Đã chuyển khoản!`, {
+        duration: 6000,
+      });
+    });
+
+    socketRef.current.on('guestJoined', ({ tableId, tableName }: { tableId: string; tableName: string }) => {
+      fetchTables(token);
+      setTableActivities((prev) => [
+        { id: Date.now().toString(), tableId, tableName, type: 'joined', timestamp: new Date() },
+        ...prev.filter((i) => i.tableId !== tableId),
+      ]);
+      try {
+        playAlertPing();
+      } catch (e) {}
+      toast.success(`Khách mới vừa vào ${tableName || 'Bàn'}!`, { duration: 5000 });
+    });
+
+    socketRef.current.on('guestLeft', ({ tableId, tableName }: { tableId: string; tableName: string }) => {
+      fetchTables(token);
+      setTableActivities((prev) => [
+        { id: Date.now().toString(), tableId, tableName, type: 'left', timestamp: new Date() },
+        ...prev.filter((i) => i.tableId !== tableId),
+      ]);
+      try {
+        playAlertPing();
+      } catch (e) {}
+      toast(`Khách đã rời ${tableName || 'Bàn'} (Bàn hiện trống)`, { icon: '🧹', duration: 5000 });
     });
 
     socketRef.current.on('lowStockAlert', (ingredient: any) => {
@@ -865,6 +1013,49 @@ export default function DashboardPage() {
       }
     };
   }, [token, user?.role]);
+
+  // Auto-redirect staff to Attendance tab when locked
+  useEffect(() => {
+    if (!user || user.role === 'admin') return;
+    const now = new Date();
+    const myId = String(user._id || (user as any).id || '');
+    const myEmail = String(user.email || '').toLowerCase();
+
+    const isMyRecord = (att: any) => {
+      if (!att) return false;
+      const rawUser = att.userId;
+      if (!rawUser) return true;
+      let uId = '';
+      let uEmail = '';
+      if (typeof rawUser === 'object' && rawUser !== null) {
+        uId = String(rawUser._id || rawUser.id || '');
+        uEmail = String(rawUser.email || '').toLowerCase();
+      } else {
+        uId = String(rawUser);
+      }
+      if (myId && uId && uId === myId) return true;
+      if (myEmail && uEmail && uEmail === myEmail) return true;
+      return true;
+    };
+
+    const activeAtt = attendances.find((att) => att && att.checkIn && !att.checkOut && isMyRecord(att));
+    const todayAtt = activeAtt || attendances.find((att) => {
+      if (!att || !att.checkIn || !isMyRecord(att)) return false;
+      const d = new Date(att.checkIn);
+      return (
+        d.getDate() === now.getDate() &&
+        d.getMonth() === now.getMonth() &&
+        d.getFullYear() === now.getFullYear()
+      );
+    });
+
+    const isCheckedOut = Boolean(todayAtt && todayAtt.checkOut);
+    const locked = !todayAtt || isCheckedOut;
+
+    if (locked && activeTab !== 'attendance') {
+      setActiveTab('attendance');
+    }
+  }, [user, attendances, activeTab]);
 
   const fetchOrders = async (tok: string) => {
     try {
@@ -1139,8 +1330,12 @@ export default function DashboardPage() {
     }
   };
 
-  const handlePayStaffSalary = async (userId: string, hoursWorked: number, rate: number) => {
+  const handlePayStaffSalary = async (userId: string, hoursWorked: number, rate: number, attendanceIds?: string[]) => {
     if (!token) return;
+    if (hoursWorked <= 0) {
+      showToast('Không có giờ làm việc chưa thanh toán.', 'info');
+      return;
+    }
     const now = new Date();
     try {
       // 1. Generate Payroll
@@ -1171,6 +1366,28 @@ export default function DashboardPage() {
       });
 
       if (!payRes.ok) throw new Error('Không thể cập nhật trạng thái thanh toán.');
+
+      // 3. Mark specific attendance records as paid in DB
+      if (attendanceIds && attendanceIds.length > 0) {
+        await fetch(`${API_BASE}/attendance/pay-bulk`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ attendanceIds }),
+        });
+
+        // Update local state
+        setAttendances((prev) =>
+          prev.map((att) =>
+            attendanceIds.includes(att._id)
+              ? { ...att, isPaid: true, paidAt: new Date().toISOString() }
+              : att
+          )
+        );
+      }
+
       showToast(`Đã thanh toán tiền lương (${formatPrice(hoursWorked * rate)}) thành công và trừ vào doanh thu!`, 'success');
       fetchPayrolls(token);
       fetchAnalytics(token);
@@ -2282,7 +2499,7 @@ export default function DashboardPage() {
     orderStatusFilter === 'active'
       ? orders.filter((o) => ['pending', 'confirmed', 'cooking', 'ready'].includes(o.status))
       : orderStatusFilter === 'unpaid'
-      ? orders.filter((o) => o.status !== 'paid' && o.status !== 'cancelled')
+      ? orders.filter((o) => o.status === 'completed')
       : orderStatusFilter === 'paid'
       ? paidOrdersList
       : orders;
@@ -2318,7 +2535,7 @@ export default function DashboardPage() {
     <div className="h-screen max-h-screen bg-white dark:bg-[#000d41] text-gray-900 dark:text-[#dde1ff] flex flex-col lg:flex-row overflow-hidden font-sans select-none relative transition-colors duration-300">
       {/* ── MOBILE TOP NAVIGATION BAR (Visible on screens < lg) ──────────────── */}
       <div className="lg:hidden shrink-0 flex items-center justify-between bg-white/95 dark:bg-[#000935]/95 backdrop-blur-md border-b border-gray-200 dark:border-[#414754] px-4 py-0 h-14 text-gray-900 dark:text-[#dde1ff] z-30 transition-colors shadow-xs">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <BrandLogo onClick={() => router.push('/')} />
         </div>
 
@@ -2341,29 +2558,38 @@ export default function DashboardPage() {
       {/* ── BOTTOM TAB BAR (Mobile-only, < lg) ────────────────────────────────── */}
       <nav
         aria-label="Thanh điều hướng ứng dụng"
-        className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#0c121e]/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-around h-16 px-1.5 shadow-[0_-4px_24px_rgba(0,0,0,0.12)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.4)]"
+        className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#0c121e]/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-around h-16 px-1 shadow-[0_-4px_24px_rgba(0,0,0,0.12)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.4)]"
       >
         {/* Đơn hàng — staff / waiter / admin */}
         {user?.role !== 'barista' && (
           <button
             type="button"
-            onClick={() => { setActiveTab('orders'); setIsMobileSidebarOpen(false); }}
+            disabled={isStaffLocked}
+            onClick={() => {
+              if (isStaffLocked) return;
+              setActiveTab('orders');
+              setIsMobileSidebarOpen(false);
+            }}
             aria-current={activeTab === 'orders' ? 'page' : undefined}
-            className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] active:scale-95 ${
-              activeTab === 'orders'
-                ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold'
+            className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${
+              isStaffLocked
+                ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed'
+                : activeTab === 'orders'
+                ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black cursor-pointer active:scale-95'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold cursor-pointer active:scale-95'
             }`}
           >
             <div className="relative flex items-center justify-center">
               <span className="material-symbols-outlined text-xl">receipt_long</span>
-              {orders.filter(o => o.status !== 'paid' && o.status !== 'cancelled').length > 0 && (
+              {isStaffLocked ? (
+                <span className="material-symbols-outlined text-[10px] text-amber-500 absolute -top-1 -right-2">lock</span>
+              ) : orders.filter(o => o.status !== 'paid' && o.status !== 'cancelled').length > 0 && (
                 <span className="absolute -top-1 -right-2.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[9px] font-black bg-[#38BDF8] text-slate-950 rounded-full shadow-xs leading-none">
                   {orders.filter(o => o.status !== 'paid' && o.status !== 'cancelled').length}
                 </span>
               )}
             </div>
-            <span className="text-[10px] tracking-tight">Đơn hàng</span>
+            <span className="text-[9.5px] tracking-tight">Đơn hàng</span>
           </button>
         )}
 
@@ -2371,33 +2597,28 @@ export default function DashboardPage() {
         {user?.role === 'barista' && (
           <button
             type="button"
-            onClick={() => { setActiveTab('orders'); setIsMobileSidebarOpen(false); }}
+            disabled={isStaffLocked}
+            onClick={() => {
+              if (isStaffLocked) return;
+              setActiveTab('orders');
+              setIsMobileSidebarOpen(false);
+            }}
             aria-current={activeTab === 'orders' ? 'page' : undefined}
-            className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] active:scale-95 ${
-              activeTab === 'orders'
-                ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold'
+            className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${
+              isStaffLocked
+                ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed'
+                : activeTab === 'orders'
+                ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black cursor-pointer active:scale-95'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold cursor-pointer active:scale-95'
             }`}
           >
-            <span className="material-symbols-outlined text-xl">coffee_maker</span>
-            <span className="text-[10px] tracking-tight">Quầy KDS</span>
-          </button>
-        )}
-
-        {/* Thực đơn — ẩn với barista */}
-        {user?.role !== 'barista' && (
-          <button
-            type="button"
-            onClick={() => { setActiveTab('foods'); setIsMobileSidebarOpen(false); }}
-            aria-current={activeTab === 'foods' ? 'page' : undefined}
-            className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] active:scale-95 ${
-              activeTab === 'foods'
-                ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold'
-            }`}
-          >
-            <span className="material-symbols-outlined text-xl">grid_view</span>
-            <span className="text-[10px] tracking-tight">Menu</span>
+            <div className="relative flex items-center justify-center">
+              <span className="material-symbols-outlined text-xl">coffee_maker</span>
+              {isStaffLocked && (
+                <span className="material-symbols-outlined text-[10px] text-amber-500 absolute -top-1 -right-2">lock</span>
+              )}
+            </div>
+            <span className="text-[9.5px] tracking-tight">Quầy KDS</span>
           </button>
         )}
 
@@ -2405,20 +2626,95 @@ export default function DashboardPage() {
         {user?.role !== 'barista' && (
           <button
             type="button"
-            onClick={() => { setActiveTab('tables'); setIsMobileSidebarOpen(false); }}
+            disabled={isStaffLocked}
+            onClick={() => {
+              if (isStaffLocked) return;
+              setActiveTab('tables');
+              setIsMobileSidebarOpen(false);
+            }}
             aria-current={activeTab === 'tables' ? 'page' : undefined}
-            className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] active:scale-95 ${
-              activeTab === 'tables'
-                ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold'
+            className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${
+              isStaffLocked
+                ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed'
+                : activeTab === 'tables'
+                ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black cursor-pointer active:scale-95'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold cursor-pointer active:scale-95'
             }`}
           >
-            <span className="material-symbols-outlined text-xl">chair</span>
-            <span className="text-[10px] tracking-tight">Bàn</span>
+            <div className="relative flex items-center justify-center">
+              <span className="material-symbols-outlined text-xl">chair</span>
+              {isStaffLocked && (
+                <span className="material-symbols-outlined text-[10px] text-amber-500 absolute -top-1 -right-2">lock</span>
+              )}
+            </div>
+            <span className="text-[9.5px] tracking-tight">Bàn</span>
           </button>
         )}
 
-        {/* Chấm công */}
+        {/* Đặt bàn (Reservations) — staff / waiter / admin */}
+        {user?.role !== 'barista' && (
+          <button
+            type="button"
+            disabled={isStaffLocked}
+            onClick={() => {
+              if (isStaffLocked) return;
+              setActiveTab('reservations' as any);
+              setIsMobileSidebarOpen(false);
+              if (token) fetchReservations(token);
+            }}
+            aria-current={activeTab === ('reservations' as any) ? 'page' : undefined}
+            className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${
+              isStaffLocked
+                ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed'
+                : activeTab === ('reservations' as any)
+                ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black cursor-pointer active:scale-95'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold cursor-pointer active:scale-95'
+            }`}
+          >
+            <div className="relative flex items-center justify-center">
+              <span className="material-symbols-outlined text-xl">event_available</span>
+              {isStaffLocked ? (
+                <span className="material-symbols-outlined text-[10px] text-amber-500 absolute -top-1 -right-2">lock</span>
+              ) : reservations.filter(r => r.status === 'pending').length > 0 && (
+                <span className="absolute -top-1 -right-2.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[9px] font-black bg-amber-500 text-white rounded-full shadow-xs leading-none animate-pulse">
+                  {reservations.filter(r => r.status === 'pending').length}
+                </span>
+              )}
+            </div>
+            <span className="text-[9.5px] tracking-tight">Đặt bàn</span>
+          </button>
+        )}
+
+        {/* Thực đơn — ẩn với barista */}
+        {user?.role !== 'barista' && (
+          <button
+            type="button"
+            disabled={isStaffLocked}
+            onClick={() => {
+              if (isStaffLocked) return;
+              setActiveTab('foods');
+              setIsMobileSidebarOpen(false);
+            }}
+            aria-current={activeTab === 'foods' ? 'page' : undefined}
+            className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${
+              isStaffLocked
+                ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed'
+                : activeTab === 'foods'
+                ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black cursor-pointer active:scale-95'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold cursor-pointer active:scale-95'
+            }`}
+          >
+            <div className="relative flex items-center justify-center">
+              <span className="material-symbols-outlined text-xl">grid_view</span>
+              {isStaffLocked && (
+                <span className="material-symbols-outlined text-[10px] text-amber-500 absolute -top-1 -right-2">lock</span>
+              )}
+            </div>
+            <span className="text-[9.5px] tracking-tight">Menu</span>
+          </button>
+        )}
+
+        {/* Chấm công — ALWAYS UNLOCKED */}
         <button
           type="button"
           onClick={() => { setActiveTab('attendance'); setIsMobileSidebarOpen(false); }}
@@ -2429,24 +2725,44 @@ export default function DashboardPage() {
               : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold'
           }`}
         >
-          <span className="material-symbols-outlined text-xl">schedule</span>
-          <span className="text-[10px] tracking-tight">Điểm danh</span>
+          <div className="relative flex items-center justify-center">
+            <span className={`material-symbols-outlined text-xl ${isStaffLocked ? 'text-amber-500 animate-bounce' : ''}`}>schedule</span>
+            {isStaffLocked && (
+              <>
+                <span className="absolute -top-0.5 -right-1.5 w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping" />
+                <span className="absolute -top-0.5 -right-1.5 w-2.5 h-2.5 bg-amber-500 rounded-full border border-white dark:border-slate-900" />
+              </>
+            )}
+          </div>
+          <span className={`text-[9.5px] tracking-tight ${isStaffLocked ? 'font-black text-amber-600 dark:text-amber-400' : ''}`}>Điểm danh</span>
         </button>
 
         {/* Quản lý Kho — Admin & Barista */}
         {(user?.role === 'admin' || user?.role === 'barista') && (
           <button
             type="button"
-            onClick={() => { setActiveTab('inventory'); setIsMobileSidebarOpen(false); }}
+            disabled={isStaffLocked}
+            onClick={() => {
+              if (isStaffLocked) return;
+              setActiveTab('inventory');
+              setIsMobileSidebarOpen(false);
+            }}
             aria-current={activeTab === 'inventory' ? 'page' : undefined}
-            className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] active:scale-95 ${
-              activeTab === 'inventory'
-                ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold'
+            className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${
+              isStaffLocked
+                ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed'
+                : activeTab === 'inventory'
+                ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black cursor-pointer active:scale-95'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold cursor-pointer active:scale-95'
             }`}
           >
-            <span className="material-symbols-outlined text-xl">inventory_2</span>
-            <span className="text-[10px] tracking-tight">Kho hàng</span>
+            <div className="relative flex items-center justify-center">
+              <span className="material-symbols-outlined text-xl">inventory_2</span>
+              {isStaffLocked && (
+                <span className="material-symbols-outlined text-[10px] text-amber-500 absolute -top-1 -right-2">lock</span>
+              )}
+            </div>
+            <span className="text-[9.5px] tracking-tight">Kho hàng</span>
           </button>
         )}
 
@@ -2463,7 +2779,7 @@ export default function DashboardPage() {
           }`}
         >
           <span className="material-symbols-outlined text-xl">account_circle</span>
-          <span className="text-[10px] tracking-tight">Tài khoản</span>
+          <span className="text-[9.5px] tracking-tight">Tài khoản</span>
         </button>
       </nav>
 
@@ -3021,9 +3337,9 @@ export default function DashboardPage() {
                   }`}
                 >
                   <span className="whitespace-nowrap">Đang chờ thanh toán</span>
-                  {orders.filter(o => o.status !== 'paid' && o.status !== 'cancelled').length > 0 && (
+                  {orders.filter(o => o.status === 'completed').length > 0 && (
                     <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${orderStatusFilter === 'unpaid' ? 'bg-amber-500 text-white' : 'bg-[#acc7fe]/50 text-[#385282]'}`}>
-                      {orders.filter(o => o.status !== 'paid' && o.status !== 'cancelled').length}
+                      {orders.filter(o => o.status === 'completed').length}
                     </span>
                   )}
                 </button>
@@ -3418,24 +3734,24 @@ export default function DashboardPage() {
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t.noOrdersDesc}</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3.5 sm:gap-4">
                 {displayedOrders.map((order) => {
                   const getOrderStatusBadge = (status: string) => {
                     switch (status) {
                       case 'pending':
-                        return <span className="px-2.5 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-lg text-[10px] font-black uppercase">Chờ Phục Vụ Duyệt</span>;
+                        return <span className="px-2.5 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-xl text-[10px] font-black uppercase">Chờ duyệt</span>;
                       case 'confirmed':
-                        return <span className="px-2.5 py-1 bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30 rounded-lg text-[10px] font-black uppercase">Chờ Pha Chế</span>;
+                        return <span className="px-2.5 py-1 bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30 rounded-xl text-[10px] font-black uppercase">Chờ pha chế</span>;
                       case 'cooking':
-                        return <span className="px-2.5 py-1 bg-sky-500/20 text-sky-500 border border-sky-500/40 rounded-lg text-[10px] font-black uppercase flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-ping" />Đang Pha Chế</span>;
+                        return <span className="px-2.5 py-1 bg-sky-500/20 text-sky-500 border border-sky-500/40 rounded-xl text-[10px] font-black uppercase flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-ping" />Đang pha chế</span>;
                       case 'ready':
-                        return <span className="px-2.5 py-1 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded-lg text-[10px] font-black uppercase">Xong - Chờ Ra Món</span>;
+                        return <span className="px-2.5 py-1 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded-xl text-[10px] font-black uppercase">Chờ ra món</span>;
                       case 'completed':
-                        return <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-500 border border-emerald-500/40 rounded-lg text-[10px] font-black uppercase">Đã Ra Món Tại Bàn</span>;
+                        return <span className="px-2.5 py-1 bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 rounded-xl text-[10px] font-black uppercase">Chờ thanh toán</span>;
                       case 'paid':
-                        return <span className="px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-black uppercase">Đã Thanh Toán</span>;
+                        return <span className="px-2.5 py-1 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase">Đã thanh toán</span>;
                       default:
-                        return <span className="px-2.5 py-1 bg-slate-200 text-slate-700 rounded-lg text-[10px] font-black uppercase">Đang Xử Lý</span>;
+                        return <span className="px-2.5 py-1 bg-slate-200 text-slate-700 rounded-xl text-[10px] font-black uppercase">Đang xử lý</span>;
                     }
                   };
 
@@ -3445,94 +3761,97 @@ export default function DashboardPage() {
                   return (
                     <div
                       key={order._id}
-                      className={`bg-white dark:bg-[#131929] border rounded-2xl p-5 shadow-sm dark:shadow-lg flex flex-col justify-between transition-all ${
+                      className={`bg-white dark:bg-[#131929] border rounded-3xl p-4 sm:p-5 shadow-xs dark:shadow-xl flex flex-col justify-between transition-all duration-200 hover:shadow-md ${
                         isSelected
                           ? 'border-[#38BDF8] ring-2 ring-[#38BDF8]/60 bg-sky-50/20 dark:bg-[#38BDF8]/5'
                           : isPaid
                           ? 'border-emerald-500/30 hover:border-slate-300 dark:hover:border-slate-700'
-                          : 'border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-700'
+                          : 'border-slate-200/80 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-700'
                       }`}
                     >
                       <div>
                         {/* Card Header: Table Name & Status */}
-                        <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-[#1e293b] mb-4">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={isSelected}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setSelectedOrderIds((prev) => [...prev, order._id]);
-                                  } else {
-                                    setSelectedOrderIds((prev) => prev.filter((id) => id !== order._id));
-                                  }
-                                }}
-                                className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-[#38BDF8] focus:ring-[#38BDF8] cursor-pointer shrink-0"
-                              />
-                              <h3 className="text-lg font-black text-slate-900 dark:text-white font-heading">
-                                {order.isTakeaway || !order.tableId ? (
-                                  <span className="text-[#0284c7] dark:text-[#38BDF8]">Mang về</span>
-                                ) : (
-                                  order.tableId?.tableName || t.unknownTable
+                        <div className="flex items-start justify-between pb-3 border-b border-slate-100 dark:border-[#1e293b] mb-3 gap-2">
+                          <div className="flex items-start gap-2.5 min-w-0">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedOrderIds((prev) => [...prev, order._id]);
+                                } else {
+                                  setSelectedOrderIds((prev) => prev.filter((id) => id !== order._id));
+                                }
+                              }}
+                              className="w-4 h-4 mt-0.5 rounded border-slate-300 dark:border-slate-700 text-[#38BDF8] focus:ring-[#38BDF8] cursor-pointer shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <h3 className="text-base font-black text-slate-900 dark:text-white font-heading truncate">
+                                  {order.isTakeaway || !order.tableId ? (
+                                    <span className="text-[#0284c7] dark:text-[#38BDF8]">Mang về</span>
+                                  ) : (
+                                    order.tableId?.tableName || t.unknownTable
+                                  )}
+                                </h3>
+                                {order.paymentNotified && order.status !== 'paid' && (
+                                  <span className="px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9.5px] font-black uppercase animate-pulse shrink-0">
+                                    Báo CK
+                                  </span>
                                 )}
-                              </h3>
-                              <button
-                                onClick={() => setActiveInvoice(order)}
-                                className="text-[11px] font-bold text-slate-400 hover:text-[#38BDF8] transition-colors px-1"
-                              >
-                                HD
-                              </button>
-                            </div>
-                            <div className="flex items-center gap-1.5 mt-1">
-                              {order.paymentMethod === 'momo' ? (
-                                <span className="px-2 py-0.5 bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/30 rounded-md text-[10px] font-black uppercase flex items-center gap-1">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-pink-500" />
-                                  Ví MoMo
+                              </div>
+
+                              <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-500 dark:text-slate-400 font-semibold flex-wrap">
+                                <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-md text-[10px] font-extrabold uppercase">
+                                  {order.paymentMethod === 'bank_transfer' ? 'VietQR' : order.paymentMethod === 'momo' ? 'MoMo' : 'Tiền mặt'}
                                 </span>
-                              ) : (
-                                <span className="px-2 py-0.5 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 rounded-md text-[10px] font-extrabold uppercase flex items-center gap-1">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                  Tiền mặt
-                                </span>
-                              )}
-                              {(order.customerName || order.customerPhone) && (
-                                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold truncate">
-                                  • {order.customerName || 'Khách'}{order.customerPhone ? ` (${order.customerPhone})` : ''}
-                                </span>
-                              )}
+                                {(order.customerName || order.customerPhone) && (
+                                  <span className="truncate max-w-[100px]">
+                                    • {order.customerName || 'Khách'}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
-                          {getOrderStatusBadge(order.status)}
+
+                          <div className="flex flex-col items-end gap-1 shrink-0">
+                            {getOrderStatusBadge(order.status)}
+                            <span className="text-[10px] font-mono text-slate-400">
+                              {order.createdAt ? new Date(order.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : ''}
+                            </span>
+                          </div>
                         </div>
 
-                        {/* Order Items List */}
-                        <div className="space-y-3 mb-4">
+                        {/* Order Items Container */}
+                        <div className="bg-slate-50/70 dark:bg-slate-900/40 rounded-2xl p-3 space-y-2 mb-3 border border-slate-100 dark:border-slate-800/50">
                           {order.items?.map((item, idx) => (
-                            <div key={idx} className="flex items-center justify-between text-xs">
-                              <div className="flex items-center gap-3 min-w-0">
-                                <span className="text-slate-500 dark:text-slate-400 font-bold w-5">x{item.quantity}</span>
+                            <div key={idx} className="flex items-center justify-between text-xs gap-2">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <span className="px-2 py-0.5 bg-sky-500/10 text-sky-600 dark:text-sky-400 font-extrabold text-[11px] rounded-lg shrink-0">
+                                  {item.quantity}x
+                                </span>
                                 <div className="truncate">
-                                  <p className="text-slate-800 dark:text-slate-200 font-semibold truncate">
+                                  <p className="text-slate-800 dark:text-slate-200 font-bold truncate text-[12.5px]">
                                     {item.foodId?.name || 'Món ăn'}
                                   </p>
                                   {item.note && (
-                                    <p className="text-[11px] text-slate-500 dark:text-slate-400 italic">
+                                    <p className="text-[11px] text-slate-500 dark:text-slate-400 italic truncate">
                                       Ghi chú: {item.note}
                                     </p>
                                   )}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-3 flex-shrink-0">
-                                <span className="text-slate-900 dark:text-white font-bold">
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-slate-900 dark:text-white font-black font-mono text-[12px]">
                                   {formatPrice((item.foodId?.price || 0) * item.quantity)}
                                 </span>
                                 {(user?.role !== 'barista' || !['ready', 'served', 'completed', 'paid'].includes(order.status)) && (
                                   <button
                                     onClick={() => setOrderToDelete(order._id)}
-                                    className="text-slate-300 dark:text-slate-600 hover:text-red-500 transition-colors px-1 text-[11px] font-bold"
+                                    className="text-slate-300 dark:text-slate-600 hover:text-red-500 transition-colors p-0.5 cursor-pointer"
+                                    title="Xóa món"
                                   >
-                                    x
+                                    <span className="material-symbols-outlined text-sm">close</span>
                                   </button>
                                 )}
                               </div>
@@ -3541,60 +3860,71 @@ export default function DashboardPage() {
                         </div>
                       </div>
 
-                      {/* Card Bottom Action Buttons: 5-Step Lifecycle */}
-                      <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-[#1e293b]">
+                      {/* Card Bottom Action Buttons */}
+                      <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-[#1e293b]">
+                        {/* Total Price Display */}
+                        <div className="flex items-center justify-between px-1">
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tổng tiền</span>
+                          <span className="text-sm font-black text-[#0284c7] dark:text-[#38BDF8]">
+                            {formatPrice(order.totalAmount || 0)}
+                          </span>
+                        </div>
+
                         {/* Step 1 -> 2: Phục vụ xác nhận & gửi pha chế */}
                         {order.status === 'pending' && (
                           user?.role === 'barista' ? (
                             <button
                               disabled
-                              className="w-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-extrabold text-xs py-3 rounded-xl cursor-not-allowed text-center border border-amber-500/20"
+                              className="w-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-extrabold text-xs py-2.5 rounded-xl cursor-not-allowed text-center border border-amber-500/20"
                             >
                               Chờ Phục vụ duyệt đơn
                             </button>
                           ) : (
                             <button
                               onClick={() => handleUpdateStatus(order._id, 'confirmed')}
-                              className="w-full bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] font-black text-xs py-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                              className="w-full bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] hover:text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
                             >
-                              Xác Nhận & Chuyển Quầy Pha Chế
+                              <span className="material-symbols-outlined text-base">check_circle</span>
+                              <span>Xác Nhận & Gửi Pha Chế</span>
                             </button>
                           )
                         )}
 
-                        {/* Step 2 -> 3: Barista bắt đầu pha chế / Waiter xem trạng thái */}
+                        {/* Step 2 -> 3: Barista bắt đầu pha chế */}
                         {order.status === 'confirmed' && (
                           user?.role === 'barista' || user?.role === 'admin' ? (
                             <button
                               onClick={() => handleUpdateStatus(order._id, 'cooking')}
-                              className="w-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-xs py-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                              className="w-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
                             >
-                              Bắt Đầu Pha Chế
+                              <span className="material-symbols-outlined text-base">local_cafe</span>
+                              <span>Bắt Đầu Pha Chế</span>
                             </button>
                           ) : (
                             <button
                               disabled
-                              className="w-full bg-slate-100 dark:bg-[#1e293b] text-slate-500 dark:text-slate-400 font-extrabold text-xs py-3 rounded-xl cursor-not-allowed flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-800"
+                              className="w-full bg-slate-100 dark:bg-[#1e293b] text-slate-500 dark:text-slate-400 font-extrabold text-xs py-2.5 rounded-xl cursor-not-allowed flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-800"
                             >
                               <span className="w-2 h-2 rounded-full bg-sky-400 animate-ping" />
-                              <span>Đã chuyển quầy pha chế (Chờ làm món)</span>
+                              <span>Đã chuyển quầy pha chế</span>
                             </button>
                           )
                         )}
 
-                        {/* Step 3 -> 4: Barista hoàn tất pha chế / Waiter xem trạng thái đang pha chế */}
+                        {/* Step 3 -> 4: Barista hoàn tất pha chế */}
                         {order.status === 'cooking' && (
                           user?.role === 'barista' || user?.role === 'admin' ? (
                             <button
                               onClick={() => handleUpdateStatus(order._id, 'ready')}
-                              className="w-full bg-amber-500 hover:bg-amber-600 text-white font-black text-xs py-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                              className="w-full bg-amber-500 hover:bg-amber-600 text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
                             >
-                              Hoàn Tất Pha Chế (Báo Phục Vụ)
+                              <span className="material-symbols-outlined text-base">notifications_active</span>
+                              <span>Hoàn Tất Pha Chế (Báo Phục Vụ)</span>
                             </button>
                           ) : (
                             <button
                               disabled
-                              className="w-full bg-sky-500/10 text-sky-600 dark:text-sky-400 font-extrabold text-xs py-3 rounded-xl cursor-not-allowed flex items-center justify-center gap-2 border border-sky-500/20"
+                              className="w-full bg-sky-500/10 text-sky-600 dark:text-sky-400 font-extrabold text-xs py-2.5 rounded-xl cursor-not-allowed flex items-center justify-center gap-2 border border-sky-500/20"
                             >
                               <span className="w-2 h-2 rounded-full bg-sky-400 animate-ping" />
                               <span>Đang pha chế tại quầy...</span>
@@ -3605,42 +3935,41 @@ export default function DashboardPage() {
                         {/* Step 4 -> 5: Phục vụ mang đồ ra bàn cho Khách */}
                         {order.status === 'ready' && (
                           user?.role === 'barista' ? (
-                            <button disabled className="w-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-extrabold text-xs py-3 rounded-xl cursor-not-allowed flex items-center justify-center border border-emerald-500/20">
+                            <button disabled className="w-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-extrabold text-xs py-2.5 rounded-xl cursor-not-allowed flex items-center justify-center border border-emerald-500/20">
                               Đã báo Phục vụ ra món
                             </button>
                           ) : (
                             <button
                               onClick={() => handleUpdateStatus(order._id, 'completed')}
-                              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs py-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
                             >
-                              Đã Ra Món Tại Bàn
+                              <span className="material-symbols-outlined text-base">task_alt</span>
+                              <span>Đã Ra Món Tại Bàn</span>
                             </button>
                           )
                         )}
 
-                        {/* Step 5: Phục vụ thanh toán (Hiển thị phương thức MoMo / Tiền mặt chính xác) */}
+                        {/* Step 5: Phục vụ thanh toán */}
                         {order.status === 'completed' && (
                           user?.role === 'barista' ? (
-                            <button disabled className="w-full bg-slate-100 dark:bg-[#1e293b] text-slate-500 dark:text-slate-400 font-extrabold text-xs py-3 rounded-xl cursor-not-allowed flex items-center justify-center border border-slate-200 dark:border-slate-800">
+                            <button disabled className="w-full bg-slate-100 dark:bg-[#1e293b] text-slate-500 dark:text-slate-400 font-extrabold text-xs py-2.5 rounded-xl cursor-not-allowed flex items-center justify-center border border-slate-200 dark:border-slate-800">
                               Đã hoàn tất pha chế & ra món
                             </button>
                           ) : (
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handleUpdateStatus(order._id, 'paid')}
-                                className={`flex-1 text-white font-black text-xs py-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer ${
-                                  order.paymentMethod === 'momo'
-                                    ? 'bg-pink-600 hover:bg-pink-700'
-                                    : 'bg-emerald-600 hover:bg-emerald-700'
-                                }`}
+                                className="flex-1 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
                               >
-                                {order.paymentMethod === 'momo' ? 'Xác nhận Thanh toán MoMo' : 'Thanh toán Tiền mặt'}
+                                <span className="material-symbols-outlined text-base">payments</span>
+                                <span>Xác nhận Đã nhận tiền</span>
                               </button>
                               <button
                                 onClick={() => setActiveInvoice(order)}
-                                className="px-3 py-3 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl transition-all"
+                                className="px-3 py-2.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1"
                               >
-                                Xem HD
+                                <span className="material-symbols-outlined text-base">receipt_long</span>
+                                <span>HD</span>
                               </button>
                             </div>
                           )
@@ -3648,9 +3977,10 @@ export default function DashboardPage() {
                         {isPaid && (
                           <button
                             onClick={() => setActiveInvoice(order)}
-                            className="w-full py-2.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-[#38BDF8] hover:text-[#090D16] text-[#0284c7] dark:text-[#38BDF8] text-xs font-bold rounded-xl transition-all"
+                            className="w-full py-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-[#38BDF8] hover:text-[#090D16] text-[#0284c7] dark:text-[#38BDF8] text-xs font-extrabold rounded-xl transition-all flex items-center justify-center gap-1"
                           >
-                            Xem hóa đơn chi tiết
+                            <span className="material-symbols-outlined text-base">receipt_long</span>
+                            <span>Xem hóa đơn chi tiết</span>
                           </button>
                         )}
                       </div>
@@ -3890,9 +4220,24 @@ export default function DashboardPage() {
                           <div>
                             <h4 className="font-black text-slate-900 dark:text-white text-sm tracking-tight">{tbl.tableName}</h4>
                             {hasActiveOrders && (
-                              <p className="text-[10.5px] font-extrabold text-emerald-600 dark:text-emerald-400">
-                                {tableOrders.length} đơn • {formatPrice(totalBill)}
-                              </p>
+                              <div>
+                                <p className="text-[10.5px] font-extrabold text-slate-700 dark:text-slate-300">
+                                  {tableOrders.length} đơn • {formatPrice(totalBill)}
+                                </p>
+                                {tableOrders.some((o) => o.status === 'completed') ? (
+                                  <span className="inline-block mt-0.5 px-1.5 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded text-[9.5px] font-extrabold animate-pulse">
+                                    Đã ra món • Cần thanh toán ({tableOrders.filter((o) => o.status === 'completed').length})
+                                  </span>
+                                ) : tableOrders.every((o) => o.status === 'paid') ? (
+                                  <span className="inline-block mt-0.5 px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded text-[9.5px] font-extrabold">
+                                    Đã thanh toán hết
+                                  </span>
+                                ) : (
+                                  <span className="inline-block mt-0.5 px-1.5 py-0.5 bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30 rounded text-[9.5px] font-extrabold">
+                                    Đang làm món ({tableOrders.filter((o) => o.status !== 'paid').length})
+                                  </span>
+                                )}
+                              </div>
                             )}
                           </div>
                         </div>
@@ -4271,198 +4616,269 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Section header for history list */}
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-                Lịch sử điểm danh
-                {displayedAttendances.length > 0 && (
-                  <span className="ml-2 text-slate-900 dark:text-white">{displayedAttendances.length} bản ghi</span>
-                )}
-              </h3>
-            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+              <div className="flex items-center gap-2">
+                <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                  Lịch sử điểm danh & Bảng Lương
+                </h3>
+                <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-full text-[10px] font-bold">
+                  {payrollViewMode === 'weekly' ? `${weeklyPayrolls.length} tuần` : `${attendances.length} bản ghi`}
+                </span>
+              </div>
 
-            {/* Mobile Card List (< sm: 640px) */}
-            <div className="grid grid-cols-1 gap-3 sm:hidden">
-              {displayedAttendances.length === 0 ? (
-                <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-10 text-center">
-                  <p className="text-sm font-black text-slate-400 dark:text-slate-500">Chưa có lịch sử điểm danh</p>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-600 mt-1">Bấm Check-in để bắt đầu ca làm</p>
+              {user?.role === 'admin' && (
+                <div className="flex items-center bg-slate-100 dark:bg-[#131929] p-1 rounded-xl border border-slate-200 dark:border-[#1e293b] text-xs font-bold w-fit">
+                  <button
+                    onClick={() => setPayrollViewMode('weekly')}
+                    className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                      payrollViewMode === 'weekly'
+                        ? 'bg-amber-500 text-white shadow-xs'
+                        : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-sm">date_range</span>
+                    <span>Gộp Theo Tuần</span>
+                  </button>
+                  <button
+                    onClick={() => setPayrollViewMode('daily')}
+                    className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                      payrollViewMode === 'daily'
+                        ? 'bg-amber-500 text-white shadow-xs'
+                        : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-sm">view_list</span>
+                    <span>Chi Tiết Từng Ca</span>
+                  </button>
                 </div>
-              ) : (
-                displayedAttendances.map((att) => {
-                  const staffId = att.userId?._id || att.userId;
-                  const staffName = att.userId?.name || 'Nhân viên';
-                  const staffEmail = att.userId?.email || '';
-                  const staffRole = att.userId?.role || 'staff';
-                  const checkInTime = att.checkIn ? new Date(att.checkIn) : null;
-                  const checkOutTime = att.checkOut ? new Date(att.checkOut) : null;
-                  const isActive = checkInTime && !checkOutTime;
-
-                  let hoursWorked = att.hoursWorked || 0;
-                  if (!hoursWorked && checkInTime && checkOutTime) {
-                    hoursWorked = Math.max(0, (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60));
-                  }
-                  hoursWorked = Number(hoursWorked.toFixed(2));
-
-                  const hourlyRate = staffHourlyRates[staffId] || 25000;
-                  const totalSalary = Math.round(hoursWorked * hourlyRate);
-
-                  const shiftLabel =
-                    att.shift === 'morning' ? 'Ca Sáng' :
-                    att.shift === 'afternoon' ? 'Ca Chiều' : 'Ca Tối';
-                  const shiftColor =
-                    att.shift === 'morning' ? 'text-sky-600 dark:text-sky-400 bg-sky-500/10 border-sky-500/20' :
-                    att.shift === 'afternoon' ? 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20' :
-                    'text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/20';
-
-                  const roleLabel = staffRole === 'admin' ? 'Quản trị' : staffRole === 'barista' ? 'Pha chế' : staffRole === 'waiter' ? 'Phục vụ' : 'Nhân viên';
-                  const roleColor = staffRole === 'admin' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' :
-                    staffRole === 'barista' ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20' :
-                    staffRole === 'waiter' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' :
-                    'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20';
-
-                  return (
-                    <div key={att._id} className={`bg-white dark:bg-[#131929] rounded-2xl shadow-xs overflow-hidden border ${isActive ? 'border-emerald-500/40' : 'border-slate-200 dark:border-[#1e293b]'}`}>
-                      {/* Card top accent */}
-                      {isActive && <div className="h-0.5 bg-gradient-to-r from-emerald-500 to-emerald-400/0" />}
-
-                      <div className="p-4 space-y-3">
-                        {/* Row 1: Name + Date + Status */}
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h4 className="font-black text-slate-900 dark:text-white text-sm truncate">{staffName}</h4>
-                              {isActive && (
-                                <span className="flex items-center gap-1 text-[9px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded-full uppercase">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
-                                  Đang làm
-                                </span>
-                              )}
-                            </div>
-                            {staffEmail && <p className="text-[10px] text-slate-400 mt-0.5 truncate">{staffEmail}</p>}
-                          </div>
-                          <div className="text-right shrink-0">
-                            <span className="block text-[10px] font-bold text-slate-500 dark:text-slate-400">
-                              {att.date || new Date(att.createdAt || Date.now()).toLocaleDateString('vi-VN')}
-                            </span>
-                            <span className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-[9px] font-bold border ${roleColor}`}>
-                              {roleLabel}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Row 2: Shift badge */}
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black border ${shiftColor}`}>
-                            {shiftLabel} ({att.shift === 'morning' ? '06h–12h' : att.shift === 'afternoon' ? '12h–18h' : '18h–23h'})
-                          </span>
-                        </div>
-
-                        {/* Row 3: Time grid */}
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="bg-white dark:bg-[#0d1525] rounded-xl p-2.5 border border-slate-100 dark:border-[#1e293b]">
-                            <span className="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Check-in</span>
-                            <span className="block font-mono text-sm font-black text-emerald-600 dark:text-emerald-400">
-                              {checkInTime ? checkInTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
-                            </span>
-                            <span className="block text-[9px] text-slate-400 mt-0.5 font-medium">
-                              {checkInTime ? checkInTime.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) : '—'}
-                            </span>
-                          </div>
-                          <div className="bg-white dark:bg-[#0d1525] rounded-xl p-2.5 border border-slate-100 dark:border-[#1e293b]">
-                            <span className="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Check-out</span>
-                            <span className={`block font-mono text-sm font-black ${checkOutTime ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-slate-600'}`}>
-                              {checkOutTime ? checkOutTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '—'}
-                            </span>
-                            <span className="block text-[9px] text-slate-400 mt-0.5 font-medium">
-                              {checkOutTime ? `${hoursWorked}h làm việc` : 'Đang làm ca'}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Row 4: Total hours + Salary */}
-                        <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-[#1e293b]">
-                          <div>
-                            <span className="text-[10px] text-slate-500 font-bold">
-                              Tổng: <span className="text-slate-900 dark:text-white font-black">{hoursWorked}h</span>
-                            </span>
-                            {user?.role === 'admin' && (
-                              <span className="block text-xs font-black text-[#0284c7] dark:text-[#38BDF8] mt-0.5">
-                                {formatPrice(totalSalary)}
-                              </span>
-                            )}
-                          </div>
-
-                          {user?.role === 'admin' && (
-                            <div className="flex items-center gap-1.5">
-                              <button
-                                onClick={() => {
-                                  setEditingAttendance(att);
-                                  setAttendanceForm({
-                                    checkIn: formatForDatetimeInput(att.checkIn),
-                                    checkOut: formatForDatetimeInput(att.checkOut),
-                                    note: att.note || '',
-                                  });
-                                  setIsAttendanceModalOpen(true);
-                                }}
-                                className="h-8 px-3 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:text-[#38BDF8] rounded-lg transition-colors text-[11px] font-bold cursor-pointer"
-                              >
-                                Sửa
-                              </button>
-                              <button
-                                onClick={() => setAttendanceToDelete(att._id)}
-                                className="h-8 px-3 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:text-red-500 rounded-lg transition-colors text-[11px] font-bold cursor-pointer"
-                              >
-                                Xóa
-                              </button>
-                              <button
-                                onClick={() => handlePayStaffSalary(staffId, hoursWorked, hourlyRate)}
-                                className="h-8 px-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[11px] rounded-lg transition-all shadow-sm cursor-pointer"
-                              >
-                                Trả lương
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
               )}
             </div>
 
-            {/* Desktop Table View (>= sm: 640px) */}
-            <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl overflow-x-auto shadow-xs">
-              <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[850px]">
-                <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
-                  <tr>
-                    <th className="p-4">Ngày</th>
-                    <th className="p-4">Tên Nhân viên</th>
-                    <th className="p-4">Vai trò (Role)</th>
-                    <th className="p-4">Ca làm</th>
-                    <th className="p-4">Giờ Check-in</th>
-                    <th className="p-4">Giờ Check-out</th>
-                    <th className="p-4">Tổng giờ làm</th>
-                    {user?.role === 'admin' && <th className="p-4">Mức lương/giờ (VND)</th>}
-                    {user?.role === 'admin' && <th className="p-4">Lương tính (VND)</th>}
-                    {user?.role === 'admin' && <th className="p-4 text-right">Hành động</th>}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
-                  {displayedAttendances.length === 0 ? (
-                    <tr>
-                      <td colSpan={user?.role === 'admin' ? 9 : 6} className="p-8 text-center text-slate-500">
-                        Chưa có lịch sử điểm danh nào
-                      </td>
-                    </tr>
+            {/* ── WEEKLY PAYROLL VIEW ──────────────────────────────────────── */}
+            {payrollViewMode === 'weekly' ? (
+              <>
+                {/* Weekly Mobile View (< sm) */}
+                <div className="grid grid-cols-1 gap-3 sm:hidden">
+                  {weeklyPayrolls.length === 0 ? (
+                    <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-10 text-center shadow-xs">
+                      <p className="text-sm font-bold text-slate-400 dark:text-slate-500">Chưa có dữ liệu bảng lương tuần</p>
+                    </div>
                   ) : (
-                    displayedAttendances.map((att) => {
+                    weeklyPayrolls.map((wp) => {
+                      const initials = wp.staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
+                      const roleLabel = wp.staffRole === 'admin' ? 'Quản trị' : wp.staffRole === 'barista' ? 'Pha chế' : wp.staffRole === 'waiter' ? 'Phục vụ' : 'Nhân viên';
+                      const roleColor = wp.staffRole === 'admin' ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' :
+                        wp.staffRole === 'barista' ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300' :
+                        wp.staffRole === 'waiter' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' :
+                        'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
+
+                      return (
+                        <div key={wp.key} className="bg-white dark:bg-[#131929] rounded-2xl shadow-xs overflow-hidden border border-slate-200/80 dark:border-[#1e293b] p-4 space-y-3">
+                          <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-[#1e293b] pb-2">
+                            <span className="text-xs font-black text-amber-600 dark:text-amber-400 flex items-center gap-1 font-mono">
+                              <span className="material-symbols-outlined text-sm">calendar_month</span>
+                              {wp.weekLabel}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${roleColor}`}>
+                              {roleLabel}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-black text-sm flex items-center justify-center shrink-0">
+                              {initials}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h4 className="font-extrabold text-slate-900 dark:text-white text-sm truncate">{wp.staffName}</h4>
+                              <p className="text-[10px] text-slate-400 truncate">{wp.staffEmail}</p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div className="bg-slate-50 dark:bg-[#0d1525] p-2 rounded-xl">
+                              <span className="block text-[10px] text-slate-400 font-medium">Số ca làm</span>
+                              <span className="block font-bold text-slate-800 dark:text-slate-200 font-mono">
+                                {wp.totalShifts} ca {wp.paidShifts > 0 && <span className="text-[10px] text-emerald-600 font-normal">({wp.paidShifts} đã trả)</span>}
+                              </span>
+                            </div>
+                            <div className="bg-slate-50 dark:bg-[#0d1525] p-2 rounded-xl">
+                              <span className="block text-[10px] text-slate-400 font-medium">Giờ chưa thanh toán</span>
+                              <span className="block font-bold text-slate-800 dark:text-slate-200 font-mono">
+                                {wp.unpaidHours}h <span className="text-[10px] text-slate-400 font-normal">/ {wp.totalHours}h</span>
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-[#1e293b]">
+                            <div>
+                              <span className="block text-[10px] text-slate-400 font-medium">
+                                {wp.paidHours > 0 ? 'Lương Còn Lại Tuần Này' : 'Lương Tuần'}
+                              </span>
+                              <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 font-mono">
+                                {formatPrice(wp.unpaidSalary)}
+                              </span>
+                              {wp.paidHours > 0 && (
+                                <span className="block text-[9px] text-slate-400">
+                                  Đã trả: {formatPrice(wp.alreadyPaidSalary)} / Tổng: {formatPrice(wp.totalSalary)}
+                                </span>
+                              )}
+                            </div>
+                            {user?.role === 'admin' && (
+                              wp.unpaidSalary > 0 ? (
+                                <button
+                                  onClick={() => handlePayStaffSalary(wp.staffId, wp.unpaidHours, wp.hourlyRate, wp.unpaidAttendances.map((a) => a._id))}
+                                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 flex items-center gap-1"
+                                >
+                                  Trả lương Tuần
+                                </button>
+                              ) : (
+                                <span className="px-3 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20">
+                                  ✓ Đã trả hết
+                                </span>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Weekly Desktop View (>= sm) */}
+                <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200/80 dark:border-[#1e293b] rounded-2xl overflow-hidden shadow-xs">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[850px]">
+                      <thead className="bg-slate-50 dark:bg-[#0d1525] border-b border-slate-200/80 dark:border-[#1e293b] text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-wider font-bold">
+                        <tr>
+                          <th className="py-3 px-4">Tuần Làm Việc</th>
+                          <th className="py-3 px-4">Nhân Viên</th>
+                          <th className="py-3 px-4">Vai Trò</th>
+                          <th className="py-3 px-4 text-center">Tổng Ca Làm</th>
+                          <th className="py-3 px-4 text-center">Giờ Chưa Trả / Tổng</th>
+                          {user?.role === 'admin' && <th className="py-3 px-4">Mức Lương/Giờ</th>}
+                          {user?.role === 'admin' && <th className="py-3 px-4">Lương Còn Lại (VND)</th>}
+                          {user?.role === 'admin' && <th className="py-3 px-4 text-right">Hành Động</th>}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b]/60">
+                        {weeklyPayrolls.length === 0 ? (
+                          <tr>
+                            <td colSpan={8} className="py-10 text-center text-slate-400 font-medium">
+                              Chưa có dữ liệu bảng lương gộp theo tuần
+                            </td>
+                          </tr>
+                        ) : (
+                          weeklyPayrolls.map((wp) => {
+                            const initials = wp.staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
+                            return (
+                              <tr key={wp.key} className="hover:bg-slate-50/70 dark:hover:bg-[#182035]/50 transition-colors">
+                                <td className="py-3.5 px-4 font-mono font-bold text-xs text-amber-600 dark:text-amber-400">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="material-symbols-outlined text-base">calendar_month</span>
+                                    <span>{wp.weekLabel}</span>
+                                  </div>
+                                </td>
+                                <td className="py-3.5 px-4">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-extrabold text-xs flex items-center justify-center shrink-0">
+                                      {initials}
+                                    </div>
+                                    <div className="min-w-0">
+                                      <div className="font-bold text-slate-900 dark:text-white text-xs truncate">
+                                        {wp.staffName}
+                                      </div>
+                                      {wp.staffEmail && <div className="text-[10px] text-slate-400 truncate">{wp.staffEmail}</div>}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-3.5 px-4">
+                                  <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                    wp.staffRole === 'admin' ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' :
+                                    wp.staffRole === 'barista' ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300' :
+                                    wp.staffRole === 'waiter' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' :
+                                    'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                                  }`}>
+                                    {wp.staffRole === 'admin' ? 'Quản trị' : wp.staffRole === 'barista' ? 'Pha chế' : wp.staffRole === 'waiter' ? 'Phục vụ' : 'Nhân viên'}
+                                  </span>
+                                </td>
+                                <td className="py-3.5 px-4 text-center font-mono font-bold text-xs text-slate-800 dark:text-slate-200">
+                                  {wp.totalShifts} ca {wp.paidShifts > 0 && <span className="text-[10px] text-emerald-600 font-normal">({wp.paidShifts} đã trả)</span>}
+                                </td>
+                                <td className="py-3.5 px-4 text-center font-mono font-bold text-xs text-slate-800 dark:text-slate-200">
+                                  {wp.unpaidHours}h <span className="text-[10px] text-slate-400 font-normal">/ {wp.totalHours}h</span>
+                                </td>
+                                {user?.role === 'admin' && (
+                                  <td className="py-3.5 px-4">
+                                    <div className="flex items-center gap-1">
+                                      <input
+                                        type="number"
+                                        step="1000"
+                                        value={wp.hourlyRate}
+                                        onChange={(e) => {
+                                          const val = Number(e.target.value);
+                                          setStaffHourlyRates((prev) => ({ ...prev, [wp.staffId]: val }));
+                                        }}
+                                        onBlur={(e) => handleUpdateHourlyRate(wp.staffId, Number(e.target.value))}
+                                        className="w-20 bg-slate-50 dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-lg px-2 py-1 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0284c7] dark:focus:border-[#38BDF8]"
+                                      />
+                                      <span className="text-[10px] font-medium text-slate-400">đ/h</span>
+                                    </div>
+                                  </td>
+                                )}
+                                {user?.role === 'admin' && (
+                                  <td className="py-3.5 px-4 font-mono font-extrabold text-sm text-emerald-600 dark:text-emerald-400">
+                                    <div>{formatPrice(wp.unpaidSalary)}</div>
+                                    {wp.paidHours > 0 && (
+                                      <div className="text-[10px] text-slate-400 font-normal">
+                                        Đã trả: {formatPrice(wp.alreadyPaidSalary)} / Tổng: {formatPrice(wp.totalSalary)}
+                                      </div>
+                                    )}
+                                  </td>
+                                )}
+                                {user?.role === 'admin' && (
+                                  <td className="py-3.5 px-4 text-right">
+                                    {wp.unpaidSalary > 0 ? (
+                                      <button
+                                        onClick={() => handlePayStaffSalary(wp.staffId, wp.unpaidHours, wp.hourlyRate, wp.unpaidAttendances.map((a) => a._id))}
+                                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 flex items-center gap-1 ml-auto"
+                                      >
+                                        Trả lương Tuần
+                                      </button>
+                                    ) : (
+                                      <span className="px-3 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 inline-block">
+                                        ✓ Đã trả hết
+                                      </span>
+                                    )}
+                                  </td>
+                                )}
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* ── DAILY ATTENDANCE VIEW ──────────────────────────────────── */}
+                {/* Mobile Card List (< sm: 640px) */}
+                <div className="grid grid-cols-1 gap-3 sm:hidden">
+                  {attendances.length === 0 ? (
+                    <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-10 text-center shadow-xs">
+                      <p className="text-sm font-bold text-slate-400 dark:text-slate-500">Chưa có lịch sử điểm danh</p>
+                      <p className="text-[11px] text-slate-400 dark:text-slate-600 mt-1">Bấm Check-in để bắt đầu ca làm</p>
+                    </div>
+                  ) : (
+                    attendances.map((att) => {
                       const staffId = att.userId?._id || att.userId;
                       const staffName = att.userId?.name || 'Nhân viên';
                       const staffEmail = att.userId?.email || '';
                       const staffRole = att.userId?.role || 'staff';
                       const checkInTime = att.checkIn ? new Date(att.checkIn) : null;
                       const checkOutTime = att.checkOut ? new Date(att.checkOut) : null;
+                      const isActive = checkInTime && !checkOutTime;
 
                       let hoursWorked = att.hoursWorked || 0;
                       if (!hoursWorked && checkInTime && checkOutTime) {
@@ -4473,91 +4889,111 @@ export default function DashboardPage() {
                       const hourlyRate = staffHourlyRates[staffId] || 25000;
                       const totalSalary = Math.round(hoursWorked * hourlyRate);
 
+                      const formattedDate = (() => {
+                        const raw = att.date || att.createdAt;
+                        if (!raw) return '—';
+                        try {
+                          const d = new Date(raw);
+                          return isNaN(d.getTime()) ? String(raw) : d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                        } catch {
+                          return String(raw);
+                        }
+                      })();
+
+                      const shiftLabel =
+                        att.shift === 'morning' ? 'Ca Sáng' :
+                        att.shift === 'afternoon' ? 'Ca Chiều' : 'Ca Tối';
+                      const shiftColor =
+                        att.shift === 'morning' ? 'text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-500/15' :
+                        att.shift === 'afternoon' ? 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/15' :
+                        'text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-500/15';
+
+                      const roleLabel = staffRole === 'admin' ? 'Quản trị' : staffRole === 'barista' ? 'Pha chế' : staffRole === 'waiter' ? 'Phục vụ' : 'Nhân viên';
+                      const roleColor = staffRole === 'admin' ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' :
+                        staffRole === 'barista' ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300' :
+                        staffRole === 'waiter' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' :
+                        'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
+
+                      const initials = staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
+
                       return (
-                        <tr key={att._id} className="hover:bg-slate-100/60 dark:hover:bg-[#182035]">
-                          <td className="p-4 font-bold text-slate-900 dark:text-white">
-                            {att.date || new Date(att.createdAt || Date.now()).toLocaleDateString('vi-VN')}
-                          </td>
-                          <td className="p-4">
-                            <div className="font-extrabold text-slate-900 dark:text-white">{staffName}</div>
-                            {staffEmail && <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{staffEmail}</div>}
-                          </td>
-                          <td className="p-4">
-                            <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
-                              staffRole === 'admin' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20' :
-                              staffRole === 'barista' ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20' :
-                              staffRole === 'waiter' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' :
-                              'bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20'
-                            }`}>
-                              {staffRole === 'admin' ? 'Quản trị (Admin)' : staffRole === 'barista' ? 'Pha chế (Barista)' : staffRole === 'waiter' ? 'Phục vụ (Waiter)' : 'Nhân viên'}
-                            </span>
-                          </td>
-                          <td className="p-4">
-                            {(() => {
-                              const s = att.shift || 'morning';
-                              if (s === 'morning') {
-                                return (
-                                  <span className="inline-block px-2.5 py-1 rounded-full text-[10px] font-black bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
-                                    Ca Sáng (06h–12h)
-                                  </span>
-                                );
-                              }
-                              if (s === 'afternoon') {
-                                return (
-                                  <span className="inline-block px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                                    Ca Chiều (12h–18h)
-                                  </span>
-                                );
-                              }
-                              return (
-                                <span className="inline-block px-2.5 py-1 rounded-full text-[10px] font-black bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-                                  Ca Tối (18h–23h)
-                                </span>
-                              );
-                            })()}
-                          </td>
-                          <td className="p-4 text-emerald-600 dark:text-emerald-400 font-mono font-bold">
-                            {checkInTime ? checkInTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '--:--:--'}
-                          </td>
-                          <td className="p-4 text-amber-600 dark:text-amber-400 font-mono font-bold">
-                            {checkOutTime ? checkOutTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Đang làm ca'}
-                          </td>
-                          <td className="p-4 font-black text-slate-900 dark:text-white">{hoursWorked} giờ</td>
-
-                          {user?.role === 'admin' && (
-                            <td className="p-4">
-                              <div className="flex items-center gap-1">
-                                <input
-                                  type="number"
-                                  step="1000"
-                                  value={hourlyRate}
-                                  onChange={(e) => {
-                                    const val = Number(e.target.value);
-                                    setStaffHourlyRates((prev) => ({ ...prev, [staffId]: val }));
-                                  }}
-                                  onBlur={(e) => handleUpdateHourlyRate(staffId, Number(e.target.value))}
-                                  className="w-24 bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-lg px-2 py-1 text-xs text-slate-900 dark:text-white focus:border-[#38BDF8]"
-                                />
-                                <span className="text-[10px] text-slate-500">đ/h</span>
+                        <div key={att._id} className={`bg-white dark:bg-[#131929] rounded-2xl shadow-xs overflow-hidden border ${isActive ? 'border-emerald-500/40' : 'border-slate-200/80 dark:border-[#1e293b]'}`}>
+                          <div className="p-4 space-y-3">
+                            {/* Header: Staff Info & Status */}
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-black text-xs flex items-center justify-center shrink-0">
+                                  {initials}
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <h4 className="font-extrabold text-slate-900 dark:text-white text-sm truncate">{staffName}</h4>
+                                    {isActive && (
+                                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/15 px-2 py-0.5 rounded-full">
+                                        Đang làm
+                                      </span>
+                                    )}
+                                  </div>
+                                  {staffEmail && <p className="text-[10px] text-slate-400 mt-0.5 truncate">{staffEmail}</p>}
+                                </div>
                               </div>
-                            </td>
-                          )}
+                              <span className="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400">
+                                {formattedDate}
+                              </span>
+                            </div>
 
-                          {user?.role === 'admin' && (
-                            <td className="p-4 font-black text-[#0284c7] dark:text-[#38BDF8]">
-                              {formatPrice(totalSalary)}
-                            </td>
-                          )}
+                            {/* Badges: Role & Shift */}
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${roleColor}`}>
+                                {roleLabel}
+                              </span>
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${shiftColor}`}>
+                                {shiftLabel}
+                              </span>
+                            </div>
 
-                          {user?.role === 'admin' && (
-                            <td className="p-4 text-right">
-                              <div className="flex items-center justify-end gap-1.5">
-                                  <button
-                                    onClick={() => handlePayStaffSalary(staffId, hoursWorked, hourlyRate)}
-                                    className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[11px] rounded-lg transition-all active:scale-95 shadow-sm cursor-pointer"
-                                  >
-                                    Trả lương
-                                  </button>
+                            {/* Checkin / Checkout times */}
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div className="bg-slate-50 dark:bg-[#0d1525] rounded-xl p-2">
+                                <span className="block text-[10px] font-medium text-slate-400 mb-0.5">Check-in</span>
+                                <span className="block font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                                  {checkInTime ? checkInTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                                </span>
+                              </div>
+                              <div className="bg-slate-50 dark:bg-[#0d1525] rounded-xl p-2">
+                                <span className="block text-[10px] font-medium text-slate-400 mb-0.5">Check-out</span>
+                                <span className={`block font-mono font-bold ${checkOutTime ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'}`}>
+                                  {checkOutTime ? checkOutTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '—'}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Bottom Actions & Total Salary */}
+                            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-[#1e293b]">
+                              <div>
+                                <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Tổng làm: </span>
+                                <span className="text-xs font-bold text-slate-900 dark:text-white font-mono">{hoursWorked}h</span>
+                                {user?.role === 'admin' && (
+                                  <span className="block text-xs font-black text-[#0284c7] dark:text-[#38BDF8]">
+                                    {formatPrice(totalSalary)}
+                                  </span>
+                                )}
+                              </div>
+
+                              {user?.role === 'admin' && (
+                                <div className="flex items-center gap-1.5">
+                                  {att.isPaid ? (
+                                    <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold text-[10px] rounded-lg border border-emerald-500/20">
+                                      ✓ Đã trả
+                                    </span>
+                                  ) : (
+                                    <button
+                                      onClick={() => handlePayStaffSalary(staffId, hoursWorked, hourlyRate, [att._id])}
+                                      className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded-lg transition-all shadow-xs cursor-pointer active:scale-95"
+                                    >
+                                      Trả lương
+                                    </button>
+                                  )}
                                   <button
                                     onClick={() => {
                                       setEditingAttendance(att);
@@ -4568,26 +5004,239 @@ export default function DashboardPage() {
                                       });
                                       setIsAttendanceModalOpen(true);
                                     }}
-                                    className="px-3 py-1.5 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:text-[#38BDF8] text-[11px] font-bold rounded-lg transition-colors cursor-pointer"
+                                    className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-bold rounded-lg transition-colors cursor-pointer hover:bg-slate-200"
                                   >
                                     Sửa
                                   </button>
                                   <button
                                     onClick={() => setAttendanceToDelete(att._id)}
-                                    className="px-3 py-1.5 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:text-red-500 text-[11px] font-bold rounded-lg transition-colors cursor-pointer"
+                                    className="px-2 py-1 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 text-[11px] font-bold rounded-lg transition-colors cursor-pointer hover:bg-rose-100"
                                   >
                                     Xóa
                                   </button>
-                              </div>
-                            </td>
-                          )}
-                        </tr>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       );
                     })
                   )}
-                </tbody>
-              </table>
-            </div>
+                </div>
+
+                {/* Desktop Table View (>= sm: 640px) */}
+                <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200/80 dark:border-[#1e293b] rounded-2xl overflow-hidden shadow-xs">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[850px]">
+                      <thead className="bg-slate-50 dark:bg-[#0d1525] border-b border-slate-200/80 dark:border-[#1e293b] text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-wider font-bold">
+                        <tr>
+                          <th className="py-3 px-4">Ngày</th>
+                          <th className="py-3 px-4">Nhân viên</th>
+                          <th className="py-3 px-4">Vai trò</th>
+                          <th className="py-3 px-4">Ca làm</th>
+                          <th className="py-3 px-4">Check-in</th>
+                          <th className="py-3 px-4">Check-out</th>
+                          <th className="py-3 px-4 text-center">Tổng giờ</th>
+                          {user?.role === 'admin' && <th className="py-3 px-4">Mức lương/giờ</th>}
+                          {user?.role === 'admin' && <th className="py-3 px-4">Lương tính (VND)</th>}
+                          {user?.role === 'admin' && <th className="py-3 px-4 text-right">Hành động</th>}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b]/60">
+                        {attendances.length === 0 ? (
+                          <tr>
+                            <td colSpan={user?.role === 'admin' ? 10 : 7} className="py-10 text-center text-slate-400 font-medium">
+                              Chưa có dữ liệu điểm danh ca làm
+                            </td>
+                          </tr>
+                        ) : (
+                          attendances.map((att) => {
+                            const staffId = att.userId?._id || att.userId;
+                            const staffName = att.userId?.name || 'Nhân viên';
+                            const staffEmail = att.userId?.email || '';
+                            const staffRole = att.userId?.role || 'staff';
+                            const checkInTime = att.checkIn ? new Date(att.checkIn) : null;
+                            const checkOutTime = att.checkOut ? new Date(att.checkOut) : null;
+                            const isActive = checkInTime && !checkOutTime;
+
+                            let hoursWorked = att.hoursWorked || 0;
+                            if (!hoursWorked && checkInTime && checkOutTime) {
+                              hoursWorked = Math.max(0, (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60));
+                            }
+                            hoursWorked = Number(hoursWorked.toFixed(2));
+
+                            const hourlyRate = staffHourlyRates[staffId] || 25000;
+                            const totalSalary = Math.round(hoursWorked * hourlyRate);
+
+                            const formattedDate = (() => {
+                              const raw = att.date || att.createdAt;
+                              if (!raw) return '—';
+                              try {
+                                const d = new Date(raw);
+                                return isNaN(d.getTime()) ? String(raw) : d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                              } catch {
+                                return String(raw);
+                              }
+                            })();
+
+                            const initials = staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
+
+                            return (
+                              <tr key={att._id} className="hover:bg-slate-50/70 dark:hover:bg-[#182035]/50 transition-colors">
+                                {/* Date */}
+                                <td className="py-3 px-4 font-mono font-medium text-xs text-slate-600 dark:text-slate-300">
+                                  {formattedDate}
+                                </td>
+
+                                {/* Staff Name & Avatar */}
+                                <td className="py-3 px-4">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-extrabold text-xs flex items-center justify-center shrink-0">
+                                      {initials}
+                                    </div>
+                                    <div className="min-w-0">
+                                      <div className="font-bold text-slate-900 dark:text-white text-xs truncate flex items-center gap-1.5">
+                                        <span>{staffName}</span>
+                                        {isActive && (
+                                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" title="Đang làm ca" />
+                                        )}
+                                      </div>
+                                      {staffEmail && <div className="text-[10px] text-slate-400 truncate">{staffEmail}</div>}
+                                    </div>
+                                  </div>
+                                </td>
+
+                                {/* Role */}
+                                <td className="py-3 px-4">
+                                  <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                    staffRole === 'admin' ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' :
+                                    staffRole === 'barista' ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300' :
+                                    staffRole === 'waiter' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' :
+                                    'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                                  }`}>
+                                    {staffRole === 'admin' ? 'Quản trị' : staffRole === 'barista' ? 'Pha chế' : staffRole === 'waiter' ? 'Phục vụ' : 'Nhân viên'}
+                                  </span>
+                                </td>
+
+                                {/* Shift */}
+                                <td className="py-3 px-4">
+                                  {(() => {
+                                    const s = att.shift || 'morning';
+                                    if (s === 'morning') {
+                                      return (
+                                        <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
+                                          Ca Sáng
+                                        </span>
+                                      );
+                                    }
+                                    if (s === 'afternoon') {
+                                      return (
+                                        <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                                          Ca Chiều
+                                        </span>
+                                      );
+                                    }
+                                    return (
+                                      <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300">
+                                        Ca Tối
+                                      </span>
+                                    );
+                                  })()}
+                                </td>
+
+                                {/* Check-in */}
+                                <td className="py-3 px-4 font-mono font-medium text-xs text-emerald-600 dark:text-emerald-400">
+                                  {checkInTime ? checkInTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '--:--:--'}
+                                </td>
+
+                                {/* Check-out */}
+                                <td className="py-3 px-4 font-mono font-medium text-xs">
+                                  <span className={checkOutTime ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'}>
+                                    {checkOutTime ? checkOutTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Đang làm ca'}
+                                  </span>
+                                </td>
+
+                                {/* Total Hours */}
+                                <td className="py-3 px-4 text-center font-mono font-bold text-xs text-slate-800 dark:text-slate-200">
+                                  {hoursWorked}h
+                                </td>
+
+                                {/* Rate/Hour Input */}
+                                {user?.role === 'admin' && (
+                                  <td className="py-3 px-4">
+                                    <div className="flex items-center gap-1">
+                                      <input
+                                        type="number"
+                                        step="1000"
+                                        value={hourlyRate}
+                                        onChange={(e) => {
+                                          const val = Number(e.target.value);
+                                          setStaffHourlyRates((prev) => ({ ...prev, [staffId]: val }));
+                                        }}
+                                        onBlur={(e) => handleUpdateHourlyRate(staffId, Number(e.target.value))}
+                                        className="w-20 bg-slate-50 dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-lg px-2 py-1 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0284c7] dark:focus:border-[#38BDF8]"
+                                      />
+                                      <span className="text-[10px] font-medium text-slate-400">đ/h</span>
+                                    </div>
+                                  </td>
+                                )}
+
+                                {/* Calculated Salary */}
+                                {user?.role === 'admin' && (
+                                  <td className="py-3 px-4 font-mono font-extrabold text-xs text-[#0284c7] dark:text-[#38BDF8]">
+                                    {formatPrice(totalSalary)}
+                                  </td>
+                                )}
+
+                                {/* Action Buttons */}
+                                {user?.role === 'admin' && (
+                                  <td className="py-3 px-4 text-right">
+                                    <div className="flex items-center justify-end gap-1.5">
+                                      {att.isPaid ? (
+                                        <span className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold text-[11px] rounded-lg border border-emerald-500/20">
+                                          ✓ Đã trả
+                                        </span>
+                                      ) : (
+                                        <button
+                                          onClick={() => handlePayStaffSalary(staffId, hoursWorked, hourlyRate, [att._id])}
+                                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded-lg transition-all shadow-xs cursor-pointer active:scale-95"
+                                        >
+                                          Trả lương
+                                        </button>
+                                      )}
+                                      <button
+                                        onClick={() => {
+                                          setEditingAttendance(att);
+                                          setAttendanceForm({
+                                            checkIn: formatForDatetimeInput(att.checkIn),
+                                            checkOut: formatForDatetimeInput(att.checkOut),
+                                            note: att.note || '',
+                                          });
+                                          setIsAttendanceModalOpen(true);
+                                        }}
+                                        className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-bold rounded-lg transition-colors cursor-pointer hover:bg-slate-200"
+                                      >
+                                        Sửa
+                                      </button>
+                                      <button
+                                        onClick={() => setAttendanceToDelete(att._id)}
+                                        className="px-2 py-1 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 text-[11px] font-bold rounded-lg transition-colors cursor-pointer hover:bg-rose-100"
+                                      >
+                                        Xóa
+                                      </button>
+                                    </div>
+                                  </td>
+                                )}
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -5136,14 +5785,15 @@ export default function DashboardPage() {
         )}
       </main>
 
-      {/* ── COLUMN 3: RIGHT REALTIME ACTIVITY SIDEBAR (bg-white / dark:bg-[#000935]) ────── */}
+      {/* ── COLUMN 3: RIGHT REALTIME ACTIVITY SIDEBAR (bg-slate-50 / dark:bg-[#070e1b]) ────── */}
       <aside
-        className={`fixed xl:static inset-y-0 right-0 z-40 w-[320px] shrink-0 bg-white dark:bg-[#000935] border-l border-gray-200 dark:border-[#414754] p-6 h-screen flex flex-col overflow-y-auto transition-all duration-300 ease-in-out ${
+        className={`fixed xl:static inset-y-0 right-0 z-40 w-[320px] shrink-0 bg-slate-50/90 dark:bg-[#070e1b] border-l border-slate-200 dark:border-[#1e293b] p-5 h-screen flex flex-col overflow-y-auto transition-all duration-300 ease-in-out ${
           isRealtimeDrawerOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full xl:translate-x-0'
         }`}
       >
-        <div className="flex justify-between items-center mb-4 border-b border-gray-100 dark:border-[#414754] pb-4">
-          <h2 className="text-base font-bold text-gray-900 dark:text-[#dde1ff]">
+        <div className="flex justify-between items-center mb-4 border-b border-slate-200 dark:border-[#1e293b] pb-3">
+          <h2 className="text-sm font-black uppercase tracking-wider text-slate-800 dark:text-[#dde1ff] flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#0284c7] dark:bg-[#38BDF8] animate-ping" />
             {user?.role === 'admin'
               ? 'Chấm công realtime'
               : user?.role === 'barista'
@@ -5152,9 +5802,9 @@ export default function DashboardPage() {
           </h2>
           <button
             onClick={() => setIsRealtimeDrawerOpen(false)}
-            className="xl:hidden text-gray-400 hover:text-gray-900 dark:hover:text-white"
+            className="xl:hidden text-slate-400 hover:text-slate-900 dark:hover:text-white p-1 rounded-lg"
           >
-            <span className="material-symbols-outlined">close</span>
+            <span className="material-symbols-outlined text-lg">close</span>
           </button>
         </div>
 
@@ -5232,7 +5882,7 @@ export default function DashboardPage() {
                             return (
                               <div
                                 key={st._id || st.email}
-                                className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl space-y-1 text-xs"
+                                className="p-3 bg-white dark:bg-[#131929] border border-emerald-500/30 rounded-2xl space-y-1.5 text-xs shadow-2xs"
                               >
                                 <div className="flex items-center justify-between">
                                   <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
@@ -5272,7 +5922,7 @@ export default function DashboardPage() {
                           notCheckedInList.map((st) => (
                             <div
                               key={st._id}
-                              className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl space-y-1 text-xs"
+                              className="p-3 bg-white dark:bg-[#131929] border border-rose-500/30 rounded-2xl space-y-1.5 text-xs shadow-2xs"
                             >
                               <div className="flex items-center justify-between">
                                 <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
@@ -5380,10 +6030,10 @@ export default function DashboardPage() {
         ) : (
           /* Staff View: Support Calls & Recent Orders */
           <>
-            <div className="flex border-b border-slate-200 dark:border-[#1e293b] mb-4 gap-4 text-xs font-bold text-slate-500 dark:text-slate-400">
+            <div className="flex border-b border-slate-200 dark:border-[#1e293b] mb-4 gap-3 text-xs font-bold text-slate-500 dark:text-slate-400 overflow-x-auto scrollbar-none pb-0.5">
               <button
                 onClick={() => setActivityFilter('all')}
-                className={`pb-2 transition-all ${
+                className={`pb-2 transition-all shrink-0 ${
                   activityFilter === 'all'
                     ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
                     : 'hover:text-slate-900 dark:hover:text-white'
@@ -5392,8 +6042,18 @@ export default function DashboardPage() {
                 Tất cả
               </button>
               <button
+                onClick={() => setActivityFilter('table')}
+                className={`pb-2 transition-all shrink-0 ${
+                  activityFilter === 'table'
+                    ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
+                    : 'hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                Bàn {tableActivities.length > 0 && `(${tableActivities.length})`}
+              </button>
+              <button
                 onClick={() => setActivityFilter('support')}
-                className={`pb-2 transition-all ${
+                className={`pb-2 transition-all shrink-0 ${
                   activityFilter === 'support'
                     ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
                     : 'hover:text-slate-900 dark:hover:text-white'
@@ -5403,7 +6063,7 @@ export default function DashboardPage() {
               </button>
               <button
                 onClick={() => setActivityFilter('payment')}
-                className={`pb-2 transition-all ${
+                className={`pb-2 transition-all shrink-0 ${
                   activityFilter === 'payment'
                     ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
                     : 'hover:text-slate-900 dark:hover:text-white'
@@ -5414,36 +6074,91 @@ export default function DashboardPage() {
             </div>
 
             {/* Timeline Items for Staff */}
-            <div className="space-y-4 flex-1 overflow-y-auto scrollbar-none pr-1">
+            <div className="space-y-3 flex-1 overflow-y-auto scrollbar-none pr-1">
+              {/* Table Session Activity Items (Guest Joined / Guest Left) */}
+              {(activityFilter === 'all' || activityFilter === 'table') &&
+                tableActivities.map((act) => (
+                  <div
+                    key={act.id}
+                    className={`p-3.5 rounded-2xl space-y-2 text-xs shadow-2xs border ${
+                      act.type === 'joined'
+                        ? 'bg-sky-500/10 border-sky-500/30'
+                        : 'bg-slate-500/10 border-slate-500/30'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <span
+                          className={`w-2 h-2 rounded-full shrink-0 ${
+                            act.type === 'joined' ? 'bg-sky-400 animate-ping' : 'bg-slate-400'
+                          }`}
+                        />
+                        {act.tableName}
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 font-extrabold">
+                        {new Date(act.timestamp).toLocaleTimeString('vi-VN', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    </div>
+
+                    <p
+                      className={`text-[11.5px] font-extrabold ${
+                        act.type === 'joined'
+                          ? 'text-sky-700 dark:text-sky-300'
+                          : 'text-slate-600 dark:text-slate-300'
+                      }`}
+                    >
+                      {act.type === 'joined' ? 'Khách mới vừa quét mã QR vào bàn!' : 'Khách đã rời bàn (Bàn hiện trống)'}
+                    </p>
+
+                    <button
+                      onClick={() =>
+                        setTableActivities((prev) => prev.filter((item) => item.id !== act.id))
+                      }
+                      className="w-full py-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-black text-[10.5px] rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center mt-1"
+                    >
+                      Đã xem
+                    </button>
+                  </div>
+                ))}
+
               {/* Drink Ready Notifications for Waiters (Auto-removes when completed) */}
               {(activityFilter === 'all' || activityFilter === 'support') &&
                 drinkReadyList.map((item) => (
-                  <div key={item.orderId} className="flex gap-3 text-xs p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 mt-1.5 shrink-0 animate-ping" />
-                    <div className="flex-1">
-                      <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono block mb-0.5">
+                  <div key={item.orderId} className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl space-y-2 text-xs shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                        {item.tableName}
+                      </span>
+                      <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-extrabold">
                         {new Date(item.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                       </span>
-                      <p className="font-extrabold text-slate-900 dark:text-white">
-                        {item.tableName} — Pha chế xong món!
-                      </p>
-                      <button
-                        onClick={() => handleUpdateStatus(item.orderId, 'completed')}
-                        className="mt-2 px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white text-[10.5px] font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
-                      >
-                        Xác nhận Đã ra món
-                      </button>
                     </div>
+                    <p className="text-[11.5px] font-extrabold text-emerald-700 dark:text-emerald-300">
+                      Pha chế xong món! Cần ra món cho khách.
+                    </p>
+                    <button
+                      onClick={() => handleUpdateStatus(item.orderId, 'completed')}
+                      className="w-full py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-[10.5px] font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+                    >
+                      Xác nhận Đã ra món
+                    </button>
                   </div>
                 ))}
 
               {/* Staff Call Support Items (Auto-removes when acknowledged) */}
               {(activityFilter === 'all' || activityFilter === 'support') &&
                 staffCalls.map((call) => (
-                  <div key={call._id} className="flex gap-3 text-xs">
-                    <span className="w-2 h-2 rounded-full bg-[#38BDF8] mt-1.5 shrink-0 animate-pulse" />
-                    <div className="flex-1">
-                      <span className="text-[11px] text-slate-700 dark:text-slate-400 font-mono font-bold block mb-0.5">
+                  <div key={call._id} className="p-3.5 bg-sky-500/10 border border-sky-500/30 rounded-2xl space-y-2 text-xs shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
+                        {call.tableId?.tableName || 'Bàn'}
+                      </span>
+                      <span className="text-[10px] font-mono text-sky-600 dark:text-sky-400 font-extrabold">
                         {call.createdAt
                           ? new Date(call.createdAt).toLocaleTimeString('vi-VN', {
                               hour: '2-digit',
@@ -5452,67 +6167,84 @@ export default function DashboardPage() {
                             })
                           : 'Vừa xong'}
                       </span>
-                      <p className="font-extrabold text-slate-950 dark:text-white">
-                        {call.tableId?.tableName || 'Bàn'} — Yêu cầu hỗ trợ
-                      </p>
-                      <button
-                        onClick={() => handleAcknowledgeCall(call._id)}
-                        className="mt-2 px-3 py-1 bg-slate-100 dark:bg-[#1e293b] hover:bg-[#38BDF8] hover:text-[#090D16] text-slate-900 dark:text-slate-200 text-[10px] font-extrabold rounded-lg transition-all border border-slate-200 dark:border-slate-800"
-                      >
-                        Đã tiếp nhận
-                      </button>
                     </div>
+                    <p className="text-[11.5px] font-extrabold text-sky-700 dark:text-sky-300">
+                      Khách tại bàn gửi yêu cầu phục vụ!
+                    </p>
+                    <button
+                      onClick={() => handleAcknowledgeCall(call._id)}
+                      className="w-full py-1.5 bg-sky-500 hover:bg-sky-600 text-white text-[10.5px] font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+                    >
+                      Đã tiếp nhận
+                    </button>
                   </div>
                 ))}
 
-              {/* Active Orders Items (Filtered to live active unpaid orders) */}
+              {/* Payment Notified Items (Only show when customer clicked "Xác nhận Đã chuyển khoản") */}
               {(activityFilter === 'all' || activityFilter === 'payment') &&
                 orders
-                  .filter((o) => o.status !== 'paid')
+                  .filter((o) => o.paymentNotified && o.status !== 'paid')
                   .slice(0, 10)
                   .map((order) => (
-                    <div key={order._id} className="flex gap-3 text-xs">
-                      <span
-                        className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
-                          order.status === 'confirmed'
-                            ? 'bg-sky-400 animate-pulse'
-                            : order.status === 'cooking'
-                            ? 'bg-amber-400 animate-pulse'
-                            : order.status === 'ready'
-                            ? 'bg-emerald-400 animate-ping'
-                            : 'bg-slate-400'
-                        }`}
-                      />
-                      <div className="flex-1">
-                        <span className="text-[11px] text-slate-700 dark:text-slate-400 font-mono font-bold block mb-0.5">
+                    <div
+                      key={order._id}
+                      className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl space-y-2 text-xs shadow-2xs"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full shrink-0 bg-amber-500 animate-ping" />
+                          {order.isTakeaway || !order.tableId ? 'Mang về' : order.tableId?.tableName || 'Bàn chọn'}
+                        </span>
+                        <span className="text-[10px] text-amber-600 dark:text-amber-400 font-mono font-bold">
                           {order.createdAt
                             ? new Date(order.createdAt).toLocaleTimeString('vi-VN', {
                                 hour: '2-digit',
                                 minute: '2-digit',
-                                second: '2-digit',
                               })
                             : 'Vừa xong'}
                         </span>
-                        <p className="font-bold text-slate-900 dark:text-white">
-                          {order.isTakeaway || !order.tableId ? 'Mang về' : order.tableId?.tableName || 'Bàn chọn'} —{' '}
-                          {order.status === 'pending'
-                            ? 'Khách vừa đặt món (Chờ duyệt)'
-                            : order.status === 'confirmed'
-                            ? 'Đã chuyển quầy pha chế'
-                            : order.status === 'cooking'
-                            ? 'Đang pha chế tại quầy'
-                            : 'Đã pha xong (Cần ra món)'}
-                        </p>
-                        <p className="text-[11px] text-[#0284c7] dark:text-[#38BDF8] font-black mt-0.5">
-                          {formatPrice(order.totalAmount || 0)}
-                        </p>
+                      </div>
+
+                      <p className="text-[11.5px] text-amber-800 dark:text-amber-300 font-black leading-tight flex items-center gap-1">
+                        <span className="material-symbols-outlined text-sm text-amber-600">account_balance_wallet</span>
+                        <span>Khách hàng vừa bấm báo đã chuyển khoản!</span>
+                      </p>
+
+                      <div className="flex items-center justify-between pt-1 border-t border-amber-500/20">
+                        <span className="text-[10.5px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tổng đơn:</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[11.5px] text-[#0284c7] dark:text-[#38BDF8] font-black">
+                            {formatPrice(order.totalAmount || 0)}
+                          </span>
+                          <span className="px-1.5 py-0.5 text-[9.5px] font-black bg-amber-500 text-white rounded uppercase">
+                            VietQR
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-1.5 pt-0.5">
+                        <button
+                          onClick={() => handleUpdateStatus(order._id, 'paid')}
+                          className="flex-1 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-[10.5px] rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center flex items-center justify-center gap-1"
+                        >
+                          <span className="material-symbols-outlined text-sm">payments</span>
+                          <span>Xác nhận Đã nhận tiền</span>
+                        </button>
+                        <button
+                          onClick={() => setActiveInvoice(order)}
+                          className="px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-200 font-extrabold text-[10.5px] rounded-xl transition-all cursor-pointer flex items-center gap-0.5"
+                          title="Xem hóa đơn"
+                        >
+                          <span className="material-symbols-outlined text-sm">receipt_long</span>
+                        </button>
                       </div>
                     </div>
                   ))}
 
               {staffCalls.length === 0 &&
                 drinkReadyList.length === 0 &&
-                orders.filter((o) => o.status !== 'paid').length === 0 && (
+                tableActivities.length === 0 &&
+                orders.filter((o) => o.paymentNotified && o.status !== 'paid').length === 0 && (
                   <div className="p-6 text-center text-slate-400 text-xs italic">
                     Hiện chưa có hoạt động realtime nào mới.
                   </div>

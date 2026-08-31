@@ -18,10 +18,13 @@ import { OrderHistoryModal } from '@/components/table/OrderHistoryModal';
 import { TransferTableModal } from '@/components/table/TransferTableModal';
 import { OrderSuccessModal } from '@/components/table/OrderSuccessModal';
 import { NamePromptModal } from '@/components/table/NamePromptModal';
-import { AiChatWidget } from '@/components/table/AiChatWidget';
-import { TableQRModal } from '@/components/table/TableQRModal';
 import { CustomerNotificationModal, NotificationItem } from '@/components/table/CustomerNotificationModal';
 import { LeaveTableModal } from '@/components/table/LeaveTableModal';
+import { BankPayModal } from '@/components/table/BankPayModal';
+import dynamic from 'next/dynamic';
+
+const AiChatWidget = dynamic(() => import('@/components/table/AiChatWidget').then(m => m.AiChatWidget), { ssr: false });
+const TableQRModal = dynamic(() => import('@/components/table/TableQRModal').then(m => m.TableQRModal), { ssr: false });
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -112,7 +115,8 @@ const DICTIONARY = {
     subtotal: 'Tạm tính',
     paymentMethod: 'Phương thức thanh toán',
     cash: 'Tiền mặt',
-    momoQr: 'MoMo QR',
+    bankTransfer: 'CK Ngân hàng',
+    momoQr: 'CK Ngân hàng',
     gridView: 'Dạng lưới',
     listView: 'Dạng danh sách',
     viewMode: 'Chế độ xem',
@@ -267,7 +271,7 @@ export default function TableMenuPage() {
   const [modalQuantity, setModalQuantity] = useState(1);
   const [modalNote, setModalNote] = useState('');
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'momo'>('cash');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'bank_transfer' | 'momo'>('cash');
 
   // Custom Detail Options
   const [selectedSize, setSelectedSize] = useState<'S' | 'M' | 'L'>('M');
@@ -277,6 +281,13 @@ export default function TableMenuPage() {
   const [activeOrders, setActiveOrders] = useState<any[]>([]);
   const [latestCreatedOrder, setLatestCreatedOrder] = useState<any | null>(null);
   const [isOrderSuccessModalOpen, setIsOrderSuccessModalOpen] = useState(false);
+  const [payModalOrder, setPayModalOrder] = useState<any | null>(null);
+  const [isBankPayModalOpen, setIsBankPayModalOpen] = useState(false);
+
+  const handleOpenBankPayModal = useCallback((order: any) => {
+    setPayModalOrder(order);
+    setIsBankPayModalOpen(true);
+  }, []);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isNoHistoryModalOpen, setIsNoHistoryModalOpen] = useState(false);
   const [isOrderHistoryModalOpen, setIsOrderHistoryModalOpen] = useState(false);
@@ -950,7 +961,12 @@ export default function TableMenuPage() {
       setCouponInput('');
       setCouponResult(null);
       setLatestCreatedOrder(createdOrder);
-      setIsOrderSuccessModalOpen(true);
+      if (paymentMethod === 'bank_transfer') {
+        setPayModalOrder(createdOrder);
+        setIsBankPayModalOpen(true);
+      } else {
+        setIsOrderSuccessModalOpen(true);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : t.submitError);
     } finally {
@@ -1008,16 +1024,23 @@ export default function TableMenuPage() {
       const data = await res.json();
       setAiMessages((prev) => [...prev, { role: 'ai', text: data.answer || 'Dạ, Kohi AI đã nhận thông tin. Bạn có thể chọn món hoặc nhờ nhân viên hỗ trợ nhé! ☕' }]);
     } catch {
-      let fallbackText = 'Dạ, Kohi xin chào! ';
+      let fallbackText = '';
       const lowerQ = q.toLowerCase();
-      if (lowerQ.includes('ngon') || lowerQ.includes('best seller') || lowerQ.includes('bán chạy')) {
-        fallbackText += 'Các món Signature bán chạy nhất tại Kohi bao gồm: Cà phê Muối Huế đặc sản, Matcha Espresso Nhật Bản và Bánh Croissant bơ Pháp giòn rụm ạ! ☕🥐';
+      if (
+        lowerQ.includes('wifi') ||
+        lowerQ.includes('wi-fi') ||
+        lowerQ.includes('wiffi') ||
+        lowerQ.includes('mật khẩu') ||
+        lowerQ.includes('mat khau') ||
+        lowerQ.includes('pass')
+      ) {
+        fallbackText = 'Dạ, Kohi Coffee có Wifi tốc độ cao hoàn toàn miễn phí ạ! Tên Wifi: "Kohi Coffee Guest", Mật khẩu: kohicoffee2026 📶';
+      } else if (lowerQ.includes('ngon') || lowerQ.includes('best seller') || lowerQ.includes('bán chạy')) {
+        fallbackText = 'Dạ, các món Signature bán chạy nhất tại Kohi bao gồm: Cà phê Muối Huế đặc sản (béo ngậy kem muối), Matcha Espresso Nhật Bản, Cà phê Dừa Bến Tre và Bánh Croissant bơ Pháp giòn rụm nướng tươi mỗi ngày ạ! ☕🥐';
       } else if (lowerQ.includes('giờ') || lowerQ.includes('mở cửa') || lowerQ.includes('hours')) {
-        fallbackText += 'Kohi Coffee mở cửa đón khách từ 07:00 - 22:00 tất cả các ngày trong tuần ạ! ✨';
-      } else if (lowerQ.includes('wifi') || lowerQ.includes('mật khẩu') || lowerQ.includes('pass')) {
-        fallbackText += 'Quán có Wifi tốc độ cao hoàn toàn miễn phí. Bạn có thể nhờ nhân viên phục vụ hỗ trợ nhập mật khẩu tại bàn nhé! 📶';
+        fallbackText = 'Dạ, Kohi Coffee mở cửa đón khách từ 07:00 sáng đến 22:00 tối tất cả các ngày trong tuần (kể cả Thứ 7, Chủ Nhật và các ngày Lễ, Tết) ạ! ⏰✨';
       } else {
-        fallbackText += 'Cảm ơn bạn đã hỏi! Bạn có thể xem thực đơn và thêm món vào giỏ hàng, hoặc nhấn "Gọi nhân viên" ở thanh bên trái để được phục vụ trực tiếp ạ! 😊';
+        fallbackText = 'Dạ, Kohi AI xin chào! Bạn có thể xem thực đơn và thêm món vào giỏ hàng, hoặc nhấn "Gọi nhân viên" để được hỗ trợ trực tiếp tại bàn ạ! 😊☕';
       }
       setAiMessages((prev) => [...prev, { role: 'ai', text: fallbackText }]);
     } finally {
@@ -1422,6 +1445,10 @@ export default function TableMenuPage() {
           lang={lang}
           tableId={tableId}
           router={router}
+          onOpenBankPayModal={(order) => {
+            setIsOrderHistoryModalOpen(false);
+            handleOpenBankPayModal(order);
+          }}
         />
 
         <TransferTableModal
@@ -1443,6 +1470,10 @@ export default function TableMenuPage() {
           tableId={tableId}
           router={router}
           lang={lang}
+          onOpenBankPayModal={(order) => {
+            setIsOrderSuccessModalOpen(false);
+            handleOpenBankPayModal(order);
+          }}
         />
 
         <AiChatWidget
@@ -1499,6 +1530,24 @@ export default function TableMenuPage() {
         lang={lang}
         isLeaving={isLeavingTable}
       />
+
+      {/* VietQR Bank Payment Modal */}
+      {payModalOrder && (
+        <BankPayModal
+          isOpen={isBankPayModalOpen}
+          onClose={() => setIsBankPayModalOpen(false)}
+          orderId={payModalOrder._id}
+          tableName={table?.tableName ? (lang === 'vi' ? `Bàn ${table.tableName}` : `Table ${table.tableName}`) : 'Bàn'}
+          totalAmount={payModalOrder.totalAmount}
+          customerName={payModalOrder.customerName}
+          orderStatus={payModalOrder.status}
+          onSuccess={() => {
+            setActiveOrders((prev) =>
+              prev.map((o) => (o._id === payModalOrder._id ? { ...o, status: 'paid' } : o))
+            );
+          }}
+        />
+      )}
     </>
   );
 }
