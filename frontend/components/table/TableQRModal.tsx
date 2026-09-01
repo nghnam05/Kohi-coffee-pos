@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { formatTableName } from '@/utils/format';
+import { formatTableName, getTableQrUrl } from '@/utils/format';
 
 interface Table {
   _id?: string;
@@ -28,11 +28,11 @@ export const TableQRModal: React.FC<TableQRModalProps> = ({
   if (!isOpen || !table) return null;
 
   const tableId = table._id || '';
-  const tableUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/table/${tableId}${table.qrToken ? `?token=${table.qrToken}` : ''}`
-    : `http://localhost:3000/table/${tableId}`;
+  const tableUrl = getTableQrUrl(tableId, table.qrToken);
+  const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(tableUrl)}`;
+
 
   const handleCopy = () => {
     navigator.clipboard.writeText(tableUrl);

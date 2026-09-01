@@ -616,11 +616,24 @@ export default function TableMenuPage() {
       try {
         setIsLoading(true);
         const [foodsRes, tableRes] = await Promise.all([
-          fetch(`${API_BASE}/foods`),
-          fetch(`${API_BASE}/tables/${tableId}`),
+          fetch(`${API_BASE}/foods`).catch(() => null),
+          fetch(`${API_BASE}/tables/${tableId}`).catch(() => null),
         ]);
 
-        if (!foodsRes.ok || !tableRes.ok) throw new Error(t.fetchError);
+        if (!foodsRes || !tableRes) {
+          throw new Error(`Không thể kết nối tới Backend API (${API_BASE}). Vui lòng kiểm tra lại biến môi trường NEXT_PUBLIC_API_URL khi deploy Vercel.`);
+        }
+
+        if (!tableRes.ok) {
+          if (tableRes.status === 404) {
+            throw new Error(`Bàn ăn này không tồn tại hoặc đã bị xóa (Mã bàn: ${tableId}). Vui lòng kiểm tra hoặc quét lại mã QR mới từ Dashboard.`);
+          }
+          throw new Error(`Lỗi kết nối bàn ăn (${tableRes.status}).`);
+        }
+
+        if (!foodsRes.ok) {
+          throw new Error(`Lỗi tải thực đơn từ máy chủ (${foodsRes.status}).`);
+        }
 
         const foodsData: Food[] = await foodsRes.json();
         const tableData: Table = await tableRes.json();

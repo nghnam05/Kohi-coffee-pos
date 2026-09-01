@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select } from '@/components/ui/select';
 import dynamic from 'next/dynamic';
+import { getTableQrUrl } from '@/utils/format';
 
 const InventoryManagement = dynamic(() => import('@/components/dashboard/InventoryManagement').then(m => m.InventoryManagement), { ssr: false });
 
@@ -6704,7 +6705,7 @@ export default function DashboardPage() {
                 <p className="text-xs text-slate-500 dark:text-slate-400 print:hidden">Khách hàng quét mã QR này tại bàn để xem menu & gọi món trực tiếp</p>
                 <div className="bg-white p-4 rounded-xl border border-slate-200 inline-block shadow-inner">
                   <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(typeof window !== 'undefined' ? `${window.location.origin}/table/${qrTable._id}${qrTable.qrToken ? `?token=${qrTable.qrToken}` : ''}` : '')}`}
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(getTableQrUrl(qrTable._id, qrTable.qrToken))}`}
                     alt={`QR Code ${qrTable.tableName}`}
                     className="w-48 h-48 mx-auto"
                   />
@@ -6720,16 +6721,14 @@ export default function DashboardPage() {
                   <input
                     type="text"
                     readOnly
-                    value={typeof window !== 'undefined' ? `${window.location.origin}/table/${qrTable._id}${qrTable.qrToken ? `?token=${qrTable.qrToken}` : ''}` : ''}
+                    value={getTableQrUrl(qrTable._id, qrTable.qrToken)}
                     className="bg-transparent text-slate-700 dark:text-slate-300 text-[11px] truncate flex-1 focus:outline-none"
                   />
                   <button
                     onClick={() => {
-                      if (typeof window !== 'undefined') {
-                        const url = `${window.location.origin}/table/${qrTable._id}${qrTable.qrToken ? `?token=${qrTable.qrToken}` : ''}`;
-                        navigator.clipboard.writeText(url);
-                        showToast('Đã sao chép link đặt món!', 'success');
-                      }
+                      const url = getTableQrUrl(qrTable._id, qrTable.qrToken);
+                      navigator.clipboard.writeText(url);
+                      showToast('Đã sao chép link đặt món!', 'success');
                     }}
                     className="px-2.5 py-1 bg-[#3AA6FF] text-white font-bold rounded-lg text-[10px] hover:bg-[#2593e8] transition-all ml-1 shrink-0 cursor-pointer"
                   >

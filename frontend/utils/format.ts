@@ -29,3 +29,36 @@ export const formatTableLocation = (rawName?: string | null, lang: Lang = 'vi'):
   if (lang === 'zh') return `${nameStr} (1楼)`;
   return `${nameStr} (Tầng 1)`;
 };
+
+/**
+ * Get public frontend base URL for QR code generation
+ */
+export const getFrontendBaseUrl = (): string => {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    let url = process.env.NEXT_PUBLIC_APP_URL.trim();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `https://${url}`;
+    }
+    return url.replace(/\/$/, '');
+  }
+  if (process.env.NEXT_PUBLIC_VERCEL_URL) {
+    let url = process.env.NEXT_PUBLIC_VERCEL_URL.trim();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `https://${url}`;
+    }
+    return url.replace(/\/$/, '');
+  }
+  if (typeof window !== 'undefined' && window.location.origin) {
+    return window.location.origin;
+  }
+  return 'http://localhost:3000';
+};
+
+/**
+ * Generate full table ordering URL for QR Code scanning
+ */
+export const getTableQrUrl = (tableId: string, qrToken?: string): string => {
+  const baseUrl = getFrontendBaseUrl();
+  return `${baseUrl}/table/${tableId}${qrToken ? `?token=${qrToken}` : ''}`;
+};
+
