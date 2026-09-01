@@ -34,20 +34,24 @@ export const formatTableLocation = (rawName?: string | null, lang: Lang = 'vi'):
  * Get public frontend base URL for QR code generation
  */
 export const getFrontendBaseUrl = (): string => {
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    let url = process.env.NEXT_PUBLIC_APP_URL.trim();
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (envUrl && envUrl.includes('.') && !envUrl.toLowerCase().includes('next_public')) {
+    let url = envUrl;
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       url = `https://${url}`;
     }
     return url.replace(/\/$/, '');
   }
-  if (process.env.NEXT_PUBLIC_VERCEL_URL) {
-    let url = process.env.NEXT_PUBLIC_VERCEL_URL.trim();
+
+  const vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL?.trim();
+  if (vercelUrl && vercelUrl.includes('.') && !vercelUrl.toLowerCase().includes('next_public')) {
+    let url = vercelUrl;
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       url = `https://${url}`;
     }
     return url.replace(/\/$/, '');
   }
+
   if (typeof window !== 'undefined' && window.location.origin) {
     return window.location.origin;
   }
