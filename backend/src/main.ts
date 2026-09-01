@@ -30,9 +30,9 @@ async function bootstrap() {
   app.setGlobalPrefix('/api/v1');
 
   // Khởi động HTTP Server
-  const port = process.env.PORT || 3001; // Thường đặt khác port 3000 để tránh trùng lặp với Next.js mặc định
-  await app.listen(port);
+  const port = process.env.PORT || 3001;
+  await app.listen(port, '0.0.0.0');
   
-  console.log(`Backend Application is running on: http://localhost:${port}/api/v1`);
+  console.log(`Backend Application is running on port: ${port}`);
 }
 bootstrap();
