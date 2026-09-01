@@ -17,7 +17,7 @@ export class UsersService implements OnModuleInit {
     const defaultPassword = await bcrypt.hash('123456', saltRounds);
 
     const defaultUsers = [
-      { name: 'Quản trị viên (Admin)', email: 'admin@kohi.vn', role: 'admin', assignedShift: 'fulltime' },
+      { name: 'Quản trị viên (Admin)', email: 'admin@kohi.vn', role: 'admin', assignedShift: 'morning' },
       { name: 'Nhân viên Phục vụ', email: 'phucvu@kohi.vn', role: 'waiter', assignedShift: 'morning' },
       { name: 'Nhân viên Pha chế', email: 'phache@kohi.vn', role: 'barista', assignedShift: 'afternoon' },
     ];
