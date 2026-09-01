@@ -125,8 +125,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                   {item.food.name}
                 </h4>
                 {badgeText && (
-                  <span className="px-1.5 py-0.5 rounded-lg text-[10px] font-bold bg-[var(--brand-primary-muted)] text-[var(--brand-primary)] flex items-center gap-1 flex-shrink-0 font-sans">
-                    <span className="material-symbols-outlined text-[12px]">person</span>
+                  <span className="px-1.5 py-0.5 rounded-lg text-[10px] font-bold bg-[var(--brand-primary-muted)] text-[var(--brand-primary)] flex items-center flex-shrink-0 font-sans">
                     <span>{badgeText}</span>
                   </span>
                 )}
@@ -193,7 +192,6 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             {myItems.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--brand-primary)]">
-                  <span className="material-symbols-outlined text-sm">person</span>
                   <span>
                     {lang === 'en' ? 'Your Selection' : lang === 'zh' ? '您选择的商品' : 'Món bạn chọn'} ({myItems.reduce((acc, i) => acc + i.quantity, 0)})
                   </span>

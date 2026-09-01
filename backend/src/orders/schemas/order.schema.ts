@@ -99,6 +99,9 @@ export class Order {
   @Prop({ type: Boolean, default: false })
   paymentNotified: boolean;
 
+  @Prop({ type: String, default: null })
+  rewardedVoucherCode: string;
+
   @Prop({ type: Boolean, default: false, index: true })
   isDeleted: boolean;
 }
