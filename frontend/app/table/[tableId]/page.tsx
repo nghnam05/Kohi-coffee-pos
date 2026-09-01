@@ -626,9 +626,9 @@ export default function TableMenuPage() {
 
         if (!tableRes.ok) {
           if (tableRes.status === 404) {
-            throw new Error(`Bàn ăn này không tồn tại hoặc đã bị xóa (Mã bàn: ${tableId}). Vui lòng kiểm tra hoặc quét lại mã QR mới từ Dashboard.`);
+            throw new Error(`Bàn này không tồn tại hoặc đã bị xóa (Mã bàn: ${tableId}). Vui lòng kiểm tra hoặc quét lại mã QR mới từ Dashboard.`);
           }
-          throw new Error(`Lỗi kết nối bàn ăn (${tableRes.status}).`);
+          throw new Error(`Lỗi kết nối bàn (${tableRes.status}).`);
         }
 
         if (!foodsRes.ok) {

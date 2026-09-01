@@ -57,7 +57,7 @@ export class ReservationsService implements OnModuleInit {
 
   async create(dto: CreateReservationDto): Promise<ReservationDocument> {
     const table = await this.tablesService.findOne(dto.tableId);
-    if (!table) throw new NotFoundException('Không tìm thấy bàn ăn được chọn.');
+    if (!table) throw new NotFoundException('Không tìm thấy bàn được chọn.');
 
     // ⚡ BẢO VỆ CHỐNG ĐẶT TRÙNG BÀN: Bàn đang có khách hoặc đã giữ chỗ thì không cho đặt
     if (table.status === 'serving') {

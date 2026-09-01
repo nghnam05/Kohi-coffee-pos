@@ -25,7 +25,7 @@ const translations = {
     btnBookTab: 'Đặt Bàn Trực Tuyến',
     btnLookupTab: 'Tra Cứu Đặt Bàn',
     btnLogin: 'Đăng nhập Nhân viên',
-    selectTableLabel: '1. Chọn bàn ăn phù hợp',
+    selectTableLabel: '1. Chọn bàn phù hợp',
     selectTableSub: 'Bấm vào bàn bạn muốn đặt để giữ chỗ',
     refreshMap: 'Cập nhật sơ đồ',
     filterAll: 'Tất cả bàn',
@@ -46,7 +46,7 @@ const translations = {
     presetTonight: 'Tối nay 19:00',
     presetTomorrowNoon: 'Trưa mai 12:00',
     guestCountLabel: 'SỐ LƯỢNG KHÁCH HÀNG',
-    selectedTableLabel: 'BÀN ĂN ĐƯỢC CHỌN',
+    selectedTableLabel: 'BÀN ĐƯỢC CHỌN',
     noTableSelected: 'Vui lòng chọn 1 bàn ở sơ đồ bên trái',
     noteLabel: 'GHI CHÚ THÊM (TÙY CHỌN)',
     notePlaceholder: 'Ví dụ: Cần bàn gần cửa sổ, ghế trẻ em, không gian yên tĩnh...',
@@ -880,7 +880,7 @@ export default function Home() {
                           <div className="py-2.5 border-t border-b border-slate-200/80 dark:border-slate-800 space-y-1.5 text-xs sm:text-sm">
                             <div className="flex justify-between">
                               <span className="text-slate-500 dark:text-slate-400 font-medium">
-                                {lang === 'en' ? 'Selected Table:' : lang === 'zh' ? '预订桌位：' : 'Bàn ăn chọn:'}
+                                {lang === 'en' ? 'Selected Table:' : lang === 'zh' ? '预订桌位：' : 'Bàn chọn:'}
                               </span>
                               <span className="font-bold text-slate-900 dark:text-white">{tableNameStr}</span>
                             </div>
@@ -982,7 +982,7 @@ export default function Home() {
 
                   <div className="flex justify-between items-center px-3.5 py-2.5 rounded-lg bg-sky-500/10 border border-sky-500/25">
                     <span className="text-[#0284c7] dark:text-[#38BDF8] font-bold">
-                      {lang === 'en' ? 'Reserved Table' : lang === 'zh' ? '预订桌位' : 'Bàn ăn giữ chỗ'}
+                      {lang === 'en' ? 'Reserved Table' : lang === 'zh' ? '预订桌位' : 'Bàn giữ chỗ'}
                     </span>
                     <span className="font-black text-[#0284c7] dark:text-[#38BDF8] tracking-wide">
                       {formatTableName(bookingSuccess.tableId?.tableName, lang)}

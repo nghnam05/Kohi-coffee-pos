@@ -116,7 +116,7 @@ kohi-coffee/
 │   │   ├── salaries/              # Tính lương tự động
 │   │   ├── shift-swaps/           # Quản lý Đổi ca làm việc
 │   │   ├── staff-calls/           # Gọi nhân viên phục vụ tại bàn
-│   │   ├── tables/                # Quản lý Bàn ăn & Mã QR
+│   │   ├── tables/                # Quản lý Bàn & Mã QR
 │   │   └── users/                 # Quản lý Tài khoản & Nhân sự
 │   ├── test/                      # Bộ Unit tests
 │   └── seed.js                    # Script nạp dữ liệu mẫu

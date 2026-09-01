@@ -5762,7 +5762,7 @@ export default function DashboardPage() {
                       {/* Middle Info Block with Strong Typography Hierarchy */}
                       <div className="py-2.5 border-t border-b border-slate-100 dark:border-[#1e293b] space-y-2 text-xs">
                         <div className="flex justify-between items-center">
-                          <span className="text-slate-400 dark:text-slate-500 text-[11px] font-medium">Bàn ăn chọn:</span>
+                          <span className="text-slate-400 dark:text-slate-500 text-[11px] font-medium">Bàn chọn:</span>
                           <span className="font-black text-slate-900 dark:text-white text-xs">{res.tableId?.tableName || 'Bàn chọn'}</span>
                         </div>
                         <div className="flex justify-between items-center">
