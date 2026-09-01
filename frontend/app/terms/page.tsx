@@ -47,7 +47,7 @@ export default function TermsPage() {
           title: '2. Gọi Món & Phục Vụ Tại Bàn (QR Order)',
           desc: 'Quy trình gọi món bằng mã QR dán tại bàn:',
           items: [
-            'Mã QR dán tại mỗi bàn ăn đại diện cho vị trí ngồi thực tế của quý khách tại quán.',
+            'Mã QR dán tại mỗi bàn đại diện cho vị trí ngồi thực tế của quý khách tại quán.',
             'Đơn hàng gửi đi sẽ được chuyển trực tiếp tới màn hình quầy pha chế / bếp để chuẩn bị.',
             'Quý khách vui lòng kiểm tra kỹ số lượng, loại thức uống và ghi chú (lượng đường, đá, v.v.) trước khi bấm xác nhận.'
           ]
