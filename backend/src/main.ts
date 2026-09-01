@@ -1,3 +1,8 @@
+import * as nodeCrypto from 'node:crypto';
+if (typeof (globalThis as any).crypto === 'undefined' || !(globalThis as any).crypto?.getRandomValues) {
+  (globalThis as any).crypto = nodeCrypto;
+}
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import { ValidationPipe } from '@nestjs/common';
