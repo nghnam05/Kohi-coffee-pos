@@ -220,5 +220,14 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.server.to(`table_${fromTableId}`).emit('groupCartCleared', { tableId: fromTableId });
     }
   }
+
+  emitRewardVoucherIssued(data: { orderId: string; voucherCode: string; totalAmount: number; tableId?: string }): void {
+    if (this.server) {
+      this.server.emit('rewardVoucherIssued', data);
+      if (data.tableId) {
+        this.server.to(`table_${data.tableId}`).emit('rewardVoucherIssued', data);
+      }
+    }
+  }
 }
 

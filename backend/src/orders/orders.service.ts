@@ -57,8 +57,14 @@ export class OrdersService implements OnModuleInit {
               createdAt: orderDate,
             });
           }
-          await this.orderModel.insertMany(sampleOrders);
+          const insertedOrders = await this.orderModel.insertMany(sampleOrders);
           console.log('[Seed] Sample Paid Orders initialized in Database for Revenue & Top Selling statistics.');
+
+          if (this.paymentsService) {
+            for (const ord of insertedOrders) {
+              await this.paymentsService.createFromOrder(ord).catch(() => {});
+            }
+          }
         }
       } catch (err) {
         console.error('[Seed Error] Failed to seed sample orders:', err);
@@ -233,6 +239,12 @@ export class OrdersService implements OnModuleInit {
 
     if (updateOrderStatusDto.status === 'paid') {
       console.log(`[Payment Completed] Đơn hàng ${id} đã thanh toán thành công và lưu vết vào DB.`);
+      
+      // Tự động tặng Voucher 10% nếu tổng hóa đơn > 300k
+      if (this.couponsService) {
+        await this.checkAndIssueRewardVoucher(updatedOrder);
+      }
+
       if (this.paymentsService && updatedOrder) {
         await this.paymentsService.createFromOrder(updatedOrder).catch((err) => {
           console.error('[Payment Record Error]:', err);
@@ -253,6 +265,37 @@ export class OrdersService implements OnModuleInit {
     }
 
     return updatedOrder;
+  }
+
+  private async checkAndIssueRewardVoucher(order: OrderDocument): Promise<string | null> {
+    if (order.totalAmount >= 300000 && !order.rewardedVoucherCode) {
+      try {
+        const rewardCoupon = await this.couponsService.generateRewardCouponForOrder(
+          order._id.toString(),
+          order.totalAmount,
+        );
+        order.rewardedVoucherCode = rewardCoupon.code;
+        await order.save();
+        console.log(`[Reward Voucher] Đã tặng voucher ${rewardCoupon.code} cho đơn hàng >300k (${order._id})`);
+        
+        const tableIdStr = (order.tableId as any)?._id
+          ? (order.tableId as any)._id.toString()
+          : order.tableId?.toString();
+
+        if (this.ordersGateway) {
+          this.ordersGateway.emitRewardVoucherIssued({
+            orderId: order._id.toString(),
+            voucherCode: rewardCoupon.code,
+            totalAmount: order.totalAmount,
+            tableId: tableIdStr,
+          });
+        }
+        return rewardCoupon.code;
+      } catch (err) {
+        console.error('[Reward Voucher Error]:', err);
+      }
+    }
+    return null;
   }
 
   async notifyPayment(id: string): Promise<OrderDocument> {

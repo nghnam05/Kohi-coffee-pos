@@ -653,6 +653,7 @@ export default function DashboardPage() {
 
   // Coupons state (for admin)
   const [coupons, setCoupons] = useState<any[]>([]);
+  const [couponFilter, setCouponFilter] = useState<'all' | 'manual' | 'auto'>('all');
   const [categories, setCategories] = useState<any[]>([]);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any | null>(null);
@@ -3352,9 +3353,11 @@ export default function DashboardPage() {
                   }`}
                 >
                   <span className="whitespace-nowrap">Tất cả (chỉ đơn hàng đã thanh toán)</span>
-                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${orderStatusFilter === 'paid' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' : 'bg-[#acc7fe]/50 text-[#385282]'}`}>
-                    {paidOrdersList.length}
-                  </span>
+                  {paymentHistory.length > 0 && (
+                    <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${orderStatusFilter === 'paid' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' : 'bg-[#acc7fe]/50 text-[#385282]'}`}>
+                      {paymentHistory.length}
+                    </span>
+                  )}
                 </button>
               </div>
 
@@ -3842,9 +3845,6 @@ export default function DashboardPage() {
                                 </div>
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
-                                <span className="text-slate-900 dark:text-white font-black font-mono text-[12px]">
-                                  {formatPrice((item.foodId?.price || 0) * item.quantity)}
-                                </span>
                                 {(user?.role !== 'barista' || !['ready', 'served', 'completed', 'paid'].includes(order.status)) && (
                                   <button
                                     onClick={() => setOrderToDelete(order._id)}
@@ -3862,11 +3862,21 @@ export default function DashboardPage() {
 
                       {/* Card Bottom Action Buttons */}
                       <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-[#1e293b]">
-                        {/* Total Price Display */}
+                        {/* Payment Status Display */}
                         <div className="flex items-center justify-between px-1">
-                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tổng tiền</span>
-                          <span className="text-sm font-black text-[#0284c7] dark:text-[#38BDF8]">
-                            {formatPrice(order.totalAmount || 0)}
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Thanh toán</span>
+                          <span className={`text-xs font-black px-2 py-0.5 rounded-md ${
+                            order.status === 'paid' || order.paymentStatus === 'paid'
+                              ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400'
+                              : order.paymentNotified
+                              ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400'
+                              : 'bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400'
+                          }`}>
+                            {order.status === 'paid' || order.paymentStatus === 'paid'
+                              ? 'Đã thanh toán'
+                              : order.paymentNotified
+                              ? 'Đã báo chuyển khoản'
+                              : 'Chưa thanh toán'}
                           </span>
                         </div>
 
@@ -3882,9 +3892,8 @@ export default function DashboardPage() {
                           ) : (
                             <button
                               onClick={() => handleUpdateStatus(order._id, 'confirmed')}
-                              className="w-full bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] hover:text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+                              className="w-full bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] hover:text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center"
                             >
-                              <span className="material-symbols-outlined text-base">check_circle</span>
                               <span>Xác Nhận & Gửi Pha Chế</span>
                             </button>
                           )
@@ -3895,9 +3904,8 @@ export default function DashboardPage() {
                           user?.role === 'barista' || user?.role === 'admin' ? (
                             <button
                               onClick={() => handleUpdateStatus(order._id, 'cooking')}
-                              className="w-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+                              className="w-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center"
                             >
-                              <span className="material-symbols-outlined text-base">local_cafe</span>
                               <span>Bắt Đầu Pha Chế</span>
                             </button>
                           ) : (
@@ -3916,9 +3924,8 @@ export default function DashboardPage() {
                           user?.role === 'barista' || user?.role === 'admin' ? (
                             <button
                               onClick={() => handleUpdateStatus(order._id, 'ready')}
-                              className="w-full bg-amber-500 hover:bg-amber-600 text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+                              className="w-full bg-amber-500 hover:bg-amber-600 text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center"
                             >
-                              <span className="material-symbols-outlined text-base">notifications_active</span>
                               <span>Hoàn Tất Pha Chế (Báo Phục Vụ)</span>
                             </button>
                           ) : (
@@ -3941,9 +3948,8 @@ export default function DashboardPage() {
                           ) : (
                             <button
                               onClick={() => handleUpdateStatus(order._id, 'completed')}
-                              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+                              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center"
                             >
-                              <span className="material-symbols-outlined text-base">task_alt</span>
                               <span>Đã Ra Món Tại Bàn</span>
                             </button>
                           )
@@ -3959,16 +3965,14 @@ export default function DashboardPage() {
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handleUpdateStatus(order._id, 'paid')}
-                                className="flex-1 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+                                className="flex-1 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center"
                               >
-                                <span className="material-symbols-outlined text-base">payments</span>
                                 <span>Xác nhận Đã nhận tiền</span>
                               </button>
                               <button
                                 onClick={() => setActiveInvoice(order)}
-                                className="px-3 py-2.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1"
+                                className="px-3 py-2.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center"
                               >
-                                <span className="material-symbols-outlined text-base">receipt_long</span>
                                 <span>HD</span>
                               </button>
                             </div>
@@ -3977,9 +3981,8 @@ export default function DashboardPage() {
                         {isPaid && (
                           <button
                             onClick={() => setActiveInvoice(order)}
-                            className="w-full py-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-[#38BDF8] hover:text-[#090D16] text-[#0284c7] dark:text-[#38BDF8] text-xs font-extrabold rounded-xl transition-all flex items-center justify-center gap-1"
+                            className="w-full py-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-[#38BDF8] hover:text-[#090D16] text-[#0284c7] dark:text-[#38BDF8] text-xs font-extrabold rounded-xl transition-all flex items-center justify-center"
                           >
-                            <span className="material-symbols-outlined text-base">receipt_long</span>
                             <span>Xem hóa đơn chi tiết</span>
                           </button>
                         )}
@@ -5574,29 +5577,81 @@ export default function DashboardPage() {
               </button>
             </div>
 
+            {/* Filter Tabs */}
+            <div className="flex items-center gap-2 border-b border-slate-200 dark:border-[#1e293b] pb-2">
+              <button
+                onClick={() => setCouponFilter('all')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  couponFilter === 'all'
+                    ? 'bg-[#3AA6FF] text-white shadow-xs'
+                    : 'bg-white dark:bg-[#131929] text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                }`}
+              >
+                Tất cả mã ({coupons.length})
+              </button>
+              <button
+                onClick={() => setCouponFilter('manual')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  couponFilter === 'manual'
+                    ? 'bg-[#3AA6FF] text-white shadow-xs'
+                    : 'bg-white dark:bg-[#131929] text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                }`}
+              >
+                Thủ công ({coupons.filter((c) => !c.isAutoGenerated).length})
+              </button>
+              <button
+                onClick={() => setCouponFilter('auto')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  couponFilter === 'auto'
+                    ? 'bg-[#3AA6FF] text-white shadow-xs'
+                    : 'bg-white dark:bg-[#131929] text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                }`}
+              >
+                Tự động tặng - Bill &gt; 300k ({coupons.filter((c) => c.isAutoGenerated).length})
+              </button>
+            </div>
+
             {coupons.length === 0 ? (
               <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-8 text-center text-slate-500 text-xs">
                 Chưa có mã giảm giá nào trong hệ thống
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {coupons.map((c) => (
+                {coupons
+                  .filter((c) => {
+                    if (couponFilter === 'manual') return !c.isAutoGenerated;
+                    if (couponFilter === 'auto') return c.isAutoGenerated;
+                    return true;
+                  })
+                  .map((c) => (
                   <div key={c._id} className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 rounded-2xl space-y-3 relative shadow-xs">
                     <div className="flex justify-between items-start">
                       <div>
-                        <span className="font-mono text-base font-black text-[#0284c7] dark:text-[#38BDF8] tracking-wider block">
-                          {c.code}
-                        </span>
-                        <span className="text-[11px] text-slate-500 font-semibold">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-base font-black text-[#0284c7] dark:text-[#38BDF8] tracking-wider block">
+                            {c.code}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-slate-500 font-semibold block mt-0.5">
                           {c.type === 'percent' ? `Giảm ${c.value}%` : `Giảm cố định ${formatPrice(c.value)}`}
                         </span>
                       </div>
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${c.isActive ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-500'}`}>
-                        {c.isActive ? 'Đang kích hoạt' : 'Tạm khóa'}
-                      </span>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${c.isActive ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-500'}`}>
+                          {c.isActive ? 'Đang kích hoạt' : 'Tạm khóa'}
+                        </span>
+                        {c.isAutoGenerated && (
+                          <span className="px-2 py-0.5 rounded-md text-[9px] font-bold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+                            Tự động tặng - Bill &gt; 300k
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="text-[11px] text-slate-500 dark:text-slate-400 space-y-1 pt-2 border-t border-slate-100 dark:border-[#1e293b]">
+                      {c.rewardedFromOrderId && (
+                        <div>Đơn hàng sinh mã: <span className="font-bold font-mono text-[#0284c7] dark:text-[#38BDF8]">#{c.rewardedFromOrderId.slice(-6).toUpperCase()}</span></div>
+                      )}
                       <div>Đơn tối thiểu: <span className="font-bold text-slate-700 dark:text-slate-300">{formatPrice(c.minOrderAmount || 0)}</span></div>
                       <div>Lượt đã dùng: <span className="font-bold text-slate-700 dark:text-slate-300">{c.usedCount || 0} / {c.maxUsage > 0 ? c.maxUsage : 'Không giới hạn'}</span></div>
                       <div>Hạn dùng: <span className="font-bold text-slate-700 dark:text-slate-300">{c.expiresAt ? new Date(c.expiresAt).toLocaleDateString('vi-VN') : 'Không thời hạn'}</span></div>
@@ -6225,17 +6280,16 @@ export default function DashboardPage() {
                       <div className="flex gap-1.5 pt-0.5">
                         <button
                           onClick={() => handleUpdateStatus(order._id, 'paid')}
-                          className="flex-1 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-[10.5px] rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center flex items-center justify-center gap-1"
+                          className="flex-1 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-[10.5px] rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center flex items-center justify-center"
                         >
-                          <span className="material-symbols-outlined text-sm">payments</span>
                           <span>Xác nhận Đã nhận tiền</span>
                         </button>
                         <button
                           onClick={() => setActiveInvoice(order)}
-                          className="px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-200 font-extrabold text-[10.5px] rounded-xl transition-all cursor-pointer flex items-center gap-0.5"
+                          className="px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-200 font-extrabold text-[10.5px] rounded-xl transition-all cursor-pointer flex items-center justify-center"
                           title="Xem hóa đơn"
                         >
-                          <span className="material-symbols-outlined text-sm">receipt_long</span>
+                          <span>Hóa đơn</span>
                         </button>
                       </div>
                     </div>

@@ -125,6 +125,7 @@ interface Order {
   totalAmount: number;
   status: 'pending' | 'confirmed' | 'cooking' | 'ready' | 'completed' | 'cancelled' | 'paid';
   paymentMethod?: 'cash' | 'momo' | 'bank_transfer' | string;
+  rewardedVoucherCode?: string;
   createdAt: string;
 }
 
@@ -304,6 +305,13 @@ export default function OrderStatusPage() {
       }
     });
 
+    socketRef.current.on('rewardVoucherIssued', ({ orderId: rewardOrderId, voucherCode }: { orderId: string; voucherCode: string }) => {
+      if (rewardOrderId === orderId) {
+        setOrder((prev) => (prev ? { ...prev, rewardedVoucherCode: voucherCode } : null));
+        toast('Bạn vừa nhận được Mã giảm 10% cho đơn hàng trên 300k!', { icon: null });
+      }
+    });
+
     return () => {
       if (socketRef.current) socketRef.current.disconnect();
     };
@@ -390,6 +398,31 @@ export default function OrderStatusPage() {
                     <span className="text-xs font-bold text-[var(--text-secondary)] uppercase">{t.total}</span>
                     <span className="text-lg sm:text-xl font-black text-emerald-500">{formatPrice(order.totalAmount)}</span>
                   </div>
+
+                  {order.rewardedVoucherCode && (
+                    <div className="mt-4 p-4 bg-gradient-to-r from-sky-500/10 via-cyan-500/10 to-blue-500/10 border border-sky-500/30 rounded-2xl space-y-2 text-center">
+                      <div className="text-xs font-black uppercase text-[#0284c7] dark:text-[#38BDF8] tracking-wider">
+                        Quà Tặng Đơn Hàng &gt; 300.000đ
+                      </div>
+                      <p className="text-[11px] text-[var(--text-secondary)]">
+                        Kohi Coffee xin dành tặng bạn Mã giảm 10% cho lần sử dụng dịch vụ tiếp theo:
+                      </p>
+                      <div className="flex items-center justify-center gap-2 pt-1">
+                        <span className="font-mono text-base sm:text-lg font-black text-[#0284c7] dark:text-[#38BDF8] bg-[var(--bg-primary)] px-3 py-1 rounded-xl border border-sky-500/30 tracking-widest">
+                          {order.rewardedVoucherCode}
+                        </span>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(order.rewardedVoucherCode || '');
+                            toast('Đã sao chép mã giảm giá!', { icon: null });
+                          }}
+                          className="px-3 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs active:scale-95"
+                        >
+                          Sao chép
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-2 gap-2.5 mt-5 pt-3.5 border-t border-[var(--border-color)]">
                     <button
