@@ -47,13 +47,29 @@ export class TablesService {
   }
 
   async findOne(id: string): Promise<any> {
-    let table = await this.tableModel.findById(id).lean().exec();
-    if (!table) {
-      throw new NotFoundException(`Không tìm thấy bàn với ID: ${id}`);
+    let table: any = null;
+
+    if (id && id.match(/^[0-9a-fA-F]{24}$/)) {
+      table = await this.tableModel.findById(id).lean().exec();
     }
+
+    if (!table) {
+      const numberOnly = id.replace(/\D/g, '');
+      const searchConditions: any[] = [{ tableName: id.trim() }];
+      if (numberOnly) {
+        searchConditions.push({ tableName: `Bàn số ${numberOnly}` });
+        searchConditions.push({ tableName: numberOnly });
+      }
+      table = await this.tableModel.findOne({ $or: searchConditions }).lean().exec();
+    }
+
+    if (!table) {
+      throw new NotFoundException(`Không tìm thấy bàn với ID hoặc Tên: ${id}`);
+    }
+
     if (!table.qrToken) {
       const newToken = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
-      await this.tableModel.findByIdAndUpdate(id, { qrToken: newToken }).exec();
+      await this.tableModel.findByIdAndUpdate(table._id, { qrToken: newToken }).exec();
       table.qrToken = newToken;
     }
     return table;
