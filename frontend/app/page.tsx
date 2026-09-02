@@ -10,7 +10,7 @@ import { playScanBeep, playWelcomeChime } from './utils/sound';
 import { ThemeToggleSwitch } from '@/components/table/ThemeToggleSwitch';
 import { LanguageToggleSwitch, Lang } from '@/components/table/LanguageToggleSwitch';
 import { BrandLogo } from '@/components/table/BrandLogo';
-import { formatTableName, formatTableLocation } from '@/utils/format';
+import { formatTableName, formatTableLocation, formatTableFloor } from '@/utils/format';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from '@/context/LanguageContext';
 
@@ -543,7 +543,7 @@ export default function Home() {
                     }
 
                     const formattedName = formatTableName(tbl.tableName, lang);
-                    const formattedLocation = formatTableLocation(tbl.tableName, lang);
+                    const formattedFloor = formatTableFloor(lang);
 
                     if (isSelected && isBookable) {
                       return (
@@ -568,7 +568,7 @@ export default function Home() {
                             </span>
                           </div>
                           <div className="text-center text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium relative z-10 truncate">
-                            {formattedLocation}
+                            {formattedFloor}
                           </div>
                         </div>
                       );
@@ -603,7 +603,7 @@ export default function Home() {
                           </span>
                         </div>
                         <div className="text-center text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
-                          {formattedLocation}
+                          {formattedFloor}
                         </div>
                       </button>
                     );
