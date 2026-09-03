@@ -42,6 +42,12 @@ export class Food {
     default: true,
   })
   isAvailable: boolean;
+
+  @Prop({
+    type: [String],
+    default: [],
+  })
+  tasteTags: string[];
 }
 
 export const FoodSchema = SchemaFactory.createForClass(Food);

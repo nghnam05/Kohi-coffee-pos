@@ -911,6 +911,32 @@ export default function TableMenuPage() {
     setModalNote('');
   };
 
+  const handleDirectAddToCart = useCallback((food: any) => {
+    const devId = typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest';
+    const cName = typeof window !== 'undefined' ? (localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Bạn').trim() : 'Bạn';
+    setCart((prev) => {
+      const existing = prev.find((item) => item.food._id === food._id && item.addedByDeviceId === devId);
+      let updated: CartItem[];
+      if (existing) {
+        updated = prev.map((item) =>
+          item.food._id === food._id && item.addedByDeviceId === devId
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      } else {
+        updated = [...prev, { food, quantity: 1, note: '', unitPrice: food.price, addedBy: cName, addedByDeviceId: devId }];
+      }
+      if (socketRef.current && tableId) {
+        socketRef.current.emit('updateGroupCart', {
+          tableId,
+          items: updated,
+          senderName: cName,
+        });
+      }
+      return updated;
+    });
+  }, [tableId, customerName]);
+
   const handleConfirmName = () => {
     const trimmed = nameInput.trim();
     const finalName = trimmed || '';
@@ -1022,11 +1048,11 @@ export default function TableMenuPage() {
     finally { setIsLoadingReviews(false); }
   };
 
-  const handleSendAiMessage = async () => {
-    const q = aiInput.trim();
+  const handleSendAiMessage = async (overrideText?: string) => {
+    const q = (overrideText || aiInput).trim();
     if (!q || isAiThinking) return;
     setAiMessages((prev) => [...prev, { role: 'user', text: q }]);
-    setAiInput('');
+    if (!overrideText) setAiInput('');
     setIsAiThinking(true);
     try {
       const res = await fetch(`${API_BASE}/ai-chat/ask`, {
@@ -1035,25 +1061,30 @@ export default function TableMenuPage() {
         body: JSON.stringify({ question: q }),
       });
       const data = await res.json();
-      setAiMessages((prev) => [...prev, { role: 'ai', text: data.answer || 'Dạ, Kohi AI đã nhận thông tin. Bạn có thể chọn món hoặc nhờ nhân viên hỗ trợ nhé! ☕' }]);
+      setAiMessages((prev) => [
+        ...prev,
+        {
+          role: 'ai',
+          text: data.answer || 'Dạ, Kohi AI đã nhận thông tin. Bạn có thể chọn món hoặc nhờ nhân viên hỗ trợ nhé.',
+          recommendedFoods: data.recommendedFoods,
+        },
+      ]);
     } catch {
       let fallbackText = '';
       const lowerQ = q.toLowerCase();
       if (
         lowerQ.includes('wifi') ||
         lowerQ.includes('wi-fi') ||
-        lowerQ.includes('wiffi') ||
         lowerQ.includes('mật khẩu') ||
-        lowerQ.includes('mat khau') ||
         lowerQ.includes('pass')
       ) {
-        fallbackText = 'Dạ, Kohi Coffee có Wifi tốc độ cao hoàn toàn miễn phí ạ! Tên Wifi: "Kohi Coffee Guest", Mật khẩu: kohicoffee2026 📶';
+        fallbackText = 'Dạ, Kohi Coffee có Wifi tốc độ cao hoàn toàn miễn phí. Tên Wifi: "Kohi Coffee Guest", Mật khẩu: kohicoffee2026';
       } else if (lowerQ.includes('ngon') || lowerQ.includes('best seller') || lowerQ.includes('bán chạy')) {
-        fallbackText = 'Dạ, các món Signature bán chạy nhất tại Kohi bao gồm: Cà phê Muối Huế đặc sản (béo ngậy kem muối), Matcha Espresso Nhật Bản, Cà phê Dừa Bến Tre và Bánh Croissant bơ Pháp giòn rụm nướng tươi mỗi ngày ạ! ☕🥐';
-      } else if (lowerQ.includes('giờ') || lowerQ.includes('mở cửa') || lowerQ.includes('hours')) {
-        fallbackText = 'Dạ, Kohi Coffee mở cửa đón khách từ 07:00 sáng đến 22:00 tối tất cả các ngày trong tuần (kể cả Thứ 7, Chủ Nhật và các ngày Lễ, Tết) ạ! ⏰✨';
+        fallbackText = 'Dạ, các món Signature bán chạy nhất tại Kohi bao gồm: Cà phê Muối Huế đặc sản, Matcha Espresso Nhật Bản, Cà phê Dừa Bến Tre và Bánh Croissant bơ Pháp giòn rụm nướng tươi mỗi ngày.';
+      } else if (lowerQ.includes('giờ') || lowerQ.includes('mở cửa')) {
+        fallbackText = 'Dạ, Kohi Coffee mở cửa đón khách từ 07:00 sáng đến 22:00 tối tất cả các ngày trong tuần.';
       } else {
-        fallbackText = 'Dạ, Kohi AI xin chào! Bạn có thể xem thực đơn và thêm món vào giỏ hàng, hoặc nhấn "Gọi nhân viên" để được hỗ trợ trực tiếp tại bàn ạ! 😊☕';
+        fallbackText = 'Dạ, Kohi AI xin chào. Bạn có thể xem thực đơn và thêm món vào giỏ hàng, hoặc nhấn "Gọi nhân viên" để được hỗ trợ trực tiếp tại bàn.';
       }
       setAiMessages((prev) => [...prev, { role: 'ai', text: fallbackText }]);
     } finally {
@@ -1498,6 +1529,7 @@ export default function TableMenuPage() {
           aiInput={aiInput}
           setAiInput={setAiInput}
           handleSendAiMessage={handleSendAiMessage}
+          onAddToCart={handleDirectAddToCart}
           lang={lang}
         />
       </div>

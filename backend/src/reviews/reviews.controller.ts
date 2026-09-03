@@ -25,6 +25,14 @@ export class ReviewsController {
     return this.reviewsService.findAll();
   }
 
+  /** GET /api/v1/reviews/ai-insights – Admin xem AI phân tích đánh giá & đề xuất giải pháp */
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
+  @Get('ai-insights')
+  getAiReviewInsights() {
+    return this.reviewsService.getAiReviewInsights();
+  }
+
   /** GET /api/v1/reviews/food/:foodId – Public (hiện review trong modal món) */
   @Get('food/:foodId')
   findByFood(@Param('foodId') foodId: string) {

@@ -18,6 +18,7 @@ import dynamic from 'next/dynamic';
 import { getTableQrUrl } from '@/utils/format';
 
 const InventoryManagement = dynamic(() => import('@/components/dashboard/InventoryManagement').then(m => m.InventoryManagement), { ssr: false });
+import { AdminAiReviewInsights } from '@/components/dashboard/AdminAiReviewInsights';
 
 import {
   Chart as ChartJS,
@@ -5357,6 +5358,9 @@ export default function DashboardPage() {
                 </span>
               </div>
             </div>
+
+            {/* AI Review Quality Insights */}
+            <AdminAiReviewInsights token={token} />
 
             {/* Chart.js Visualizations Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
