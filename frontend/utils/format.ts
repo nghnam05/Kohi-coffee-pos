@@ -31,6 +31,16 @@ export const formatTableLocation = (rawName?: string | null, lang: Lang = 'vi'):
 };
 
 /**
+ * Format table floor text
+ * e.g. "Floor 1" (en) / "1楼" (zh) / "Tầng 1" (vi)
+ */
+export const formatTableFloor = (lang: Lang = 'vi'): string => {
+  if (lang === 'en') return 'Floor 1';
+  if (lang === 'zh') return '1楼';
+  return 'Tầng 1';
+};
+
+/**
  * Get public frontend base URL for QR code generation
  */
 export const getFrontendBaseUrl = (): string => {
