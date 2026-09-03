@@ -1427,6 +1427,15 @@ export default function TableMenuPage() {
                 })}
               </div>
             )}
+
+            {/* Subtle Menu End Marker */}
+            {!isLoading && filteredFoods.length > 0 && (
+              <div className="py-6 text-center text-xs font-semibold text-slate-400 dark:text-slate-500 flex items-center justify-center gap-2 font-sans select-none">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+                <span>Kohi Coffee POS • Đã hiển thị tất cả món</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+              </div>
+            )}
           </div>
         </main>
 

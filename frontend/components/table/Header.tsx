@@ -87,33 +87,29 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             )}
           </button>
+
+          {/* 3-Dots Dropdown Menu Button */}
+          <button
+            type="button"
+            onClick={togglePopup}
+            className={`relative w-10 h-10 rounded-2xl border flex items-center justify-center shadow-xs active:scale-95 transition-all cursor-pointer ${
+              isFloatingPopupOpen
+                ? 'bg-[#0284c7] text-white border-[#0284c7] shadow-sky-500/30'
+                : 'bg-slate-100 dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 hover:text-[#0284c7] dark:hover:text-[#38BDF8]'
+            }`}
+            title="Danh mục tùy chọn"
+          >
+            <span className="material-symbols-outlined text-2xl transition-transform duration-200">
+              {isFloatingPopupOpen ? 'close' : 'more_vert'}
+            </span>
+
+            {/* Notification Dot Badge */}
+            {!isFloatingPopupOpen && (totalQuantity > 0 || activeOrders.length > 0) && (
+              <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900" />
+            )}
+          </button>
         </div>
       </header>
-
-      {/* ── Mobile Floating Action Button (FAB Widget - Bottom Right) ───────── */}
-      <div className="fixed bottom-5 right-4 z-30 md:hidden flex flex-col items-end">
-        <button
-          type="button"
-          onClick={togglePopup}
-          className={`relative w-13 h-13 rounded-full flex items-center justify-center text-white shadow-xl transition-all duration-300 active:scale-95 cursor-pointer ${
-            isFloatingPopupOpen
-              ? 'bg-slate-900 dark:bg-slate-100 dark:text-slate-900 rotate-90 scale-105 shadow-slate-900/40'
-              : 'bg-gradient-to-tr from-[#0284c7] to-[#38BDF8] shadow-sky-500/40 hover:scale-105'
-          }`}
-          title="Mở menu chức năng"
-        >
-          <span className="material-symbols-outlined text-2px transition-transform duration-300">
-            {isFloatingPopupOpen ? 'close' : 'grid_view'}
-          </span>
-
-          {/* Combined Badge Indicator */}
-          {!isFloatingPopupOpen && (totalQuantity > 0 || activeOrders.length > 0) && (
-            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-black bg-rose-500 text-white rounded-full border-2 border-white dark:border-slate-900 shadow-md animate-bounce">
-              {totalQuantity + activeOrders.length}
-            </span>
-          )}
-        </button>
-      </div>
 
       {/* ── Mobile Crisp Bottom Sheet Modal ─────────────────────────────────── */}
       <AnimatePresence>
