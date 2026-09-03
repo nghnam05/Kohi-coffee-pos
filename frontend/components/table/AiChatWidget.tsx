@@ -52,7 +52,14 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
   lang = 'vi',
 }) => {
   return (
-    <div className="fixed left-4 md:left-auto md:right-6 lg:right-[380px] z-30 flex flex-col items-start md:items-end gap-3 bottom-5 md:bottom-6 transition-all duration-300">
+    <motion.div
+      drag
+      dragConstraints={{ left: -10, right: 320, top: -650, bottom: 10 }}
+      dragElastic={0.1}
+      dragMomentum={false}
+      whileDrag={{ scale: 1.12 }}
+      className="fixed left-4 md:left-auto md:right-6 lg:right-[380px] z-30 flex flex-col items-start md:items-end gap-3 bottom-5 md:bottom-6 touch-none cursor-grab active:cursor-grabbing"
+    >
       <AnimatePresence>
         {isAiChatOpen && (
           <motion.div
@@ -207,16 +214,18 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Floating Action Button (FAB) */}
       <button
         onClick={() => setIsAiChatOpen(!isAiChatOpen)}
-        className="w-12 h-12 rounded-full bg-[#3AA6FF] hover:bg-[#2B96EF] text-white shadow-2xl shadow-[#3AA6FF]/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-white/20 cursor-pointer"
+        className="w-14 h-14 rounded-full bg-[#3AA6FF]/90 hover:bg-[#3AA6FF] text-white shadow-2xl shadow-[#3AA6FF]/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 border-2 border-white/20 cursor-pointer backdrop-blur-md opacity-70 hover:opacity-100 active:opacity-100"
         title="Kohi AI Assistant"
       >
-        <span className="material-symbols-outlined text-2xl">
+        <span
+          className="material-symbols-outlined text-[34px] leading-none select-none"
+          style={{ fontVariationSettings: "'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48" }}
+        >
           {isAiChatOpen ? 'close' : 'smart_toy'}
         </span>
       </button>
-    </div>
+    </motion.div>
   );
 };
