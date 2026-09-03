@@ -69,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      {/* ── Mobile Top App Bar ──────────────────────────────────────────────── */}
+      {/* ── Mobile Top App Bar (Header Widget) ──────────────────────────────────────────────── */}
       <header className="fixed top-0 left-0 right-0 z-40 h-16 px-4 bg-[var(--bg-primary)]/95 backdrop-blur-md border-b border-[var(--border-color)] flex justify-between items-center md:hidden shadow-xs transition-colors">
         <BrandLogo />
         <div className="flex items-center gap-2">
