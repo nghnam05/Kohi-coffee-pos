@@ -69,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      {/* ── Mobile Top App Bar (Header Widget) ──────────────────────────────────────────────── */}
+      {/* ── Mobile Top App Bar ──────────────────────────────────────────────── */}
       <header className="fixed top-0 left-0 right-0 z-40 h-16 px-4 bg-[var(--bg-primary)]/95 backdrop-blur-md border-b border-[var(--border-color)] flex justify-between items-center md:hidden shadow-xs transition-colors">
         <BrandLogo />
         <div className="flex items-center gap-2">
@@ -90,32 +90,32 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </header>
 
-      {/* ── Mobile Floating Action Button (FAB Widget) ──────────────────────── */}
-      <div className="fixed bottom-6 right-5 z-50 md:hidden flex flex-col items-end">
+      {/* ── Mobile Floating Action Button (FAB Widget - Bottom Right) ───────── */}
+      <div className="fixed bottom-5 right-4 z-50 md:hidden flex flex-col items-end">
         <button
           type="button"
           onClick={togglePopup}
-          className={`relative w-14 h-14 rounded-full flex items-center justify-center text-white shadow-2xl transition-all duration-300 active:scale-95 cursor-pointer ${
+          className={`relative w-13 h-13 rounded-full flex items-center justify-center text-white shadow-2xl transition-all duration-300 active:scale-95 cursor-pointer ${
             isFloatingPopupOpen
-              ? 'bg-slate-900 dark:bg-white dark:text-slate-900 rotate-90 scale-105'
+              ? 'bg-slate-900 dark:bg-slate-100 dark:text-slate-900 rotate-90 scale-105 shadow-slate-900/40'
               : 'bg-gradient-to-tr from-[#0284c7] to-[#38BDF8] shadow-sky-500/40 hover:scale-105'
           }`}
           title="Mở menu chức năng"
         >
-          <span className="material-symbols-outlined text-2xl transition-transform duration-300">
+          <span className="material-symbols-outlined text-2px transition-transform duration-300">
             {isFloatingPopupOpen ? 'close' : 'widgets'}
           </span>
 
           {/* Combined Badge Indicator */}
           {!isFloatingPopupOpen && (totalQuantity > 0 || activeOrders.length > 0) && (
-            <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1.5 flex items-center justify-center text-[10px] font-black bg-rose-500 text-white rounded-full border-2 border-white dark:border-slate-900 shadow-md animate-bounce">
+            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-black bg-rose-500 text-white rounded-full border-2 border-white dark:border-slate-900 shadow-md animate-bounce">
               {totalQuantity + activeOrders.length}
             </span>
           )}
         </button>
       </div>
 
-      {/* ── Mobile Floating Popup Menu Card ─────────────────────────────────── */}
+      {/* ── Mobile Sleek Bottom Sheet Modal ─────────────────────────────────── */}
       <AnimatePresence>
         {isFloatingPopupOpen && (
           <>
@@ -128,60 +128,72 @@ export const Header: React.FC<HeaderProps> = ({
               className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs md:hidden"
             />
 
-            {/* Floating Card Popup */}
+            {/* Bottom Sheet Container */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.85, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.85, y: 30 }}
-              transition={{ type: 'spring', damping: 22, stiffness: 280 }}
-              className="fixed bottom-22 right-4 left-4 sm:left-auto sm:w-88 z-50 bg-white/95 dark:bg-[#0f172a]/95 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-4 shadow-2xl backdrop-blur-xl md:hidden font-sans space-y-3 max-h-[80vh] overflow-y-auto"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 280 }}
+              className="fixed inset-x-0 bottom-0 z-50 bg-white/98 dark:bg-[#090D16]/98 border-t border-slate-200/80 dark:border-slate-800 rounded-t-[32px] p-5 pt-3 shadow-[0_-12px_40px_rgba(0,0,0,0.3)] backdrop-blur-2xl md:hidden font-sans space-y-4 max-h-[85vh] overflow-y-auto"
             >
-              {/* Header: Table Info & QR */}
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-[#0284c7] dark:text-[#38BDF8] flex items-center justify-center">
-                    <span className="material-symbols-outlined text-lg">location_on</span>
+              {/* Drag Handle Indicator */}
+              <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto opacity-70" />
+
+              {/* Header: Table Info & QR Button */}
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800/80">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-2xl bg-sky-500/10 text-[#0284c7] dark:text-[#38BDF8] flex items-center justify-center shadow-inner">
+                    <span className="material-symbols-outlined text-xl">location_on</span>
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase font-bold text-slate-400">Vị trí hiện tại</p>
-                    <h4 className="text-xs font-black text-slate-900 dark:text-white">
+                    <p className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400">Vị trí bàn</p>
+                    <h4 className="text-sm font-black text-slate-900 dark:text-white">
                       {table?.tableName ?? 'Bàn 01'} (Tầng 1)
                     </h4>
                   </div>
                 </div>
 
-                {onOpenQRModal && (
+                <div className="flex items-center gap-2">
+                  {onOpenQRModal && (
+                    <button
+                      onClick={() => {
+                        closePopup();
+                        onOpenQRModal();
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/90 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 border border-slate-200/60 dark:border-slate-700/60"
+                    >
+                      <span className="material-symbols-outlined text-base">qr_code_2</span>
+                      <span>Mã QR</span>
+                    </button>
+                  )}
+
                   <button
-                    onClick={() => {
-                      closePopup();
-                      onOpenQRModal();
-                    }}
-                    className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+                    onClick={closePopup}
+                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center hover:text-slate-900 dark:hover:text-white transition-all active:scale-95"
                   >
-                    <span className="material-symbols-outlined text-sm">qr_code_2</span>
-                    <span>Mã QR</span>
+                    <span className="material-symbols-outlined text-lg">close</span>
                   </button>
-                )}
+                </div>
               </div>
 
-              {/* Main Action Grid */}
-              <div className="grid grid-cols-2 gap-2">
+              {/* Main Action Grid (2x2) */}
+              <div className="grid grid-cols-2 gap-2.5">
                 {/* 1. Menu Thực Đơn */}
                 <button
                   onClick={() => {
                     closePopup();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 hover:bg-sky-500/10 border border-slate-200/70 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-2 cursor-pointer active:scale-95"
+                  className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/90 hover:bg-sky-500/10 border border-slate-200/80 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-3 cursor-pointer active:scale-95 group shadow-2xs"
                 >
-                  <div className="w-8 h-8 rounded-xl bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] flex items-center justify-center">
-                    <span className="material-symbols-outlined text-lg">restaurant_menu</span>
+                  <div className="w-10 h-10 rounded-2xl bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <span className="material-symbols-outlined text-xl">restaurant_menu</span>
                   </div>
                   <div>
                     <p className="text-xs font-black text-slate-900 dark:text-white">
                       {lang === 'en' ? 'Menu' : lang === 'zh' ? '菜单' : 'Thực đơn'}
                     </p>
-                    <p className="text-[10px] text-slate-400 font-medium">Danh sách món ăn</p>
+                    <p className="text-[10px] text-slate-400 font-semibold">Danh sách món ăn</p>
                   </div>
                 </button>
 
@@ -191,10 +203,10 @@ export const Header: React.FC<HeaderProps> = ({
                     closePopup();
                     if (setIsCartOpen) setIsCartOpen(true);
                   }}
-                  className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 hover:bg-emerald-500/10 border border-slate-200/70 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-2 cursor-pointer active:scale-95 relative"
+                  className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/90 hover:bg-emerald-500/10 border border-slate-200/80 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-3 cursor-pointer active:scale-95 group shadow-2xs relative"
                 >
-                  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-lg">shopping_bag</span>
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <span className="material-symbols-outlined text-xl">shopping_bag</span>
                   </div>
                   <div>
                     <div className="flex items-center justify-between">
@@ -202,25 +214,25 @@ export const Header: React.FC<HeaderProps> = ({
                         {lang === 'en' ? 'Cart' : lang === 'zh' ? '购物车' : 'Giỏ hàng'}
                       </p>
                       {totalQuantity > 0 && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-black bg-emerald-500 text-white rounded-md">
+                        <span className="px-2 py-0.5 text-[10px] font-black bg-emerald-500 text-white rounded-lg shadow-2xs">
                           {totalQuantity} món
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] text-slate-400 font-medium">Xem các món đã chọn</p>
+                    <p className="text-[10px] text-slate-400 font-semibold">Xem món đã chọn</p>
                   </div>
                 </button>
 
-                {/* 3. Lịch Sử Đơn hàng */}
+                {/* 3. Lịch Sử Đơn Hàng */}
                 <button
                   onClick={() => {
                     closePopup();
                     handleOpenOrderHistory();
                   }}
-                  className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 hover:bg-indigo-500/10 border border-slate-200/70 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-2 cursor-pointer active:scale-95"
+                  className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/90 hover:bg-indigo-500/10 border border-slate-200/80 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-3 cursor-pointer active:scale-95 group shadow-2xs"
                 >
-                  <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-lg">receipt_long</span>
+                  <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <span className="material-symbols-outlined text-xl">receipt_long</span>
                   </div>
                   <div>
                     <div className="flex items-center justify-between">
@@ -228,12 +240,12 @@ export const Header: React.FC<HeaderProps> = ({
                         {lang === 'en' ? 'Orders' : lang === 'zh' ? '订单' : 'Đơn hàng'}
                       </p>
                       {activeOrders.length > 0 && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-black bg-indigo-500 text-white rounded-md">
+                        <span className="px-2 py-0.5 text-[10px] font-black bg-indigo-500 text-white rounded-lg shadow-2xs">
                           {activeOrders.length}
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] text-slate-400 font-medium">Theo dõi chế biến</p>
+                    <p className="text-[10px] text-slate-400 font-semibold">Theo dõi chế biến</p>
                   </div>
                 </button>
 
@@ -243,14 +255,14 @@ export const Header: React.FC<HeaderProps> = ({
                     handleCallStaff();
                   }}
                   disabled={callStaffCooldown > 0 || isCallingStaff}
-                  className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between gap-2 cursor-pointer active:scale-95 ${
+                  className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between gap-3 cursor-pointer active:scale-95 shadow-2xs ${
                     callStaffCooldown > 0
                       ? 'bg-amber-500/5 border-amber-500/20 text-amber-600 opacity-80'
                       : 'bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20'
                   }`}
                 >
-                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                    <span className={`material-symbols-outlined text-lg ${callStaffCooldown === 0 ? 'animate-bounce' : ''}`}>
+                  <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                    <span className={`material-symbols-outlined text-xl ${callStaffCooldown === 0 ? 'animate-bounce' : ''}`}>
                       notifications_active
                     </span>
                   </div>
@@ -264,26 +276,23 @@ export const Header: React.FC<HeaderProps> = ({
                         ? '呼叫服务'
                         : 'Gọi nhân viên'}
                     </p>
-                    <p className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-medium">Yêu cầu hỗ trợ</p>
+                    <p className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-semibold">Yêu cầu hỗ trợ</p>
                   </div>
                 </button>
               </div>
 
-              {/* Utility Action List */}
-              <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+              {/* Utility Actions (Grid 2 Columns) */}
+              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/80">
                 {/* Yêu cầu đổi vị trí bàn */}
                 <button
                   onClick={() => {
                     closePopup();
                     setIsTransferModalOpen(true);
                   }}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-all cursor-pointer"
+                  className="px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-900/70 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 transition-all cursor-pointer border border-slate-200/60 dark:border-slate-800"
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-base text-[#0284c7] dark:text-[#38BDF8]">chair</span>
-                    <span>{lang === 'vi' ? 'Chuyển / Đổi bàn ăn' : lang === 'zh' ? '更换桌位' : 'Change Table'}</span>
-                  </div>
-                  <span className="material-symbols-outlined text-sm text-slate-400">chevron_right</span>
+                  <span className="material-symbols-outlined text-lg text-[#0284c7] dark:text-[#38BDF8]">chair</span>
+                  <span className="truncate">{lang === 'vi' ? 'Đổi bàn ăn' : lang === 'zh' ? '更换桌位' : 'Change Table'}</span>
                 </button>
 
                 {/* Rời khỏi bàn */}
@@ -293,19 +302,16 @@ export const Header: React.FC<HeaderProps> = ({
                       closePopup();
                       handleLeaveTable();
                     }}
-                    className="w-full px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center justify-between transition-all cursor-pointer"
+                    className="px-3.5 py-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2 transition-all cursor-pointer border border-rose-500/20"
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-base text-rose-500">logout</span>
-                      <span>{lang === 'vi' ? 'Rời khỏi bàn' : lang === 'zh' ? '离开桌位' : 'Leave Table'}</span>
-                    </div>
-                    <span className="material-symbols-outlined text-sm text-rose-400">chevron_right</span>
+                    <span className="material-symbols-outlined text-lg text-rose-500">logout</span>
+                    <span className="truncate">{lang === 'vi' ? 'Rời bàn' : lang === 'zh' ? '离开桌位' : 'Leave Table'}</span>
                   </button>
                 )}
               </div>
 
               {/* Footer Settings: Theme & Language */}
-              <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-base text-slate-400">
                     {isDark ? 'dark_mode' : 'light_mode'}

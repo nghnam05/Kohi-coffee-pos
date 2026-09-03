@@ -52,14 +52,14 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
   lang = 'vi',
 }) => {
   return (
-    <div className="fixed right-4 lg:right-[380px] z-30 flex flex-col items-end gap-3 bottom-20 md:bottom-6 transition-all duration-300">
+    <div className="fixed left-4 md:left-auto md:right-6 lg:right-[380px] z-40 flex flex-col items-start md:items-end gap-3 bottom-5 md:bottom-6 transition-all duration-300">
       <AnimatePresence>
         {isAiChatOpen && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="w-80 sm:w-[420px] bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] shadow-2xl overflow-hidden flex flex-col h-[500px]"
+            className="w-[calc(100vw-32px)] max-w-sm sm:w-[420px] bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] shadow-2xl overflow-hidden flex flex-col h-[500px]"
           >
             {/* Header */}
             <div className="bg-[var(--bg-primary)] px-4 py-3 flex items-center justify-between border-b border-[var(--border-color)]">
