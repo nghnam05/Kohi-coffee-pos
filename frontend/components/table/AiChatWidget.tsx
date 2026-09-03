@@ -52,7 +52,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
   lang = 'vi',
 }) => {
   return (
-    <div className="fixed left-4 md:left-auto md:right-6 lg:right-[380px] z-40 flex flex-col items-start md:items-end gap-3 bottom-5 md:bottom-6 transition-all duration-300">
+    <div className="fixed left-4 md:left-auto md:right-6 lg:right-[380px] z-30 flex flex-col items-start md:items-end gap-3 bottom-5 md:bottom-6 transition-all duration-300">
       <AnimatePresence>
         {isAiChatOpen && (
           <motion.div
