@@ -1276,7 +1276,7 @@ export default function TableMenuPage() {
         {/* Main Catalog View (Desktop/Tablet Column 2) */}
         <main
           data-lenis-prevent
-          className="flex-1 h-full overflow-y-auto scrollbar-none bg-[#FFFFFF] dark:bg-[#090D16] text-[var(--text-primary)] relative min-w-0 pt-16 sm:pt-18 md:pt-0 pb-28 md:pb-12 transition-colors"
+          className="flex-1 h-full overflow-y-auto scrollbar-none bg-[#FFFFFF] dark:bg-[#090D16] text-[var(--text-primary)] relative min-w-0 pt-16 sm:pt-18 md:pt-0 pb-20 md:pb-12 transition-colors"
         >
           <div
             className="absolute inset-0 pointer-events-none opacity-[0.03]"

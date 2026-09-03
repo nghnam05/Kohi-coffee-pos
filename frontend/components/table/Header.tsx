@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggleSwitch } from './ThemeToggleSwitch';
 import { LanguageToggleSwitch } from './LanguageToggleSwitch';
@@ -57,6 +57,16 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenNotifications,
   unreadNotificationCount = 0,
 }) => {
+  const [isFloatingPopupOpen, setIsFloatingPopupOpen] = useState(false);
+
+  const togglePopup = () => {
+    setIsFloatingPopupOpen((prev) => !prev);
+  };
+
+  const closePopup = () => {
+    setIsFloatingPopupOpen(false);
+  };
+
   return (
     <>
       {/* ── Mobile Top App Bar ──────────────────────────────────────────────── */}
@@ -80,211 +90,232 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </header>
 
-      {/* ── Mobile Bottom Navigation Bar (Mobile-only, < md) ────────────────── */}
-      <nav
-        aria-label="Thanh điều hướng khách hàng"
-        className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#0c121e]/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-around h-16 px-1 shadow-[0_-4px_24px_rgba(0,0,0,0.12)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.4)] font-sans"
-      >
-        {/* Tab 1: Thực đơn */}
+      {/* ── Mobile Floating Action Button (FAB Widget) ──────────────────────── */}
+      <div className="fixed bottom-6 right-5 z-50 md:hidden flex flex-col items-end">
         <button
           type="button"
-          onClick={() => {
-            setIsMobileMenuOpen(false);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
-          className="flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none text-[#3AA6FF] font-black active:scale-95"
-        >
-          <span className="material-symbols-outlined text-xl">restaurant_menu</span>
-          <span className="text-[10px] tracking-tight">{lang === 'en' ? 'Menu' : lang === 'zh' ? '菜单' : 'Menu'}</span>
-        </button>
-
-        {/* Tab 2: Giỏ hàng */}
-        <button
-          type="button"
-          onClick={() => {
-            setIsMobileMenuOpen(false);
-            if (setIsCartOpen) setIsCartOpen(true);
-          }}
-          className="flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold active:scale-95"
-        >
-          <div className="relative flex items-center justify-center">
-            <span className="material-symbols-outlined text-xl">shopping_bag</span>
-            {totalQuantity > 0 && (
-              <span className="absolute -top-1 -right-2.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[9px] font-black bg-emerald-500 text-white rounded-full shadow-xs leading-none animate-pulse">
-                {totalQuantity}
-              </span>
-            )}
-          </div>
-          <span className="text-[10px] tracking-tight">{lang === 'en' ? 'Cart' : lang === 'zh' ? '购物车' : 'Giỏ hàng'}</span>
-        </button>
-
-        {/* Tab 3: Đơn hàng (Lịch sử đơn) */}
-        <button
-          type="button"
-          onClick={handleOpenOrderHistory}
-          className="flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold active:scale-95"
-        >
-          <div className="relative flex items-center justify-center">
-            <span className="material-symbols-outlined text-xl">receipt_long</span>
-            {activeOrders.length > 0 && (
-              <span className="absolute -top-1 -right-2.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[9px] font-black bg-[#3AA6FF] text-white rounded-full shadow-xs leading-none animate-pulse">
-                {activeOrders.length}
-              </span>
-            )}
-          </div>
-          <span className="text-[10px] tracking-tight">{lang === 'en' ? 'Orders' : lang === 'zh' ? '订单' : 'Đơn hàng'}</span>
-        </button>
-
-        {/* Tab 4: Gọi nhân viên */}
-        <button
-          type="button"
-          onClick={handleCallStaff}
-          disabled={callStaffCooldown > 0 || isCallingStaff}
-          className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all duration-200 cursor-pointer select-none outline-none active:scale-95 group ${
-            callStaffCooldown > 0
-              ? 'text-amber-500/70 font-bold opacity-75'
-              : 'text-amber-600 dark:text-amber-400 hover:bg-gradient-to-r hover:from-amber-500 hover:to-orange-500 hover:text-white hover:shadow-md hover:shadow-orange-500/20 font-black'
+          onClick={togglePopup}
+          className={`relative w-14 h-14 rounded-full flex items-center justify-center text-white shadow-2xl transition-all duration-300 active:scale-95 cursor-pointer ${
+            isFloatingPopupOpen
+              ? 'bg-slate-900 dark:bg-white dark:text-slate-900 rotate-90 scale-105'
+              : 'bg-gradient-to-tr from-[#0284c7] to-[#38BDF8] shadow-sky-500/40 hover:scale-105'
           }`}
+          title="Mở menu chức năng"
         >
-          <span className={`material-symbols-outlined text-xl transition-colors ${callStaffCooldown === 0 ? 'animate-bounce group-hover:text-white' : ''}`}>
-            notifications_active
+          <span className="material-symbols-outlined text-2xl transition-transform duration-300">
+            {isFloatingPopupOpen ? 'close' : 'widgets'}
           </span>
-          <span className="text-[10px] tracking-tight truncate px-1 transition-colors">
-            {callStaffCooldown > 0
-              ? `${callStaffCooldown}s`
-              : lang === 'en'
-              ? 'Call Staff'
-              : lang === 'zh'
-              ? '呼叫服务'
-              : 'Gọi NV'}
-          </span>
-        </button>
 
-        {/* Tab 5: Tiện ích */}
-        <button
-          type="button"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none active:scale-95 ${
-            isMobileMenuOpen
-              ? 'bg-[#3AA6FF]/10 text-[#3AA6FF] font-black'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold'
-          }`}
-        >
-          <span className="material-symbols-outlined text-xl">tune</span>
-          <span className="text-[10px] tracking-tight">{lang === 'en' ? 'Utilities' : lang === 'zh' ? '工具' : 'Tiện ích'}</span>
+          {/* Combined Badge Indicator */}
+          {!isFloatingPopupOpen && (totalQuantity > 0 || activeOrders.length > 0) && (
+            <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1.5 flex items-center justify-center text-[10px] font-black bg-rose-500 text-white rounded-full border-2 border-white dark:border-slate-900 shadow-md animate-bounce">
+              {totalQuantity + activeOrders.length}
+            </span>
+          )}
         </button>
-      </nav>
+      </div>
 
-      {/* ── Mobile Utilities Bottom Sheet Modal ─────────────────── */}
+      {/* ── Mobile Floating Popup Menu Card ─────────────────────────────────── */}
       <AnimatePresence>
-        {isMobileMenuOpen && (
+        {isFloatingPopupOpen && (
           <>
+            {/* Backdrop overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs md:hidden"
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={closePopup}
+              className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs md:hidden"
             />
+
+            {/* Floating Card Popup */}
             <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="fixed bottom-16 inset-x-0 z-50 bg-[var(--bg-card)] border-t border-x border-[var(--border-color)] rounded-t-3xl p-5 shadow-2xl space-y-4 md:hidden font-sans"
+              initial={{ opacity: 0, scale: 0.85, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.85, y: 30 }}
+              transition={{ type: 'spring', damping: 22, stiffness: 280 }}
+              className="fixed bottom-22 right-4 left-4 sm:left-auto sm:w-88 z-50 bg-white/95 dark:bg-[#0f172a]/95 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-4 shadow-2xl backdrop-blur-xl md:hidden font-sans space-y-3 max-h-[80vh] overflow-y-auto"
             >
-              {/* Drag Handle & Header */}
-              <div className="flex flex-col items-center gap-2 pb-2 border-b border-[var(--border-color)]">
-                <div className="w-10 h-1 bg-[var(--border-color)] rounded-full mb-1" />
-                <div className="w-full flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[#3AA6FF] text-xl">tune</span>
-                    <h3 className="text-sm font-bold text-[var(--text-primary)]">
-                      {lang === 'en' ? 'Utilities & Settings' : lang === 'zh' ? '小工具与设置' : 'Tiện ích & Cài đặt'}
-                    </h3>
+              {/* Header: Table Info & QR */}
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-[#0284c7] dark:text-[#38BDF8] flex items-center justify-center">
+                    <span className="material-symbols-outlined text-lg">location_on</span>
                   </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-slate-400">Vị trí hiện tại</p>
+                    <h4 className="text-xs font-black text-slate-900 dark:text-white">
+                      {table?.tableName ?? 'Bàn 01'} (Tầng 1)
+                    </h4>
+                  </div>
+                </div>
+
+                {onOpenQRModal && (
                   <button
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
-                    title="Đóng tiện ích"
+                    onClick={() => {
+                      closePopup();
+                      onOpenQRModal();
+                    }}
+                    className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all active:scale-95"
                   >
-                    <span className="material-symbols-outlined text-lg">close</span>
+                    <span className="material-symbols-outlined text-sm">qr_code_2</span>
+                    <span>Mã QR</span>
                   </button>
-                </div>
+                )}
               </div>
 
-              {/* Table Info Badge */}
-              <div className="group bg-[var(--bg-card-inner)] hover:bg-gradient-to-r hover:from-[#3AA6FF] hover:to-[#0070F3] border border-[var(--border-color)] hover:border-transparent text-[var(--text-primary)] hover:text-white p-3.5 rounded-2xl flex items-center justify-between shadow-2xs hover:shadow-lg hover:shadow-sky-500/25 transition-all duration-300">
-                <div>
-                  <p className="text-[10px] uppercase font-bold text-[var(--text-tertiary)] group-hover:text-white/80 transition-colors">Vị trí hiện tại</p>
-                  <p className="text-xs font-black mt-0.5 flex items-center gap-1.5 transition-colors">
-                    <span className="material-symbols-outlined text-sm text-[#3AA6FF] group-hover:text-white transition-colors">location_on</span>
-                    {table?.tableName ?? 'Bàn 01'} (Tầng 1)
-                  </p>
-                </div>
+              {/* Main Action Grid */}
+              <div className="grid grid-cols-2 gap-2">
+                {/* 1. Menu Thực Đơn */}
                 <button
                   onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    if (onOpenQRModal) onOpenQRModal();
+                    closePopup();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className="px-3 py-1.5 bg-[#3AA6FF]/10 group-hover:bg-white/20 text-[#3AA6FF] group-hover:text-white rounded-xl text-xs font-bold flex items-center gap-1 border border-[#3AA6FF]/30 group-hover:border-white/30 active:scale-95 transition-all"
+                  className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 hover:bg-sky-500/10 border border-slate-200/70 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-2 cursor-pointer active:scale-95"
                 >
-                  <span className="material-symbols-outlined text-sm">qr_code_2</span>
-                  <span>Mã QR bàn</span>
+                  <div className="w-8 h-8 rounded-xl bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] flex items-center justify-center">
+                    <span className="material-symbols-outlined text-lg">restaurant_menu</span>
+                  </div>
+                  <div>
+                    <p className="text-xs font-black text-slate-900 dark:text-white">
+                      {lang === 'en' ? 'Menu' : lang === 'zh' ? '菜单' : 'Thực đơn'}
+                    </p>
+                    <p className="text-[10px] text-slate-400 font-medium">Danh sách món ăn</p>
+                  </div>
+                </button>
+
+                {/* 2. Giỏ Hàng */}
+                <button
+                  onClick={() => {
+                    closePopup();
+                    if (setIsCartOpen) setIsCartOpen(true);
+                  }}
+                  className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 hover:bg-emerald-500/10 border border-slate-200/70 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-2 cursor-pointer active:scale-95 relative"
+                >
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-lg">shopping_bag</span>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-black text-slate-900 dark:text-white">
+                        {lang === 'en' ? 'Cart' : lang === 'zh' ? '购物车' : 'Giỏ hàng'}
+                      </p>
+                      {totalQuantity > 0 && (
+                        <span className="px-1.5 py-0.5 text-[10px] font-black bg-emerald-500 text-white rounded-md">
+                          {totalQuantity} món
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-medium">Xem các món đã chọn</p>
+                  </div>
+                </button>
+
+                {/* 3. Lịch Sử Đơn hàng */}
+                <button
+                  onClick={() => {
+                    closePopup();
+                    handleOpenOrderHistory();
+                  }}
+                  className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 hover:bg-indigo-500/10 border border-slate-200/70 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-2 cursor-pointer active:scale-95"
+                >
+                  <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-lg">receipt_long</span>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-black text-slate-900 dark:text-white">
+                        {lang === 'en' ? 'Orders' : lang === 'zh' ? '订单' : 'Đơn hàng'}
+                      </p>
+                      {activeOrders.length > 0 && (
+                        <span className="px-1.5 py-0.5 text-[10px] font-black bg-indigo-500 text-white rounded-md">
+                          {activeOrders.length}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-medium">Theo dõi chế biến</p>
+                  </div>
+                </button>
+
+                {/* 4. Gọi Nhân Viên */}
+                <button
+                  onClick={() => {
+                    handleCallStaff();
+                  }}
+                  disabled={callStaffCooldown > 0 || isCallingStaff}
+                  className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between gap-2 cursor-pointer active:scale-95 ${
+                    callStaffCooldown > 0
+                      ? 'bg-amber-500/5 border-amber-500/20 text-amber-600 opacity-80'
+                      : 'bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20'
+                  }`}
+                >
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                    <span className={`material-symbols-outlined text-lg ${callStaffCooldown === 0 ? 'animate-bounce' : ''}`}>
+                      notifications_active
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-xs font-black">
+                      {callStaffCooldown > 0
+                        ? `Chờ ${callStaffCooldown}s`
+                        : lang === 'en'
+                        ? 'Call Staff'
+                        : lang === 'zh'
+                        ? '呼叫服务'
+                        : 'Gọi nhân viên'}
+                    </p>
+                    <p className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-medium">Yêu cầu hỗ trợ</p>
+                  </div>
                 </button>
               </div>
 
-              {/* Đổi bàn */}
-              <button
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  setIsTransferModalOpen(true);
-                }}
-                className="w-full text-left px-4 py-3 text-[13px] font-bold rounded-2xl bg-[var(--bg-card-inner)] border border-[var(--border-color)] text-[var(--text-primary)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-all font-sans flex items-center gap-3 cursor-pointer active:scale-98"
-              >
-                <span className="material-symbols-outlined text-lg text-[var(--brand-primary)]">
-                  chair
-                </span>
-                <span>{lang === 'vi' ? 'Yêu cầu đổi vị trí bàn' : lang === 'zh' ? '更换桌位' : 'Request Table Change'}</span>
-              </button>
-
-              {/* Rời khỏi bàn */}
-              {handleLeaveTable && (
+              {/* Utility Action List */}
+              <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                {/* Yêu cầu đổi vị trí bàn */}
                 <button
                   onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    handleLeaveTable();
+                    closePopup();
+                    setIsTransferModalOpen(true);
                   }}
-                  className="w-full text-left px-4 py-3 text-[13px] font-bold rounded-2xl bg-red-500/10 dark:bg-red-500/15 border border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/20 transition-all font-sans flex items-center gap-3 cursor-pointer active:scale-98"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between transition-all cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-lg text-red-500">
-                    logout
-                  </span>
-                  <span>{lang === 'vi' ? 'Rời khỏi bàn' : lang === 'zh' ? '离开桌位' : 'Leave Table'}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-base text-[#0284c7] dark:text-[#38BDF8]">chair</span>
+                    <span>{lang === 'vi' ? 'Chuyển / Đổi bàn ăn' : lang === 'zh' ? '更换桌位' : 'Change Table'}</span>
+                  </div>
+                  <span className="material-symbols-outlined text-sm text-slate-400">chevron_right</span>
                 </button>
-              )}
 
-              {/* Giao diện Sáng/Tối */}
-              <div className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-[var(--bg-card-inner)] border border-[var(--border-color)] text-[var(--text-primary)]">
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-lg text-[var(--brand-primary)]">
+                {/* Rời khỏi bàn */}
+                {handleLeaveTable && (
+                  <button
+                    onClick={() => {
+                      closePopup();
+                      handleLeaveTable();
+                    }}
+                    className="w-full px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center justify-between transition-all cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-base text-rose-500">logout</span>
+                      <span>{lang === 'vi' ? 'Rời khỏi bàn' : lang === 'zh' ? '离开桌位' : 'Leave Table'}</span>
+                    </div>
+                    <span className="material-symbols-outlined text-sm text-rose-400">chevron_right</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Footer Settings: Theme & Language */}
+              <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-base text-slate-400">
                     {isDark ? 'dark_mode' : 'light_mode'}
                   </span>
-                  <span className="text-[13px] font-bold font-sans">
-                    {isDark
-                      ? (lang === 'vi' ? 'Giao diện Tối (Soft Dark)' : lang === 'zh' ? '深色模式' : 'Dark Mode')
-                      : (lang === 'vi' ? 'Giao diện Sáng' : lang === 'zh' ? '浅色模式' : 'Light Mode')}
-                  </span>
+                  <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
                 </div>
-                <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
-              </div>
 
-              {/* Ngôn ngữ Switcher */}
-              <div className="pt-2 border-t border-[var(--border-color)] flex items-center justify-between">
-                <span className="text-xs font-bold text-[var(--text-secondary)]">
-                  {lang === 'en' ? 'Language' : lang === 'zh' ? '语言' : 'Ngôn ngữ'}
-                </span>
-                <LanguageToggleSwitch lang={lang} setLang={setLang} />
+                <div className="flex items-center gap-2">
+                  <LanguageToggleSwitch lang={lang} setLang={setLang} />
+                </div>
               </div>
             </motion.div>
           </>
