@@ -95,15 +95,15 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           type="button"
           onClick={togglePopup}
-          className={`relative w-13 h-13 rounded-full flex items-center justify-center text-white shadow-2xl transition-all duration-300 active:scale-95 cursor-pointer ${
+          className={`relative w-12 h-12 rounded-full flex items-center justify-center text-white shadow-xl transition-all duration-300 active:scale-95 cursor-pointer ${
             isFloatingPopupOpen
               ? 'bg-slate-900 dark:bg-slate-100 dark:text-slate-900 rotate-90 scale-105 shadow-slate-900/40'
-              : 'bg-gradient-to-tr from-[#0284c7] to-[#38BDF8] shadow-sky-500/40 hover:scale-105'
+              : 'bg-gradient-to-tr from-[#0284c7] to-[#38BDF8] shadow-sky-500/30 hover:scale-105'
           }`}
           title="Mở menu chức năng"
         >
-          <span className="material-symbols-outlined text-2px transition-transform duration-300">
-            {isFloatingPopupOpen ? 'close' : 'widgets'}
+          <span className="material-symbols-outlined text-xl transition-transform duration-300">
+            {isFloatingPopupOpen ? 'close' : 'grid_view'}
           </span>
 
           {/* Combined Badge Indicator */}
@@ -115,7 +115,7 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
       </div>
 
-      {/* ── Mobile Sleek Bottom Sheet Modal ─────────────────────────────────── */}
+      {/* ── Mobile Minimal Bottom Sheet Modal ───────────────────────────────── */}
       <AnimatePresence>
         {isFloatingPopupOpen && (
           <>
@@ -133,24 +133,19 @@ export const Header: React.FC<HeaderProps> = ({
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 280 }}
-              className="fixed inset-x-0 bottom-0 z-50 bg-white/98 dark:bg-[#090D16]/98 border-t border-slate-200/80 dark:border-slate-800 rounded-t-[32px] p-5 pt-3 shadow-[0_-12px_40px_rgba(0,0,0,0.3)] backdrop-blur-2xl md:hidden font-sans space-y-4 max-h-[85vh] overflow-y-auto"
+              transition={{ type: 'spring', damping: 26, stiffness: 300 }}
+              className="fixed inset-x-0 bottom-0 z-50 bg-white/98 dark:bg-[#090D16]/98 border-t border-slate-200/80 dark:border-slate-800 rounded-t-[28px] p-4 pt-2.5 shadow-[0_-10px_35px_rgba(0,0,0,0.3)] backdrop-blur-2xl md:hidden font-sans space-y-3.5 max-h-[82vh] overflow-y-auto"
             >
-              {/* Drag Handle Indicator */}
-              <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto opacity-70" />
+              {/* Minimal Drag Handle Bar */}
+              <div className="w-10 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto opacity-60" />
 
-              {/* Header: Table Info & QR Button */}
+              {/* Minimal Header: Table Info & QR Button */}
               <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800/80">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-2xl bg-sky-500/10 text-[#0284c7] dark:text-[#38BDF8] flex items-center justify-center shadow-inner">
-                    <span className="material-symbols-outlined text-xl">location_on</span>
-                  </div>
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400">Vị trí bàn</p>
-                    <h4 className="text-sm font-black text-slate-900 dark:text-white">
-                      {table?.tableName ?? 'Bàn 01'} (Tầng 1)
-                    </h4>
-                  </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400">Vị trí bàn</p>
+                  <h4 className="text-sm font-black text-slate-900 dark:text-white">
+                    {table?.tableName ?? 'Bàn 01'} (Tầng 1)
+                  </h4>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -160,23 +155,22 @@ export const Header: React.FC<HeaderProps> = ({
                         closePopup();
                         onOpenQRModal();
                       }}
-                      className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/90 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 border border-slate-200/60 dark:border-slate-700/60"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800/90 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all active:scale-95 border border-slate-200/60 dark:border-slate-700/60"
                     >
-                      <span className="material-symbols-outlined text-base">qr_code_2</span>
-                      <span>Mã QR</span>
+                      Mã QR
                     </button>
                   )}
 
                   <button
                     onClick={closePopup}
-                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center hover:text-slate-900 dark:hover:text-white transition-all active:scale-95"
+                    className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center hover:text-slate-900 dark:hover:text-white transition-all active:scale-95"
                   >
-                    <span className="material-symbols-outlined text-lg">close</span>
+                    <span className="material-symbols-outlined text-base">close</span>
                   </button>
                 </div>
               </div>
 
-              {/* Main Action Grid (2x2) */}
+              {/* Main Action Grid (Clean & Uncluttered Cards) */}
               <div className="grid grid-cols-2 gap-2.5">
                 {/* 1. Menu Thực Đơn */}
                 <button
@@ -184,17 +178,17 @@ export const Header: React.FC<HeaderProps> = ({
                     closePopup();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/90 hover:bg-sky-500/10 border border-slate-200/80 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-3 cursor-pointer active:scale-95 group shadow-2xs"
+                  className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 hover:bg-sky-500/10 border border-slate-200/70 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-1.5 cursor-pointer active:scale-95"
                 >
-                  <div className="w-10 h-10 rounded-2xl bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <span className="material-symbols-outlined text-xl">restaurant_menu</span>
-                  </div>
-                  <div>
+                  <div className="flex items-center justify-between">
                     <p className="text-xs font-black text-slate-900 dark:text-white">
                       {lang === 'en' ? 'Menu' : lang === 'zh' ? '菜单' : 'Thực đơn'}
                     </p>
-                    <p className="text-[10px] text-slate-400 font-semibold">Danh sách món ăn</p>
+                    <span className="material-symbols-outlined text-base text-[#0284c7] dark:text-[#38BDF8]">
+                      restaurant_menu
+                    </span>
                   </div>
+                  <p className="text-[10px] text-slate-400 font-medium">Danh sách món ăn</p>
                 </button>
 
                 {/* 2. Giỏ Hàng */}
@@ -203,24 +197,24 @@ export const Header: React.FC<HeaderProps> = ({
                     closePopup();
                     if (setIsCartOpen) setIsCartOpen(true);
                   }}
-                  className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/90 hover:bg-emerald-500/10 border border-slate-200/80 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-3 cursor-pointer active:scale-95 group shadow-2xs relative"
+                  className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 hover:bg-emerald-500/10 border border-slate-200/70 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-1.5 cursor-pointer active:scale-95 relative"
                 >
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <span className="material-symbols-outlined text-xl">shopping_bag</span>
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-black text-slate-900 dark:text-white">
-                        {lang === 'en' ? 'Cart' : lang === 'zh' ? '购物车' : 'Giỏ hàng'}
-                      </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-black text-slate-900 dark:text-white">
+                      {lang === 'en' ? 'Cart' : lang === 'zh' ? '购物车' : 'Giỏ hàng'}
+                    </p>
+                    <div className="flex items-center gap-1">
                       {totalQuantity > 0 && (
-                        <span className="px-2 py-0.5 text-[10px] font-black bg-emerald-500 text-white rounded-lg shadow-2xs">
+                        <span className="px-1.5 py-0.5 text-[10px] font-black bg-emerald-500 text-white rounded-md">
                           {totalQuantity} món
                         </span>
                       )}
+                      <span className="material-symbols-outlined text-base text-emerald-500">
+                        shopping_bag
+                      </span>
                     </div>
-                    <p className="text-[10px] text-slate-400 font-semibold">Xem món đã chọn</p>
                   </div>
+                  <p className="text-[10px] text-slate-400 font-medium">Xem món đã chọn</p>
                 </button>
 
                 {/* 3. Lịch Sử Đơn Hàng */}
@@ -229,24 +223,24 @@ export const Header: React.FC<HeaderProps> = ({
                     closePopup();
                     handleOpenOrderHistory();
                   }}
-                  className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/90 hover:bg-indigo-500/10 border border-slate-200/80 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-3 cursor-pointer active:scale-95 group shadow-2xs"
+                  className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 hover:bg-indigo-500/10 border border-slate-200/70 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-1.5 cursor-pointer active:scale-95"
                 >
-                  <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <span className="material-symbols-outlined text-xl">receipt_long</span>
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-black text-slate-900 dark:text-white">
-                        {lang === 'en' ? 'Orders' : lang === 'zh' ? '订单' : 'Đơn hàng'}
-                      </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-black text-slate-900 dark:text-white">
+                      {lang === 'en' ? 'Orders' : lang === 'zh' ? '订单' : 'Đơn hàng'}
+                    </p>
+                    <div className="flex items-center gap-1">
                       {activeOrders.length > 0 && (
-                        <span className="px-2 py-0.5 text-[10px] font-black bg-indigo-500 text-white rounded-lg shadow-2xs">
+                        <span className="px-1.5 py-0.5 text-[10px] font-black bg-indigo-500 text-white rounded-md">
                           {activeOrders.length}
                         </span>
                       )}
+                      <span className="material-symbols-outlined text-base text-indigo-500">
+                        receipt_long
+                      </span>
                     </div>
-                    <p className="text-[10px] text-slate-400 font-semibold">Theo dõi chế biến</p>
                   </div>
+                  <p className="text-[10px] text-slate-400 font-medium">Theo dõi chế biến</p>
                 </button>
 
                 {/* 4. Gọi Nhân Viên */}
@@ -255,18 +249,13 @@ export const Header: React.FC<HeaderProps> = ({
                     handleCallStaff();
                   }}
                   disabled={callStaffCooldown > 0 || isCallingStaff}
-                  className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between gap-3 cursor-pointer active:scale-95 shadow-2xs ${
+                  className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between gap-1.5 cursor-pointer active:scale-95 ${
                     callStaffCooldown > 0
                       ? 'bg-amber-500/5 border-amber-500/20 text-amber-600 opacity-80'
                       : 'bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20'
                   }`}
                 >
-                  <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                    <span className={`material-symbols-outlined text-xl ${callStaffCooldown === 0 ? 'animate-bounce' : ''}`}>
-                      notifications_active
-                    </span>
-                  </div>
-                  <div>
+                  <div className="flex items-center justify-between">
                     <p className="text-xs font-black">
                       {callStaffCooldown > 0
                         ? `Chờ ${callStaffCooldown}s`
@@ -276,12 +265,15 @@ export const Header: React.FC<HeaderProps> = ({
                         ? '呼叫服务'
                         : 'Gọi nhân viên'}
                     </p>
-                    <p className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-semibold">Yêu cầu hỗ trợ</p>
+                    <span className={`material-symbols-outlined text-base ${callStaffCooldown === 0 ? 'animate-bounce' : ''}`}>
+                      notifications_active
+                    </span>
                   </div>
+                  <p className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-medium">Yêu cầu hỗ trợ</p>
                 </button>
               </div>
 
-              {/* Utility Actions (Grid 2 Columns) */}
+              {/* Minimal Utility Actions */}
               <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/80">
                 {/* Yêu cầu đổi vị trí bàn */}
                 <button
@@ -289,10 +281,9 @@ export const Header: React.FC<HeaderProps> = ({
                     closePopup();
                     setIsTransferModalOpen(true);
                   }}
-                  className="px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-900/70 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 transition-all cursor-pointer border border-slate-200/60 dark:border-slate-800"
+                  className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all cursor-pointer border border-slate-200/60 dark:border-slate-800 text-center truncate"
                 >
-                  <span className="material-symbols-outlined text-lg text-[#0284c7] dark:text-[#38BDF8]">chair</span>
-                  <span className="truncate">{lang === 'vi' ? 'Đổi bàn ăn' : lang === 'zh' ? '更换桌位' : 'Change Table'}</span>
+                  {lang === 'vi' ? 'Đổi bàn ăn' : lang === 'zh' ? '更换桌位' : 'Change Table'}
                 </button>
 
                 {/* Rời khỏi bàn */}
@@ -302,26 +293,17 @@ export const Header: React.FC<HeaderProps> = ({
                       closePopup();
                       handleLeaveTable();
                     }}
-                    className="px-3.5 py-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2 transition-all cursor-pointer border border-rose-500/20"
+                    className="px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-xs font-bold text-rose-600 dark:text-rose-400 transition-all cursor-pointer border border-rose-500/20 text-center truncate"
                   >
-                    <span className="material-symbols-outlined text-lg text-rose-500">logout</span>
-                    <span className="truncate">{lang === 'vi' ? 'Rời bàn' : lang === 'zh' ? '离开桌位' : 'Leave Table'}</span>
+                    {lang === 'vi' ? 'Rời bàn' : lang === 'zh' ? '离开桌位' : 'Leave Table'}
                   </button>
                 )}
               </div>
 
-              {/* Footer Settings: Theme & Language */}
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-base text-slate-400">
-                    {isDark ? 'dark_mode' : 'light_mode'}
-                  </span>
-                  <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <LanguageToggleSwitch lang={lang} setLang={setLang} />
-                </div>
+              {/* Minimal Footer: Theme & Language */}
+              <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+                <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
+                <LanguageToggleSwitch lang={lang} setLang={setLang} />
               </div>
             </motion.div>
           </>
