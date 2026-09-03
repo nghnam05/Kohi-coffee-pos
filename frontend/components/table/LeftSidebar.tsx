@@ -176,8 +176,9 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         {/* Button: Yêu cầu đổi bàn */}
         <button
           onClick={() => setIsTransferModalOpen(true)}
-          className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-slate-700/80 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all text-center flex items-center justify-center font-sans cursor-pointer active:scale-95"
+          className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-slate-700/80 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all flex items-center justify-center gap-1.5 font-sans cursor-pointer active:scale-95 shadow-2xs"
         >
+          <span className="material-symbols-outlined text-base">swap_horiz</span>
           <span>{lang === 'en' ? 'Change Table' : lang === 'zh' ? '更换桌号' : 'Yêu cầu đổi bàn'}</span>
         </button>
 
@@ -185,9 +186,10 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         {handleLeaveTable && (
           <button
             onClick={handleLeaveTable}
-            className="w-full px-3.5 py-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-xs font-bold text-rose-500 transition-all text-center flex items-center justify-center font-sans cursor-pointer active:scale-95"
+            className="w-full px-3.5 py-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-xs font-bold text-rose-500 transition-all flex items-center justify-center gap-1.5 font-sans cursor-pointer active:scale-95 shadow-2xs"
           >
-            <span>{lang === 'en' ? 'Leave Table' : lang === 'zh' ? '离开餐桌' : 'Rời bàn (Thoát)'}</span>
+            <span className="material-symbols-outlined text-base">logout</span>
+            <span>{lang === 'en' ? 'Leave Table' : lang === 'zh' ? '离开餐桌' : 'Rời bàn / Thoát'}</span>
           </button>
         )}
 
