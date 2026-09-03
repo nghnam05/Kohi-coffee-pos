@@ -355,7 +355,7 @@ export default function TableMenuPage() {
   const [modalAiMessages, setModalAiMessages] = useState<{ role: 'user' | 'ai'; text: string }[]>([]);
   const [modalAiInput, setModalAiInput] = useState('');
   const [isModalAiThinking, setIsModalAiThinking] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
 
   // Customer Name
   const [customerName, setCustomerName] = useState<string>('');
@@ -384,6 +384,9 @@ export default function TableMenuPage() {
 
   useEffect(() => {
     setMounted(true);
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setViewMode('list');
+    }
   }, []);
 
   useEffect(() => {
@@ -1247,7 +1250,7 @@ export default function TableMenuPage() {
         unreadNotificationCount={unreadNotificationCount}
       />
 
-      <div className="min-h-[100dvh] md:h-screen w-full max-w-full overflow-x-hidden overflow-y-auto md:overflow-hidden flex flex-col md:flex-row bg-[#FFFFFF] dark:bg-[#090D16] text-[var(--text-primary)] font-sans antialiased selection:bg-[#3AA6FF] selection:text-white">
+      <div className="min-h-screen w-full max-w-full overflow-x-hidden flex flex-col md:flex-row md:h-screen md:overflow-hidden bg-[#FFFFFF] dark:bg-[#090D16] text-[var(--text-primary)] font-sans antialiased selection:bg-[#3AA6FF] selection:text-white">
         {/* Left Sidebar (Desktop/Tablet Column 1) */}
         <LeftSidebar
           isLoading={isLoading}
@@ -1276,7 +1279,7 @@ export default function TableMenuPage() {
         {/* Main Catalog View (Desktop/Tablet Column 2) */}
         <main
           data-lenis-prevent
-          className="flex-1 h-full overflow-y-auto scrollbar-none bg-[#FFFFFF] dark:bg-[#090D16] text-[var(--text-primary)] relative min-w-0 pt-16 sm:pt-18 md:pt-0 pb-20 md:pb-12 transition-colors"
+          className="flex-1 w-full min-w-0 md:h-full md:overflow-y-auto scrollbar-none bg-[#FFFFFF] dark:bg-[#090D16] text-[var(--text-primary)] relative pt-16 sm:pt-18 md:pt-0 pb-24 md:pb-12 transition-colors"
         >
           <div
             className="absolute inset-0 pointer-events-none opacity-[0.03]"

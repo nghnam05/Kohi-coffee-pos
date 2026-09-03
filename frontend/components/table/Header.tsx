@@ -91,18 +91,18 @@ export const Header: React.FC<HeaderProps> = ({
       </header>
 
       {/* ── Mobile Floating Action Button (FAB Widget - Bottom Right) ───────── */}
-      <div className="fixed bottom-5 right-4 z-50 md:hidden flex flex-col items-end">
+      <div className="fixed bottom-5 right-4 z-30 md:hidden flex flex-col items-end">
         <button
           type="button"
           onClick={togglePopup}
-          className={`relative w-12 h-12 rounded-full flex items-center justify-center text-white shadow-xl transition-all duration-300 active:scale-95 cursor-pointer ${
+          className={`relative w-13 h-13 rounded-full flex items-center justify-center text-white shadow-xl transition-all duration-300 active:scale-95 cursor-pointer ${
             isFloatingPopupOpen
               ? 'bg-slate-900 dark:bg-slate-100 dark:text-slate-900 rotate-90 scale-105 shadow-slate-900/40'
-              : 'bg-gradient-to-tr from-[#0284c7] to-[#38BDF8] shadow-sky-500/30 hover:scale-105'
+              : 'bg-gradient-to-tr from-[#0284c7] to-[#38BDF8] shadow-sky-500/40 hover:scale-105'
           }`}
           title="Mở menu chức năng"
         >
-          <span className="material-symbols-outlined text-xl transition-transform duration-300">
+          <span className="material-symbols-outlined text-2px transition-transform duration-300">
             {isFloatingPopupOpen ? 'close' : 'grid_view'}
           </span>
 
@@ -115,7 +115,7 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
       </div>
 
-      {/* ── Mobile Minimal Bottom Sheet Modal ───────────────────────────────── */}
+      {/* ── Mobile Crisp Bottom Sheet Modal ─────────────────────────────────── */}
       <AnimatePresence>
         {isFloatingPopupOpen && (
           <>
@@ -125,25 +125,25 @@ export const Header: React.FC<HeaderProps> = ({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closePopup}
-              className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs md:hidden"
+              className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-xs md:hidden"
             />
 
-            {/* Bottom Sheet Container */}
+            {/* Bottom Sheet Container (Solid Background for Ultra Sharp Contrast) */}
             <motion.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 26, stiffness: 300 }}
-              className="fixed inset-x-0 bottom-0 z-50 bg-white/98 dark:bg-[#090D16]/98 border-t border-slate-200/80 dark:border-slate-800 rounded-t-[28px] p-4 pt-2.5 shadow-[0_-10px_35px_rgba(0,0,0,0.3)] backdrop-blur-2xl md:hidden font-sans space-y-3.5 max-h-[82vh] overflow-y-auto"
+              className="fixed inset-x-0 bottom-0 z-50 bg-white dark:bg-[#0F172A] border-t border-slate-200 dark:border-slate-800 rounded-t-[32px] p-5 pt-3 shadow-[0_-16px_48px_rgba(0,0,0,0.35)] md:hidden font-sans space-y-4 max-h-[85vh] overflow-y-auto"
             >
-              {/* Minimal Drag Handle Bar */}
-              <div className="w-10 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto opacity-60" />
+              {/* Drag Handle Indicator */}
+              <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto opacity-70" />
 
-              {/* Minimal Header: Table Info & QR Button */}
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800/80">
+              {/* High Contrast Header: Table Info & QR Button */}
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400">Vị trí bàn</p>
-                  <h4 className="text-sm font-black text-slate-900 dark:text-white">
+                  <p className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400 dark:text-slate-400">Vị trí bàn</p>
+                  <h4 className="text-base font-black text-slate-900 dark:text-white">
                     {table?.tableName ?? 'Bàn 01'} (Tầng 1)
                   </h4>
                 </div>
@@ -155,7 +155,7 @@ export const Header: React.FC<HeaderProps> = ({
                         closePopup();
                         onOpenQRModal();
                       }}
-                      className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800/90 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all active:scale-95 border border-slate-200/60 dark:border-slate-700/60"
+                      className="px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 text-[#0284c7] dark:text-[#38BDF8] text-xs font-bold transition-all active:scale-95 border border-sky-200 dark:border-sky-800"
                     >
                       Mã QR
                     </button>
@@ -163,32 +163,32 @@ export const Header: React.FC<HeaderProps> = ({
 
                   <button
                     onClick={closePopup}
-                    className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center hover:text-slate-900 dark:hover:text-white transition-all active:scale-95"
+                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95"
                   >
-                    <span className="material-symbols-outlined text-base">close</span>
+                    <span className="material-symbols-outlined text-lg">close</span>
                   </button>
                 </div>
               </div>
 
-              {/* Main Action Grid (Clean & Uncluttered Cards) */}
-              <div className="grid grid-cols-2 gap-2.5">
+              {/* Main Action Grid (High-Contrast Vibrant Cards) */}
+              <div className="grid grid-cols-2 gap-3">
                 {/* 1. Menu Thực Đơn */}
                 <button
                   onClick={() => {
                     closePopup();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 hover:bg-sky-500/10 border border-slate-200/70 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-1.5 cursor-pointer active:scale-95"
+                  className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/90 hover:bg-sky-50 dark:hover:bg-slate-800/90 border border-slate-200 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-3 cursor-pointer active:scale-95 shadow-xs"
                 >
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-black text-slate-900 dark:text-white">
+                    <p className="text-sm font-black text-slate-900 dark:text-white">
                       {lang === 'en' ? 'Menu' : lang === 'zh' ? '菜单' : 'Thực đơn'}
                     </p>
-                    <span className="material-symbols-outlined text-base text-[#0284c7] dark:text-[#38BDF8]">
+                    <span className="material-symbols-outlined text-xl text-[#0284c7] dark:text-[#38BDF8]">
                       restaurant_menu
                     </span>
                   </div>
-                  <p className="text-[10px] text-slate-400 font-medium">Danh sách món ăn</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Danh sách món ăn</p>
                 </button>
 
                 {/* 2. Giỏ Hàng */}
@@ -197,24 +197,24 @@ export const Header: React.FC<HeaderProps> = ({
                     closePopup();
                     if (setIsCartOpen) setIsCartOpen(true);
                   }}
-                  className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 hover:bg-emerald-500/10 border border-slate-200/70 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-1.5 cursor-pointer active:scale-95 relative"
+                  className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/90 hover:bg-emerald-50 dark:hover:bg-slate-800/90 border border-slate-200 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-3 cursor-pointer active:scale-95 shadow-xs relative"
                 >
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-black text-slate-900 dark:text-white">
+                    <p className="text-sm font-black text-slate-900 dark:text-white">
                       {lang === 'en' ? 'Cart' : lang === 'zh' ? '购物车' : 'Giỏ hàng'}
                     </p>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                       {totalQuantity > 0 && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-black bg-emerald-500 text-white rounded-md">
+                        <span className="px-2 py-0.5 text-[10px] font-black bg-emerald-600 text-white rounded-lg shadow-2xs">
                           {totalQuantity} món
                         </span>
                       )}
-                      <span className="material-symbols-outlined text-base text-emerald-500">
+                      <span className="material-symbols-outlined text-xl text-emerald-600 dark:text-emerald-400">
                         shopping_bag
                       </span>
                     </div>
                   </div>
-                  <p className="text-[10px] text-slate-400 font-medium">Xem món đã chọn</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Xem món đã chọn</p>
                 </button>
 
                 {/* 3. Lịch Sử Đơn Hàng */}
@@ -223,24 +223,24 @@ export const Header: React.FC<HeaderProps> = ({
                     closePopup();
                     handleOpenOrderHistory();
                   }}
-                  className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 hover:bg-indigo-500/10 border border-slate-200/70 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-1.5 cursor-pointer active:scale-95"
+                  className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/90 hover:bg-indigo-50 dark:hover:bg-slate-800/90 border border-slate-200 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-3 cursor-pointer active:scale-95 shadow-xs"
                 >
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-black text-slate-900 dark:text-white">
+                    <p className="text-sm font-black text-slate-900 dark:text-white">
                       {lang === 'en' ? 'Orders' : lang === 'zh' ? '订单' : 'Đơn hàng'}
                     </p>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                       {activeOrders.length > 0 && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-black bg-indigo-500 text-white rounded-md">
+                        <span className="px-2 py-0.5 text-[10px] font-black bg-indigo-600 text-white rounded-lg shadow-2xs">
                           {activeOrders.length}
                         </span>
                       )}
-                      <span className="material-symbols-outlined text-base text-indigo-500">
+                      <span className="material-symbols-outlined text-xl text-indigo-600 dark:text-indigo-400">
                         receipt_long
                       </span>
                     </div>
                   </div>
-                  <p className="text-[10px] text-slate-400 font-medium">Theo dõi chế biến</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Theo dõi chế biến</p>
                 </button>
 
                 {/* 4. Gọi Nhân Viên */}
@@ -249,14 +249,14 @@ export const Header: React.FC<HeaderProps> = ({
                     handleCallStaff();
                   }}
                   disabled={callStaffCooldown > 0 || isCallingStaff}
-                  className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between gap-1.5 cursor-pointer active:scale-95 ${
+                  className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between gap-3 cursor-pointer active:scale-95 shadow-xs ${
                     callStaffCooldown > 0
-                      ? 'bg-amber-500/5 border-amber-500/20 text-amber-600 opacity-80'
-                      : 'bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20'
+                      ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-300 opacity-80'
+                      : 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800/80 text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/50'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-black">
+                    <p className="text-sm font-black text-amber-950 dark:text-amber-100">
                       {callStaffCooldown > 0
                         ? `Chờ ${callStaffCooldown}s`
                         : lang === 'en'
@@ -265,23 +265,23 @@ export const Header: React.FC<HeaderProps> = ({
                         ? '呼叫服务'
                         : 'Gọi nhân viên'}
                     </p>
-                    <span className={`material-symbols-outlined text-base ${callStaffCooldown === 0 ? 'animate-bounce' : ''}`}>
+                    <span className={`material-symbols-outlined text-xl text-amber-600 dark:text-amber-400 ${callStaffCooldown === 0 ? 'animate-bounce' : ''}`}>
                       notifications_active
                     </span>
                   </div>
-                  <p className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-medium">Yêu cầu hỗ trợ</p>
+                  <p className="text-[11px] text-amber-700 dark:text-amber-300 font-medium">Yêu cầu hỗ trợ</p>
                 </button>
               </div>
 
-              {/* Minimal Utility Actions */}
-              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/80">
+              {/* Utility Actions (Grid 2 Columns - Sharp Borders) */}
+              <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
                 {/* Yêu cầu đổi vị trí bàn */}
                 <button
                   onClick={() => {
                     closePopup();
                     setIsTransferModalOpen(true);
                   }}
-                  className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all cursor-pointer border border-slate-200/60 dark:border-slate-800 text-center truncate"
+                  className="px-3.5 py-3 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all cursor-pointer border border-slate-200 dark:border-slate-800 text-center truncate shadow-2xs"
                 >
                   {lang === 'vi' ? 'Đổi bàn ăn' : lang === 'zh' ? '更换桌位' : 'Change Table'}
                 </button>
@@ -293,15 +293,15 @@ export const Header: React.FC<HeaderProps> = ({
                       closePopup();
                       handleLeaveTable();
                     }}
-                    className="px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-xs font-bold text-rose-600 dark:text-rose-400 transition-all cursor-pointer border border-rose-500/20 text-center truncate"
+                    className="px-3.5 py-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-xs font-bold text-rose-700 dark:text-rose-300 transition-all cursor-pointer border border-rose-200 dark:border-rose-900/60 text-center truncate shadow-2xs"
                   >
                     {lang === 'vi' ? 'Rời bàn' : lang === 'zh' ? '离开桌位' : 'Leave Table'}
                   </button>
                 )}
               </div>
 
-              {/* Minimal Footer: Theme & Language */}
-              <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+              {/* Footer Settings: Theme & Language */}
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
                 <LanguageToggleSwitch lang={lang} setLang={setLang} />
               </div>
