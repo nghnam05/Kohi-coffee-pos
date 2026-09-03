@@ -255,6 +255,7 @@ export default function TableMenuPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const [foods, setFoods] = useState<Food[]>([]);
+  const [dbCategories, setDbCategories] = useState<string[]>([]);
   const [table, setTable] = useState<Table | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('');
@@ -615,10 +616,18 @@ export default function TableMenuPage() {
     async function fetchData() {
       try {
         setIsLoading(true);
-        const [foodsRes, tableRes] = await Promise.all([
+        const [foodsRes, tableRes, categoriesRes] = await Promise.all([
           fetch(`${API_BASE}/foods`).catch(() => null),
           fetch(`${API_BASE}/tables/${tableId}`).catch(() => null),
+          fetch(`${API_BASE}/categories`).catch(() => null),
         ]);
+
+        if (categoriesRes && categoriesRes.ok) {
+          const catData = await categoriesRes.json();
+          if (Array.isArray(catData)) {
+            setDbCategories(catData.map((c: any) => c.name || c.categoryName || c).filter(Boolean));
+          }
+        }
 
         if (!foodsRes || !tableRes) {
           throw new Error(`Không thể kết nối tới Backend API (${API_BASE}). Vui lòng kiểm tra lại biến môi trường NEXT_PUBLIC_API_URL khi deploy Vercel.`);
@@ -1127,7 +1136,11 @@ export default function TableMenuPage() {
     }
   };
 
-  const categories = useMemo(() => Array.from(new Set(foods.map((f) => f.category))), [foods]);
+  const categories = useMemo(() => {
+    const foodCats = foods.map((f) => f.category);
+    const combined = Array.from(new Set([...dbCategories, ...foodCats]));
+    return combined.filter(Boolean);
+  }, [foods, dbCategories]);
 
   const filteredFoods = useMemo(() => {
     return foods.filter(
