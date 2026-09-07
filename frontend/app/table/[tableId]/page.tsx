@@ -1422,7 +1422,7 @@ export default function TableMenuPage() {
         unreadNotificationCount={unreadNotificationCount}
       />
 
-      <div className="min-h-screen w-full max-w-full overflow-x-hidden flex flex-col md:flex-row md:h-screen md:overflow-hidden bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-white font-sans antialiased selection:bg-[#3B82F6] selection:text-white transition-colors duration-200">
+      <div className="fixed inset-0 md:static md:h-screen w-full max-w-full overflow-hidden flex flex-col md:flex-row bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-white font-sans antialiased selection:bg-[#3B82F6] selection:text-white transition-colors duration-200">
         {/* Left Sidebar (Desktop/Tablet Column 1) */}
         <LeftSidebar
           isLoading={isLoading}
@@ -1451,7 +1451,7 @@ export default function TableMenuPage() {
         {/* Main Catalog View (Desktop/Tablet Column 2) */}
         <main
           data-lenis-prevent
-          className="flex-1 w-full min-w-0 md:h-full md:overflow-y-auto scrollbar-none bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-white relative pt-16 sm:pt-18 md:pt-0 pb-24 md:pb-12 transition-colors duration-200"
+          className="flex-1 w-full min-w-0 h-full flex flex-col overflow-hidden bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-white relative pt-16 md:pt-0 transition-colors duration-200"
         >
           <div
             className="absolute inset-0 pointer-events-none opacity-[0.03]"
@@ -1461,23 +1461,24 @@ export default function TableMenuPage() {
             }}
           />
 
-          {/* Desktop Sticky Catalog Header */}
-          <CatalogHeader
-            t={t}
-            customerName={customerName}
-            handleOpenOrderHistory={handleOpenOrderHistory}
-            activeOrders={activeOrders}
-            viewMode={viewMode}
-            setViewMode={setViewMode}
-            lang={lang}
-          />
+          {/* Stationary Header Section: Title + Categories + Search (Fixed on mobile & desktop) */}
+          <div className="shrink-0 bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-xl z-20 border-b border-slate-200/80 dark:border-white/10 transition-colors shadow-xs">
+            {/* Desktop & Mobile Title Header */}
+            <CatalogHeader
+              t={t}
+              customerName={customerName}
+              handleOpenOrderHistory={handleOpenOrderHistory}
+              activeOrders={activeOrders}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              lang={lang}
+            />
 
-          <div className="px-4 md:px-6">
             {/* Mobile Category Horizontal Scroll Bar */}
-            <div className="-mx-4 px-4 flex md:hidden gap-2 overflow-x-auto pb-3 mb-3.5 scrollbar-none border-b border-slate-200 dark:border-white/10 flex-shrink-0">
+            <div className="px-4 flex md:hidden gap-2 overflow-x-auto pb-2.5 scrollbar-none flex-shrink-0">
               <button
                 onClick={() => setActiveCategory('')}
-                className={`px-4 py-2 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 ${
+                className={`px-3.5 py-1.5 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 ${
                   activeCategory === ''
                     ? 'bg-[#3B82F6] text-white shadow-[0_4px_14px_rgba(59,130,246,0.35)]'
                     : 'bg-white dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white shadow-xs'
@@ -1489,7 +1490,7 @@ export default function TableMenuPage() {
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-2 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 ${
+                  className={`px-3.5 py-1.5 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 ${
                     activeCategory === cat
                       ? 'bg-[#3B82F6] text-white shadow-[0_4px_14px_rgba(59,130,246,0.35)]'
                       : 'bg-white dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white shadow-xs'
@@ -1501,7 +1502,7 @@ export default function TableMenuPage() {
             </div>
 
             {/* Mobile Search Bar & View Mode Toggle Row */}
-            <div className="flex items-center gap-2 mb-4 md:hidden flex-shrink-0">
+            <div className="px-4 pb-2.5 flex items-center gap-2 md:hidden flex-shrink-0">
               <div className="relative flex-1">
                 <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">
                   search
@@ -1511,12 +1512,12 @@ export default function TableMenuPage() {
                   placeholder={t.searchPlaceholder}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl py-2.5 pl-10 pr-3.5 text-[13.5px] font-normal text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 shadow-xs font-sans placeholder-slate-400 transition-colors"
+                  className="w-full bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl py-2 pl-10 pr-3.5 text-xs font-normal text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 shadow-xs font-sans placeholder-slate-400 transition-colors"
                 />
               </div>
 
               {/* Mobile View Mode Toggle (Grid/List) */}
-              <div className="bg-white dark:bg-slate-900/80 text-slate-700 dark:text-white rounded-xl p-1 border border-slate-200 dark:border-white/10 shadow-xs flex items-center shrink-0">
+              <div className="bg-slate-100 dark:bg-slate-900/80 text-slate-700 dark:text-white rounded-xl p-1 border border-slate-200 dark:border-white/10 shadow-xs flex items-center shrink-0">
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-1.5 rounded-lg transition-colors flex items-center justify-center cursor-pointer ${
@@ -1541,7 +1542,14 @@ export default function TableMenuPage() {
                 </button>
               </div>
             </div>
+          </div>
 
+          {/* Scrollable Food Items Catalog (Only dishes scroll vertically!) */}
+          <div
+            data-lenis-prevent
+            className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 md:px-6 pt-3.5 pb-28 md:pb-12 scrollbar-thin"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
             {/* Food Grid / List */}
             {isLoading ? (
               <div

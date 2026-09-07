@@ -40,12 +40,12 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
   };
 
   return (
-    <div className="sticky top-0 z-30 bg-white/90 dark:bg-[#0B0F17]/90 backdrop-blur-xl px-4 md:px-6 pt-3 pb-3 md:pt-6 md:pb-5 border-b border-slate-200 dark:border-white/10 mb-4 md:mb-8 flex justify-between items-center transition-all shadow-xs">
+    <div className="px-4 md:px-6 py-2.5 md:py-4 flex justify-between items-center transition-all">
       <div>
         <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-[32px] font-black text-slate-900 dark:text-white tracking-[-0.02em] leading-tight font-heading">
           {t.welcome ?? 'Hôm nay chúng ta uống gì?'}
         </h2>
-        <p className="text-xs sm:text-[13.5px] md:text-[14px] font-medium text-slate-500 dark:text-slate-400 mt-1 sm:mt-1.5 leading-relaxed font-sans max-w-xl">
+        <p className="text-xs sm:text-[13.5px] md:text-[14px] font-medium text-slate-500 dark:text-slate-400 mt-1 leading-relaxed font-sans max-w-xl">
           {getSubtitle()}
         </p>
       </div>
