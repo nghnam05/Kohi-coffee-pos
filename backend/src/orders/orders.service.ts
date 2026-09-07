@@ -77,6 +77,19 @@ export class OrdersService implements OnModuleInit {
   }
 
   async createOrder(createOrderDto: CreateOrderDto): Promise<OrderDocument> {
+    // 🛡️ Chống spam đơn ảo qua mã QR: Mỗi bàn chỉ được có tối đa 1 đơn chờ duyệt (pending)
+    if (createOrderDto.tableId) {
+      const existingPending = await this.orderModel.findOne({
+        tableId: createOrderDto.tableId,
+        status: 'pending',
+      }).exec();
+      if (existingPending) {
+        throw new BadRequestException(
+          'Bàn hiện đang có 1 đơn hàng chờ nhân viên xác nhận. Vui lòng chờ nhân viên tiếp nhận đơn trước khi đặt thêm món!',
+        );
+      }
+    }
+
     let totalAmount = 0;
 
     // Tính toán lại tổng tiền từ DB (để chống gian lận giá từ frontend)
@@ -260,6 +273,23 @@ export class OrdersService implements OnModuleInit {
             await this.tablesService.update(tableIdStr, { status: 'empty' }).catch(() => {});
             this.ordersGateway.emitTableUpdate(tableIdStr, 'empty');
           }
+        }
+      }
+    }
+
+    if (updateOrderStatusDto.status === 'cancelled' && updatedOrder.tableId) {
+      const tableIdStr = (updatedOrder.tableId as any)?._id
+        ? (updatedOrder.tableId as any)._id.toString()
+        : updatedOrder.tableId.toString();
+      if (tableIdStr) {
+        const remainingActive = await this.orderModel.countDocuments({
+          tableId: (updatedOrder.tableId as any)?._id || updatedOrder.tableId,
+          _id: { $ne: updatedOrder._id },
+          status: { $in: ['pending', 'confirmed', 'cooking', 'ready', 'completed'] },
+        });
+        if (remainingActive === 0) {
+          await this.tablesService.update(tableIdStr, { status: 'empty' }).catch(() => {});
+          this.ordersGateway.emitTableUpdate(tableIdStr, 'empty');
         }
       }
     }

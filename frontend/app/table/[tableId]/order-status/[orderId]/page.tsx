@@ -652,24 +652,54 @@ export default function OrderStatusPage() {
                     {/* Payment Block */}
                     {(order.status as string) !== 'cancelled' && (order.status as string) !== 'paid' && (
                       <div className="flex-1">
-                        <div className="bg-gradient-to-br from-[#0284c7] via-[#0369a1] to-[#0f172a] text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-lg flex flex-col justify-between h-full space-y-3">
-                          <div>
-                            <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-sky-200 block">
-                              Thanh toán qua Ngân hàng (VietQR)
-                            </span>
-                            <p className="text-[11px] text-sky-100/90 mt-0.5">
-                              Quét mã QR chuyển khoản tự động
-                            </p>
-                            <div className="text-xl sm:text-2xl font-black mt-2">{formatPrice(order.totalAmount)}</div>
-                          </div>
+                        {order.paymentMethod === 'cash' ? (
+                          <div className="bg-gradient-to-br from-amber-600 via-amber-700 to-stone-900 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-lg flex flex-col justify-between h-full space-y-3">
+                            <div>
+                              <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-amber-200 block">
+                                Thanh toán bằng Tiền mặt
+                              </span>
+                              <p className="text-[11px] text-amber-100/90 mt-0.5 leading-relaxed">
+                                {lang === 'en'
+                                  ? 'Please pay in cash to the staff when receiving drinks or at the counter.'
+                                  : lang === 'zh'
+                                  ? '请在上餐时向服务员支付现金，或在柜台结账。'
+                                  : 'Vui lòng thanh toán tiền mặt cho nhân viên khi nhận món hoặc thanh toán tại quầy thu ngân.'}
+                              </p>
+                              <div className="text-xl sm:text-2xl font-black mt-2 text-white">{formatPrice(order.totalAmount)}</div>
+                            </div>
 
-                          <button
-                            onClick={() => setIsBankModalOpen(true)}
-                            className="w-full py-3 bg-white hover:bg-sky-50 text-[#0284c7] font-black text-xs uppercase tracking-wider rounded-xl sm:rounded-2xl shadow-md active:scale-95 transition-all cursor-pointer text-center"
-                          >
-                            Thanh toán qua Ngân hàng
-                          </button>
-                        </div>
+                            <button
+                              onClick={handleCallStaff}
+                              disabled={callStaffCooldown > 0 || isCallingStaff}
+                              className="w-full py-3 bg-white hover:bg-amber-50 text-amber-800 font-black text-xs uppercase tracking-wider rounded-xl sm:rounded-2xl shadow-md active:scale-95 transition-all cursor-pointer text-center disabled:opacity-60"
+                            >
+                              {callStaffCooldown > 0
+                                ? `Đã gọi nhân viên (${callStaffCooldown}s)`
+                                : isCallingStaff
+                                ? 'Đang gửi...'
+                                : 'Gọi nhân viên thu tiền mặt'}
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="bg-gradient-to-br from-[#0284c7] via-[#0369a1] to-[#0f172a] text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-lg flex flex-col justify-between h-full space-y-3">
+                            <div>
+                              <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-sky-200 block">
+                                {order.paymentMethod === 'momo' ? 'Thanh toán Ví MoMo' : 'Thanh toán qua Ngân hàng (VietQR)'}
+                              </span>
+                              <p className="text-[11px] text-sky-100/90 mt-0.5">
+                                {order.paymentMethod === 'momo' ? 'Quét mã MoMo thanh toán tự động' : 'Quét mã QR chuyển khoản tự động'}
+                              </p>
+                              <div className="text-xl sm:text-2xl font-black mt-2">{formatPrice(order.totalAmount)}</div>
+                            </div>
+
+                            <button
+                              onClick={() => setIsBankModalOpen(true)}
+                              className="w-full py-3 bg-white hover:bg-sky-50 text-[#0284c7] font-black text-xs uppercase tracking-wider rounded-xl sm:rounded-2xl shadow-md active:scale-95 transition-all cursor-pointer text-center"
+                            >
+                              {order.paymentMethod === 'momo' ? 'Thanh toán MoMo' : 'Thanh toán qua Ngân hàng'}
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -698,12 +728,24 @@ export default function OrderStatusPage() {
             {/* Sticky Mobile Floating Action Bar */}
             {order && order.status !== 'paid' && (
               <div className="sm:hidden fixed bottom-0 left-0 right-0 p-3 bg-[var(--bg-card)]/95 backdrop-blur-md border-t border-[var(--border-color)] z-30 shadow-2xl flex gap-2">
-                <button
-                  onClick={() => setIsBankModalOpen(true)}
-                  className="flex-1 py-3 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black rounded-xl text-xs uppercase tracking-wider transition-all active:scale-95 text-center shadow-md"
-                >
-                  Thanh toán Ngân hàng
-                </button>
+                {order.paymentMethod === 'cash' ? (
+                  <button
+                    onClick={handleCallStaff}
+                    disabled={callStaffCooldown > 0 || isCallingStaff}
+                    className="flex-1 py-3 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-xl text-xs uppercase tracking-wider transition-all active:scale-95 text-center shadow-md disabled:opacity-60"
+                  >
+                    {callStaffCooldown > 0
+                      ? `Đã gọi thu tiền (${callStaffCooldown}s)`
+                      : 'Tiền mặt: Gọi NV thu tiền'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setIsBankModalOpen(true)}
+                    className="flex-1 py-3 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black rounded-xl text-xs uppercase tracking-wider transition-all active:scale-95 text-center shadow-md"
+                  >
+                    {order.paymentMethod === 'momo' ? 'Thanh toán MoMo' : 'Thanh toán Ngân hàng'}
+                  </button>
+                )}
 
                 <button
                   onClick={handleCallStaff}

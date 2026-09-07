@@ -3984,6 +3984,8 @@ export default function DashboardPage() {
                       className={`bg-white dark:bg-[#131929] border rounded-3xl p-4 sm:p-5 shadow-xs dark:shadow-xl flex flex-col justify-between transition-all duration-200 hover:shadow-md ${
                         isSelected
                           ? 'border-[#38BDF8] ring-2 ring-[#38BDF8]/60 bg-sky-50/20 dark:bg-[#38BDF8]/5'
+                          : order.status === 'pending'
+                          ? 'border-amber-400 dark:border-amber-500/60 ring-2 ring-amber-400/20 shadow-lg shadow-amber-500/5'
                           : isPaid
                           ? 'border-emerald-500/30 hover:border-slate-300 dark:hover:border-slate-700'
                           : 'border-slate-200/80 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-700'
@@ -4097,7 +4099,7 @@ export default function DashboardPage() {
                           </span>
                         </div>
 
-                        {/* Step 1 -> 2: Phục vụ xác nhận & gửi pha chế */}
+                        {/* Step 1 -> 2: Phục vụ xác nhận & gửi pha chế hoặc Từ chối */}
                         {order.status === 'pending' && (
                           user?.role === 'barista' ? (
                             <button
@@ -4107,12 +4109,23 @@ export default function DashboardPage() {
                               Chờ Phục vụ duyệt đơn
                             </button>
                           ) : (
-                            <button
-                              onClick={() => handleUpdateStatus(order._id, 'confirmed')}
-                              className="w-full bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] hover:text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center"
-                            >
-                              <span>Xác Nhận & Gửi Pha Chế</span>
-                            </button>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleUpdateStatus(order._id, 'confirmed')}
+                                className="flex-1 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] hover:text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+                              >
+                                <span className="material-symbols-outlined text-base">check_circle</span>
+                                <span>Duyệt Đơn</span>
+                              </button>
+                              <button
+                                onClick={() => handleUpdateStatus(order._id, 'cancelled')}
+                                className="px-3.5 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 hover:border-rose-500/50 font-extrabold text-xs rounded-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1"
+                                title="Từ chối đơn rác / Khách không có tại bàn"
+                              >
+                                <span className="material-symbols-outlined text-base">cancel</span>
+                                <span>Từ chối</span>
+                              </button>
+                            </div>
                           )
                         )}
 

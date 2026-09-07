@@ -600,7 +600,27 @@ export default function TableMenuPage() {
       let notifTitle = '';
       let notifMessage = '';
 
-      if (status === 'preparing' || status === 'processing' || status === 'in_progress') {
+      if (status === 'confirmed') {
+        try { playAlertPing(); } catch {}
+        notifTitle = 'Đơn hàng đã được duyệt!';
+        notifMessage = `Nhân viên đã tiếp nhận đơn #${updatedId ? updatedId.slice(-6).toUpperCase() : ''} và chuyển quầy Barista pha chế.`;
+        setKitchenNotification({
+          show: true,
+          title: notifTitle,
+          message: notifMessage,
+          orderId: updatedId,
+        });
+      } else if (status === 'cancelled') {
+        try { playAlertPing(); } catch {}
+        notifTitle = 'Đơn hàng không được tiếp nhận';
+        notifMessage = `Đơn hàng #${updatedId ? updatedId.slice(-6).toUpperCase() : ''} đã bị từ chối hoặc hủy. Vui lòng liên hệ nhân viên phục vụ.`;
+        setKitchenNotification({
+          show: true,
+          title: notifTitle,
+          message: notifMessage,
+          orderId: updatedId,
+        });
+      } else if (status === 'preparing' || status === 'processing' || status === 'in_progress') {
         try { playAlertPing(); } catch {}
         notifTitle = 'Bếp / Barista đang pha chế đơn!';
         notifMessage = `Đơn hàng #${updatedId ? updatedId.slice(-6).toUpperCase() : ''} đã bắt đầu được làm.`;
@@ -1039,6 +1059,10 @@ export default function TableMenuPage() {
     setSelectedSize('M');
     setSelectedAddons([]);
     setModalNote('');
+    // Auto open cart bottom sheet on mobile so user transitions directly to order confirmation!
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setIsCartOpen(true);
+    }
   };
 
   const handleDirectAddToCart = useCallback((food: any) => {
@@ -1614,6 +1638,7 @@ export default function TableMenuPage() {
           setIsCartOpen={setIsCartOpen}
           currentDeviceId={typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest'}
           customerName={customerName}
+          hasPendingOrder={activeOrders.some((o) => o.status === 'pending')}
         />
 
 
@@ -1765,6 +1790,41 @@ export default function TableMenuPage() {
           }}
         />
       )}
+      {/* Sticky Mobile Floating Cart Bar */}
+      <AnimatePresence>
+        {cart.length > 0 && !isCartOpen && !selectedFood && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+            className="fixed bottom-4 left-3 right-3 z-40 lg:hidden pointer-events-auto"
+          >
+            <div
+              onClick={() => setIsCartOpen(true)}
+              className="w-full bg-[#090D16]/95 dark:bg-[#0F172A]/95 text-white backdrop-blur-xl border border-sky-500/40 rounded-2xl p-3 sm:p-3.5 shadow-2xl flex items-center justify-between cursor-pointer active:scale-[0.99] transition-transform font-sans group hover:border-sky-400"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="px-3 py-1.5 rounded-xl bg-sky-500/20 border border-sky-400/40 text-sky-400 font-black text-xs shrink-0">
+                  {totalQuantity} {lang === 'en' ? 'items' : lang === 'zh' ? '件' : 'món'}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    {lang === 'en' ? 'Total' : lang === 'zh' ? '总计' : 'Tổng cộng'}
+                  </p>
+                  <p className="text-sm font-black text-white truncate">
+                    {formatPrice(totalAmount, lang)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-[#38BDF8] hover:bg-sky-400 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs uppercase tracking-wider shrink-0 shadow-md">
+                {lang === 'en' ? 'Confirm Order' : lang === 'zh' ? '确认点餐' : 'Xác nhận gọi món'}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
