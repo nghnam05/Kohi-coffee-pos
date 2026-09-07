@@ -267,26 +267,153 @@ export class OrdersService implements OnModuleInit {
     return updatedOrder;
   }
 
+  private pendingTransferRequests = new Map<string, {
+    id: string;
+    fromTableId: string;
+    fromTableName: string;
+    toTableId: string;
+    toTableName: string;
+    customerName?: string;
+    createdAt: Date;
+  }>();
+
+  async requestTableTransfer(fromTableId: string, toTableId: string, customerName?: string): Promise<any> {
+    const fromTable = await this.tablesService.findOne(fromTableId);
+    if (!fromTable) throw new NotFoundException('Không tìm thấy bàn xuất phát.');
+
+    const toTable = await this.tablesService.findOne(toTableId);
+    if (!toTable) throw new NotFoundException('Không tìm thấy bàn đích.');
+
+    if (toTable.status === 'serving') {
+      throw new BadRequestException(`${toTable.tableName} hiện đang có khách ngồi. Vui lòng chọn bàn trống khác.`);
+    }
+
+    const activeOrders = await this.orderModel.find({
+      tableId: fromTableId,
+      status: { $nin: ['paid', 'cancelled'] },
+      isDeleted: { $ne: true },
+    });
+
+    // Kiểm tra xem đã có yêu cầu chuyển bàn trùng với yêu cầu cũ chưa duyệt hay không
+    const existingEntry = Array.from(this.pendingTransferRequests.values()).find(
+      (r) => r.fromTableId === fromTableId && r.toTableId === toTableId,
+    );
+
+    if (existingEntry) {
+      existingEntry.createdAt = new Date();
+      if (customerName) existingEntry.customerName = customerName;
+      return {
+        message: 'Yêu cầu chuyển bàn đã được ghi nhận trước đó. Vui lòng chờ nhân viên duyệt.',
+        requestId: existingEntry.id,
+        fromTableName: fromTable.tableName,
+        toTableName: toTable.tableName,
+      };
+    }
+
+    const requestId = `tr-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const requestData = {
+      id: requestId,
+      fromTableId,
+      fromTableName: fromTable.tableName,
+      toTableId,
+      toTableName: toTable.tableName,
+      customerName: customerName || activeOrders[0]?.customerName || 'Khách hàng',
+      createdAt: new Date(),
+    };
+
+    this.pendingTransferRequests.set(requestId, requestData);
+
+    if (this.ordersGateway) {
+      this.ordersGateway.emitTableTransferRequested(requestData);
+    }
+
+    return {
+      message: 'Yêu cầu chuyển bàn đã được gửi đến nhân viên. Vui lòng chờ xác nhận.',
+      requestId,
+      fromTableName: fromTable.tableName,
+      toTableName: toTable.tableName,
+    };
+  }
+
+  getPendingTransferRequests(): any[] {
+    return Array.from(this.pendingTransferRequests.values());
+  }
+
+  async approveTableTransfer(requestId: string): Promise<any> {
+    const req = this.pendingTransferRequests.get(requestId);
+    if (!req) {
+      throw new NotFoundException('Yêu cầu chuyển bàn không tồn tại hoặc đã được xử lý.');
+    }
+
+    const result = await this.transferTable(req.fromTableId, req.toTableId);
+    this.pendingTransferRequests.delete(requestId);
+
+    if (this.ordersGateway) {
+      this.ordersGateway.emitTableTransferApproved({
+        id: requestId,
+        fromTableId: req.fromTableId,
+        toTableId: req.toTableId,
+        fromTableName: req.fromTableName,
+        toTableName: req.toTableName,
+      });
+    }
+
+    return {
+      message: 'Đã chấp nhận chuyển bàn thành công.',
+      ...result,
+    };
+  }
+
+  async rejectTableTransfer(requestId: string, reason?: string): Promise<any> {
+    const req = this.pendingTransferRequests.get(requestId);
+    if (!req) {
+      throw new NotFoundException('Yêu cầu chuyển bàn không tồn tại hoặc đã được xử lý.');
+    }
+
+    this.pendingTransferRequests.delete(requestId);
+
+    if (this.ordersGateway) {
+      this.ordersGateway.emitTableTransferRejected({
+        id: requestId,
+        fromTableId: req.fromTableId,
+        toTableId: req.toTableId,
+        reason: reason || 'Nhân viên không thể đáp ứng yêu cầu chuyển bàn lúc này.',
+      });
+    }
+
+    return { message: 'Đã từ chối yêu cầu chuyển bàn.', requestId };
+  }
+
   private async checkAndIssueRewardVoucher(order: OrderDocument): Promise<string | null> {
-    if (order.totalAmount >= 300000 && !order.rewardedVoucherCode) {
+    const tableIdStr = (order.tableId as any)?._id
+      ? (order.tableId as any)._id.toString()
+      : order.tableId?.toString();
+
+    let totalSessionAmount = order.totalAmount || 0;
+    if (tableIdStr) {
+      const tableOrders = await this.orderModel.find({
+        tableId: tableIdStr,
+        status: { $ne: 'cancelled' },
+        isDeleted: { $ne: true },
+      }).exec();
+      totalSessionAmount = tableOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+    }
+
+    if (totalSessionAmount >= 300000 && !order.rewardedVoucherCode) {
       try {
         const rewardCoupon = await this.couponsService.generateRewardCouponForOrder(
           order._id.toString(),
-          order.totalAmount,
+          totalSessionAmount,
         );
         order.rewardedVoucherCode = rewardCoupon.code;
         await order.save();
-        console.log(`[Reward Voucher] Đã tặng voucher ${rewardCoupon.code} cho đơn hàng >300k (${order._id})`);
-        
-        const tableIdStr = (order.tableId as any)?._id
-          ? (order.tableId as any)._id.toString()
-          : order.tableId?.toString();
+        console.log(`[Reward Voucher] Đã tặng voucher ${rewardCoupon.code} cho đơn/bàn >300k (${order._id})`);
 
         if (this.ordersGateway) {
           this.ordersGateway.emitRewardVoucherIssued({
             orderId: order._id.toString(),
             voucherCode: rewardCoupon.code,
-            totalAmount: order.totalAmount,
+            totalAmount: totalSessionAmount,
             tableId: tableIdStr,
           });
         }
@@ -321,13 +448,19 @@ export class OrdersService implements OnModuleInit {
   }
 
   async transferTable(fromTableId: string, toTableId: string): Promise<any> {
+    const toTable = await this.tablesService.findOne(toTableId).catch(() => null);
+    const toTableName = toTable?.tableName || 'Bàn mới';
+
     // 1. Tìm các đơn hàng chưa hoàn tất hoặc đã xong món nhưng chưa thanh toán
     const activeOrders = await this.orderModel.find({
       tableId: fromTableId,
       status: { $nin: ['paid', 'cancelled'] },
+      isDeleted: { $ne: true },
     });
 
-    // 2. Cập nhật ID bàn mới cho tất cả các đơn hàng hoạt động đó (nếu có)
+    const activeOrderIds = activeOrders.map((o) => o._id.toString());
+
+    // 2. Cập nhật ID bàn mới cho tất cả các đơn hàng hoạt động đó
     if (activeOrders.length > 0) {
       await this.orderModel.updateMany(
         { tableId: fromTableId, status: { $nin: ['paid', 'cancelled'] } },
@@ -335,21 +468,29 @@ export class OrdersService implements OnModuleInit {
       );
     }
 
-    // 3. Chuyển giỏ hàng món ăn đang chọn (Unsubmitted Group Cart) ở bộ nhớ Socket sang bàn mới
+    // 3. Cập nhật Payment records liên quan để chi tiết hóa đơn hiển thị đúng tên bàn mới
+    if (this.paymentsService && activeOrderIds.length > 0) {
+      await this.paymentsService.updateTableForOrders(activeOrderIds, toTableId, toTableName).catch(() => {});
+    }
+
+    // 4. Chuyển giỏ hàng món ăn chưa chốt (Unsubmitted Group Cart) sang bàn mới
     if (this.ordersGateway) {
       this.ordersGateway.transferGroupCart(fromTableId, toTableId);
     }
 
-    // 4. Cập nhật trạng thái hoạt động của 2 bàn thông qua TablesService
+    // 5. Cập nhật triệt để trạng thái bàn cũ về empty (và dọn bộ nhớ activeOccupantsMap)
+    this.tablesService.clearTableOccupants(fromTableId);
     await this.tablesService.update(fromTableId, { status: 'empty' });
     await this.tablesService.update(toTableId, { status: 'serving' });
 
-    // 5. Phát tín hiệu qua Socket để các màn hình Dashboard của admin/nhân viên và khách cập nhật lại real-time
+    // 6. Phát tín hiệu Socket cho các màn hình khách & nhân viên
     if (this.ordersGateway && this.ordersGateway.server) {
-      this.ordersGateway.server.emit('tableTransferred', { fromTableId, toTableId });
+      this.ordersGateway.server.emit('tableTransferred', { fromTableId, toTableId, toTableName });
+      this.ordersGateway.emitTableUpdate(fromTableId, 'empty');
+      this.ordersGateway.emitTableUpdate(toTableId, 'serving');
     }
 
-    return { message: 'Chuyển bàn thành công', fromTableId, toTableId };
+    return { message: 'Chuyển bàn thành công', fromTableId, toTableId, toTableName };
   }
 
   async remove(id: string, userRole?: string): Promise<{ message: string }> {

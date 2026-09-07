@@ -91,6 +91,7 @@ describe('OrdersService', () => {
             update: jest.fn().mockResolvedValue({}),
             findAll: jest.fn().mockResolvedValue([]),
             getOccupantCount: jest.fn().mockReturnValue(0),
+            clearTableOccupants: jest.fn(),
           },
         },
       ],
@@ -256,6 +257,7 @@ describe('OrdersService', () => {
       expect(gatewayMock.server.emit).toHaveBeenCalledWith('tableTransferred', {
         fromTableId: 'tableFrom',
         toTableId: 'tableTo',
+        toTableName: expect.any(String),
       });
     });
   });

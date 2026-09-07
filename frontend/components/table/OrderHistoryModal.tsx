@@ -56,10 +56,10 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.96, opacity: 0, y: 10 }}
             transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-            className="relative w-full max-w-xl bg-white dark:bg-[#0D111A] border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-2xl z-10 max-h-[90vh] flex flex-col font-sans text-left"
+            className="relative w-full max-w-xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 rounded-2xl p-6 sm:p-7 shadow-2xl z-10 max-h-[90vh] flex flex-col font-sans text-left"
           >
             {/* Header */}
-            <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-slate-800/80 shrink-0">
+            <div className="flex items-start justify-between pb-4 border-b border-slate-200 dark:border-white/10 shrink-0">
               <div>
                 <h3 className="text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
                   {lang === 'en' ? 'Order History' : lang === 'zh' ? '订单历史' : 'Lịch sử đơn hàng'}
@@ -76,7 +76,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
 
               <button
                 onClick={() => setIsOrderHistoryModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
                 title="Đóng lịch sử đơn hàng"
               >
                 <span className="material-symbols-outlined text-lg">close</span>
@@ -86,11 +86,11 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
             {/* Modal Body */}
             <div className="flex-1 overflow-y-auto py-4 space-y-4 scrollbar-none pr-1">
               {activeOrders.length === 0 ? (
-                <div className="py-12 text-center text-slate-400 dark:text-slate-500">
+                <div className="py-12 text-center text-slate-500">
                   <p className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
                     {lang === 'en' ? 'No orders placed yet' : lang === 'zh' ? '暂无订单' : 'Chưa có đơn đặt nào'}
                   </p>
-                  <p className="text-xs font-normal max-w-xs mx-auto">
+                  <p className="text-xs font-normal max-w-xs mx-auto text-slate-500">
                     {lang === 'en'
                       ? 'Select items from the menu to place an order.'
                       : lang === 'zh'
@@ -110,15 +110,15 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                     });
                     return (
                       <div className="flex flex-wrap items-center gap-2 pb-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-                        <span className="font-bold text-slate-700 dark:text-slate-300">
+                        <span className="font-bold text-slate-700 dark:text-slate-200">
                           {lang === 'en' ? 'Group:' : lang === 'zh' ? '同桌:' : 'Thành viên:'}
                         </span>
                         {Object.entries(nameCounts).map(([name, count]) => (
                           <span
                             key={name}
-                            className="px-2.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full text-[11px] font-bold"
+                            className="px-2.5 py-0.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 rounded-full text-[11px] font-bold"
                           >
-                            {name} <span className="text-slate-400 font-normal">({count} món)</span>
+                            {name} <span className="text-slate-500 dark:text-slate-400 font-normal">({count} món)</span>
                           </span>
                         ))}
                       </div>
@@ -132,22 +132,22 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                     return (
                       <div
                         key={order._id || idx}
-                        className="bg-slate-50/70 dark:bg-[#131824] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 space-y-3 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all"
+                        className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 rounded-xl p-4 space-y-3 shadow-xs hover:border-blue-500/40 transition-all"
                       >
                         {/* Order Card Header */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-200/60 dark:border-slate-800/80">
+                        <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-200 dark:border-white/10">
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 font-sans">
+                              <span className="text-xs font-extrabold text-slate-900 dark:text-slate-200 font-sans">
                                 {lang === 'en' ? 'Order' : lang === 'zh' ? '订单' : 'Mã đơn'}: #{order._id ? order._id.slice(-6).toUpperCase() : idx + 1}
                               </span>
                               {order.customerName && (
-                                <span className="px-2 py-0.5 bg-sky-500/10 text-[#0284c7] dark:text-[#38BDF8] text-[10.5px] font-extrabold rounded-md font-sans">
+                                <span className="px-2 py-0.5 bg-blue-500/15 text-blue-600 dark:text-blue-400 text-[10.5px] font-extrabold rounded-md font-sans">
                                   {order.customerName}
                                 </span>
                               )}
                             </div>
-                            <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 block font-sans">
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 block font-sans">
                               {order.createdAt
                                 ? new Date(order.createdAt).toLocaleTimeString(lang === 'zh' ? 'zh-CN' : lang === 'en' ? 'en-US' : 'vi-VN', {
                                     hour: '2-digit',
@@ -161,11 +161,11 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                           <div className="flex items-center gap-2">
                             {/* Payment Status Badge */}
                             {isPaid ? (
-                              <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold border border-emerald-500/20 rounded-full font-sans">
+                              <span className="px-2.5 py-1 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold border border-emerald-500/30 rounded-full font-sans">
                                 {lang === 'en' ? 'Paid' : lang === 'zh' ? '已结账' : 'Đã thanh toán'}
                               </span>
                             ) : (
-                              <span className="px-2.5 py-1 bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[11px] font-bold border border-rose-500/20 rounded-full font-sans">
+                              <span className="px-2.5 py-1 bg-rose-500/15 text-rose-600 dark:text-rose-400 text-[11px] font-bold border border-rose-500/30 rounded-full font-sans">
                                 {lang === 'en' ? 'Unpaid' : lang === 'zh' ? '未支付' : 'Chưa thanh toán'}
                               </span>
                             )}
@@ -173,7 +173,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                             {/* Kitchen Status Badge */}
                             <div className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${statusInfo.color} flex items-center gap-1.5 font-sans`}>
                               {statusInfo.step === 2 && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-spin" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-spin" />
                               )}
                               <span>{statusInfo.label}</span>
                             </div>
@@ -186,12 +186,12 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                             const itemName = item.food?.name || (typeof item.foodId === 'object' && item.foodId?.name) || item.foodName || (lang === 'en' ? 'Item' : lang === 'zh' ? '商品' : 'Món ăn');
                             const unitPrice = item.unitPrice || item.price || (typeof item.foodId === 'object' && item.foodId?.price) || item.food?.price || 0;
                             return (
-                              <div key={i} className="flex justify-between items-start text-xs text-slate-800 dark:text-slate-200 font-sans">
+                              <div key={i} className="flex justify-between items-start text-xs text-slate-700 dark:text-slate-200 font-sans">
                                 <div>
                                   <span className="font-bold">{itemName}</span>
-                                  <span className="text-slate-400 font-medium ml-2">x{item.quantity}</span>
+                                  <span className="text-slate-500 dark:text-slate-400 font-medium ml-2">x{item.quantity}</span>
                                   {item.note && (
-                                    <p className="text-[11px] text-slate-400 italic">
+                                    <p className="text-[11px] text-slate-500 dark:text-slate-400 italic">
                                       {lang === 'en' ? 'Note:' : lang === 'zh' ? '备注:' : 'Ghi chú:'} {item.note}
                                     </p>
                                   )}
@@ -205,12 +205,12 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                         </div>
 
                         {/* Order Footer & Standard Action Buttons */}
-                        <div className="pt-2.5 border-t border-slate-200/60 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
+                        <div className="pt-2.5 border-t border-slate-200 dark:border-white/10 flex flex-wrap items-center justify-between gap-3">
                           <div>
-                            <span className="text-[11px] text-slate-400 block font-medium font-sans">
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-medium font-sans">
                               {lang === 'en' ? 'Subtotal:' : lang === 'zh' ? '小计:' : 'Tổng đợt:'}
                             </span>
-                            <span className="text-sm font-black text-[#0284c7] dark:text-[#38BDF8] font-sans">
+                            <span className="text-sm font-black text-[#0284c7] dark:text-sky-400 font-sans">
                               {formatPrice(order.totalAmount || 0, lang)}
                             </span>
                           </div>
@@ -238,7 +238,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                                     router.push(`/table/${tableId}/order-status/${order._id}`);
                                   }
                                 }}
-                                className="h-8 px-3.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 text-xs font-extrabold rounded-xl transition-all active:scale-95 cursor-pointer shadow-sm inline-flex items-center gap-1.5 font-sans"
+                                className="h-8 px-3.5 bg-[#3B82F6] hover:bg-blue-600 text-white text-xs font-extrabold rounded-xl transition-all active:scale-95 cursor-pointer shadow-sm inline-flex items-center gap-1.5 font-sans"
                               >
                                 <span className="material-symbols-outlined text-[15px]">payments</span>
                                 <span>{lang === 'en' ? 'Pay Now' : lang === 'zh' ? 'Lines' : 'Thanh toán'}</span>
@@ -265,12 +265,12 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
             </div>
 
             {/* Total & Bottom Modal Footer */}
-            <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-3 shrink-0">
+            <div className="pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between gap-3 shrink-0">
               <div>
-                <span className="text-xs text-slate-400 block font-medium font-sans">
+                <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium font-sans">
                   {lang === 'en' ? 'Total Session Balance:' : lang === 'zh' ? '本桌累计:' : 'Tổng cộng cả buổi:'}
                 </span>
-                <span className="text-lg sm:text-xl font-black text-[#0284c7] dark:text-[#38BDF8] tracking-tight font-sans">
+                <span className="text-lg sm:text-xl font-black text-[#0284c7] dark:text-sky-400 tracking-tight font-sans">
                   {formatPrice(
                     activeOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0),
                     lang
@@ -303,7 +303,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                             router.push(`/table/${tableId}/order-status/${latestUnpaid._id}`);
                           }
                         }}
-                        className="h-10 px-5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-black rounded-xl text-xs tracking-wide transition-all shadow-md active:scale-95 cursor-pointer inline-flex items-center gap-1.5 font-sans"
+                        className="h-10 px-5 bg-[#3B82F6] hover:bg-blue-600 text-white font-black rounded-xl text-xs tracking-wide transition-all shadow-md active:scale-95 cursor-pointer inline-flex items-center gap-1.5 font-sans"
                       >
                         <span className="material-symbols-outlined text-base">payments</span>
                         <span>{lang === 'en' ? 'Pay Now' : lang === 'zh' ? '立即支付' : 'Thanh toán'}</span>

@@ -513,6 +513,7 @@ export default function DashboardPage() {
   const [tables, setTables] = useState<any[]>([]);
   const [usersList, setUsersList] = useState<User[]>([]);
   const [staffCalls, setStaffCalls] = useState<StaffCall[]>([]);
+  const [pendingTransferRequests, setPendingTransferRequests] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'orders' | 'foods' | 'tables' | 'users' | 'attendance' | 'analytics' | 'inventory'>('attendance');
   const [activityFilter, setActivityFilter] = useState<'all' | 'table' | 'support' | 'payment' | 'checkedIn' | 'notCheckedIn' | 'confirmed' | 'cooking'>('all');
   const [tableActivities, setTableActivities] = useState<
@@ -872,7 +873,63 @@ export default function DashboardPage() {
       fetchTables(token);
     });
 
+    socketRef.current.on('tableTransferRequested', (reqData: any) => {
+      setPendingTransferRequests((prev) => {
+        // Nếu đã có yêu cầu chuyển bàn trùng (cùng id hoặc cùng bàn đi & bàn đến), chỉ cập nhật 1 cái duy nhất
+        const existingIdx = prev.findIndex(
+          (r) => r.id === reqData.id || (r.fromTableId === reqData.fromTableId && r.toTableId === reqData.toTableId)
+        );
+        if (existingIdx !== -1) {
+          const next = [...prev];
+          next[existingIdx] = reqData;
+          return next;
+        }
+        return [reqData, ...prev];
+      });
+      try { playAlertPing(); } catch (e) {}
+      showToast(`Yêu cầu chuyển bàn: ${reqData.fromTableName} -> ${reqData.toTableName}`, 'info');
+    });
+
+    socketRef.current.on('tableTransferApproved', ({ id }: any) => {
+      setPendingTransferRequests((prev) => prev.filter((r) => r.id !== id));
+      if (token) fetchOrders(token);
+      if (token) fetchTables(token);
+    });
+
+    socketRef.current.on('tableTransferRejected', ({ id }: any) => {
+      setPendingTransferRequests((prev) => prev.filter((r) => r.id !== id));
+    });
+
+    if (token) {
+      fetch(`${API_BASE}/orders/transfer-requests`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data)) {
+            // Lọc loại bỏ trùng lặp nếu có yêu cầu cùng bàn đi và bàn đến
+            const unique: any[] = [];
+            const seen = new Set<string>();
+            for (const r of data) {
+              const key = `${r.fromTableId}-${r.toTableId}`;
+              if (!seen.has(key)) {
+                seen.add(key);
+                unique.push(r);
+              }
+            }
+            setPendingTransferRequests(unique);
+          }
+        })
+        .catch(() => {});
+    }
+
     socketRef.current.on('tableUpdated', () => {
+      fetchTables(token);
+      fetchOrders(token);
+    });
+
+    socketRef.current.on('ordersUpdated', () => {
+      fetchOrders(token);
       fetchTables(token);
     });
 
@@ -1025,9 +1082,8 @@ export default function DashboardPage() {
     const myEmail = String(user.email || '').toLowerCase();
 
     const isMyRecord = (att: any) => {
-      if (!att) return false;
+      if (!att || !att.userId) return false;
       const rawUser = att.userId;
-      if (!rawUser) return true;
       let uId = '';
       let uEmail = '';
       if (typeof rawUser === 'object' && rawUser !== null) {
@@ -1036,9 +1092,9 @@ export default function DashboardPage() {
       } else {
         uId = String(rawUser);
       }
-      if (myId && uId && uId === myId) return true;
+      if (myId && uId && String(uId) === String(myId)) return true;
       if (myEmail && uEmail && uEmail === myEmail) return true;
-      return true;
+      return false;
     };
 
     const activeAtt = attendances.find((att) => att && att.checkIn && !att.checkOut && isMyRecord(att));
@@ -1260,6 +1316,40 @@ export default function DashboardPage() {
       showToast('Đã xóa mã giảm giá thành công!', 'success');
     } catch (err) {
       showToast('Không thể xóa mã giảm giá.', 'error');
+    }
+  };
+
+  const handleApproveTransfer = async (requestId: string) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/orders/approve-transfer/${requestId}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Không thể chấp nhận chuyển bàn.');
+      showToast('Đã duyệt chuyển bàn thành công!', 'success');
+      setPendingTransferRequests((prev) => prev.filter((r) => r.id !== requestId));
+      fetchOrders(token);
+      fetchTables(token);
+    } catch (err: any) {
+      showToast(err.message || 'Có lỗi xảy ra khi duyệt chuyển bàn.', 'error');
+    }
+  };
+
+  const handleRejectTransfer = async (requestId: string) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/orders/reject-transfer/${requestId}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Không thể từ chối chuyển bàn.');
+      showToast('Đã từ chối chuyển bàn.', 'info');
+      setPendingTransferRequests((prev) => prev.filter((r) => r.id !== requestId));
+    } catch (err: any) {
+      showToast(err.message || 'Có lỗi xảy ra khi từ chối chuyển bàn.', 'error');
     }
   };
 
@@ -1554,6 +1644,10 @@ export default function DashboardPage() {
 
   const handleCheckIn = async () => {
     if (!token) return;
+    if (isStaff && !isCurrentTimeInShift()) {
+      showToast(`Hiện tại ngoài khung giờ ${getShiftTimeLabel()}. Bạn chỉ có thể điểm danh trong thời gian đăng ký ca.`, 'error');
+      return;
+    }
     setIsCheckingIn(true);
     try {
       const res = await fetch(`${API_BASE}/attendance/check-in`, {
@@ -1823,6 +1917,14 @@ export default function DashboardPage() {
   // Quick Table Status Toggle Handler
   const handleQuickTableStatusUpdate = async (tableId: string, newStatus: 'empty' | 'serving' | 'reserved') => {
     if (!token) return;
+    const tableOrders = orders.filter(
+      (o) => (o.tableId?._id === tableId || (o.tableId as any) === tableId) && o.status !== 'paid' && o.status !== 'cancelled'
+    );
+    if (newStatus === 'empty' && tableOrders.length > 0) {
+      if (!confirm(`Bàn này hiện có ${tableOrders.length} đơn hàng chưa hoàn tất / thanh toán. Bạn có chắc chắn muốn chuyển trạng thái bàn về Trống không?`)) {
+        return;
+      }
+    }
     try {
       const res = await fetch(`${API_BASE}/tables/${tableId}`, {
         method: 'PUT',
@@ -1835,6 +1937,7 @@ export default function DashboardPage() {
       if (!res.ok) throw new Error('Không thể cập nhật trạng thái bàn.');
       showToast('Cập nhật trạng thái bàn thành công!', 'success');
       fetchTables(token);
+      fetchOrders(token);
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Có lỗi xảy ra.', 'error');
     }
@@ -2460,21 +2563,19 @@ export default function DashboardPage() {
 
     // Helper to verify if an attendance record belongs to current staff user
     const isMyRecord = (att: any) => {
-      if (!att) return false;
+      if (!att || !att.userId) return false;
       const rawUser = att.userId;
-      if (!rawUser) return true; // Default to true for staff endpoint results
       let uId = '';
       let uEmail = '';
       if (typeof rawUser === 'object' && rawUser !== null) {
-        uId = String(rawUser._id || rawUser.id || '');
+        uId = String(rawUser._id || rawUser.id || rawUser.userId || '');
         uEmail = String(rawUser.email || '').toLowerCase();
       } else {
         uId = String(rawUser);
       }
-      if (myId && uId && uId === myId) return true;
+      if (myId && uId && String(uId) === String(myId)) return true;
       if (myEmail && uEmail && uEmail === myEmail) return true;
-      // If user is staff, all returned attendances are theirs
-      return true;
+      return false;
     };
 
     // 1. First check if there is an ACTIVE shift currently open (checkIn exists & no checkOut)
@@ -2497,6 +2598,34 @@ export default function DashboardPage() {
   const isCheckedIn = Boolean(myTodayAttendance && !myTodayAttendance.checkOut);
   const isCheckedOut = Boolean(myTodayAttendance && myTodayAttendance.checkOut);
   const isStaffLocked = isStaff && (!myTodayAttendance || isCheckedOut);
+
+  // Helper kiểm tra thời gian hiện tại có thuộc khung giờ ca làm đăng ký hay không
+  const isCurrentTimeInShift = (shift?: string) => {
+    const targetShift = shift || user?.assignedShift || 'morning';
+    const now = new Date();
+    const totalMinutes = now.getHours() * 60 + now.getMinutes();
+
+    // Ca Sáng: 06:00 - 12:00 (mở check-in từ 05:45 đến 12:00)
+    if (targetShift === 'morning') {
+      return totalMinutes >= 345 && totalMinutes < 720;
+    }
+    // Ca Chiều: 12:00 - 18:00 (mở check-in từ 11:45 đến 18:00)
+    if (targetShift === 'afternoon') {
+      return totalMinutes >= 705 && totalMinutes < 1080;
+    }
+    // Ca Tối: 18:00 - 23:00 (mở check-in từ 17:45 đến 23:00)
+    if (targetShift === 'evening') {
+      return totalMinutes >= 1065 && totalMinutes <= 1380;
+    }
+    return false;
+  };
+
+  const getShiftTimeLabel = (shift?: string) => {
+    const s = shift || user?.assignedShift || 'morning';
+    if (s === 'morning') return 'Ca Sáng (06:00 - 12:00)';
+    if (s === 'afternoon') return 'Ca Chiều (12:00 - 18:00)';
+    return 'Ca Tối (18:00 - 23:00)';
+  };
 
   const displayedOrders =
     orderStatusFilter === 'active'
@@ -2525,8 +2654,13 @@ export default function DashboardPage() {
   // Filtered tables by status
   const filteredTables = tables.filter((tbl) => {
     if (selectedTableStatus === 'all') return true;
-    if (selectedTableStatus === 'empty') return tbl.status === 'empty' || !tbl.status;
-    return tbl.status === selectedTableStatus;
+    const tableOrders = orders.filter(
+      (o) => (o.tableId?._id === tbl._id || (o.tableId as any) === tbl._id) && o.status !== 'paid' && o.status !== 'cancelled'
+    );
+    const hasActiveOrders = tableOrders.length > 0;
+    const effectiveStatus = hasActiveOrders ? 'serving' : (tbl.status || 'empty');
+    if (selectedTableStatus === 'empty') return effectiveStatus === 'empty';
+    return effectiveStatus === selectedTableStatus;
   });
 
   // Calculate average customer review stars
@@ -2535,9 +2669,9 @@ export default function DashboardPage() {
     : '5.0';
 
   return (
-    <div className="h-screen max-h-screen bg-white dark:bg-[#000d41] text-gray-900 dark:text-[#dde1ff] flex flex-col lg:flex-row overflow-hidden font-sans select-none relative transition-colors duration-300">
+    <div className="h-screen max-h-screen bg-white dark:bg-[#0B0F17] text-gray-900 dark:text-slate-100 flex flex-col lg:flex-row overflow-hidden font-sans select-none relative transition-colors duration-300">
       {/* ── MOBILE TOP NAVIGATION BAR (Visible on screens < lg) ──────────────── */}
-      <div className="lg:hidden shrink-0 flex items-center justify-between bg-white/95 dark:bg-[#000935]/95 backdrop-blur-md border-b border-gray-200 dark:border-[#414754] px-4 py-0 h-14 text-gray-900 dark:text-[#dde1ff] z-30 transition-colors shadow-xs">
+      <div className="lg:hidden shrink-0 flex items-center justify-between bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-md border-b border-gray-200 dark:border-white/10 px-4 py-0 h-14 text-gray-900 dark:text-slate-100 z-30 transition-colors shadow-xs">
         <div className="flex items-center gap-2 sm:gap-3">
           <BrandLogo onClick={() => router.push('/')} />
         </div>
@@ -2546,13 +2680,13 @@ export default function DashboardPage() {
           <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
           <button
             onClick={() => setIsRealtimeDrawerOpen(!isRealtimeDrawerOpen)}
-            className="relative h-10 w-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-[#00175e] text-gray-700 dark:text-[#dde1ff] hover:text-blue-600 dark:hover:text-[#b1c5ff] transition-all cursor-pointer active:scale-95 shrink-0"
+            className="relative h-10 w-10 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-900 border border-transparent dark:border-white/10 text-gray-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-[#38BDF8] transition-all cursor-pointer active:scale-95 shrink-0"
             aria-label="Thông báo realtime"
             title="Xem thông báo realtime"
           >
             <span className="material-symbols-outlined text-lg">notifications</span>
             {(staffCalls.length > 0 || (user?.role === 'barista' && brewingQueue.length > 0) || (user?.role !== 'barista' && user?.role !== 'admin' && drinkReadyList.length > 0)) && (
-              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#00adef] dark:bg-[#0876ef] animate-pulse" />
+              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#3B82F6] dark:bg-[#38BDF8] animate-pulse" />
             )}
           </button>
         </div>
@@ -2561,7 +2695,7 @@ export default function DashboardPage() {
       {/* ── BOTTOM TAB BAR (Mobile-only, < lg) ────────────────────────────────── */}
       <nav
         aria-label="Thanh điều hướng ứng dụng"
-        className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#0c121e]/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-around h-16 px-1 shadow-[0_-4px_24px_rgba(0,0,0,0.12)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.4)]"
+        className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-lg border-t border-slate-200 dark:border-white/10 flex items-center justify-around h-16 px-1 shadow-[0_-4px_24px_rgba(0,0,0,0.12)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.4)]"
       >
         {/* Đơn hàng — staff / waiter / admin */}
         {user?.role !== 'barista' && (
@@ -2802,20 +2936,20 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* ── COLUMN 1: LEFT SIDEBAR (bg-white / dark:bg-[#050e1d]) ────────────────────── */}
+      {/* ── COLUMN 1: LEFT SIDEBAR (bg-white / dark:bg-[#0B0F17]) ────────────────────── */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-40 w-[260px] shrink-0 bg-white dark:bg-[#050e1d] border-r border-gray-200 dark:border-[#44474e] flex flex-col justify-between h-full transition-all duration-300 ease-in-out ${
+        className={`fixed lg:static inset-y-0 left-0 z-40 w-[260px] shrink-0 bg-white dark:bg-[#0B0F17] border-r border-slate-200 dark:border-white/10 flex flex-col justify-between h-full transition-all duration-300 ease-in-out ${
           isMobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'
         }`}
         data-purpose="left-sidebar"
       >
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
           {/* Brand Header */}
-          <div className="p-6 flex items-center justify-between border-b border-gray-100 dark:border-[#44474e]">
+          <div className="p-6 flex items-center justify-between border-b border-slate-100 dark:border-white/10">
             <BrandLogo onClick={() => router.push('/')} />
             <button
               onClick={() => setIsMobileSidebarOpen(false)}
-              className="lg:hidden text-gray-400 hover:text-gray-900 dark:hover:text-white p-1 rounded-lg"
+              className="lg:hidden text-slate-400 hover:text-slate-900 dark:hover:text-white p-1 rounded-lg"
             >
               <span className="material-symbols-outlined">close</span>
             </button>
@@ -2832,18 +2966,18 @@ export default function DashboardPage() {
                   setActiveTab('orders');
                   setIsMobileSidebarOpen(false);
                 }}
-                className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
+                className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${
                   isStaffLocked
                     ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
                     : activeTab === 'orders'
-                    ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
-                    : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
+                    ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
+                    : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
                 }`}
               >
                 <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${
                   activeTab === 'orders'
-                    ? 'text-[#0284c7] dark:text-[#b3c5ff]'
-                    : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
+                    ? 'text-[#3B82F6] dark:text-[#38BDF8]'
+                    : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                 }`}>
                   {user?.role === 'barista' ? 'coffee_maker' : 'receipt_long'}
                 </span>
@@ -2853,8 +2987,8 @@ export default function DashboardPage() {
                 ) : (
                   <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${
                     activeTab === 'orders'
-                      ? 'bg-blue-600 dark:bg-[#0341a8] text-white dark:text-[#9eb6ff]'
-                      : 'bg-gray-100 text-gray-800 dark:bg-[#212a3a] dark:text-[#dae2f9]'
+                      ? 'bg-[#3B82F6] text-white'
+                      : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                   }`}>
                     {activeOrdersList.length}
                   </span>
@@ -2872,18 +3006,18 @@ export default function DashboardPage() {
                     setActiveTab('foods');
                     setIsMobileSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
+                  className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${
                     isStaffLocked
                       ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
                       : activeTab === 'foods'
-                      ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
-                      : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
+                      ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
+                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
                   }`}
                 >
                   <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${
                     activeTab === 'foods'
-                      ? 'text-[#0284c7] dark:text-[#b3c5ff]'
-                      : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
+                      ? 'text-[#3B82F6] dark:text-[#38BDF8]'
+                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                   }`}>grid_view</span>
                   <span className="flex-1 truncate text-left">{t.tabFoods}</span>
                   {isStaffLocked ? (
@@ -2891,8 +3025,8 @@ export default function DashboardPage() {
                   ) : (
                     <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${
                       activeTab === 'foods'
-                        ? 'bg-blue-600 dark:bg-[#0341a8] text-white dark:text-[#9eb6ff]'
-                        : 'bg-gray-100 text-gray-800 dark:bg-[#212a3a] dark:text-[#dae2f9]'
+                        ? 'bg-[#3B82F6] text-white'
+                        : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                     }`}>
                       {foods.length}
                     </span>
@@ -2906,18 +3040,18 @@ export default function DashboardPage() {
                     setActiveTab('tables');
                     setIsMobileSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
+                  className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${
                     isStaffLocked
                       ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
                       : activeTab === 'tables'
-                      ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
-                      : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
+                      ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
+                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
                   }`}
                 >
                   <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${
                     activeTab === 'tables'
-                      ? 'text-[#0284c7] dark:text-[#b3c5ff]'
-                      : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
+                      ? 'text-[#3B82F6] dark:text-[#38BDF8]'
+                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                   }`}>chair</span>
                   <span className="flex-1 truncate text-left">{t.tabTables}</span>
                   {isStaffLocked ? (
@@ -2925,8 +3059,8 @@ export default function DashboardPage() {
                   ) : (
                     <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${
                       activeTab === 'tables'
-                        ? 'bg-blue-600 dark:bg-[#0341a8] text-white dark:text-[#9eb6ff]'
-                        : 'bg-gray-100 text-gray-800 dark:bg-[#212a3a] dark:text-[#dae2f9]'
+                        ? 'bg-[#3B82F6] text-white'
+                        : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                     }`}>
                       {tables.length}
                     </span>
@@ -2941,18 +3075,18 @@ export default function DashboardPage() {
                     setIsMobileSidebarOpen(false);
                     if (token) fetchReservations(token);
                   }}
-                  className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
+                  className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${
                     isStaffLocked
                       ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
                       : activeTab === ('reservations' as any)
-                      ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
-                      : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
+                      ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
+                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
                   }`}
                 >
                   <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${
                     activeTab === ('reservations' as any)
-                      ? 'text-[#0284c7] dark:text-[#b3c5ff]'
-                      : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
+                      ? 'text-[#3B82F6] dark:text-[#38BDF8]'
+                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                   }`}>event_available</span>
                   <span className="flex-1 truncate text-left">Quản lý bàn đã đặt</span>
                   {isStaffLocked ? (
@@ -2960,8 +3094,8 @@ export default function DashboardPage() {
                   ) : (
                     <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${
                       activeTab === ('reservations' as any)
-                        ? 'bg-blue-600 dark:bg-[#0341a8] text-white dark:text-[#9eb6ff]'
-                        : 'bg-gray-100 text-gray-800 dark:bg-[#212a3a] dark:text-[#dae2f9]'
+                        ? 'bg-[#3B82F6] text-white'
+                        : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                     }`}>
                       {reservations.length}
                     </span>
@@ -2976,16 +3110,16 @@ export default function DashboardPage() {
                 setActiveTab('attendance');
                 setIsMobileSidebarOpen(false);
               }}
-              className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
+              className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${
                 activeTab === 'attendance'
-                  ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold ring-2 ring-blue-500/50'
-                  : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
+                  ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold ring-2 ring-blue-500/40'
+                  : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
               }`}
             >
               <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${
                 activeTab === 'attendance'
-                  ? 'text-[#0284c7] dark:text-[#b3c5ff]'
-                  : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
+                  ? 'text-[#3B82F6] dark:text-[#38BDF8]'
+                  : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
               }`}>schedule</span>
               <span className="flex-1 truncate text-left">{user?.role === 'admin' ? 'Chấm công & Trả lương' : 'Chấm công ca làm'}</span>
               {isStaffLocked && (
@@ -3004,18 +3138,18 @@ export default function DashboardPage() {
                   setActiveTab('inventory');
                   setIsMobileSidebarOpen(false);
                 }}
-                className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
+                className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${
                   isStaffLocked
                     ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
                     : activeTab === 'inventory'
-                    ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#38BDF8] font-semibold'
-                    : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
+                    ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
+                    : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
                 }`}
               >
                 <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${
                   activeTab === 'inventory'
-                    ? 'text-[#0284c7] dark:text-[#38BDF8]'
-                    : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
+                    ? 'text-[#3B82F6] dark:text-[#38BDF8]'
+                    : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                 }`}>inventory_2</span>
                 <span className="flex-1 truncate text-left">Quản lý kho nguyên liệu</span>
               </button>
@@ -3028,16 +3162,16 @@ export default function DashboardPage() {
                   setActiveTab('users');
                   setIsMobileSidebarOpen(false);
                 }}
-                className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
+                className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${
                   activeTab === 'users'
-                    ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
-                    : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
+                    ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
+                    : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
                 }`}
               >
                 <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${
                   activeTab === 'users'
-                    ? 'text-[#0284c7] dark:text-[#b3c5ff]'
-                    : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
+                    ? 'text-[#3B82F6] dark:text-[#38BDF8]'
+                    : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                 }`}>group</span>
                 <span className="flex-1 truncate text-left">{t.tabUsers}</span>
               </button>
@@ -3054,16 +3188,16 @@ export default function DashboardPage() {
                     fetchReviews(token);
                   }
                 }}
-                className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
+                className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${
                   activeTab === 'analytics'
-                    ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
-                    : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
+                    ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
+                    : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
                 }`}
               >
                 <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${
                   activeTab === 'analytics'
-                    ? 'text-[#0284c7] dark:text-[#b3c5ff]'
-                    : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
+                    ? 'text-[#3B82F6] dark:text-[#38BDF8]'
+                    : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                 }`}>bar_chart</span>
                 <span className="flex-1 truncate text-left">Thống kê doanh thu DB</span>
               </button>
@@ -3077,22 +3211,22 @@ export default function DashboardPage() {
                   setIsMobileSidebarOpen(false);
                   if (token) fetchCoupons(token);
                 }}
-                className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg group transition-all text-left ${
+                className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${
                   activeTab === ('coupons' as any)
-                    ? 'sidebar-active bg-[#e0f2fe] text-[#0284c7] dark:bg-[#212a3a] dark:text-[#b3c5ff] font-semibold'
-                    : 'text-gray-700 hover:bg-gray-50 dark:text-[#A8B6D1] dark:hover:bg-[#232d41] dark:hover:text-[#F0F4FF] font-medium'
+                    ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
+                    : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
                 }`}
               >
                 <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${
                   activeTab === ('coupons' as any)
-                    ? 'text-[#0284c7] dark:text-[#b3c5ff]'
-                    : 'text-gray-500 group-hover:text-gray-900 dark:text-[#8f9099] dark:group-hover:text-[#F0F4FF]'
+                    ? 'text-[#3B82F6] dark:text-[#38BDF8]'
+                    : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                 }`}>local_offer</span>
                 <span className="flex-1 truncate text-left">Mã giảm giá</span>
                 <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${
                   activeTab === ('coupons' as any)
-                    ? 'bg-blue-600 dark:bg-[#0341a8] text-white dark:text-[#9eb6ff]'
-                    : 'bg-gray-100 text-gray-800 dark:bg-[#212a3a] dark:text-[#dae2f9]'
+                    ? 'bg-[#3B82F6] text-white'
+                    : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                 }`}>
                   {coupons.length}
                 </span>
@@ -3102,7 +3236,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Controls & Bottom User Profile */}
-        <div className="p-4 border-t border-gray-200 dark:border-[#414754] space-y-3 font-sans">
+        <div className="p-4 border-t border-slate-200 dark:border-white/10 space-y-3 font-sans">
           <div className="flex items-center justify-between gap-2">
             <LanguageToggleSwitch lang={lang} setLang={setLang} />
             <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
@@ -3116,17 +3250,17 @@ export default function DashboardPage() {
               }}
               className="flex items-center gap-3 min-w-0 text-left hover:opacity-80 transition-opacity flex-1"
             >
-              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-[#005edd] text-blue-600 dark:text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-[#3B82F6] text-[#3B82F6] dark:text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
                 {user?.name ? user.name.charAt(0).toUpperCase() : 'N'}
               </div>
               <div className="truncate min-w-0 flex-1">
-                <p className="text-sm font-semibold text-gray-900 dark:text-[#dde1ff] truncate leading-tight">{user?.name || 'Nhân viên Phục vụ'}</p>
-                <p className="text-xs text-gray-500 dark:text-[#c1c6d6] hover:text-gray-700 dark:hover:text-[#dde1ff] truncate leading-tight">Sửa thông tin</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate leading-tight">{user?.name || 'Nhân viên Phục vụ'}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 truncate leading-tight">Sửa thông tin</p>
               </div>
             </button>
             <button
               onClick={handleLogout}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-[#dde1ff] transition-colors p-1.5 rounded-lg flex-shrink-0 ml-2"
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors p-1.5 rounded-lg flex-shrink-0 ml-2"
               title="Đăng xuất"
             >
               <span className="material-symbols-outlined text-lg">logout</span>
@@ -3135,10 +3269,10 @@ export default function DashboardPage() {
         </div>
       </aside>
 
-      {/* ── COLUMN 2: CENTER WORKSPACE (bg-white / dark:bg-[#0a1323]) ────────────────── */}
-      <main className="flex-1 min-w-0 bg-white dark:bg-[#0a1323] text-gray-900 dark:text-[#F0F4FF] flex flex-col h-full max-h-full overflow-hidden px-3 pt-3 pb-3 sm:p-6 lg:pb-6 transition-colors duration-300 font-sans">
+      {/* ── COLUMN 2: CENTER WORKSPACE (bg-white / dark:bg-[#0B0F17]) ────────────────── */}
+      <main className="flex-1 min-w-0 bg-white dark:bg-[#0B0F17] text-gray-900 dark:text-slate-100 flex flex-col h-full max-h-full overflow-hidden px-3 pt-3 pb-3 sm:p-6 lg:pb-6 transition-colors duration-300 font-sans">
         {/* Workspace Top Bar (Fixed Header) */}
-        <div className="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-200/60 dark:border-[#1e293b]/60">
+        <div className="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-200 dark:border-white/10">
           <div className="flex items-center gap-3 min-w-0">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight font-heading truncate">
               {activeTab === 'orders' && (user?.role === 'barista' ? 'Quầy pha chế (KDS)' : t.tabOrders)}
@@ -3173,11 +3307,15 @@ export default function DashboardPage() {
             {/* Role-Specific Context Pill Buttons */}
             {user?.role === 'barista' && (
               <button
+                disabled={isStaffLocked}
                 onClick={() => {
+                  if (isStaffLocked) return;
                   setActiveTab('orders');
                   setIsRealtimeDrawerOpen(true);
                 }}
-                className="h-10 px-3 flex items-center gap-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-black cursor-pointer active:scale-95 transition-all shrink-0"
+                className={`h-10 px-3 flex items-center gap-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-black transition-all shrink-0 ${
+                  isStaffLocked ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer active:scale-95'
+                }`}
                 title="Số món đang chờ pha chế"
               >
                 <span className="material-symbols-outlined text-base">coffee_maker</span>
@@ -3187,10 +3325,32 @@ export default function DashboardPage() {
 
             {(user?.role === 'waiter' || user?.role === 'staff' || !user?.role) && (
               <>
+                {pendingTransferRequests.length > 0 && (
+                  <button
+                    disabled={isStaffLocked}
+                    onClick={() => {
+                      if (isStaffLocked) return;
+                      setIsRealtimeDrawerOpen(true);
+                    }}
+                    className={`h-10 px-3 flex items-center gap-1.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-700 dark:text-amber-300 text-xs font-black transition-all shrink-0 animate-pulse ${
+                      isStaffLocked ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer active:scale-95'
+                    }`}
+                    title="Yêu cầu đổi bàn từ khách hàng"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                    <span>{pendingTransferRequests.length} đổi bàn</span>
+                  </button>
+                )}
                 {drinkReadyList.length > 0 && (
                   <button
-                    onClick={() => setIsRealtimeDrawerOpen(true)}
-                    className="h-10 px-3 flex items-center gap-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-black cursor-pointer active:scale-95 transition-all shrink-0 animate-pulse"
+                    disabled={isStaffLocked}
+                    onClick={() => {
+                      if (isStaffLocked) return;
+                      setIsRealtimeDrawerOpen(true);
+                    }}
+                    className={`h-10 px-3 flex items-center gap-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-black transition-all shrink-0 animate-pulse ${
+                      isStaffLocked ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer active:scale-95'
+                    }`}
                     title="Đồ uống sẵn sàng trả bàn"
                   >
                     <span className="material-symbols-outlined text-base">local_cafe</span>
@@ -3199,8 +3359,14 @@ export default function DashboardPage() {
                 )}
                 {staffCalls.length > 0 && (
                   <button
-                    onClick={() => setIsRealtimeDrawerOpen(true)}
-                    className="h-10 px-3 flex items-center gap-1.5 rounded-xl bg-[#38BDF8]/15 border border-[#38BDF8]/40 text-[#0284c7] dark:text-[#38BDF8] text-xs font-black cursor-pointer active:scale-95 transition-all shrink-0"
+                    disabled={isStaffLocked}
+                    onClick={() => {
+                      if (isStaffLocked) return;
+                      setIsRealtimeDrawerOpen(true);
+                    }}
+                    className={`h-10 px-3 flex items-center gap-1.5 rounded-xl bg-[#38BDF8]/15 border border-[#38BDF8]/40 text-[#0284c7] dark:text-[#38BDF8] text-xs font-black transition-all shrink-0 ${
+                      isStaffLocked ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer active:scale-95'
+                    }`}
                   >
                     <span className="w-2 h-2 rounded-full bg-[#38BDF8] animate-pulse shrink-0" />
                     <span>{staffCalls.length} cuộc gọi bàn</span>
@@ -3266,16 +3432,25 @@ export default function DashboardPage() {
                 <p className="text-sm text-slate-600 dark:text-slate-300 max-w-md mb-6 leading-relaxed">
                   Để ghi nhận thời gian làm việc và đảm bảo an toàn quy trình, bạn cần bấm <strong className="text-amber-500">"Bắt đầu ca"</strong> trước khi truy cập các chức năng quản lý đơn hàng, quầy pha chế và sơ đồ bàn.
                 </p>
-                <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-xs">
-                  <button
-                    onClick={handleCheckIn}
-                    disabled={isCheckingIn}
-                    className="w-full h-12 px-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-lg shadow-emerald-500/25 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <span className="material-symbols-outlined">login</span>
-                    <span>{isCheckingIn ? 'Đang xử lý...' : 'BẮT ĐẦU CA NGAY (CHECK-IN)'}</span>
-                  </button>
-                </div>
+                {isCurrentTimeInShift() ? (
+                  <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-xs">
+                    <button
+                      onClick={handleCheckIn}
+                      disabled={isCheckingIn}
+                      className="w-full h-12 px-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-lg shadow-emerald-500/25 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined">login</span>
+                      <span>{isCheckingIn ? 'Đang xử lý...' : 'BẮT ĐẦU CA NGAY (CHECK-IN)'}</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-full max-w-md p-4 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-rose-600 dark:text-rose-400 text-xs font-bold flex flex-col items-center gap-2 mb-2">
+                    <span className="material-symbols-outlined text-2xl text-rose-500">lock_clock</span>
+                    <p className="text-center leading-relaxed">
+                      Hiện tại ngoài khung giờ <strong>{getShiftTimeLabel()}</strong>. Hệ thống đã khóa tính năng điểm danh. Bạn chỉ có thể điểm danh trong thời gian đăng ký ca.
+                    </p>
+                  </div>
+                )}
                 <button
                   onClick={() => setActiveTab('attendance')}
                   className="mt-5 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white underline cursor-pointer"
@@ -3411,6 +3586,46 @@ export default function DashboardPage() {
                     </button>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Table Transfer Requests (Simple modern card, NO icons, NO emojis) */}
+            {pendingTransferRequests.length > 0 && (
+              <div className="mb-4 space-y-2">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-1">
+                  Yêu cầu chuyển bàn ({pendingTransferRequests.length})
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {pendingTransferRequests.map((req) => (
+                    <div
+                      key={req.id}
+                      className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="text-sm font-bold text-slate-900 dark:text-white">
+                          {req.fromTableName} chuyển sang {req.toTableName}
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                          Khách hàng: {req.customerName || 'Khách tại bàn'}
+                        </div>
+                      </div>
+                      <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                        <button
+                          onClick={() => handleApproveTransfer(req.id)}
+                          className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer"
+                        >
+                          Chấp nhận
+                        </button>
+                        <button
+                          onClick={() => handleRejectTransfer(req.id)}
+                          className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all cursor-pointer"
+                        >
+                          Từ chối
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -4151,8 +4366,62 @@ export default function DashboardPage() {
         {/* Tables Management View */}
         {activeTab === 'tables' && (
           <div className="flex-1 overflow-y-auto space-y-4 pb-24 lg:pb-10 scrollbar-thin">
-            <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl flex justify-between items-center shadow-xs">
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Danh sách {filteredTables.length} bàn ăn</span>
+            <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-xs">
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Danh sách {filteredTables.length} bàn ăn
+                </span>
+                <div className="flex items-center p-0.5 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTableStatus('all')}
+                    className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                      selectedTableStatus === 'all'
+                        ? 'bg-white dark:bg-[#1e293b] text-slate-900 dark:text-white shadow-xs font-black'
+                        : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Tất cả ({tables.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTableStatus('empty')}
+                    className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                      selectedTableStatus === 'empty'
+                        ? 'bg-white dark:bg-[#1e293b] text-slate-900 dark:text-white shadow-xs font-black'
+                        : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-slate-400" />
+                    <span>Trống</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTableStatus('serving')}
+                    className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                      selectedTableStatus === 'serving'
+                        ? 'bg-white dark:bg-[#1e293b] text-emerald-600 dark:text-emerald-400 shadow-xs font-black'
+                        : 'text-slate-500 hover:text-emerald-500'
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <span>Có khách</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTableStatus('reserved')}
+                    className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                      selectedTableStatus === 'reserved'
+                        ? 'bg-white dark:bg-[#1e293b] text-amber-600 dark:text-amber-400 shadow-xs font-black'
+                        : 'text-slate-500 hover:text-amber-500'
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-amber-500" />
+                    <span>Đã đặt</span>
+                  </button>
+                </div>
+              </div>
+
               <button
                 onClick={() => {
                   setEditingTable(null);
@@ -4165,6 +4434,56 @@ export default function DashboardPage() {
                 <span>Thêm bàn mới</span>
               </button>
             </div>
+
+            {/* Table Transfer Requests Banner in Tables View */}
+            {pendingTransferRequests.length > 0 && (
+              <div className="space-y-2 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
+                    <span className="text-xs font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                      Yêu cầu chuyển bàn từ khách hàng ({pendingTransferRequests.length})
+                    </span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+                  {pendingTransferRequests.map((req) => (
+                    <div
+                      key={req.id}
+                      className="bg-white dark:bg-[#131929] border border-amber-500/30 dark:border-amber-500/20 rounded-xl p-3.5 shadow-xs flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="text-xs font-black text-slate-900 dark:text-white flex items-center justify-between">
+                          <span>{req.fromTableName} ➔ {req.toTableName}</span>
+                          <span className="text-[10px] text-slate-400 font-mono font-medium">
+                            {req.createdAt ? new Date(req.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'Vừa xong'}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                          Khách hàng: <strong className="text-slate-700 dark:text-slate-200">{req.customerName || 'Khách tại bàn'}</strong>
+                        </div>
+                      </div>
+                      <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleApproveTransfer(req.id)}
+                          className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-lg transition-all active:scale-95 cursor-pointer text-center"
+                        >
+                          Chấp nhận
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRejectTransfer(req.id)}
+                          className="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-lg transition-all active:scale-95 cursor-pointer text-center"
+                        >
+                          Từ chối
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
               {filteredTables.map((tbl) => {
@@ -4257,8 +4576,8 @@ export default function DashboardPage() {
                             type="button"
                             onClick={() => handleQuickTableStatusUpdate(tbl._id, 'empty')}
                             className={`py-2.5 rounded-lg text-[10.5px] font-extrabold transition-all cursor-pointer active:scale-95 ${
-                              tbl.status === 'empty'
-                                ? 'bg-white dark:bg-[#1e293b] text-slate-900 dark:text-white shadow-xs'
+                              effectiveStatus === 'empty'
+                                ? 'bg-white dark:bg-[#1e293b] text-slate-900 dark:text-white shadow-xs font-black'
                                 : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                             }`}
                           >
@@ -4268,8 +4587,8 @@ export default function DashboardPage() {
                             type="button"
                             onClick={() => handleQuickTableStatusUpdate(tbl._id, 'serving')}
                             className={`py-2.5 rounded-lg text-[10.5px] font-extrabold transition-all cursor-pointer active:scale-95 ${
-                              tbl.status === 'serving'
-                                ? 'bg-emerald-500 text-white shadow-xs'
+                              effectiveStatus === 'serving'
+                                ? 'bg-emerald-500 text-white shadow-xs font-black'
                                 : 'text-slate-500 hover:text-emerald-500'
                             }`}
                           >
@@ -4279,8 +4598,8 @@ export default function DashboardPage() {
                             type="button"
                             onClick={() => handleQuickTableStatusUpdate(tbl._id, 'reserved')}
                             className={`py-2.5 rounded-lg text-[10.5px] font-extrabold transition-all cursor-pointer active:scale-95 ${
-                              tbl.status === 'reserved'
-                                ? 'bg-amber-500 text-white shadow-xs'
+                              effectiveStatus === 'reserved'
+                                ? 'bg-amber-500 text-white shadow-xs font-black'
                                 : 'text-slate-500 hover:text-amber-500'
                             }`}
                           >
@@ -4299,10 +4618,10 @@ export default function DashboardPage() {
                         QR Code
                       </button>
 
-                      <button
+                       <button
                         onClick={() => {
                           setEditingTable(tbl);
-                          setTableForm({ tableName: tbl.tableName || '', status: tbl.status || 'empty' });
+                          setTableForm({ tableName: tbl.tableName || '', status: effectiveStatus || 'empty' });
                           setIsTableModalOpen(true);
                         }}
                         className="h-9 px-3 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:text-[#38BDF8] rounded-xl transition-colors cursor-pointer text-xs font-bold active:scale-95"
@@ -4522,19 +4841,36 @@ export default function DashboardPage() {
                         })()}
                       </div>
 
-                      <div className="flex gap-2 flex-wrap">
+                      <div className="flex gap-2 flex-wrap items-center">
                         <button
                           onClick={handleCheckIn}
-                          disabled={isCheckingIn}
-                          className="h-10 px-5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-white font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition-all active:scale-95 cursor-pointer"
+                          disabled={isCheckingIn || isCheckedIn || isCheckedOut || !isCurrentTimeInShift()}
+                          className={`h-10 px-5 text-white font-black text-xs rounded-xl shadow-lg transition-all ${
+                            isCheckedIn || isCheckedOut || !isCurrentTimeInShift()
+                              ? 'bg-slate-700/50 text-slate-400 cursor-not-allowed shadow-none border border-white/5'
+                              : 'bg-emerald-500 hover:bg-emerald-400 shadow-emerald-500/20 active:scale-95 cursor-pointer'
+                          }`}
                         >
-                          {isCheckingIn ? 'Đang xử lý...' : 'Check-in'}
+                          {isCheckingIn
+                            ? 'Đang xử lý...'
+                            : isCheckedIn
+                            ? 'Đang trong ca'
+                            : isCheckedOut
+                            ? 'Đã kết thúc ca hôm nay'
+                            : !isCurrentTimeInShift()
+                            ? 'Khóa điểm danh (Ngoài giờ ca)'
+                            : 'Bắt đầu ca (Check-in)'}
                         </button>
                         <button
                           onClick={handleCheckOut}
-                          className="h-10 px-5 bg-amber-500 hover:bg-amber-400 text-white font-black text-xs rounded-xl shadow-lg shadow-amber-500/20 transition-all active:scale-95 cursor-pointer"
+                          disabled={!isCheckedIn || isCheckedOut}
+                          className={`h-10 px-5 text-white font-black text-xs rounded-xl shadow-lg transition-all ${
+                            !isCheckedIn || isCheckedOut
+                              ? 'bg-slate-700/50 text-slate-400 cursor-not-allowed shadow-none border border-white/5'
+                              : 'bg-amber-500 hover:bg-amber-400 shadow-amber-500/20 active:scale-95 cursor-pointer'
+                          }`}
                         >
-                          Check-out
+                          Kết thúc ca (Check-out)
                         </button>
                         <button
                           onClick={() => {
@@ -4547,6 +4883,12 @@ export default function DashboardPage() {
                         </button>
                       </div>
                     </div>
+                    {!isCheckedIn && !isCheckedOut && !isCurrentTimeInShift() && (
+                      <div className="p-3 bg-rose-500/15 border border-rose-500/30 rounded-xl text-rose-300 text-xs font-bold flex items-center gap-2">
+                        <span className="material-symbols-outlined text-base text-rose-400 shrink-0">lock_clock</span>
+                        <span>Hiện tại ngoài khung giờ <strong>{getShiftTimeLabel()}</strong>. Hệ thống đã khóa tính năng điểm danh. Bạn chỉ có thể điểm danh trong thời gian đăng ký ca.</span>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -5845,15 +6187,15 @@ export default function DashboardPage() {
         )}
       </main>
 
-      {/* ── COLUMN 3: RIGHT REALTIME ACTIVITY SIDEBAR (bg-slate-50 / dark:bg-[#070e1b]) ────── */}
+      {/* ── COLUMN 3: RIGHT REALTIME ACTIVITY SIDEBAR (bg-slate-50 / dark:bg-[#0F172A]) ────── */}
       <aside
-        className={`fixed xl:static inset-y-0 right-0 z-40 w-[320px] shrink-0 bg-slate-50/90 dark:bg-[#070e1b] border-l border-slate-200 dark:border-[#1e293b] p-5 h-screen flex flex-col overflow-y-auto transition-all duration-300 ease-in-out ${
+        className={`fixed xl:static inset-y-0 right-0 z-40 w-[320px] shrink-0 bg-slate-50/90 dark:bg-[#0F172A]/70 backdrop-blur-xl border-l border-slate-200 dark:border-white/10 p-5 h-screen flex flex-col overflow-y-auto transition-all duration-300 ease-in-out ${
           isRealtimeDrawerOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full xl:translate-x-0'
         }`}
       >
-        <div className="flex justify-between items-center mb-4 border-b border-slate-200 dark:border-[#1e293b] pb-3">
-          <h2 className="text-sm font-black uppercase tracking-wider text-slate-800 dark:text-[#dde1ff] flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#0284c7] dark:bg-[#38BDF8] animate-ping" />
+        <div className="flex justify-between items-center mb-4 border-b border-slate-200 dark:border-white/10 pb-3">
+          <h2 className="text-sm font-black uppercase tracking-wider text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#3B82F6] dark:bg-[#38BDF8] animate-ping" />
             {user?.role === 'admin'
               ? 'Chấm công realtime'
               : user?.role === 'barista'
@@ -6109,7 +6451,7 @@ export default function DashboardPage() {
                     : 'hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                Bàn {tableActivities.length > 0 && `(${tableActivities.length})`}
+                Bàn {(tableActivities.length + pendingTransferRequests.length) > 0 && `(${tableActivities.length + pendingTransferRequests.length})`}
               </button>
               <button
                 onClick={() => setActivityFilter('support')}
@@ -6135,6 +6477,48 @@ export default function DashboardPage() {
 
             {/* Timeline Items for Staff */}
             <div className="space-y-3 flex-1 overflow-y-auto scrollbar-none pr-1">
+              {/* Table Transfer Requests from Customers */}
+              {(activityFilter === 'all' || activityFilter === 'table' || activityFilter === 'support') &&
+                pendingTransferRequests.map((req) => (
+                  <div
+                    key={req.id}
+                    className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl space-y-2 text-xs shadow-2xs"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping shrink-0" />
+                        <span>{req.fromTableName} ➔ {req.toTableName}</span>
+                      </span>
+                      <span className="text-[10px] font-mono text-amber-600 dark:text-amber-400 font-extrabold">
+                        {req.createdAt
+                          ? new Date(req.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+                          : 'Vừa xong'}
+                      </span>
+                    </div>
+
+                    <p className="text-[11.5px] font-extrabold text-amber-700 dark:text-amber-300">
+                      Khách hàng <span className="underline">{req.customerName || 'Khách tại bàn'}</span> yêu cầu đổi bàn
+                    </p>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => handleApproveTransfer(req.id)}
+                        className="flex-1 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-[10.5px] font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center"
+                      >
+                        Chấp nhận
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRejectTransfer(req.id)}
+                        className="flex-1 py-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[10.5px] font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center"
+                      >
+                        Từ chối
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
               {/* Table Session Activity Items (Guest Joined / Guest Left) */}
               {(activityFilter === 'all' || activityFilter === 'table') &&
                 tableActivities.map((act) => (
@@ -6303,6 +6687,7 @@ export default function DashboardPage() {
               {staffCalls.length === 0 &&
                 drinkReadyList.length === 0 &&
                 tableActivities.length === 0 &&
+                pendingTransferRequests.length === 0 &&
                 orders.filter((o) => o.paymentNotified && o.status !== 'paid').length === 0 && (
                   <div className="p-6 text-center text-slate-400 text-xs italic">
                     Hiện chưa có hoạt động realtime nào mới.

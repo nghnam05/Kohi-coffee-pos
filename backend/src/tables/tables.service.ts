@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException, Optional, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, isValidObjectId, Types } from 'mongoose';
 import { Table, TableDocument } from './schemas/table.schema.js';
 import { Reservation, ReservationDocument } from '../reservations/schemas/reservation.schema.js';
 import { Order, OrderDocument } from '../orders/schemas/order.schema.js';
@@ -81,6 +81,21 @@ export class TablesService {
       normalizedPayload.qrToken = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
       normalizedPayload.currentSessionStartedAt = new Date();
       this.activeOccupantsMap.delete(id);
+
+      // Giải phóng bàn: hủy/đóng tất cả đơn hàng chưa thanh toán của bàn này
+      if (this.orderModel && typeof this.orderModel.updateMany === 'function') {
+        await this.orderModel.updateMany(
+          {
+            $or: [
+              { tableId: id },
+              ...(isValidObjectId(id) ? [{ tableId: new Types.ObjectId(id) }] : []),
+            ],
+            status: { $nin: ['paid', 'cancelled'] },
+            isDeleted: { $ne: true },
+          },
+          { status: 'cancelled' },
+        );
+      }
     }
 
     if (updateTableDto.tableName) {
@@ -113,6 +128,9 @@ export class TablesService {
 
     if (this.ordersGateway && updatedTable) {
       this.ordersGateway.emitTableUpdate(id, updatedTable.status);
+      if (updateTableDto.status === 'empty' && this.ordersGateway.server) {
+        this.ordersGateway.server.emit('ordersUpdated');
+      }
     }
 
     return updatedTable;
@@ -194,6 +212,10 @@ export class TablesService {
 
   getOccupantCount(tableId: string): number {
     return this.activeOccupantsMap.get(tableId)?.size || 0;
+  }
+
+  clearTableOccupants(tableId: string): void {
+    this.activeOccupantsMap.delete(tableId);
   }
 
   async remove(id: string): Promise<{ message: string }> {

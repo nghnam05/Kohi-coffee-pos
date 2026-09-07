@@ -95,64 +95,65 @@
   --shadow-sidebar:              1px 0 0 #e0e2ec;
 }
 
-/* ── Dark Mode ──────────────────────────────────────────── */
+/* ── Dark Mode (Bento Grid Deep Slate / Navy System) ───────── */
 [data-theme="dark"],
 .dark {
-  /* Backgrounds (Modern Deep Slate & Navy Palette) */
-  --bg-primary:        #0B0F17; /* Deep midnight slate - rich dark background */
-  --bg-surface:        #111726; /* Surface layer */
-  --bg-card:           #161F30; /* Elevated card background */
-  --bg-card-inner:     #1E2A40; /* Inner container / inputs */
+  /* Backgrounds (Deep Navy / Slate) */
+  --bg-primary:        #0B0F17; /* Deep midnight navy background */
+  --bg-surface:        #0F172A; /* Surface slate */
+  --bg-card:           rgba(15, 23, 42, 0.65); /* Glassmorphic card fill */
+  --bg-card-inner:     rgba(30, 41, 59, 0.55); /* Inner input / subtle containers */
 
-  /* Borders */
-  --border-color:      #2A3852; /* Clean slate navy border */
-  --border-strong:     #3E5278; /* High contrast border */
-  --border-focus:      #38BDF8; /* Neon electric focus border */
+  /* Glassmorphic Borders & Outlines */
+  --border-color:      rgba(255, 255, 255, 0.08); /* Thin translucent border */
+  --border-strong:     rgba(255, 255, 255, 0.16); /* High contrast border */
+  --border-focus:      #3B82F6; /* Vibrant Electric Blue focus border */
 
-  /* Text */
-  --text-primary:      #F8FAFC; /* Bright crisp text */
-  --text-secondary:    #CBD5E1; /* High contrast text */
-  --text-tertiary:     #94A3B8; /* WCAG AA compliant contrast */
+  /* Text Hierarchy */
+  --text-primary:      #FFFFFF; /* High-contrast pure white headings */
+  --text-secondary:    #CBD5E1; /* Secondary readable text */
+  --text-tertiary:     #94A3B8; /* Muted slate 75% opacity text */
 
-  /* Brand (Vibrant Electric Blue - Pops high-tech) */
-  --brand-primary:       #0084FF; /* Electric azure blue */
-  --brand-primary-hover: #38BDF8; /* Neon sky blue hover */
+  /* Brand Colors (Vibrant Electric Blue) */
+  --brand-primary:       #3B82F6; /* Vibrant Electric Blue */
+  --brand-primary-hover: #2563EB; /* Deep electric hover */
   --brand-primary-fg:    #FFFFFF; /* Pure white text for high contrast */
-  --brand-primary-muted: rgba(0, 132, 255, 0.18); /* Translucent electric glow */
+  --brand-primary-muted: rgba(59, 130, 246, 0.16); /* Electric blue glow tint */
 
-  /* Price — Bright Electric Cyan Blue */
+  /* Price — Vibrant Electric Blue / Neon Sky */
   --price-color:       #38BDF8;
 
-  /* Accent */
-  --accent:            #60A5FA;
+  /* Accent / Warnings / Highlights */
+  --accent:            #F59E0B; /* Warm Amber */
+  --accent-container:  rgba(245, 158, 11, 0.15);
 
-  /* Status / Semantic */
-  --color-success:     #10B981;
+  /* Semantic Status */
+  --color-success:     #10B981; /* Muted Emerald */
   --color-success-bg:  rgba(16, 185, 129, 0.15);
-  --color-warning:     #F59E0B;
+  --color-warning:     #F59E0B; /* Warm Amber */
   --color-warning-bg:  rgba(245, 158, 11, 0.15);
   --color-danger:      #EF4444;
   --color-danger-bg:   rgba(239, 68, 68, 0.15);
-  --color-info:        #38BDF8;
+  --color-info:        #3B82F6;
 
   /* CTA button disabled state */
-  --btn-disabled-bg:   #1E2A40;
+  --btn-disabled-bg:   rgba(30, 41, 59, 0.6);
   --btn-disabled-text: #64748B;
 
   /* Payment buttons in dark */
-  --payment-inactive-bg:     #1E2A40;
-  --payment-inactive-border: #2A3852;
+  --payment-inactive-bg:     rgba(30, 41, 59, 0.5);
+  --payment-inactive-border: rgba(255, 255, 255, 0.08);
   --payment-inactive-text:   #94A3B8;
 
   /* Upsell card */
-  --upsell-card-bg:    #1E2A40;
-  --upsell-card-border: #2A3852;
-  --upsell-card-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --upsell-card-bg:    rgba(30, 41, 59, 0.6);
+  --upsell-card-border: rgba(255, 255, 255, 0.08);
+  --upsell-card-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 
   /* Shadows (Glassmorphic glow depth) */
   --shadow-card:       0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 2px 6px -1px rgba(0, 0, 0, 0.4);
-  --shadow-card-hover: 0 12px 28px -4px rgba(0, 132, 255, 0.25), 0 0 15px rgba(56, 189, 248, 0.15);
-  --shadow-sidebar:    1px 0 0 #2A3852;
+  --shadow-card-hover: 0 12px 28px -4px rgba(59, 130, 246, 0.25), 0 0 16px rgba(59, 130, 246, 0.15);
+  --shadow-sidebar:    1px 0 0 rgba(255, 255, 255, 0.08);
 }
 
 /* ── Base element styles ───────────────────────────────── */

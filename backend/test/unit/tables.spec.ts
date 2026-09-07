@@ -26,7 +26,14 @@ describe('TablesService', () => {
         lean: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue([mockTable]),
       }),
-      findOne: jest.fn().mockResolvedValue(null),
+      findOne: jest.fn().mockImplementation(() => {
+        const query: any = Promise.resolve(null);
+        query.lean = jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue(null),
+        });
+        query.exec = jest.fn().mockResolvedValue(null);
+        return query;
+      }),
       findById: jest.fn().mockReturnValue({
         lean: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(mockTable),
@@ -54,7 +61,13 @@ describe('TablesService', () => {
         TablesService,
         { provide: getModelToken(Table.name), useValue: MockTableModel },
         { provide: getModelToken(Reservation.name), useValue: reservationModelMock },
-        { provide: getModelToken(Order.name), useValue: { countDocuments: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(0) }) } },
+        {
+          provide: getModelToken(Order.name),
+          useValue: {
+            countDocuments: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(0) }),
+            updateMany: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue({ modifiedCount: 0 }) }),
+          },
+        },
       ],
     }).compile();
 

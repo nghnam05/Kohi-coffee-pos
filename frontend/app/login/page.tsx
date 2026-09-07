@@ -147,16 +147,16 @@ export default function LoginPage() {
   const isDark = resolvedTheme === 'dark';
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-slate-50/60 dark:bg-[#070A10] text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans relative overflow-hidden selection:bg-[#0284c7] selection:text-white">
+    <div className="min-h-screen flex flex-col justify-between bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans relative overflow-hidden selection:bg-[#3B82F6] selection:text-white">
       {/* Ambient background glow effects */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-sky-400/10 via-sky-400/5 to-transparent dark:from-sky-500/10 dark:via-sky-500/5 blur-3xl pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-blue-500/10 via-blue-500/5 to-transparent blur-3xl pointer-events-none" />
 
       {/* ── TOP HEADER CONTROLS ─────────────────────────────────────────── */}
       <header className="w-full relative z-20 px-4 py-4 sm:px-8 sm:py-6">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <button
             onClick={() => router.push('/')}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-[#111622] border border-slate-200/80 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-[#0284c7] dark:hover:border-[#38BDF8] hover:text-[#0284c7] dark:hover:text-[#38BDF8] transition-all cursor-pointer active:scale-95 shadow-xs"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-[#3B82F6] dark:hover:border-[#3B82F6] hover:text-[#3B82F6] dark:hover:text-[#38BDF8] transition-all cursor-pointer active:scale-95 shadow-xs"
           >
             <span>{currText.backToHome}</span>
           </button>
@@ -174,7 +174,7 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="w-full max-w-[420px] bg-white dark:bg-[#0F141F] border border-slate-200/90 dark:border-slate-800/90 rounded-3xl p-7 sm:p-9 shadow-xl dark:shadow-2xl relative overflow-hidden transition-all"
+          className="w-full max-w-[420px] bg-white dark:bg-[#0F172A]/90 border border-slate-200/90 dark:border-white/10 rounded-2xl p-7 sm:p-9 shadow-xl dark:shadow-2xl backdrop-blur-xl relative overflow-hidden transition-all"
         >
           {/* Brand Header */}
           <div className="text-center mb-8 flex flex-col items-center">
@@ -198,8 +198,8 @@ export default function LoginPage() {
               <div className={`border ${
                 emailError
                   ? 'border-rose-500 ring-2 ring-rose-500/15'
-                  : 'border-slate-200 dark:border-slate-800'
-              } bg-slate-50/80 dark:bg-[#161D2C]/80 rounded-2xl h-11 flex items-center px-4 transition-all focus-within:border-[#0284c7] dark:focus-within:border-[#38BDF8] focus-within:ring-2 focus-within:ring-[#0284c7]/15 focus-within:bg-white dark:focus-within:bg-[#161D2C]`}>
+                  : 'border-slate-200 dark:border-white/10'
+              } bg-slate-50/80 dark:bg-slate-900/80 rounded-xl h-11 flex items-center px-4 transition-all focus-within:border-[#3B82F6] dark:focus-within:border-[#38BDF8] focus-within:ring-2 focus-within:ring-[#3B82F6]/15 focus-within:bg-white dark:focus-within:bg-slate-900`}>
                 <input
                   id="email"
                   type="email"
@@ -221,7 +221,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setIsForgotPasswordModalOpen(true)}
-                  className="text-[11px] font-bold text-[#0284c7] dark:text-[#38BDF8] hover:underline cursor-pointer transition-colors"
+                  className="text-[11px] font-bold text-[#3B82F6] dark:text-[#38BDF8] hover:underline cursor-pointer transition-colors"
                 >
                   {currText.forgotPassword}
                 </button>
@@ -230,8 +230,8 @@ export default function LoginPage() {
               <div className={`border ${
                 passwordError
                   ? 'border-rose-500 ring-2 ring-rose-500/15'
-                  : 'border-slate-200 dark:border-slate-800'
-              } bg-slate-50/80 dark:bg-[#161D2C]/80 rounded-2xl h-11 flex items-center px-4 transition-all focus-within:border-[#0284c7] dark:focus-within:border-[#38BDF8] focus-within:ring-2 focus-within:ring-[#0284c7]/15 focus-within:bg-white dark:focus-within:bg-[#161D2C]`}>
+                  : 'border-slate-200 dark:border-white/10'
+              } bg-slate-50/80 dark:bg-slate-900/80 rounded-xl h-11 flex items-center px-4 transition-all focus-within:border-[#3B82F6] dark:focus-within:border-[#38BDF8] focus-within:ring-2 focus-within:ring-[#3B82F6]/15 focus-within:bg-white dark:focus-within:bg-slate-900`}>
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -265,7 +265,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="mt-3 w-full h-11 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-black rounded-xl shadow-md hover:shadow-lg hover:shadow-[#0284c7]/20 active:scale-[0.98] transition-all duration-200 disabled:opacity-60 flex items-center justify-center text-xs uppercase tracking-wider font-sans cursor-pointer"
+              className="mt-3 w-full h-11 bg-[#3B82F6] hover:bg-blue-600 text-white font-black rounded-xl shadow-md hover:shadow-lg hover:shadow-blue-500/25 active:scale-[0.98] transition-all duration-200 disabled:opacity-60 flex items-center justify-center text-xs uppercase tracking-wider font-sans cursor-pointer"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center gap-2">
@@ -304,7 +304,7 @@ export default function LoginPage() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.96, opacity: 0, y: 10 }}
               transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-              className="relative w-full max-w-sm bg-white dark:bg-[#0F141F] border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl z-10 overflow-hidden text-center font-sans p-6 space-y-5"
+              className="relative w-full max-w-sm bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl z-10 overflow-hidden text-center font-sans p-6 space-y-5"
             >
               <div className="space-y-1.5 pt-1">
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading">
@@ -315,8 +315,8 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              <div className="p-4 bg-sky-50 dark:bg-sky-950/30 border border-sky-200/70 dark:border-sky-800/60 rounded-2xl text-left space-y-1.5 text-xs">
-                <p className="text-[#0284c7] dark:text-[#38BDF8] font-bold">
+              <div className="p-4 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-500/20 rounded-xl text-left space-y-1.5 text-xs">
+                <p className="text-[#3B82F6] dark:text-[#38BDF8] font-bold">
                   {lang === 'en' ? 'Password Reset Guide:' : lang === 'zh' ? '重置密码指南：' : 'Hướng dẫn đặt lại mật khẩu:'}
                 </p>
                 <p className="text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
@@ -326,7 +326,7 @@ export default function LoginPage() {
 
               <button
                 onClick={() => setIsForgotPasswordModalOpen(false)}
-                className="w-full h-11 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+                className="w-full h-11 bg-[#3B82F6] hover:bg-blue-600 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
               >
                 {currText.closeBtn}
               </button>

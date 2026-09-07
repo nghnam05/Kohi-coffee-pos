@@ -98,9 +98,9 @@ export const AdminAiReviewInsights: React.FC<AdminAiReviewInsightsProps> = ({ to
   };
 
   return (
-    <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-5 space-y-4 shadow-xs font-sans text-left">
+    <div className="bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 rounded-2xl p-5 space-y-4 shadow-xs font-sans text-left">
       {/* Title & Top Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-white/10 pb-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-amber-500 text-xl">auto_awesome</span>
@@ -115,7 +115,7 @@ export const AdminAiReviewInsights: React.FC<AdminAiReviewInsightsProps> = ({ to
         <button
           onClick={fetchInsights}
           disabled={loading}
-          className="px-4 py-2 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 text-xs font-bold font-sans transition-all active:scale-95 disabled:opacity-50 cursor-pointer self-start sm:self-auto shadow-xs flex items-center gap-1.5 shrink-0"
+          className="px-4 py-2 rounded-xl bg-[#3B82F6] hover:bg-blue-600 text-white text-xs font-bold font-sans transition-all active:scale-95 disabled:opacity-50 cursor-pointer self-start sm:self-auto shadow-xs flex items-center gap-1.5 shrink-0"
         >
           <span className={`material-symbols-outlined text-base ${loading ? 'animate-spin' : ''}`}>refresh</span>
           <span>{loading ? 'Đang phân tích...' : 'Cập nhật phân tích AI'}</span>
@@ -123,7 +123,7 @@ export const AdminAiReviewInsights: React.FC<AdminAiReviewInsightsProps> = ({ to
       </div>
 
       {/* Star Rating Filter Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-200/80 dark:border-slate-800">
+      <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-200/80 dark:border-white/10">
         <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-300">
           <span className="material-symbols-outlined text-slate-400 text-base">filter_alt</span>
           <span>Lọc theo số sao:</span>
@@ -185,14 +185,14 @@ export const AdminAiReviewInsights: React.FC<AdminAiReviewInsightsProps> = ({ to
                 key={itemKey}
                 className={`p-4 sm:p-5 rounded-2xl border transition-all space-y-3 shadow-xs relative flex flex-col justify-between ${
                   isAck
-                    ? 'bg-emerald-500/5 dark:bg-emerald-950/10 border-emerald-500/30'
+                    ? 'bg-emerald-500/5 dark:bg-emerald-950/20 border-emerald-500/30'
                     : item.avgStar <= 2
-                    ? 'bg-amber-500/5 dark:bg-amber-950/10 border-amber-500/30'
-                    : 'bg-slate-50/60 dark:bg-slate-900/50 border-slate-200/80 dark:border-slate-800'
+                    ? 'bg-amber-500/5 dark:bg-amber-950/20 border-amber-500/30'
+                    : 'bg-slate-50/60 dark:bg-slate-900/60 border-slate-200/80 dark:border-white/10'
                 }`}
               >
                 {/* Header Card */}
-                <div className="flex items-start justify-between gap-2 pb-2.5 border-b border-slate-200/60 dark:border-slate-800">
+                <div className="flex items-start justify-between gap-2 pb-2.5 border-b border-slate-200/60 dark:border-white/10">
                   <div>
                     <h4 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white font-sans tracking-tight">
                       {item.foodName}
@@ -225,18 +225,18 @@ export const AdminAiReviewInsights: React.FC<AdminAiReviewInsightsProps> = ({ to
                   <span className="text-[10.5px] font-bold text-slate-400 dark:text-slate-500 font-sans uppercase tracking-wider block">
                     Tóm tắt phản hồi của khách hàng:
                   </span>
-                  <p className="text-xs text-slate-700 dark:text-slate-200 font-sans leading-relaxed bg-white dark:bg-slate-950/60 p-3 rounded-xl border border-slate-200/70 dark:border-slate-800 font-medium">
+                  <p className="text-xs text-slate-700 dark:text-slate-200 font-sans leading-relaxed bg-white dark:bg-slate-950/60 p-3 rounded-xl border border-slate-200/70 dark:border-white/10 font-medium">
                     {item.negativeSummary}
                   </p>
                 </div>
 
                 {/* AI Solution */}
                 <div className="space-y-1">
-                  <span className="text-[10.5px] font-bold text-[#0284c7] dark:text-[#38BDF8] font-sans uppercase tracking-wider block flex items-center gap-1">
+                  <span className="text-[10.5px] font-bold text-[#3B82F6] dark:text-[#38BDF8] font-sans uppercase tracking-wider block flex items-center gap-1">
                     <span className="material-symbols-outlined text-xs">auto_awesome</span>
                     <span>AI Đề xuất giải pháp cải tiến:</span>
                   </span>
-                  <p className="text-xs text-slate-800 dark:text-slate-100 font-sans leading-relaxed bg-sky-500/5 dark:bg-sky-950/20 p-3 rounded-xl border border-sky-500/20 font-medium">
+                  <p className="text-xs text-slate-800 dark:text-slate-100 font-sans leading-relaxed bg-blue-500/5 dark:bg-blue-500/10 p-3 rounded-xl border border-blue-500/20 font-medium">
                     {item.aiSuggestedSolution}
                   </p>
                 </div>

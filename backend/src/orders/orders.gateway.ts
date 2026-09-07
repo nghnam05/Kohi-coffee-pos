@@ -229,5 +229,23 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
     }
   }
+
+  emitTableTransferRequested(data: any): void {
+    if (this.server) {
+      this.server.emit('tableTransferRequested', data);
+    }
+  }
+
+  emitTableTransferApproved(data: any): void {
+    if (this.server) {
+      this.server.emit('tableTransferApproved', data);
+    }
+  }
+
+  emitTableTransferRejected(data: any): void {
+    if (this.server) {
+      this.server.emit('tableTransferRejected', data);
+    }
+  }
 }
 
