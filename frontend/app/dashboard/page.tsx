@@ -839,6 +839,10 @@ export default function DashboardPage() {
   });
 
   const [reservations, setReservations] = useState<any[]>([]);
+  const [staffOccupiedReservation, setStaffOccupiedReservation] = useState<{
+    reservation: any;
+    suggestedTables: any[];
+  } | null>(null);
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<any | null>(null);
   const [couponForm, setCouponForm] = useState({
@@ -1032,9 +1036,9 @@ export default function DashboardPage() {
       } catch (e) {}
     });
 
-    socketRef.current.on('reservationStatusUpdated', ({ id, status }: { id: string; status: string }) => {
+    socketRef.current.on('reservationStatusUpdated', ({ id, status, checkInCode }: { id: string; status: string; checkInCode?: string }) => {
       setReservations((prev) =>
-        prev.map((r) => (r._id === id ? { ...r, status } : r))
+        prev.map((r) => (r._id === id ? { ...r, status, ...(checkInCode ? { checkInCode } : {}) } : r))
       );
       fetchTables(token);
     });
@@ -1665,6 +1669,85 @@ export default function DashboardPage() {
       showToast('Đã xóa đơn đặt bàn!', 'success');
     } catch (err) {
       showToast('Lỗi khi xóa đơn đặt bàn.', 'error');
+    }
+  };
+
+  const handleCancelLateReservation = async (id: string) => {
+    if (!token) return;
+    if (!confirm('Bạn có chắc chắn muốn hủy đơn đặt bàn này do khách trễ quá 30 phút? Bàn sẽ được giải phóng về trạng thái trống.')) return;
+    try {
+      const res = await fetch(`${API_BASE}/reservations/${id}/cancel-late`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Không thể hủy đơn đặt bàn trễ.');
+      }
+      showToast('Đã hủy đơn do khách trễ >30p và giải phóng bàn thành công!', 'success');
+      fetchReservations(token);
+      fetchTables(token);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Có lỗi xảy ra.', 'error');
+    }
+  };
+
+  const handleStaffCheckIn = async (resItem: any) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/reservations/${resItem._id}/customer-arrive`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          checkInCode: resItem.checkInCode || '',
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.message || 'Không thể xác nhận nhận bàn.');
+      }
+      if (data.statusCode === 'TABLE_OCCUPIED') {
+        setStaffOccupiedReservation({
+          reservation: resItem,
+          suggestedTables: data.suggestedTables || [],
+        });
+        return;
+      }
+      showToast(data.message || 'Khách đã nhận bàn thành công!', 'success');
+      fetchReservations(token);
+      fetchTables(token);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Có lỗi xảy ra.', 'error');
+    }
+  };
+
+  const handleStaffSwitchTable = async (resId: string, checkInCode: string, newTableId: string) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/reservations/${resId}/customer-arrive`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          checkInCode: checkInCode || '',
+          newTableId,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'Không thể đổi bàn.');
+      showToast(data.message || 'Đã đổi bàn và check-in thành công!', 'success');
+      setStaffOccupiedReservation(null);
+      fetchReservations(token);
+      fetchTables(token);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Có lỗi xảy ra.', 'error');
     }
   };
 
@@ -7369,21 +7452,6 @@ export default function DashboardPage() {
         {/* Reservations View: STAFF & ADMIN */}
         {activeTab === ('reservations' as any) && (
           <div className="flex-1 overflow-y-auto space-y-4 pb-24 lg:pb-10 scrollbar-thin">
-            <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 rounded-2xl flex justify-between items-center shadow-xs">
-              <div>
-                <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#0284c7] dark:text-[#38BDF8] text-lg">event_available</span>
-                  <span>Quản lý Danh sách Bàn đã đặt (Reservations)</span>
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Theo dõi và tiếp nhận thông tin giữ chỗ trực tuyến của khách hàng trước khi đến quán
-                </p>
-              </div>
-              <span className="bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] px-3.5 py-1.5 rounded-xl text-xs font-black">
-                {reservations.length} lượt giữ chỗ
-              </span>
-            </div>
-
             {reservations.length === 0 ? (
               <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-10 text-center text-slate-500 text-xs">
                 Chưa có đơn đặt bàn trực tuyến nào
@@ -7391,109 +7459,274 @@ export default function DashboardPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-3 sm:gap-4">
                 {reservations.map((res) => {
-                  let statusBadge = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30';
+                  let statusBadge = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25';
+                  let statusDot = 'bg-amber-500';
                   let statusLabel = 'Chờ xác nhận';
-                  let statusIcon = 'hourglass_empty';
 
                   if (res.status === 'confirmed') {
-                    statusBadge = 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30';
+                    statusBadge = 'bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] border-[#38BDF8]/30';
+                    statusDot = 'bg-[#38BDF8]';
                     statusLabel = 'Đã xác nhận';
-                    statusIcon = 'check_circle';
                   } else if (res.status === 'arrived') {
-                    statusBadge = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30';
+                    statusBadge = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25';
+                    statusDot = 'bg-emerald-500';
                     statusLabel = 'Khách đã đến';
-                    statusIcon = 'task_alt';
                   } else if (res.status === 'cancelled') {
-                    statusBadge = 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30';
+                    statusBadge = 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/25';
+                    statusDot = 'bg-rose-500';
                     statusLabel = 'Đã hủy đặt';
-                    statusIcon = 'cancel';
                   }
+
+                  const resTime = new Date(res.reservationTime).getTime();
+                  const isLateOver30 = res.status === 'confirmed' && (Date.now() - resTime) > 30 * 60 * 1000;
+
+                  const formatResDate = (dateStr: string) => {
+                    try {
+                      const d = new Date(dateStr);
+                      const time = d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false });
+                      const date = d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                      return `${time} · ${date}`;
+                    } catch {
+                      return new Date(dateStr).toLocaleString('vi-VN');
+                    }
+                  };
 
                   return (
                     <div
                       key={res._id}
-                      className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] hover:border-[#38BDF8]/40 p-5 rounded-2xl space-y-4 shadow-sm transition-all duration-200 flex flex-col justify-between"
+                      className={`bg-white dark:bg-[#131929] border ${
+                        isLateOver30
+                          ? 'border-rose-500/60 dark:border-rose-500/50 bg-rose-500/[0.02]'
+                          : 'border-slate-200/80 dark:border-white/10 hover:border-[#38BDF8]/50 dark:hover:border-[#38BDF8]/40'
+                      } p-4 sm:p-5 rounded-2xl space-y-3.5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between`}
                     >
-                      {/* Header: Customer Name & Phone & Status Badge */}
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between items-start gap-2">
+                      {/* Header: Customer Name & Phone & Status Badge (Minimal, no phone/status icons) */}
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="space-y-0.5 min-w-0">
                           <h4 className="font-extrabold text-slate-900 dark:text-white text-base tracking-tight font-heading truncate">
                             {res.customerName}
                           </h4>
-                          <span className={`px-2.5 py-1 rounded-full text-[10.5px] font-extrabold border flex items-center gap-1 shrink-0 ${statusBadge}`}>
-                            <span className="material-symbols-outlined text-xs">{statusIcon}</span>
+                          <div className="font-mono text-xs font-bold text-slate-500 dark:text-slate-400">
+                            {res.customerPhone}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                          {isLateOver30 && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 flex items-center gap-1 animate-pulse">
+                              <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                              <span>Trễ &gt; 30p</span>
+                            </span>
+                          )}
+                          <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider border flex items-center gap-1.5 ${statusBadge}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${statusDot}`} />
                             <span>{statusLabel}</span>
                           </span>
                         </div>
-
-                        <div className="flex items-center gap-1 text-xs font-bold text-[#0284c7] dark:text-[#38BDF8]">
-                          <span className="material-symbols-outlined text-xs">call</span>
-                          <span>{res.customerPhone}</span>
-                        </div>
                       </div>
 
-                      {/* Middle Info Block with Strong Typography Hierarchy */}
-                      <div className="py-2.5 border-t border-b border-slate-100 dark:border-[#1e293b] space-y-2 text-xs">
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-400 dark:text-slate-500 text-[11px] font-medium">Bàn chọn:</span>
-                          <span className="font-black text-slate-900 dark:text-white text-xs">{res.tableId?.tableName || 'Bàn chọn'}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-400 dark:text-slate-500 text-[11px] font-medium">Thời gian nhận bàn:</span>
-                          <span className="font-extrabold text-slate-800 dark:text-slate-200 text-xs">{new Date(res.reservationTime).toLocaleString('vi-VN')}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-400 dark:text-slate-500 text-[11px] font-medium">Số lượng khách:</span>
-                          <span className="font-extrabold text-slate-800 dark:text-slate-200 text-xs">{res.guestCount} người</span>
-                        </div>
-                        {res.note && (
-                          <div className="pt-1.5 flex items-start gap-1.5 text-[11px] text-amber-600 dark:text-amber-400 bg-amber-500/5 p-2 rounded-xl border border-amber-500/10">
-                            <span className="material-symbols-outlined text-xs shrink-0 mt-0.5">sticky_note_2</span>
-                            <span className="italic font-medium">{res.note}</span>
+                      {/* Middle Info Block: Clean Structured Micro-Grid without Icons */}
+                      <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-50 dark:bg-[#0B0F17] border border-slate-100 dark:border-white/5 text-xs">
+                        <div>
+                          <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                            Bàn đặt
                           </div>
-                        )}
+                          <div className="font-extrabold text-slate-900 dark:text-white text-xs mt-0.5 truncate">
+                            {res.tableId?.tableName || 'Chưa xếp bàn'}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                            Số lượng
+                          </div>
+                          <div className="font-extrabold text-slate-900 dark:text-white text-xs mt-0.5">
+                            {res.guestCount} người
+                          </div>
+                        </div>
+                        <div className="col-span-2 pt-2 border-t border-slate-200/60 dark:border-white/5 flex justify-between items-center">
+                          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                            Giờ nhận bàn
+                          </span>
+                          <span className="font-mono font-extrabold text-slate-800 dark:text-slate-200 text-xs">
+                            {formatResDate(res.reservationTime)}
+                          </span>
+                        </div>
                       </div>
 
-                      {/* Bottom Standardized Action Button Grid */}
-                      <div className="grid grid-cols-12 gap-2 pt-1 items-center">
-                        {res.status === 'pending' && (
+                      {/* Check-In PIN Display: Modern, High-Contrast Pill without Icons */}
+                      {res.checkInCode && (
+                        <div className="flex justify-between items-center bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 border border-[#38BDF8]/30 px-3.5 py-2 rounded-xl">
+                          <span className="text-[#0284c7] dark:text-[#38BDF8] text-[11px] font-extrabold uppercase tracking-wider">
+                            Mã nhận bàn
+                          </span>
+                          <span className="font-mono font-black text-sm tracking-[0.25em] text-[#090D16] dark:text-white bg-white dark:bg-[#090D16] px-3 py-0.5 rounded-lg border border-[#38BDF8]/40 shadow-xs">
+                            {res.checkInCode}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Special Note without Icon */}
+                      {res.note && (
+                        <div className="text-xs text-amber-800 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 px-3 py-2 rounded-xl font-medium">
+                          <span className="font-extrabold text-amber-900 dark:text-amber-200">Ghi chú:</span> {res.note}
+                        </div>
+                      )}
+
+                      {/* Bottom Actions: Clean Minimalist Buttons */}
+                      <div className="space-y-2 pt-1">
+                        {isLateOver30 && (
                           <button
-                            onClick={() => handleUpdateReservationStatus(res._id, 'confirmed')}
-                            className="col-span-5 py-2.5 bg-[#38BDF8] text-[#090D16] text-xs font-black rounded-xl hover:bg-[#0284c7] transition-all flex items-center justify-center gap-1 shadow-xs cursor-pointer"
+                            type="button"
+                            onClick={() => handleCancelLateReservation(res._id)}
+                            className="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-98 text-center"
+                            title="Khách trễ hơn 30 phút so với giờ hẹn"
                           >
-                            <span className="material-symbols-outlined text-xs">check</span>
-                            <span>Xác nhận</span>
+                            Hủy do trễ hẹn (&gt;30p) - Trả bàn trống
                           </button>
                         )}
-                        {res.status !== 'arrived' && res.status !== 'cancelled' && (
+
+                        <div className="flex items-center gap-2">
+                          {res.status === 'pending' && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateReservationStatus(res._id, 'confirmed')}
+                                className="flex-1 py-2.5 bg-[#38BDF8] text-[#090D16] hover:bg-[#0284c7] hover:text-white text-xs font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center"
+                              >
+                                Duyệt đặt bàn
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateReservationStatus(res._id, 'cancelled')}
+                                className="px-3.5 py-2.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500 hover:text-white text-xs font-extrabold rounded-xl transition-all cursor-pointer active:scale-95 text-center"
+                              >
+                                Từ chối
+                              </button>
+                            </>
+                          )}
+
+                          {res.status === 'confirmed' && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => handleStaffCheckIn(res)}
+                                className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center"
+                              >
+                                Khách đã đến (Nhận bàn)
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateReservationStatus(res._id, 'cancelled')}
+                                className="px-3.5 py-2.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500 hover:text-white text-xs font-extrabold rounded-xl transition-all cursor-pointer active:scale-95 text-center"
+                                title="Hủy đơn đặt bàn"
+                              >
+                                Hủy
+                              </button>
+                            </>
+                          )}
+
+                          {res.status === 'arrived' && (
+                            <div className="flex-1 py-2 px-3 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-xl text-xs font-extrabold">
+                              Khách đã nhận bàn và đang dùng bữa
+                            </div>
+                          )}
+
+                          {res.status === 'cancelled' && (
+                            <div className="flex-1 py-2 px-3 bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 rounded-xl text-xs font-bold">
+                              Đơn đặt bàn đã bị hủy
+                            </div>
+                          )}
+
                           <button
-                            onClick={() => handleUpdateReservationStatus(res._id, 'arrived')}
-                            className={`${res.status === 'pending' ? 'col-span-4' : 'col-span-7'} py-2.5 bg-emerald-500 text-white text-xs font-black rounded-xl hover:bg-emerald-600 transition-all flex items-center justify-center gap-1 shadow-xs cursor-pointer`}
+                            type="button"
+                            onClick={() => handleDeleteReservation(res._id)}
+                            className="p-2 text-slate-400 hover:text-rose-500 transition-colors flex items-center justify-center cursor-pointer shrink-0 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 ml-auto"
+                            title="Xóa đơn đặt bàn"
                           >
-                            <span className="material-symbols-outlined text-xs">directions_walk</span>
-                            <span>Đã đến</span>
+                            <span className="material-symbols-outlined text-base">delete</span>
                           </button>
-                        )}
-                        {res.status !== 'cancelled' && (
-                          <button
-                            onClick={() => handleUpdateReservationStatus(res._id, 'cancelled')}
-                            className={`${res.status === 'pending' ? 'col-span-2' : 'col-span-3'} py-2.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500 hover:text-white text-xs font-extrabold rounded-xl transition-all flex items-center justify-center cursor-pointer`}
-                            title="Hủy đơn đặt bàn"
-                          >
-                            <span>Hủy</span>
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleDeleteReservation(res._id)}
-                          className={`${res.status === 'arrived' || res.status === 'cancelled' ? 'col-span-12 ml-auto' : 'col-span-1'} p-2.5 text-slate-400 hover:text-rose-500 transition-colors flex items-center justify-center cursor-pointer`}
-                          title="Xóa đơn đặt bàn"
-                        >
-                          <span className="material-symbols-outlined text-base">delete</span>
-                        </button>
+                        </div>
                       </div>
                     </div>
                   );
                 })}
+              </div>
+            )}
+
+            {/* Staff Occupied Table Switch Modal */}
+            {staffOccupiedReservation && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm select-none">
+                <div className="relative w-full max-w-lg rounded-2xl bg-white dark:bg-[#131929] border border-slate-200 dark:border-white/10 p-6 space-y-5 shadow-2xl z-10 font-sans">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <h4 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2 font-heading">
+                        <span className="material-symbols-outlined text-amber-500">info</span>
+                        <span>Bàn Hiện Đang Có Khách Ngồi</span>
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Bàn <strong>{staffOccupiedReservation.reservation.tableId?.tableName || 'đã đặt'}</strong> đang phục vụ khách trước giờ hẹn của{' '}
+                        <strong>{staffOccupiedReservation.reservation.customerName}</strong> ({staffOccupiedReservation.reservation.guestCount} khách).
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setStaffOccupiedReservation(null)}
+                      className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white"
+                    >
+                      <span className="material-symbols-outlined text-lg">close</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Gợi ý bàn trống sẵn sàng đón khách ngay:
+                    </span>
+                    {staffOccupiedReservation.suggestedTables.length === 0 ? (
+                      <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs text-center text-slate-500">
+                        Hiện không có bàn trống nào khác phù hợp. Vui lòng hướng dẫn khách chờ trong giây lát.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-60 overflow-y-auto pr-1">
+                        {staffOccupiedReservation.suggestedTables.map((tbl: any) => (
+                          <button
+                            key={tbl._id}
+                            type="button"
+                            onClick={() =>
+                              handleStaffSwitchTable(
+                                staffOccupiedReservation.reservation._id,
+                                staffOccupiedReservation.reservation.checkInCode || '',
+                                tbl._id,
+                              )
+                            }
+                            className="p-3 rounded-xl border border-[#38BDF8]/40 hover:border-[#38BDF8] bg-sky-500/5 hover:bg-sky-500/15 text-left transition-all flex justify-between items-center group cursor-pointer"
+                          >
+                            <div>
+                              <div className="font-extrabold text-slate-900 dark:text-white text-xs group-hover:text-[#0284c7] dark:group-hover:text-[#38BDF8]">
+                                {tbl.tableName}
+                              </div>
+                              <div className="text-[10.5px] text-slate-500 dark:text-slate-400">
+                                Sức chứa: {tbl.capacity || 2} người
+                              </div>
+                            </div>
+                            <span className="material-symbols-outlined text-sm text-[#0284c7] dark:text-[#38BDF8]">
+                              login
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-2 flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setStaffOccupiedReservation(null)}
+                      className="px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                    >
+                      Đóng (Khách sẽ chờ bàn cũ)
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>

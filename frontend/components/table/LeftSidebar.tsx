@@ -65,71 +65,74 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   return (
     <aside
       data-lenis-prevent
-      className="hidden md:flex flex-col h-full py-5 px-4 w-64 xl:w-72 flex-shrink-0 bg-white/95 dark:bg-[#0F172A]/75 backdrop-blur-xl text-slate-900 dark:text-white border-r border-slate-200 dark:border-white/10 overflow-y-auto scrollbar-none transition-colors font-sans"
+      className="hidden md:flex flex-col h-full py-4 px-3.5 xl:px-4 w-64 xl:w-72 flex-shrink-0 bg-white/95 dark:bg-[#0F172A]/75 backdrop-blur-xl text-slate-900 dark:text-white border-r border-slate-200 dark:border-white/10 overflow-hidden transition-colors font-sans"
     >
-      {/* Brand Header */}
-      <div className="mb-5">
-        <BrandLogo />
-      </div>
-
-      {/* Table Location Badge Box (Clickable to open Table QR Modal) */}
-      <button
-        onClick={onOpenQRModal}
-        className="w-full text-left relative mb-3 group cursor-pointer active:scale-[0.98] transition-all"
-        title={lang === 'en' ? 'Click to view QR code for this table' : lang === 'zh' ? '点击查看此桌位的二维码' : 'Bấm vào để xem mã QR đặt món của bàn này'}
-      >
-        <div className="bg-slate-100 dark:bg-slate-900/60 hover:bg-gradient-to-r hover:from-blue-600 hover:to-sky-500 text-slate-900 dark:text-white hover:text-white border border-slate-200 dark:border-white/10 hover:border-transparent rounded-2xl px-3.5 py-2.5 flex items-center justify-between shadow-xs hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 gap-2">
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 group-hover:text-white/80 uppercase tracking-[0.08em] mb-0.5 font-sans transition-colors truncate">
-              {lang === 'en' ? 'Current Table' : lang === 'zh' ? '当前位置' : 'Vị trí hiện tại'}
-            </p>
-            <span className="text-xs xl:text-sm font-extrabold tracking-tight flex items-center gap-1.5 font-sans text-slate-900 dark:text-white group-hover:text-white transition-colors truncate">
-              <span className="material-symbols-outlined text-base text-sky-500 dark:text-sky-400 group-hover:text-white transition-colors shrink-0">location_on</span>
-              <span className="truncate">{isLoading ? (lang === 'en' ? 'Loading...' : lang === 'zh' ? '加载中...' : 'Đang tải...') : formatTableLocation(table?.tableName, lang)}</span>
-            </span>
-          </div>
-          <div className="shrink-0 flex items-center gap-1 bg-slate-200/80 dark:bg-white/10 group-hover:bg-white/20 text-slate-700 dark:text-slate-300 group-hover:text-white px-2 py-1 rounded-xl backdrop-blur-xs transition-colors">
-            <span className="material-symbols-outlined text-xs animate-pulse">qr_code_scanner</span>
-            <span className="text-[10px] font-bold font-sans whitespace-nowrap">{lang === 'en' ? 'QR Code' : lang === 'zh' ? '二维码' : 'Mã QR'}</span>
-          </div>
+      {/* Top Fixed Section */}
+      <div className="shrink-0">
+        {/* Brand Header */}
+        <div className="mb-4">
+          <BrandLogo />
         </div>
-      </button>
 
-      {/* High Visibility Call Staff Button */}
-      <div className="relative mb-4">
+        {/* Table Location Badge Box (Clickable to open Table QR Modal) */}
         <button
-          onClick={handleCallStaff}
-          disabled={callStaffCooldown > 0 || isCallingStaff}
-          className="w-full group py-3 px-4 bg-amber-500/10 hover:bg-gradient-to-r hover:from-amber-500 hover:to-orange-500 border border-amber-500/30 hover:border-transparent text-amber-500 dark:text-amber-400 hover:text-white rounded-xl flex items-center justify-center gap-2 transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-orange-500/30 font-extrabold text-[13px] font-sans tracking-wide cursor-pointer"
+          onClick={onOpenQRModal}
+          className="w-full text-left relative mb-2.5 group cursor-pointer active:scale-[0.98] transition-all"
+          title={lang === 'en' ? 'Click to view QR code for this table' : lang === 'zh' ? '点击查看此桌位的二维码' : 'Bấm vào để xem mã QR đặt món của bàn này'}
         >
-          <span className="material-symbols-outlined text-[19px] text-amber-500 dark:text-amber-400 group-hover:text-white transition-colors animate-bounce">notifications_active</span>
-          <span>
-            {callStaffCooldown > 0
-              ? (lang === 'en' ? `WAIT ${callStaffCooldown}S...` : lang === 'zh' ? `请稍等 ${callStaffCooldown} 秒...` : `CHỜ ${callStaffCooldown}S...`)
-              : (lang === 'en' ? 'CALL STAFF' : lang === 'zh' ? '呼叫服务员' : 'GỌI NHÂN VIÊN')}
-          </span>
+          <div className="bg-slate-100 dark:bg-slate-900/60 hover:bg-gradient-to-r hover:from-blue-600 hover:to-sky-500 text-slate-900 dark:text-white hover:text-white border border-slate-200 dark:border-white/10 hover:border-transparent rounded-2xl px-3.5 py-2.5 flex items-center justify-between shadow-xs hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 group-hover:text-white/80 uppercase tracking-[0.08em] mb-0.5 font-sans transition-colors truncate">
+                {lang === 'en' ? 'Current Table' : lang === 'zh' ? '当前位置' : 'Vị trí hiện tại'}
+              </p>
+              <span className="text-xs xl:text-sm font-extrabold tracking-tight flex items-center gap-1.5 font-sans text-slate-900 dark:text-white group-hover:text-white transition-colors truncate">
+                <span className="material-symbols-outlined text-base text-sky-500 dark:text-sky-400 group-hover:text-white transition-colors shrink-0">location_on</span>
+                <span className="truncate">{isLoading ? (lang === 'en' ? 'Loading...' : lang === 'zh' ? '加载中...' : 'Đang tải...') : formatTableLocation(table?.tableName, lang)}</span>
+              </span>
+            </div>
+            <div className="shrink-0 flex items-center gap-1 bg-slate-200/80 dark:bg-white/10 group-hover:bg-white/20 text-slate-700 dark:text-slate-300 group-hover:text-white px-2 py-1 rounded-xl backdrop-blur-xs transition-colors">
+              <span className="material-symbols-outlined text-xs animate-pulse">qr_code_scanner</span>
+              <span className="text-[10px] font-bold font-sans whitespace-nowrap">{lang === 'en' ? 'QR Code' : lang === 'zh' ? '二维码' : 'Mã QR'}</span>
+            </div>
+          </div>
         </button>
+
+        {/* High Visibility Call Staff Button */}
+        <div className="relative mb-2.5">
+          <button
+            onClick={handleCallStaff}
+            disabled={callStaffCooldown > 0 || isCallingStaff}
+            className="w-full group py-2.5 px-4 bg-amber-500/10 hover:bg-gradient-to-r hover:from-amber-500 hover:to-orange-500 border border-amber-500/30 hover:border-transparent text-amber-500 dark:text-amber-400 hover:text-white rounded-xl flex items-center justify-center gap-2 transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-orange-500/30 font-extrabold text-[13px] font-sans tracking-wide cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[19px] text-amber-500 dark:text-amber-400 group-hover:text-white transition-colors animate-bounce">notifications_active</span>
+            <span>
+              {callStaffCooldown > 0
+                ? (lang === 'en' ? `WAIT ${callStaffCooldown}S...` : lang === 'zh' ? `请稍等 ${callStaffCooldown} 秒...` : `CHỜ ${callStaffCooldown}S...`)
+                : (lang === 'en' ? 'CALL STAFF' : lang === 'zh' ? '呼叫服务员' : 'GỌI NHÂN VIÊN')}
+            </span>
+          </button>
+        </div>
+
+        {/* Search Input Box */}
+        <div className="relative mb-2">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none">
+            search
+          </span>
+          <input
+            type="text"
+            placeholder={lang === 'en' ? 'Search coffee, tea, pastry...' : lang === 'zh' ? '搜索咖啡、水果茶、糕点...' : 'Tìm kiếm món ăn, cà phê...'}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 rounded-xl py-2 pl-9 pr-3 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition-colors placeholder-slate-400 font-sans font-normal"
+          />
+        </div>
       </div>
 
-      {/* Search Input Box */}
-      <div className="relative mb-4">
-        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none">
-          search
-        </span>
-        <input
-          type="text"
-          placeholder={lang === 'en' ? 'Search coffee, tea, pastry...' : lang === 'zh' ? '搜索咖啡、水果茶、糕点...' : 'Tìm kiếm món ăn, cà phê...'}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 rounded-xl py-2.5 pl-9 pr-3 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition-colors placeholder-slate-400 font-sans font-normal"
-        />
-      </div>
-
-      {/* Category Navigation Menu */}
-      <nav className="flex-col gap-1.5 flex mb-4">
+      {/* Category Navigation Menu (Independently Scrollable with Custom Thin Scrollbar) */}
+      <nav className="flex-1 min-h-0 flex flex-col gap-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700 hover:scrollbar-thumb-slate-400 dark:hover:scrollbar-thumb-slate-600 pr-1 py-1 my-1">
         <button
           onClick={() => setActiveCategory('')}
-          className={`w-full px-3.5 py-2.5 rounded-xl text-[13px] transition-all text-left font-sans cursor-pointer ${
+          className={`w-full px-3.5 py-2.5 rounded-xl text-[13px] transition-all text-left font-sans cursor-pointer shrink-0 ${
             activeCategory === ''
               ? 'bg-[#3B82F6] text-white font-extrabold shadow-[0_4px_14px_rgba(59,130,246,0.35)]'
               : 'text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'
@@ -143,7 +146,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`w-full px-3.5 py-2.5 rounded-xl text-[13px] transition-all text-left font-sans cursor-pointer ${
+              className={`w-full px-3.5 py-2.5 rounded-xl text-[13px] transition-all text-left font-sans cursor-pointer shrink-0 ${
                 isActive
                   ? 'bg-[#3B82F6] text-white font-extrabold shadow-[0_4px_14px_rgba(59,130,246,0.35)]'
                   : 'text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'
@@ -156,10 +159,10 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
       </nav>
 
       {/* Divider */}
-      <div className="border-t border-slate-200 dark:border-white/10 my-2" />
+      <div className="shrink-0 border-t border-slate-200 dark:border-white/10 my-2" />
 
-      {/* Utilities Stack */}
-      <div className="flex flex-col gap-2.5 mb-4">
+      {/* Utilities Stack (Fixed at Bottom) */}
+      <div className="shrink-0 flex flex-col gap-2 mt-auto">
         {/* Settings: Theme & Language Segmented Controls */}
         <div className="flex items-center justify-between gap-2 p-1.5 bg-slate-100/80 dark:bg-slate-900/50 border border-slate-200/90 dark:border-white/10 rounded-2xl shadow-xs">
           <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />

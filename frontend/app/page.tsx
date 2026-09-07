@@ -13,6 +13,7 @@ import { BrandLogo } from '@/components/table/BrandLogo';
 import { formatTableName, formatTableLocation, formatTableFloor } from '@/utils/format';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from '@/context/LanguageContext';
+import { io } from 'socket.io-client';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
@@ -186,6 +187,48 @@ export default function Home() {
   const [hasSearchedLookup, setHasSearchedLookup] = useState(false);
   const [error, setError] = useState('');
 
+  // Check-in PIN Modal states
+  const [pinModalRes, setPinModalRes] = useState<any | null>(null);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState('');
+  const [isVerifyingPin, setIsVerifyingPin] = useState(false);
+
+  // Table Occupied / Suggestion Modal states
+  const [occupiedData, setOccupiedData] = useState<{
+    resId: string;
+    currentTable: any;
+    suggestedTables: any[];
+    checkInCode: string;
+  } | null>(null);
+  const [isSwitchingTable, setIsSwitchingTable] = useState(false);
+
+  // One-time code popup state (Chỉ hiển thị 1 lần duy nhất khi phục vụ duyệt!)
+  const [oneTimeCodeData, setOneTimeCodeData] = useState<{
+    id: string;
+    tableName: string;
+    code: string;
+  } | null>(null);
+
+  const handleAcknowledgeOneTimeCode = async () => {
+    if (!oneTimeCodeData) return;
+    const targetId = oneTimeCodeData.id;
+    try {
+      await fetch(`${API_BASE}/reservations/${targetId}/mark-code-viewed`, {
+        method: 'PATCH',
+      });
+    } catch (e) {}
+    setLookupResults((prev) =>
+      prev.map((r) => (r._id === targetId ? { ...r, checkInCode: null, isCodeViewed: true } : r)),
+    );
+    setBookingSuccess((prev: any) => {
+      if (prev && prev._id === targetId) {
+        return { ...prev, checkInCode: null, isCodeViewed: true };
+      }
+      return prev;
+    });
+    setOneTimeCodeData(null);
+  };
+
   const isDark = resolvedTheme === 'dark';
 
   useEffect(() => {
@@ -194,6 +237,41 @@ export default function Home() {
 
     // Default datetime input to 2 hours from now
     setPresetTime(2);
+
+    const socketBase = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
+    const socket = io(socketBase);
+
+    socket.on('reservationStatusUpdated', ({ id, status, checkInCode }: any) => {
+      if (status === 'confirmed' && checkInCode) {
+        try { playWelcomeChime(); } catch (e) {}
+        setOneTimeCodeData({
+          id,
+          tableName: '',
+          code: checkInCode,
+        });
+      }
+
+      setBookingSuccess((prev: any) => {
+        if (prev && prev._id === id) {
+          return { ...prev, status, ...(checkInCode ? { checkInCode } : {}) };
+        }
+        return prev;
+      });
+
+      setLookupResults((prev) =>
+        prev.map((r) => (r._id === id ? { ...r, status, ...(checkInCode ? { checkInCode } : {}) } : r)),
+      );
+
+      fetchTables();
+    });
+
+    socket.on('tableUpdated', () => {
+      fetchTables();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const setPresetTime = (hoursFromNow: number) => {
@@ -249,6 +327,19 @@ export default function Home() {
         const data = await res.json();
         setLookupResults(data);
         setHasSearchedLookup(true);
+
+        // Nếu có đơn đã duyệt có mã PIN chưa xem -> hiển thị modal 1 lần duy nhất
+        const unviewed = (data || []).find(
+          (r: any) => r.status === 'confirmed' && r.checkInCode && !r.isCodeViewed,
+        );
+        if (unviewed) {
+          try { playWelcomeChime(); } catch (e) {}
+          setOneTimeCodeData({
+            id: unviewed._id,
+            tableName: unviewed.tableId?.tableName || '',
+            code: unviewed.checkInCode,
+          });
+        }
       } else {
         throw new Error('Không thể tra cứu đơn đặt bàn.');
       }
@@ -259,23 +350,60 @@ export default function Home() {
     }
   };
 
-  // Customer arrive & go to menu
-  const handleCustomerArrive = async (resId: string, targetTableId: string) => {
+  // Customer arrive & go to menu (with 4-digit PIN verification & early table occupied check)
+  const handleCustomerArrive = async (
+    resId: string,
+    targetTableId: string,
+    checkInCode?: string,
+    preferredNewTableId?: string,
+  ) => {
     try {
+      setIsVerifyingPin(true);
+      setPinError('');
       const res = await fetch(`${API_BASE}/reservations/${resId}/customer-arrive`, {
         method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          checkInCode: (checkInCode || '').trim(),
+          newTableId: preferredNewTableId || '',
+        }),
       });
+
+      const resData = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.message || 'Không thể cập nhật trạng thái đã đến.');
+        throw new Error(resData.message || 'Không thể cập nhật trạng thái đã đến.');
       }
-      playWelcomeChime();
-      toast.success(lang === 'en' ? 'Welcome! Redirecting to menu...' : 'Chào mừng quý khách! Đang chuyển tới Menu gọi món...');
+
+      // Nếu bàn đang có khách ngồi trước giờ hẹn -> hiển thị modal gợi ý bàn trống
+      if (resData.statusCode === 'TABLE_OCCUPIED') {
+        setPinModalRes(null);
+        setOccupiedData({
+          resId,
+          currentTable: resData.currentTable,
+          suggestedTables: resData.suggestedTables || [],
+          checkInCode: (checkInCode || '').trim(),
+        });
+        return;
+      }
+
+      setPinModalRes(null);
+      setOccupiedData(null);
+      try { playWelcomeChime(); } catch (e) {}
+      toast.success(
+        lang === 'en'
+          ? 'Welcome! Redirecting to menu...'
+          : 'Chào mừng quý khách! Đang chuyển tới Menu gọi món...',
+      );
       setTimeout(() => {
-        router.push(`/table/${targetTableId}`);
+        router.push(`/table/${resData.tableId || targetTableId}`);
       }, 1000);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Có lỗi xảy ra.');
+      const msg = err instanceof Error ? err.message : 'Có lỗi xảy ra.';
+      setPinError(msg);
+      toast.error(msg);
+    } finally {
+      setIsVerifyingPin(false);
     }
   };
 
@@ -860,11 +988,11 @@ export default function Home() {
 
                     {lookupResults.map((res) => {
                       let statusBadge = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
-                      let statusLabel = lang === 'en' ? 'Pending' : 'Chờ xác nhận';
+                      let statusLabel = lang === 'en' ? 'Pending Staff Approval' : 'Chờ phục vụ duyệt';
 
                       if (res.status === 'confirmed') {
-                        statusBadge = 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
-                        statusLabel = lang === 'en' ? 'Confirmed' : 'Đã xác nhận';
+                        statusBadge = 'bg-sky-500/10 text-[#0284c7] dark:text-[#38BDF8] border-sky-500/30';
+                        statusLabel = lang === 'en' ? 'Confirmed' : 'Đã duyệt thành công';
                       } else if (res.status === 'arrived') {
                         statusBadge = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
                         statusLabel = lang === 'en' ? 'Arrived' : 'Khách đã đến';
@@ -873,7 +1001,8 @@ export default function Home() {
                         statusLabel = lang === 'en' ? 'Cancelled' : 'Đã hủy';
                       }
 
-                      const canCancel = res.status === 'pending' || res.status === 'confirmed';
+                      const isPending = res.status === 'pending';
+                      const isConfirmed = res.status === 'confirmed';
                       const isArrived = res.status === 'arrived';
                       const targetTableId = res.tableId?._id || res.tableId;
                       const tableNameStr = formatTableName(res.tableId?.tableName, lang);
@@ -920,6 +1049,19 @@ export default function Home() {
                                 {res.guestCount} {lang === 'en' ? 'guests' : lang === 'zh' ? '人' : 'người'}
                               </span>
                             </div>
+
+                            {isConfirmed && (
+                              <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-white/10 text-xs flex justify-between items-center">
+                                <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                  <span className="material-symbols-outlined text-sm text-[#0284c7] dark:text-[#38BDF8]">verified_user</span>
+                                  <span>Mã nhận bàn:</span>
+                                </span>
+                                <span className="font-mono font-extrabold tracking-widest text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-[#090D16] px-2.5 py-1 rounded-md border border-slate-300 dark:border-slate-700">
+                                  •••• (Bảo mật - chỉ cấp 1 lần)
+                                </span>
+                              </div>
+                            )}
+
                             {res.note && (
                               <div className="pt-1 text-xs text-amber-600 dark:text-amber-400 italic">
                                 {lang === 'en' ? 'Note: ' : lang === 'zh' ? '备注：' : 'Ghi chú: '}{res.note}
@@ -931,20 +1073,41 @@ export default function Home() {
                             <button
                               type="button"
                               onClick={() => router.push(`/table/${targetTableId}`)}
-                              className="w-full h-11 bg-[#3B82F6] hover:bg-blue-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center min-h-[44px]"
+                              className="w-full h-11 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] hover:text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center min-h-[44px]"
                             >
                               {lang === 'en' ? `GO TO TABLE ORDER (${tableNameStr})` : lang === 'zh' ? `进入桌位点餐 (${tableNameStr})` : `VÀO BÀN GỌI MÓN (${tableNameStr})`}
                             </button>
                           )}
 
-                          {canCancel && targetTableId && (
+                          {isPending && (
+                            <div className="space-y-2">
+                              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
+                                <span className="material-symbols-outlined text-base shrink-0 mt-0.5 animate-pulse">hourglass_empty</span>
+                                <span>Đơn đặt bàn đang chờ nhân viên phục vụ duyệt. Quý khách vui lòng chờ trong giây lát.</span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleCustomerCancelReservation(res._id)}
+                                className="w-full h-10 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-500 border border-rose-500/20 text-xs font-bold rounded-xl transition-all flex items-center justify-center cursor-pointer active:scale-95 min-h-[44px]"
+                              >
+                                {lang === 'en' ? 'CANCEL THIS RESERVATION' : lang === 'zh' ? '取消此预订' : 'HỦY ĐƠN ĐẶT BÀN NÀY'}
+                              </button>
+                            </div>
+                          )}
+
+                          {isConfirmed && targetTableId && (
                             <div className="space-y-2">
                               <button
                                 type="button"
-                                onClick={() => handleCustomerArrive(res._id, targetTableId)}
-                                className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center min-h-[44px]"
+                                onClick={() => {
+                                  setPinModalRes(res);
+                                  setPinInput('');
+                                  setPinError('');
+                                }}
+                                className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 min-h-[44px]"
                               >
-                                {lang === 'en' ? `I HAVE ARRIVED - OPEN MENU (${tableNameStr})` : lang === 'zh' ? `我已到达 - 打开菜单 (${tableNameStr})` : `TÔI ĐÃ ĐẾN - VÀO MENU GỌI MÓN (${tableNameStr})`}
+                                <span className="material-symbols-outlined text-base">key</span>
+                                <span>{lang === 'en' ? `I HAVE ARRIVED - ENTER PIN (${tableNameStr})` : `TÔI ĐÃ ĐẾN - NHẬP MÃ VÀO BÀN (${tableNameStr})`}</span>
                               </button>
                               <button
                                 type="button"
@@ -982,16 +1145,45 @@ export default function Home() {
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.95, opacity: 0, y: 15 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                className="relative w-full max-w-md rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 p-6 sm:p-8 text-center space-y-6 shadow-2xl z-10 font-sans"
+                className="relative w-full max-w-md rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 p-6 sm:p-8 text-center space-y-5 shadow-2xl z-10 font-sans"
               >
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                    {t.bookingSuccessTitle}
+                    {bookingSuccess.status === 'confirmed' ? 'Đặt Bàn Đã Được Duyệt!' : 'Đã Gửi Yêu Cầu Giữ Chỗ!'}
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                    {t.bookingSuccessSubtitle}
+                    {bookingSuccess.status === 'confirmed'
+                      ? 'Nhân viên phục vụ đã duyệt đơn đặt bàn của quý khách.'
+                      : 'Đơn đặt bàn của bạn đã gửi đến quán và đang chờ nhân viên phục vụ duyệt.'}
                   </p>
                 </div>
+
+                {bookingSuccess.checkInCode ? (
+                  <div className="p-4 rounded-2xl bg-sky-500/10 border border-[#38BDF8]/40 flex flex-col items-center justify-center gap-1.5 text-center shadow-xs">
+                    <span className="text-xs font-black text-[#0284c7] dark:text-[#38BDF8] flex items-center gap-1">
+                      <span className="material-symbols-outlined text-sm">pin</span>
+                      MÃ NHẬN BÀN CỦA BẠN
+                    </span>
+                    <span className="font-black text-3xl tracking-[0.3em] text-[#090D16] dark:text-white bg-white dark:bg-[#090D16] px-5 py-1.5 rounded-xl border border-[#38BDF8]/40 shadow-xs">
+                      {bookingSuccess.checkInCode}
+                    </span>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      Vui lòng nhập mã này khi tra cứu SĐT tại quán để vào bàn gọi món
+                    </span>
+                  </div>
+                ) : (
+                  <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5 text-left">
+                    <span className="material-symbols-outlined text-amber-500 text-xl shrink-0 mt-0.5 animate-pulse">hourglass_top</span>
+                    <div>
+                      <div className="text-xs font-extrabold text-amber-700 dark:text-amber-400">
+                        Đang chờ nhân viên phục vụ phê duyệt
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+                        Hệ thống sẽ tự động cấp mã nhận bàn 4 chữ số ngay khi nhân viên duyệt đơn của quý khách.
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Card Info Container */}
                 <div className="space-y-2 text-xs sm:text-sm text-left p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-white/10">
@@ -1040,9 +1232,237 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setBookingSuccess(null)}
-                  className="w-full h-11 rounded-xl bg-[#3B82F6] hover:bg-blue-600 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center min-h-[44px]"
+                  className="w-full h-11 rounded-xl bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] hover:text-white font-black text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center min-h-[44px]"
                 >
                   <span>{t.doneAndClose}</span>
+                </button>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* 4-DIGIT PIN ENTRY MODAL */}
+        <AnimatePresence>
+          {pinModalRes && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setPinModalRes(null)}
+                className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
+              />
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0, y: 15 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 15 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 p-6 text-center space-y-5 shadow-2xl z-10 font-sans"
+              >
+                <div className="space-y-1">
+                  <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight font-heading">
+                    Nhập Mã Nhận Bàn
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Vui lòng nhập mã PIN 4 chữ số được cấp khi nhân viên phục vụ duyệt đơn để nhận{' '}
+                    <strong className="text-slate-800 dark:text-slate-200">
+                      {formatTableName(pinModalRes.tableId?.tableName, lang)}
+                    </strong>.
+                  </p>
+                </div>
+
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleCustomerArrive(
+                      pinModalRes._id,
+                      pinModalRes.tableId?._id || pinModalRes.tableId,
+                      pinInput,
+                    );
+                  }}
+                  className="space-y-4"
+                >
+                  <div className="space-y-1.5">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={4}
+                      autoFocus
+                      value={pinInput}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                        setPinInput(val);
+                        setPinError('');
+                      }}
+                      placeholder="••••"
+                      className="w-full text-center text-3xl font-black tracking-[0.4em] py-3 px-4 rounded-xl border-2 border-slate-300 dark:border-slate-700 focus:border-[#38BDF8] focus:ring-4 focus:ring-[#38BDF8]/20 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white outline-none transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700"
+                    />
+                    {pinError && (
+                      <p className="text-xs text-rose-500 font-bold">{pinError}</p>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPinModalRes(null)}
+                      className="flex-1 h-11 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                    >
+                      Đóng
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={pinInput.length !== 4 || isVerifyingPin}
+                      className="flex-1 h-11 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] hover:text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-40 disabled:pointer-events-none cursor-pointer flex items-center justify-center gap-1"
+                    >
+                      {isVerifyingPin ? 'Đang kiểm tra...' : 'Vào bàn'}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* TABLE OCCUPIED SUGGESTION MODAL */}
+        <AnimatePresence>
+          {occupiedData && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setOccupiedData(null)}
+                className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
+              />
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0, y: 15 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 15 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                className="relative w-full max-w-md rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 p-6 space-y-5 shadow-2xl z-10 font-sans"
+              >
+                <div className="space-y-1 text-left">
+                  <div className="w-11 h-11 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-2">
+                    <span className="material-symbols-outlined text-2xl">event_busy</span>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight font-heading">
+                    Bàn Hiện Đang Có Khách Ngồi
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Bàn <strong>{formatTableName(occupiedData.currentTable?.tableName, lang)}</strong> hiện đang phục vụ khách trước giờ hẹn của bạn.
+                  </p>
+                </div>
+
+                <div className="space-y-2 text-left">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    Gợi ý bàn trống sẵn sàng đón bạn ngay:
+                  </span>
+                  {occupiedData.suggestedTables.length === 0 ? (
+                    <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-900 text-xs text-center text-slate-500">
+                      Hiện các bàn khác đều đang bận. Bạn vui lòng chờ đến giờ hẹn để nhận bàn cũ nhé!
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                      {occupiedData.suggestedTables.map((tbl: any) => (
+                        <button
+                          key={tbl._id}
+                          type="button"
+                          onClick={() =>
+                            handleCustomerArrive(
+                              occupiedData.resId,
+                              occupiedData.currentTable?._id,
+                              occupiedData.checkInCode,
+                              tbl._id,
+                            )
+                          }
+                          className="w-full p-3 rounded-xl border border-[#38BDF8]/40 hover:border-[#38BDF8] bg-sky-500/5 hover:bg-sky-500/15 text-left transition-all flex justify-between items-center group cursor-pointer"
+                        >
+                          <div>
+                            <div className="font-extrabold text-slate-900 dark:text-white text-xs group-hover:text-[#0284c7] dark:group-hover:text-[#38BDF8]">
+                              {formatTableName(tbl.tableName, lang)}
+                            </div>
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                              Sức chứa: {tbl.capacity || 2} khách
+                            </div>
+                          </div>
+                          <span className="px-2.5 py-1 bg-[#38BDF8] text-[#090D16] text-[11px] font-extrabold rounded-lg flex items-center gap-1 shadow-xs group-hover:bg-[#0284c7] group-hover:text-white transition-colors">
+                            <span>Đổi sang bàn này</span>
+                            <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setOccupiedData(null)}
+                    className="w-full h-11 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 font-bold text-xs rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                  >
+                    Tôi sẽ chờ đến giờ hẹn tại bàn cũ
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* ONE-TIME CHECK-IN CODE MODAL (HIỂN THỊ 1 LẦN DUY NHẤT KHI PHỤC VỤ XÁC NHẬN) */}
+        <AnimatePresence>
+          {oneTimeCodeData && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-slate-950/75 backdrop-blur-md"
+              />
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0, y: 15 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 15 }}
+                transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                className="relative w-full max-w-sm rounded-3xl bg-white dark:bg-[#0F172A] border border-slate-200/80 dark:border-white/10 p-6 sm:p-7 text-center space-y-6 shadow-2xl z-10 font-sans"
+              >
+                {/* Header */}
+                <div className="space-y-1">
+                  <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight font-heading">
+                    Mã Nhận Bàn
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Đơn đặt bàn của bạn đã được nhân viên duyệt thành công.
+                  </p>
+                </div>
+
+                {/* 4-digit Passcode Display (Minimalist Fintech / Apple OTP Style) */}
+                <div className="py-1">
+                  <div className="flex justify-center items-center gap-2.5">
+                    {oneTimeCodeData.code.split('').map((digit: string, idx: number) => (
+                      <div
+                        key={idx}
+                        className="w-14 h-16 rounded-2xl bg-slate-50 dark:bg-slate-900/90 border-2 border-slate-200 dark:border-slate-800 flex items-center justify-center font-mono text-3xl font-black text-slate-900 dark:text-white shadow-xs"
+                      >
+                        {digit}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Discreet Alert Notice */}
+                <div className="text-[11px] text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 py-2.5 px-3.5 rounded-xl text-center leading-relaxed font-medium">
+                  Mã chỉ hiển thị <strong>1 lần duy nhất</strong>. Khi đến quán, bạn hãy bấm <strong>&ldquo;Tôi đã đến&rdquo;</strong> và nhập 4 số này để vào bàn.
+                </div>
+
+                {/* Action Button */}
+                <button
+                  type="button"
+                  onClick={handleAcknowledgeOneTimeCode}
+                  className="w-full h-11 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] hover:text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center min-h-[44px]"
+                >
+                  Tôi đã lưu mã & Đóng
                 </button>
               </motion.div>
             </div>

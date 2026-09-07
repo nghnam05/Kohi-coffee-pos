@@ -2,7 +2,7 @@ import {
   Injectable, NotFoundException, BadRequestException, OnModuleInit, Optional, Inject,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Reservation, ReservationDocument } from './schemas/reservation.schema.js';
 import { CreateReservationDto } from './dto/create-reservation.dto.js';
 import { TablesService } from '../tables/tables.service.js';
@@ -145,14 +145,36 @@ export class ReservationsService implements OnModuleInit {
     return populated || saved;
   }
 
-  async findByPhone(phone: string): Promise<ReservationDocument[]> {
+  async findByPhone(phone: string): Promise<any[]> {
     const cleanPhone = phone.trim();
     if (!cleanPhone) return [];
-    return this.reservationModel
+    const list = await this.reservationModel
       .find({ customerPhone: cleanPhone, isDeleted: { $ne: true } })
       .populate('tableId', 'tableName status')
       .sort({ createdAt: -1 })
+      .lean()
       .exec();
+
+    // Mã nhận bàn chỉ hiển thị 1 lần: Nếu đã xem rồi (isCodeViewed === true), ẩn mã khi tra cứu
+    return list.map((item: any) => {
+      if (item.isCodeViewed) {
+        return {
+          ...item,
+          checkInCode: null,
+        };
+      }
+      return item;
+    });
+  }
+
+  async markCodeViewed(id: string): Promise<{ success: boolean; message: string }> {
+    const resDoc = await this.reservationModel.findById(id).exec();
+    if (!resDoc || resDoc.isDeleted) throw new NotFoundException(`Không tìm thấy đơn đặt bàn ID: ${id}`);
+
+    resDoc.isCodeViewed = true;
+    await resDoc.save();
+
+    return { success: true, message: 'Đã đánh dấu khách đã xem mã nhận bàn.' };
   }
 
   async findAll(status?: string): Promise<ReservationDocument[]> {
@@ -178,7 +200,17 @@ export class ReservationsService implements OnModuleInit {
     const resDoc = await this.reservationModel.findById(id).exec();
     if (!resDoc || resDoc.isDeleted) throw new NotFoundException(`Không tìm thấy đơn đặt bàn ID: ${id}`);
 
-    resDoc.status = status;
+    if (status === 'confirmed') {
+      if (!resDoc.checkInCode) {
+        // Sinh mã ngẫu nhiên 4 chữ số từ 1000 đến 9999
+        resDoc.checkInCode = Math.floor(1000 + Math.random() * 9000).toString();
+      }
+      resDoc.isCodeViewed = false;
+      resDoc.status = 'confirmed';
+    } else {
+      resDoc.status = status;
+    }
+
     const updated = await resDoc.save();
 
     const tableId = (updated.tableId as any)?._id || updated.tableId;
@@ -198,7 +230,10 @@ export class ReservationsService implements OnModuleInit {
       .exec();
 
     if (this.ordersGateway && populated) {
-      this.ordersGateway.emitReservationStatusUpdate(id, status);
+      this.ordersGateway.emitReservationStatusUpdate(id, status, {
+        checkInCode: populated.checkInCode,
+        reservation: populated,
+      });
     }
 
     return populated || updated;
@@ -263,7 +298,7 @@ export class ReservationsService implements OnModuleInit {
     return populated || updated;
   }
 
-  async customerArrive(id: string): Promise<any> {
+  async customerArrive(id: string, checkInCode?: string, newTableId?: string): Promise<any> {
     const resDoc = await this.reservationModel.findById(id).populate('tableId').exec();
     if (!resDoc || resDoc.isDeleted) throw new NotFoundException(`Không tìm thấy đơn đặt bàn ID: ${id}`);
 
@@ -271,25 +306,139 @@ export class ReservationsService implements OnModuleInit {
       throw new BadRequestException('Đơn đặt bàn này đã bị hủy.');
     }
 
-    resDoc.status = 'arrived';
-    await resDoc.save();
+    if (resDoc.status === 'pending') {
+      throw new BadRequestException(
+        'Đơn đặt bàn đang chờ nhân viên phục vụ duyệt. Vui lòng đợi nhân viên xác nhận trước khi nhận bàn.',
+      );
+    }
 
-    const tableIdStr = (resDoc.tableId as any)?._id
+    // Nếu đơn có mã PIN 4 chữ số, yêu cầu khách hàng nhập đúng mã
+    if (resDoc.checkInCode) {
+      const inputCode = (checkInCode || '').trim();
+      if (!inputCode || inputCode !== resDoc.checkInCode.trim()) {
+        throw new BadRequestException('Mã nhận bàn không chính xác. Vui lòng kiểm tra lại!');
+      }
+    }
+
+    const currentTableIdStr = (resDoc.tableId as any)?._id
       ? (resDoc.tableId as any)._id.toString()
       : resDoc.tableId?.toString();
 
-    if (tableIdStr) {
-      await this.tablesService.update(tableIdStr, { status: 'serving' }).catch(() => {});
+    const currentTable = currentTableIdStr
+      ? await this.tablesService.findOne(currentTableIdStr).catch(() => null)
+      : null;
+
+    // Kiểm tra nếu khách đến sớm mà bàn hiện tại đang có khách (status === 'serving')
+    if (currentTable && currentTable.status === 'serving') {
+      if (newTableId) {
+        const targetTable = await this.tablesService.findOne(newTableId).catch(() => null);
+        if (!targetTable || targetTable.status !== 'empty') {
+          throw new BadRequestException('Bàn bạn chọn không còn trống. Vui lòng chọn bàn khác.');
+        }
+
+        // Đổi bàn cho đơn đặt bàn
+        resDoc.tableId = new Types.ObjectId(newTableId) as any;
+        resDoc.status = 'arrived';
+        await resDoc.save();
+
+        await this.tablesService.update(newTableId, { status: 'serving' }).catch(() => {});
+        if (this.ordersGateway) {
+          this.ordersGateway.emitTableUpdate(newTableId, 'serving');
+          this.ordersGateway.emitReservationStatusUpdate(id, 'arrived');
+        }
+
+        return {
+          success: true,
+          message: `Đã chuyển sang ${targetTable.tableName} và vào bàn thành công!`,
+          tableId: newTableId,
+          tableName: targetTable.tableName,
+        };
+      }
+
+      // Khách chưa chọn bàn mới: Lọc danh sách bàn trống có sức chứa phù hợp để gợi ý
+      const allTables = await this.tablesService.findAll().catch(() => []);
+      const suggestedTables = (allTables || [])
+        .filter(
+          (t: any) =>
+            t._id?.toString() !== currentTableIdStr &&
+            t.status === 'empty' &&
+            (t.capacity || 2) >= (resDoc.guestCount || 1),
+        )
+        .sort((a: any, b: any) => (a.capacity || 2) - (b.capacity || 2));
+
+      return {
+        success: false,
+        statusCode: 'TABLE_OCCUPIED',
+        message: `Bàn ${currentTable.tableName} hiện đang có khách ngồi trước giờ hẹn của bạn.`,
+        currentTable: {
+          _id: currentTable._id,
+          tableName: currentTable.tableName,
+          status: currentTable.status,
+        },
+        suggestedTables: suggestedTables.map((t: any) => ({
+          _id: t._id,
+          tableName: t.tableName,
+          capacity: t.capacity,
+          status: t.status,
+        })),
+      };
+    }
+
+    // Trường hợp bàn đang trống hoặc giữ chỗ của chính đơn này
+    resDoc.status = 'arrived';
+    await resDoc.save();
+
+    if (currentTableIdStr) {
+      await this.tablesService.update(currentTableIdStr, { status: 'serving' }).catch(() => {});
       if (this.ordersGateway) {
-        this.ordersGateway.emitTableUpdate(tableIdStr, 'serving');
+        this.ordersGateway.emitTableUpdate(currentTableIdStr, 'serving');
         this.ordersGateway.emitReservationStatusUpdate(id, 'arrived');
       }
     }
 
     return {
+      success: true,
       message: 'Xác nhận đã đến quán thành công!',
-      tableId: tableIdStr,
+      tableId: currentTableIdStr,
       tableName: (resDoc.tableId as any)?.tableName || 'Bàn',
     };
+  }
+
+  async cancelLateReservation(id: string): Promise<ReservationDocument> {
+    const resDoc = await this.reservationModel.findById(id).exec();
+    if (!resDoc || resDoc.isDeleted) throw new NotFoundException(`Không tìm thấy đơn đặt bàn ID: ${id}`);
+
+    if (resDoc.status === 'arrived') {
+      throw new BadRequestException('Khách hàng đã đến quán, không thể hủy đơn đặt bàn.');
+    }
+
+    const resTime = new Date(resDoc.reservationTime).getTime();
+    const diffMinutes = (Date.now() - resTime) / (1000 * 60);
+    if (diffMinutes < 30) {
+      throw new BadRequestException(
+        `Đơn đặt bàn chưa quá giờ hẹn 30 phút (Hiện tại chỉ mới quá ${Math.max(0, Math.floor(diffMinutes))} phút).`,
+      );
+    }
+
+    resDoc.status = 'cancelled';
+    resDoc.cancelledAt = new Date();
+    resDoc.note = (resDoc.note ? resDoc.note + ' | ' : '') + 'Phục vụ hủy do trễ quá 30 phút';
+    const updated = await resDoc.save();
+
+    const tableId = (updated.tableId as any)?._id || updated.tableId;
+    if (tableId) {
+      await this.tablesService.update(tableId.toString(), { status: 'empty' }).catch(() => {});
+    }
+
+    const populated = await this.reservationModel
+      .findById(updated._id)
+      .populate('tableId', 'tableName status')
+      .exec();
+
+    if (this.ordersGateway && populated) {
+      this.ordersGateway.emitReservationStatusUpdate(id, 'cancelled');
+    }
+
+    return populated || updated;
   }
 }

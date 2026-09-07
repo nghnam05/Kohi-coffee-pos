@@ -29,6 +29,12 @@ export class Reservation {
   @Prop({ type: Date })
   cancelledAt: Date;
 
+  @Prop({ type: String, default: null, trim: true })
+  checkInCode: string;
+
+  @Prop({ type: Boolean, default: false })
+  isCodeViewed: boolean;
+
   @Prop({ type: Boolean, default: false, index: true })
   isDeleted: boolean;
 }

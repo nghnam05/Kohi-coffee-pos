@@ -31,8 +31,25 @@ export class ReservationsController {
 
   // PATCH /api/v1/reservations/:id/customer-arrive (Public - Khách hàng tự xác nhận đã đến quán và vào menu)
   @Patch(':id/customer-arrive')
-  customerArrive(@Param('id') id: string) {
-    return this.reservationsService.customerArrive(id);
+  customerArrive(
+    @Param('id') id: string,
+    @Body() body?: { checkInCode?: string; newTableId?: string },
+  ) {
+    return this.reservationsService.customerArrive(id, body?.checkInCode, body?.newTableId);
+  }
+
+  // PATCH /api/v1/reservations/:id/mark-code-viewed (Public - Khách hàng xác nhận đã xem mã nhận bàn 1 lần duy nhất)
+  @Patch(':id/mark-code-viewed')
+  markCodeViewed(@Param('id') id: string) {
+    return this.reservationsService.markCodeViewed(id);
+  }
+
+  // PATCH /api/v1/reservations/:id/cancel-late (Phục vụ hủy đơn đặt bàn trễ > 30 phút)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin', 'waiter', 'barista', 'staff')
+  @Patch(':id/cancel-late')
+  cancelLate(@Param('id') id: string) {
+    return this.reservationsService.cancelLateReservation(id);
   }
 
   // GET /api/v1/reservations (Cho phép Admin và Staff xem danh sách đặt bàn)
