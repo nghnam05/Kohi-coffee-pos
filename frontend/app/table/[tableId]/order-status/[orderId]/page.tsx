@@ -327,7 +327,7 @@ export default function OrderStatusPage() {
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300 font-sans selection:bg-[#0284c7] selection:text-white pb-20 sm:pb-0">
+    <div className="min-h-dvh flex flex-col bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300 font-sans selection:bg-[#0284c7] selection:text-white relative">
       {/* ── Standardized Responsive Header ───────────────────────────────── */}
       <header className="sticky top-0 z-40 bg-[var(--bg-card)]/90 backdrop-blur-md border-b border-[var(--border-color)] transition-colors">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between font-sans">
@@ -351,7 +351,7 @@ export default function OrderStatusPage() {
       </header>
 
       {/* ── Main Responsive Content Container ────────────────────────────── */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-8 font-sans">
+      <main className="w-full max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-6 pb-28 sm:pb-8 font-sans">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <div className="w-9 h-9 border-4 border-[#0284c7] dark:border-[#38BDF8] border-t-transparent rounded-full animate-spin" />
@@ -724,74 +724,74 @@ export default function OrderStatusPage() {
                 </div>
               </div>
             )}
-
-            {/* Sticky Mobile Floating Action Bar */}
-            {order && order.status !== 'paid' && (
-              <div className="sm:hidden fixed bottom-0 left-0 right-0 p-3 bg-[var(--bg-card)]/95 backdrop-blur-md border-t border-[var(--border-color)] z-30 shadow-2xl flex gap-2">
-                {order.paymentMethod === 'cash' ? (
-                  <button
-                    onClick={handleCallStaff}
-                    disabled={callStaffCooldown > 0 || isCallingStaff}
-                    className="flex-1 py-3 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-xl text-xs uppercase tracking-wider transition-all active:scale-95 text-center shadow-md disabled:opacity-60"
-                  >
-                    {callStaffCooldown > 0
-                      ? `Đã gọi thu tiền (${callStaffCooldown}s)`
-                      : 'Tiền mặt: Gọi NV thu tiền'}
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setIsBankModalOpen(true)}
-                    className="flex-1 py-3 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black rounded-xl text-xs uppercase tracking-wider transition-all active:scale-95 text-center shadow-md"
-                  >
-                    {order.paymentMethod === 'momo' ? 'Thanh toán MoMo' : 'Thanh toán Ngân hàng'}
-                  </button>
-                )}
-
-                <button
-                  onClick={handleCallStaff}
-                  disabled={callStaffCooldown > 0 || isCallingStaff}
-                  className="py-3 px-3 bg-amber-500/10 hover:bg-amber-500 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:text-white font-black rounded-xl text-xs uppercase tracking-wider transition-all active:scale-95 disabled:opacity-50 text-center shrink-0"
-                >
-                  {callStaffCooldown > 0 ? `${callStaffCooldown}s` : 'Gọi NV'}
-                </button>
-
-                <button
-                  onClick={() => setIsLeaveModalOpen(true)}
-                  className="py-3 px-3 bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] font-bold rounded-xl text-xs uppercase tracking-wider transition-all active:scale-95 text-center shrink-0"
-                >
-                  Rời bàn
-                </button>
-              </div>
-            )}
-
-            {/* Bank Payment Modal */}
-            {order && (
-              <BankPayModal
-                isOpen={isBankModalOpen}
-                onClose={() => setIsBankModalOpen(false)}
-                orderId={order._id}
-                tableName={order.tableId?.tableName || 'Bàn'}
-                totalAmount={order.totalAmount}
-                customerName={order.customerName}
-                orderStatus={order.status}
-                onSuccess={() => {
-                  setOrder((prev) => (prev ? { ...prev, status: 'paid' } : null));
-                }}
-              />
-            )}
-
-            {/* Leave Table Confirmation Modal */}
-            <LeaveTableModal
-              isOpen={isLeaveModalOpen}
-              onClose={() => setIsLeaveModalOpen(false)}
-              onConfirm={handleExecuteLeaveTable}
-              tableName={order?.tableId?.tableName ? (lang === 'vi' ? `Bàn ${order.tableId.tableName}` : `Table ${order.tableId.tableName}`) : 'Bàn'}
-              lang={lang}
-              isLeaving={isLeaving}
-            />
           </div>
         ) : null}
       </main>
+
+      {/* Sticky Mobile Floating Action Bar (Pinned to viewport bottom outside main) */}
+      {order && order.status !== 'paid' && (
+        <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-[var(--bg-card)]/95 backdrop-blur-md border-t border-[var(--border-color)] shadow-2xl flex gap-2">
+          {order.paymentMethod === 'cash' ? (
+            <button
+              onClick={handleCallStaff}
+              disabled={callStaffCooldown > 0 || isCallingStaff}
+              className="flex-1 py-3 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-xl text-xs uppercase tracking-wider transition-all active:scale-95 text-center shadow-md disabled:opacity-60"
+            >
+              {callStaffCooldown > 0
+                ? `Đã gọi thu tiền (${callStaffCooldown}s)`
+                : 'Tiền mặt: Gọi NV thu tiền'}
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsBankModalOpen(true)}
+              className="flex-1 py-3 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black rounded-xl text-xs uppercase tracking-wider transition-all active:scale-95 text-center shadow-md"
+            >
+              {order.paymentMethod === 'momo' ? 'Thanh toán MoMo' : 'Thanh toán Ngân hàng'}
+            </button>
+          )}
+
+          <button
+            onClick={handleCallStaff}
+            disabled={callStaffCooldown > 0 || isCallingStaff}
+            className="py-3 px-3 bg-amber-500/10 hover:bg-amber-500 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:text-white font-black rounded-xl text-xs uppercase tracking-wider transition-all active:scale-95 disabled:opacity-50 text-center shrink-0"
+          >
+            {callStaffCooldown > 0 ? `${callStaffCooldown}s` : 'Gọi NV'}
+          </button>
+
+          <button
+            onClick={() => setIsLeaveModalOpen(true)}
+            className="py-3 px-3 bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] font-bold rounded-xl text-xs uppercase tracking-wider transition-all active:scale-95 text-center shrink-0"
+          >
+            Rời bàn
+          </button>
+        </div>
+      )}
+
+      {/* Bank Payment Modal */}
+      {order && (
+        <BankPayModal
+          isOpen={isBankModalOpen}
+          onClose={() => setIsBankModalOpen(false)}
+          orderId={order._id}
+          tableName={order.tableId?.tableName || 'Bàn'}
+          totalAmount={order.totalAmount}
+          customerName={order.customerName}
+          orderStatus={order.status}
+          onSuccess={() => {
+            setOrder((prev) => (prev ? { ...prev, status: 'paid' } : null));
+          }}
+        />
+      )}
+
+      {/* Leave Table Confirmation Modal */}
+      <LeaveTableModal
+        isOpen={isLeaveModalOpen}
+        onClose={() => setIsLeaveModalOpen(false)}
+        onConfirm={handleExecuteLeaveTable}
+        tableName={order?.tableId?.tableName ? (lang === 'vi' ? `Bàn ${order.tableId.tableName}` : `Table ${order.tableId.tableName}`) : 'Bàn'}
+        lang={lang}
+        isLeaving={isLeaving}
+      />
     </div>
   );
 }
