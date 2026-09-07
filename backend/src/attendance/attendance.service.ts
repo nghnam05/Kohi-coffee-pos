@@ -2,7 +2,7 @@ import {
   Injectable, NotFoundException, BadRequestException, ConflictException, Optional,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, isValidObjectId } from 'mongoose';
+import { Model, isValidObjectId, Types } from 'mongoose';
 import { Attendance, AttendanceDocument } from './schemas/attendance.schema.js';
 import { User, UserDocument } from '../users/schemas/user.schema.js';
 import { OrdersGateway } from '../orders/orders.gateway.js';
@@ -236,6 +236,39 @@ export class AttendanceService {
     const res = await this.attendanceModel.updateMany(
       { _id: { $in: validIds } },
       { $set: { isPaid: true, paidAt: new Date() } },
+    ).exec();
+    return { modifiedCount: res.modifiedCount };
+  }
+
+  /** Lấy danh sách chấm công theo khoảng thời gian để tính lương */
+  async getAttendanceByRange(
+    userId: string,
+    startDate: Date,
+    endDate: Date,
+    unpaidOnly = true,
+  ): Promise<AttendanceDocument[]> {
+    if (!userId || !isValidObjectId(userId)) return [];
+    const filter: any = {
+      userId,
+      date: { $gte: startDate, $lte: endDate },
+      checkOut: { $ne: null },
+    };
+    if (unpaidOnly) {
+      filter.isPaid = { $ne: true };
+    }
+    return this.attendanceModel.find(filter).sort({ date: 1, checkIn: 1 }).exec();
+  }
+
+  /** Đánh dấu thanh toán và gán payrollId cho các bản ghi chấm công */
+  async markPaidForPayroll(
+    ids: (string | Types.ObjectId)[],
+    payrollId: string | Types.ObjectId,
+  ): Promise<{ modifiedCount: number }> {
+    if (!ids || ids.length === 0) return { modifiedCount: 0 };
+    const validIds = ids.filter((id) => isValidObjectId(id));
+    const res = await this.attendanceModel.updateMany(
+      { _id: { $in: validIds } },
+      { $set: { isPaid: true, paidAt: new Date(), payrollId } },
     ).exec();
     return { modifiedCount: res.modifiedCount };
   }

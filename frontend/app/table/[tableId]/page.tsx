@@ -1352,27 +1352,27 @@ export default function TableMenuPage() {
 
   return (
     <>
-      {/* Realtime Kitchen Preparation Notification Toast */}
+      {/* Realtime Kitchen Preparation Notification Toast (Top-Center Floating Banner) */}
       <AnimatePresence>
         {kitchenNotification?.show && (
           <motion.div
-            initial={{ y: -60, opacity: 0, scale: 0.95 }}
+            initial={{ y: -50, opacity: 0, scale: 0.95 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: -60, opacity: 0, scale: 0.95 }}
-            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            className="fixed top-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-30 bg-[#090D16]/95 dark:bg-[#181B21]/95 text-white border border-[#3AA6FF]/50 rounded-2xl p-4 shadow-2xl backdrop-blur-md font-sans"
+            exit={{ y: -50, opacity: 0, scale: 0.95 }}
+            transition={{ type: 'spring', damping: 22, stiffness: 320 }}
+            className="fixed top-5 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto sm:w-[420px] max-w-[calc(100vw-2rem)] z-[100] bg-[#090D16]/95 dark:bg-[#131929]/95 text-white border border-[#38BDF8]/60 dark:border-sky-500/60 rounded-2xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-xl font-sans"
           >
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#3AA6FF]/20 text-[#3AA6FF] flex items-center justify-center flex-shrink-0 border border-[#3AA6FF]/40 shadow-inner">
+              <div className="w-10 h-10 rounded-xl bg-sky-500/20 text-[#38BDF8] flex items-center justify-center flex-shrink-0 border border-[#38BDF8]/40 shadow-inner">
                 <span className="material-symbols-outlined text-xl animate-bounce">
                   notifications_active
                 </span>
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-bold text-white leading-snug">
+                <h4 className="text-sm font-black text-white leading-snug">
                   {kitchenNotification.title}
                 </h4>
-                <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
+                <p className="text-xs text-slate-300 mt-1 leading-relaxed font-normal">
                   {kitchenNotification.message}
                 </p>
                 <div className="flex items-center gap-2 mt-2.5">
@@ -1381,7 +1381,7 @@ export default function TableMenuPage() {
                       setKitchenNotification(null);
                       setIsOrderHistoryModalOpen(true);
                     }}
-                    className="px-3 py-1.5 bg-[#3AA6FF] hover:bg-[#2B96EF] text-white text-[11px] font-bold rounded-lg transition-all active:scale-95 shadow-sm"
+                    className="px-3.5 py-1.5 bg-[#38BDF8] hover:bg-sky-400 text-slate-950 text-[11px] font-extrabold rounded-xl transition-all active:scale-95 shadow-md cursor-pointer"
                   >
                     Xem tiến độ chi tiết
                   </button>
@@ -1389,7 +1389,8 @@ export default function TableMenuPage() {
               </div>
               <button
                 onClick={() => setKitchenNotification(null)}
-                className="text-slate-400 hover:text-white transition-colors p-1"
+                className="text-slate-400 hover:text-white transition-colors p-1 cursor-pointer rounded-lg hover:bg-white/10"
+                title="Đóng thông báo"
               >
                 <span className="material-symbols-outlined text-base">close</span>
               </button>

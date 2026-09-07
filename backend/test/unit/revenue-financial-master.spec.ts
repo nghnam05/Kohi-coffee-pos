@@ -11,6 +11,7 @@ import { Attendance } from '../../src/attendance/schemas/attendance.schema';
 import { Coupon } from '../../src/coupons/schemas/coupon.schema';
 import { Food } from '../../src/foods/schemas/food.schema';
 import { Table } from '../../src/tables/schemas/table.schema';
+import { Expense } from '../../src/expenses/schemas/expense.schema';
 import { FoodsService } from '../../src/foods/foods.service';
 import { TablesService } from '../../src/tables/tables.service';
 import { OrdersGateway } from '../../src/orders/orders.gateway';
@@ -31,6 +32,7 @@ describe('REVENUE & FINANCIAL MASTER TEST SUITE (Master QA Revenue Suite)', () =
   let couponModelMock: any;
   let foodModelMock: any;
   let tableModelMock: any;
+  let expenseModelMock: any;
 
   beforeEach(async () => {
     orderModelMock = {
@@ -85,6 +87,15 @@ describe('REVENUE & FINANCIAL MASTER TEST SUITE (Master QA Revenue Suite)', () =
       findByIdAndUpdate: jest.fn(),
     };
 
+    expenseModelMock = {
+      aggregate: jest.fn().mockResolvedValue([{ total: 0 }]),
+      find: jest.fn().mockReturnValue({
+        sort: jest.fn().mockReturnThis(),
+        lean: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue([]),
+      }),
+    };
+
     function MockOrderConstructor(dto: any) {
       Object.assign(this, dto);
       this.save = jest.fn().mockResolvedValue({ _id: '507f191e810c19729de860f1', ...dto });
@@ -106,6 +117,7 @@ describe('REVENUE & FINANCIAL MASTER TEST SUITE (Master QA Revenue Suite)', () =
         { provide: getModelToken(Coupon.name), useValue: couponModelMock },
         { provide: getModelToken(Food.name), useValue: foodModelMock },
         { provide: getModelToken(Table.name), useValue: tableModelMock },
+        { provide: getModelToken(Expense.name), useValue: expenseModelMock },
         {
           provide: OrdersGateway,
           useValue: {
@@ -312,6 +324,63 @@ describe('REVENUE & FINANCIAL MASTER TEST SUITE (Master QA Revenue Suite)', () =
       orderModelMock.aggregate.mockResolvedValueOnce([{ total: 0 }]);
       const revenue = await analyticsService.getRevenue('2026-08-31', '2026-08-31');
       expect(revenue).toEqual([{ total: 0 }]);
+    });
+
+    it('TC-REV-012: Khấu trừ Chi phí phát sinh (Expense) vào Lợi Nhuận Ròng', async () => {
+      orderModelMock.aggregate
+        .mockResolvedValueOnce([{ total: 10000000 }]) // today
+        .mockResolvedValueOnce([{ total: 50000000 }]) // week
+        .mockResolvedValueOnce([{ total: 200000000 }]) // month
+        .mockResolvedValueOnce([{ total: 10000000 }]); // period
+      payrollModelMock.aggregate.mockResolvedValue([{ total: 1500000 }]);
+      expenseModelMock.aggregate.mockResolvedValue([{ total: 500000 }]); // Phát sinh 500k
+
+      const summary = await analyticsService.getSummary();
+
+      expect(summary.todayGross).toBe(10000000);
+      expect(summary.todaySalary).toBe(1500000);
+      expect(summary.todayExpenseCost).toBe(500000);
+      // Net Profit = 10M - 1.5M (lương) - 2M (nguyên liệu kho) - 500k (chi phí phát sinh) = 6.000.000
+      expect(summary.todayNetProfit).toBe(6000000);
+    });
+
+    it('TC-REV-013: Tra cứu Thống kê Doanh thu cửa hàng theo ngày chọn trước (?date=2026-09-05)', async () => {
+      orderModelMock.aggregate
+        .mockResolvedValueOnce([{ total: 10000000 }]) // today baseline
+        .mockResolvedValueOnce([{ total: 50000000 }]) // week
+        .mockResolvedValueOnce([{ total: 200000000 }]) // month
+        .mockResolvedValueOnce([{ total: 4200000 }]); // selected date gross
+
+      const result = await analyticsService.getSummary('2026-09-05');
+
+      expect(result.periodType).toBe('day');
+      expect(result.selectedDate).toBe('2026-09-05');
+      expect(result.periodGross).toBe(4200000);
+      expect(Array.isArray(result.dayOrders)).toBe(true);
+      expect(Array.isArray(result.dayAttendances)).toBe(true);
+      expect(Array.isArray(result.dayExpenses)).toBe(true);
+    });
+
+    it('TC-REV-014: Tổng hợp doanh thu và chi phí theo tháng (?month=2026-09)', async () => {
+      orderModelMock.aggregate
+        .mockResolvedValueOnce([{ total: 10000000 }]) // today baseline
+        .mockResolvedValueOnce([{ total: 50000000 }]) // week
+        .mockResolvedValueOnce([{ total: 200000000 }]) // month
+        .mockResolvedValueOnce([{ total: 85000000 }]); // selected month gross
+
+      const result = await analyticsService.getSummary(undefined, '2026-09');
+
+      expect(result.periodType).toBe('month');
+      expect(result.selectedMonth).toBe('2026-09');
+      expect(result.periodGross).toBe(85000000);
+      expect(Array.isArray(result.dailyBreakdown)).toBe(true);
+      expect(result.dailyBreakdown.length).toBe(30); // Tháng 9 có 30 ngày
+      expect(result.dailyBreakdown[0]).toHaveProperty('date');
+      expect(result.dailyBreakdown[0]).toHaveProperty('grossRevenue');
+      expect(result.dailyBreakdown[0]).toHaveProperty('salaryCost');
+      expect(result.dailyBreakdown[0]).toHaveProperty('ingredientCost');
+      expect(result.dailyBreakdown[0]).toHaveProperty('expenseCost');
+      expect(result.dailyBreakdown[0]).toHaveProperty('netProfit');
     });
   });
 });

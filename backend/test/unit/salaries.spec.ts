@@ -91,6 +91,10 @@ describe('SalariesService', () => {
 
     attendanceServiceMock = {
       getMonthlySummary: jest.fn().mockResolvedValue({ totalHours: 100, daysWorked: 12.5 }),
+      getAttendanceByRange: jest.fn().mockResolvedValue([
+        { totalHours: 100, shift: 'morning', date: new Date() },
+      ]),
+      markPaidForPayroll: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -112,7 +116,6 @@ describe('SalariesService', () => {
   describe('generatePayroll', () => {
     it('should generate hourly payroll correctly based on attendance hours', async () => {
       const result = await service.generatePayroll(validUserId, 8, 2026);
-      expect(attendanceServiceMock.getMonthlySummary).toHaveBeenCalledWith(validUserId, '8', '2026');
       expect(result.netSalary).toBe(3000000);
     });
   });
@@ -120,17 +123,12 @@ describe('SalariesService', () => {
   describe('markPaid', () => {
     it('should update status to paid and record payment method', async () => {
       const result = await service.markPaid(validPayrollId, 'cash');
-      expect(payrollModelMock.findByIdAndUpdate).toHaveBeenCalledWith(
-        validPayrollId,
-        expect.objectContaining({ status: 'paid', paidMethod: 'cash' }),
-        { new: true },
-      );
+      expect(payrollModelMock.findById).toHaveBeenCalledWith(validPayrollId);
       expect(result.status).toBe('paid');
     });
 
     it('should throw NotFoundException if payroll does not exist', async () => {
-      payrollModelMock.findByIdAndUpdate.mockReturnValueOnce({
-        populate: jest.fn().mockReturnThis(),
+      payrollModelMock.findById.mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue(null),
       });
       await expect(service.markPaid('507f191e810c19729de860ed', 'cash')).rejects.toThrow(NotFoundException);

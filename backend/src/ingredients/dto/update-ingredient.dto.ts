@@ -36,4 +36,8 @@ export class UpdateIngredientDto {
   @IsOptional()
   @IsNumber()
   quantityChange?: number;
+
+  @IsOptional()
+  @IsString()
+  note?: string;
 }

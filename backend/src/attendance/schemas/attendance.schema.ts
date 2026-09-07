@@ -34,6 +34,9 @@ export class Attendance {
 
   @Prop({ type: Date, default: null })
   paidAt: Date; // Thời điểm thanh toán
+
+  @Prop({ type: Types.ObjectId, ref: 'Payroll', default: null })
+  payrollId?: Types.ObjectId; // Phiếu lương liên kết
 }
 
 export const AttendanceSchema = SchemaFactory.createForClass(Attendance);

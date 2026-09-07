@@ -11,7 +11,9 @@ export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
   @Get('summary')
-  getSummary() { return this.analyticsService.getSummary(); }
+  getSummary(@Query('date') date?: string, @Query('month') month?: string) {
+    return this.analyticsService.getSummary(date, month);
+  }
 
   @Get('revenue')
   getRevenue(@Query('from') from: string, @Query('to') to: string) {
