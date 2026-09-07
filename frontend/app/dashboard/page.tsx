@@ -550,10 +550,72 @@ export default function DashboardPage() {
   const [revenueHistory, setRevenueHistory] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
 
+  // Enhanced Store Financial Analytics (Admin Only: Thu - Chi - Lương - Tiền phát sinh)
+  const [analyticsPeriodMode, setAnalyticsPeriodMode] = useState<'day' | 'month'>('day');
+  const [analyticsSelectedDate, setAnalyticsSelectedDate] = useState<string>(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  });
+  const [analyticsSelectedMonth, setAnalyticsSelectedMonth] = useState<string>(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
+  const [analyticsDayLedgerTab, setAnalyticsDayLedgerTab] = useState<'orders' | 'attendances' | 'expenses' | 'ingredients'>('orders');
+  const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
+  const [expenseForm, setExpenseForm] = useState({
+    title: '',
+    amount: '',
+    category: 'Vật tư & Tiện ích',
+    note: '',
+    date: '',
+  });
+  const [isSubmittingExpense, setIsSubmittingExpense] = useState(false);
+
   // Salary management state (for admin)
   const [payrolls, setPayrolls] = useState<any[]>([]);
+  const [salaryConfigs, setSalaryConfigs] = useState<Record<string, any>>({});
   const [staffHourlyRates, setStaffHourlyRates] = useState<Record<string, number>>({});
-  const [payrollViewMode, setPayrollViewMode] = useState<'weekly' | 'daily'>('weekly');
+  const [payrollViewMode, setPayrollViewMode] = useState<'weekly' | 'daily' | 'hourly'>('weekly');
+
+  // Salary slip & disbursement modal state
+  const [isDisbursementModalOpen, setIsDisbursementModalOpen] = useState(false);
+  const [disbursementData, setDisbursementData] = useState<{
+    staffId: string;
+    staffName: string;
+    staffRole: string;
+    periodType: 'weekly' | 'daily' | 'hourly';
+    periodLabel: string;
+    totalShifts: number;
+    totalHours: number;
+    rate: number;
+    basePay: number;
+    allowances: number;
+    bonuses: number;
+    deductions: number;
+    netSalary: number;
+    paidMethod: 'cash' | 'bank_transfer';
+    note: string;
+    attendanceIds: string[];
+  } | null>(null);
+  const [isProcessingDisbursement, setIsProcessingDisbursement] = useState(false);
+
+  // Salary config modal state
+  const [isSalaryConfigModalOpen, setIsSalaryConfigModalOpen] = useState(false);
+  const [salaryConfigForm, setSalaryConfigForm] = useState({
+    userId: '',
+    staffName: '',
+    type: 'hourly',
+    hourlyRate: 25000,
+    dailyRate: 200000,
+    morningRate: 120000,
+    afternoonRate: 120000,
+    eveningRate: 150000,
+    weeklyBaseRate: 0,
+    monthlyBaseSalary: 0,
+    mealAllowancePerShift: 0,
+    weeklyAttendanceBonus: 0,
+  });
+  const [isSavingSalaryConfig, setIsSavingSalaryConfig] = useState(false);
 
   const weeklyPayrolls = useMemo(() => {
     const map: Record<string, {
@@ -569,6 +631,8 @@ export default function DashboardPage() {
       paidHours: number;
       unpaidHours: number;
       hourlyRate: number;
+      allowances: number;
+      bonuses: number;
       totalSalary: number;
       alreadyPaidSalary: number;
       unpaidSalary: number;
@@ -607,7 +671,7 @@ export default function DashboardPage() {
         hours = Math.max(0, (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60));
       }
 
-      const hourlyRate = staffHourlyRates[staffId] || 25000;
+      const hourlyRate = staffHourlyRates[staffId] || salaryConfigs[staffId]?.hourlyRate || 25000;
 
       if (!map[key]) {
         map[key] = {
@@ -623,6 +687,8 @@ export default function DashboardPage() {
           paidHours: 0,
           unpaidHours: 0,
           hourlyRate,
+          allowances: 0,
+          bonuses: 0,
           totalSalary: 0,
           alreadyPaidSalary: 0,
           unpaidSalary: 0,
@@ -644,15 +710,120 @@ export default function DashboardPage() {
     });
 
     return Object.values(map).map((item) => {
+      const config = salaryConfigs[item.staffId];
       item.totalHours = Number(item.totalHours.toFixed(2));
       item.paidHours = Number(item.paidHours.toFixed(2));
       item.unpaidHours = Number(Math.max(0, item.totalHours - item.paidHours).toFixed(2));
+
+      // Phụ cấp ăn ca nếu có
+      if (config?.mealAllowancePerShift) {
+        item.allowances = item.totalShifts * config.mealAllowancePerShift;
+      }
+      // Thưởng chuyên cần tuần nếu làm đủ >= 6 ca
+      if (item.totalShifts >= 6 && config?.weeklyAttendanceBonus) {
+        item.bonuses = config.weeklyAttendanceBonus;
+      }
+
+      item.totalSalary = Math.round(item.totalHours * item.hourlyRate) + item.allowances + item.bonuses;
+      item.alreadyPaidSalary = Math.round(item.paidHours * item.hourlyRate);
+      item.unpaidSalary = Math.max(0, item.totalSalary - item.alreadyPaidSalary);
+      return item;
+    });
+  }, [attendances, staffHourlyRates, salaryConfigs]);
+
+  const hourlyPayrolls = useMemo(() => {
+    const map: Record<string, {
+      staffId: string;
+      staffName: string;
+      staffEmail: string;
+      staffRole: string;
+      hourlyRate: number;
+      payType: string;
+      totalShifts: number;
+      totalHours: number;
+      unpaidHours: number;
+      paidHours: number;
+      unpaidSalary: number;
+      totalSalary: number;
+      alreadyPaidSalary: number;
+      unpaidAttendanceIds: string[];
+    }> = {};
+
+    usersList
+      .filter((u) => u.role !== 'admin' || attendances.some((a) => (a.userId?._id || a.userId) === u._id))
+      .forEach((u) => {
+        const uId = u._id || '';
+        if (!uId) return;
+        const rate = staffHourlyRates[uId] || salaryConfigs[uId]?.hourlyRate || 25000;
+        map[uId] = {
+          staffId: uId,
+          staffName: u.name,
+          staffEmail: u.email,
+          staffRole: u.role,
+          hourlyRate: rate,
+          payType: salaryConfigs[uId]?.type || 'hourly',
+          totalShifts: 0,
+          totalHours: 0,
+          unpaidHours: 0,
+          paidHours: 0,
+          unpaidSalary: 0,
+          totalSalary: 0,
+          alreadyPaidSalary: 0,
+          unpaidAttendanceIds: [],
+        };
+      });
+
+    attendances.forEach((att) => {
+      const staffId = att.userId?._id || att.userId || '';
+      if (!staffId) return;
+      if (!map[staffId]) {
+        const rate = staffHourlyRates[staffId] || salaryConfigs[staffId]?.hourlyRate || 25000;
+        map[staffId] = {
+          staffId,
+          staffName: att.userId?.name || 'Nhân viên',
+          staffEmail: att.userId?.email || '',
+          staffRole: att.userId?.role || 'staff',
+          hourlyRate: rate,
+          payType: salaryConfigs[staffId]?.type || 'hourly',
+          totalShifts: 0,
+          totalHours: 0,
+          unpaidHours: 0,
+          paidHours: 0,
+          unpaidSalary: 0,
+          totalSalary: 0,
+          alreadyPaidSalary: 0,
+          unpaidAttendanceIds: [],
+        };
+      }
+
+      const checkInTime = att.checkIn ? new Date(att.checkIn) : null;
+      const checkOutTime = att.checkOut ? new Date(att.checkOut) : null;
+      let hours = att.hoursWorked || att.totalHours || 0;
+      if (!hours && checkInTime && checkOutTime) {
+        hours = Math.max(0, (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60));
+      }
+
+      map[staffId].totalShifts += 1;
+      map[staffId].totalHours += hours;
+
+      if (att.isPaid) {
+        map[staffId].paidHours += hours;
+      } else {
+        map[staffId].unpaidHours += hours;
+        map[staffId].unpaidAttendanceIds.push(att._id);
+      }
+    });
+
+    return Object.values(map).map((item) => {
+      item.totalHours = Number(item.totalHours.toFixed(2));
+      item.paidHours = Number(item.paidHours.toFixed(2));
+      item.unpaidHours = Number(item.unpaidHours.toFixed(2));
       item.totalSalary = Math.round(item.totalHours * item.hourlyRate);
       item.alreadyPaidSalary = Math.round(item.paidHours * item.hourlyRate);
       item.unpaidSalary = Math.round(item.unpaidHours * item.hourlyRate);
       return item;
     });
-  }, [attendances, staffHourlyRates]);
+  }, [attendances, usersList, staffHourlyRates, salaryConfigs]);
 
   // Coupons state (for admin)
   const [coupons, setCoupons] = useState<any[]>([]);
@@ -978,6 +1149,12 @@ export default function DashboardPage() {
       } catch (e) {}
     });
 
+    socketRef.current.on('ingredientUpdated', () => {
+      if (token && user?.role === 'admin') {
+        fetchAnalytics(token);
+      }
+    });
+
     socketRef.current.on('staffCallRequest', (call: StaffCall) => {
       setStaffCalls((prev) => {
         if (prev.some((c) => c._id === call._id)) return prev;
@@ -1198,17 +1375,100 @@ export default function DashboardPage() {
     }
   };
 
-  const fetchAnalytics = async (tok: string) => {
+  const fetchAnalytics = async (
+    tok: string,
+    targetDate?: string,
+    targetMonth?: string,
+    targetMode?: 'day' | 'month',
+  ) => {
     try {
+      const activeMode = targetMode || analyticsPeriodMode;
+      let summaryUrl = `${API_BASE}/analytics/summary`;
+      if (activeMode === 'month') {
+        const m = targetMonth || analyticsSelectedMonth;
+        summaryUrl += `?month=${m}`;
+      } else {
+        const d = targetDate || analyticsSelectedDate;
+        summaryUrl += `?date=${d}`;
+      }
+
       const [sumRes, topRes, revRes] = await Promise.all([
-        fetch(`${API_BASE}/analytics/summary`, { headers: { Authorization: `Bearer ${tok}` } }),
+        fetch(summaryUrl, { headers: { Authorization: `Bearer ${tok}` } }),
         fetch(`${API_BASE}/analytics/top-foods`, { headers: { Authorization: `Bearer ${tok}` } }),
         fetch(`${API_BASE}/analytics/revenue`, { headers: { Authorization: `Bearer ${tok}` } }),
       ]);
       if (sumRes.ok) setAnalyticsSummary(await sumRes.json());
       if (topRes.ok) setTopFoods(await topRes.json());
       if (revRes.ok) setRevenueHistory(await revRes.json());
-    } catch (e) {}
+    } catch (e) {
+      console.error('Lỗi khi tải dữ liệu thống kê:', e);
+    }
+  };
+
+  const handleAddExpense = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token) return;
+    const trimmedTitle = expenseForm.title.trim();
+    const numAmount = Number(expenseForm.amount);
+    if (!trimmedTitle) {
+      showToast('Vui lòng nhập tên khoản chi phát sinh.', 'error');
+      return;
+    }
+    if (isNaN(numAmount) || numAmount <= 0) {
+      showToast('Số tiền phát sinh phải là số hợp lệ lớn hơn 0.', 'error');
+      return;
+    }
+
+    setIsSubmittingExpense(true);
+    try {
+      const res = await fetch(`${API_BASE}/expenses`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: trimmedTitle,
+          amount: numAmount,
+          category: expenseForm.category || 'Vật tư & Tiện ích',
+          note: expenseForm.note?.trim() || '',
+          date: expenseForm.date || analyticsSelectedDate,
+          createdBy: user?.name || 'Admin',
+        }),
+      });
+
+      if (!res.ok) throw new Error('Không thể ghi nhận chi phí phát sinh.');
+      showToast('Đã thêm khoản chi phát sinh thành công!', 'success');
+      setIsAddExpenseModalOpen(false);
+      setExpenseForm({
+        title: '',
+        amount: '',
+        category: 'Vật tư & Tiện ích',
+        note: '',
+        date: '',
+      });
+      fetchAnalytics(token, analyticsSelectedDate, analyticsSelectedMonth, analyticsPeriodMode);
+    } catch (err: any) {
+      showToast(err.message || 'Lỗi khi lưu khoản chi', 'error');
+    } finally {
+      setIsSubmittingExpense(false);
+    }
+  };
+
+  const handleDeleteExpense = async (expenseId: string) => {
+    if (!token) return;
+    if (!confirm('Bạn có chắc muốn xóa khoản chi phát sinh này không?')) return;
+    try {
+      const res = await fetch(`${API_BASE}/expenses/${expenseId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Không thể xóa chi phí.');
+      showToast('Đã xóa khoản chi thành công!', 'success');
+      fetchAnalytics(token, analyticsSelectedDate, analyticsSelectedMonth, analyticsPeriodMode);
+    } catch (err: any) {
+      showToast(err.message || 'Lỗi khi xóa khoản chi', 'error');
+    }
   };
 
   const fetchReviews = async (tok: string) => {
@@ -1227,12 +1487,17 @@ export default function DashboardPage() {
       });
       if (res.ok) {
         const configs = await res.json();
-        const map: Record<string, number> = {};
+        const mapRates: Record<string, number> = {};
+        const mapConfigs: Record<string, any> = {};
         configs.forEach((c: any) => {
           const uId = c.userId?._id || c.userId;
-          if (uId) map[uId] = c.baseSalary || 25000;
+          if (uId) {
+            mapRates[uId] = c.hourlyRate || c.baseSalary || 25000;
+            mapConfigs[uId] = c;
+          }
         });
-        setStaffHourlyRates(map);
+        setStaffHourlyRates(mapRates);
+        setSalaryConfigs(mapConfigs);
       }
     } catch (e) {}
   };
@@ -1423,70 +1688,197 @@ export default function DashboardPage() {
     }
   };
 
-  const handlePayStaffSalary = async (userId: string, hoursWorked: number, rate: number, attendanceIds?: string[]) => {
-    if (!token) return;
-    if (hoursWorked <= 0) {
-      showToast('Không có giờ làm việc chưa thanh toán.', 'info');
-      return;
-    }
-    const now = new Date();
+  const handleOpenDisbursement = (params: {
+    staffId: string;
+    staffName: string;
+    staffRole: string;
+    periodType: 'weekly' | 'daily' | 'hourly';
+    periodLabel: string;
+    totalShifts: number;
+    totalHours: number;
+    rate: number;
+    basePay: number;
+    allowances?: number;
+    bonuses?: number;
+    attendanceIds: string[];
+  }) => {
+    const allowances = params.allowances || 0;
+    const bonuses = params.bonuses || 0;
+    const deductions = 0;
+    const netSalary = params.basePay + allowances + bonuses - deductions;
+
+    setDisbursementData({
+      staffId: params.staffId,
+      staffName: params.staffName,
+      staffRole: params.staffRole,
+      periodType: params.periodType,
+      periodLabel: params.periodLabel,
+      totalShifts: params.totalShifts,
+      totalHours: params.totalHours,
+      rate: params.rate,
+      basePay: params.basePay,
+      allowances,
+      bonuses,
+      deductions,
+      netSalary,
+      paidMethod: 'cash',
+      note: '',
+      attendanceIds: params.attendanceIds,
+    });
+    setIsDisbursementModalOpen(true);
+  };
+
+  const handleConfirmDisbursement = async () => {
+    if (!token || !disbursementData) return;
+    setIsProcessingDisbursement(true);
     try {
-      // 1. Generate Payroll
-      const genRes = await fetch(`${API_BASE}/salaries/payroll/generate`, {
+      // 1. Generate multi-cycle payroll record
+      const genRes = await fetch(`${API_BASE}/salaries/payroll/generate-period`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          userId,
-          month: now.getMonth() + 1,
-          year: now.getFullYear(),
+          userId: disbursementData.staffId,
+          periodType: disbursementData.periodType,
+          bonuses: disbursementData.bonuses,
+          deductions: disbursementData.deductions,
+          note: disbursementData.note,
         }),
       });
 
-      if (!genRes.ok) throw new Error('Không thể tạo bản ghi lương.');
+      if (!genRes.ok) throw new Error('Không thể khởi tạo phiếu lương.');
       const payroll = await genRes.json();
 
-      // 2. Mark Paid directly in DB
+      // 2. Mark Paid (which also locks attendance records with payrollId & isPaid=true in MongoDB)
       const payRes = await fetch(`${API_BASE}/salaries/payroll/${payroll._id}/pay`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ paidMethod: 'cash' }),
+        body: JSON.stringify({
+          paidMethod: disbursementData.paidMethod,
+          paymentRef: disbursementData.note,
+        }),
       });
 
-      if (!payRes.ok) throw new Error('Không thể cập nhật trạng thái thanh toán.');
+      if (!payRes.ok) throw new Error('Không thể hoàn tất thanh toán.');
+      const paidPayroll = await payRes.json();
 
-      // 3. Mark specific attendance records as paid in DB
-      if (attendanceIds && attendanceIds.length > 0) {
-        await fetch(`${API_BASE}/attendance/pay-bulk`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ attendanceIds }),
-        });
+      // 3. Update local state
+      const targetIds = disbursementData.attendanceIds;
+      setAttendances((prev) =>
+        prev.map((att) =>
+          targetIds.includes(att._id)
+            ? { ...att, isPaid: true, paidAt: new Date().toISOString(), payrollId: payroll._id }
+            : att
+        )
+      );
 
-        // Update local state
-        setAttendances((prev) =>
-          prev.map((att) =>
-            attendanceIds.includes(att._id)
-              ? { ...att, isPaid: true, paidAt: new Date().toISOString() }
-              : att
-          )
-        );
-      }
-
-      showToast(`Đã thanh toán tiền lương (${formatPrice(hoursWorked * rate)}) thành công và trừ vào doanh thu!`, 'success');
+      setPayrolls((prev) => [paidPayroll, ...prev.filter((p) => p._id !== paidPayroll._id)]);
+      setIsDisbursementModalOpen(false);
+      const paidAmount = disbursementData.netSalary;
+      setDisbursementData(null);
+      showToast(`Đã thanh toán ${formatPrice(paidAmount)} thành công và khóa ca!`, 'success');
       fetchPayrolls(token);
       fetchAnalytics(token);
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Có lỗi xảy ra khi trả lương.', 'error');
+    } catch (err: any) {
+      showToast(err.message || 'Lỗi khi xử lý chi trả lương.', 'error');
+    } finally {
+      setIsProcessingDisbursement(false);
     }
+  };
+
+  const handleOpenSalaryConfig = (staff: { _id?: string; name: string; role?: string }) => {
+    const sId = staff._id || '';
+    const existing = salaryConfigs[sId];
+    setSalaryConfigForm({
+      userId: sId,
+      staffName: staff.name,
+      type: existing?.type || 'hourly',
+      hourlyRate: existing?.hourlyRate || staffHourlyRates[sId] || 25000,
+      dailyRate: existing?.dailyRate || 200000,
+      morningRate: existing?.shiftRates?.morning || 120000,
+      afternoonRate: existing?.shiftRates?.afternoon || 120000,
+      eveningRate: existing?.shiftRates?.evening || 150000,
+      weeklyBaseRate: existing?.weeklyBaseRate || 0,
+      monthlyBaseSalary: existing?.monthlyBaseSalary || 0,
+      mealAllowancePerShift: existing?.mealAllowancePerShift || 0,
+      weeklyAttendanceBonus: existing?.weeklyAttendanceBonus || 0,
+    });
+    setIsSalaryConfigModalOpen(true);
+  };
+
+  const handleSaveSalaryConfig = async () => {
+    if (!token || !salaryConfigForm.userId) return;
+    setIsSavingSalaryConfig(true);
+    try {
+      const payload = {
+        type: salaryConfigForm.type,
+        hourlyRate: Number(salaryConfigForm.hourlyRate) || 25000,
+        baseSalary: Number(salaryConfigForm.hourlyRate) || 25000,
+        dailyRate: Number(salaryConfigForm.dailyRate) || 200000,
+        shiftRates: {
+          morning: Number(salaryConfigForm.morningRate) || 120000,
+          afternoon: Number(salaryConfigForm.afternoonRate) || 120000,
+          evening: Number(salaryConfigForm.eveningRate) || 150000,
+        },
+        weeklyBaseRate: Number(salaryConfigForm.weeklyBaseRate) || 0,
+        monthlyBaseSalary: Number(salaryConfigForm.monthlyBaseSalary) || 0,
+        mealAllowancePerShift: Number(salaryConfigForm.mealAllowancePerShift) || 0,
+        weeklyAttendanceBonus: Number(salaryConfigForm.weeklyAttendanceBonus) || 0,
+      };
+
+      const res = await fetch(`${API_BASE}/salaries/config/${salaryConfigForm.userId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        const saved = await res.json();
+        setSalaryConfigs((prev) => ({ ...prev, [salaryConfigForm.userId]: saved }));
+        setStaffHourlyRates((prev) => ({ ...prev, [salaryConfigForm.userId]: payload.hourlyRate }));
+        setIsSalaryConfigModalOpen(false);
+        showToast('Đã lưu cấu hình lương nhân viên thành công!', 'success');
+      } else {
+        showToast('Không thể lưu cấu hình lương.', 'error');
+      }
+    } catch (err) {
+      showToast('Lỗi kết nối máy chủ.', 'error');
+    } finally {
+      setIsSavingSalaryConfig(false);
+    }
+  };
+
+  const handlePayStaffSalary = async (userId: string, hoursWorked: number, rate: number, attendanceIds?: string[]) => {
+    if (!token) return;
+    if (hoursWorked <= 0) {
+      showToast('Không có giờ làm việc chưa thanh toán.', 'info');
+      return;
+    }
+    const staff = usersList.find((u) => u._id === userId);
+    const staffName = staff?.name || 'Nhân viên';
+    const staffRole = staff?.role || 'staff';
+    const basePay = Math.round(hoursWorked * rate);
+
+    handleOpenDisbursement({
+      staffId: userId,
+      staffName,
+      staffRole,
+      periodType: 'hourly',
+      periodLabel: `Theo Giờ (${hoursWorked}h)`,
+      totalShifts: attendanceIds?.length || 1,
+      totalHours: hoursWorked,
+      rate,
+      basePay,
+      attendanceIds: attendanceIds || [],
+    });
   };
 
   const fetchShiftSwaps = async (tok: string) => {
@@ -3199,7 +3591,7 @@ export default function DashboardPage() {
                     ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                     : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                 }`}>bar_chart</span>
-                <span className="flex-1 truncate text-left">Thống kê doanh thu DB</span>
+                <span className="flex-1 truncate text-left">Thống kê doanh thu cửa hàng</span>
               </button>
             )}
 
@@ -3280,7 +3672,7 @@ export default function DashboardPage() {
               {activeTab === 'tables' && t.tabTables}
               {activeTab === 'users' && t.tabUsers}
               {activeTab === 'attendance' && (user?.role === 'admin' ? 'Chấm công & Thanh toán Lương Nhân viên' : 'Chấm công ca làm')}
-              {activeTab === 'analytics' && 'Thống kê Doanh thu & Đánh giá Khách hàng'}
+              {activeTab === 'analytics' && 'Thống kê Doanh thu Cửa Hàng'}
               {activeTab === 'inventory' && ((t as any).tabInventory || 'Quản lý kho nguyên liệu')}
               {activeTab === ('coupons' as any) && 'Quản lý Mã giảm giá (Coupons)'}
               {activeTab === ('reservations' as any) && 'Quản lý Bàn đã đặt (Reservations)'}
@@ -3922,20 +4314,19 @@ export default function DashboardPage() {
                               <span className="uppercase font-bold text-slate-500">
                                 {order.paymentMethod === 'momo' ? 'VÍ MOMO' : 'TIỀN MẶT'}
                               </span>
-                              <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-1.5">
                                 <button
                                   onClick={() => setActiveInvoice(order)}
-                                  className="px-3 py-1 bg-[#38BDF8]/15 hover:bg-[#38BDF8]/25 text-[#38BDF8] font-black rounded-lg transition-all text-[11px] flex items-center gap-1 cursor-pointer"
+                                  className="px-3 py-1.5 bg-[#38BDF8]/15 hover:bg-[#38BDF8]/25 text-[#38BDF8] font-black rounded-lg transition-all text-[11px] cursor-pointer"
                                 >
-                                  <span className="material-symbols-outlined text-sm">visibility</span>
-                                  <span>Xem Hóa Đơn</span>
+                                  Hóa Đơn
                                 </button>
                                 <button
                                   onClick={() => setOrderToDelete(order._id)}
-                                  className="p-1.5 text-slate-400 hover:text-rose-500 transition-colors cursor-pointer"
+                                  className="px-2.5 py-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all cursor-pointer text-[11px] font-bold"
                                   title="Xóa đơn hàng"
                                 >
-                                  <span className="material-symbols-outlined text-base">delete</span>
+                                  Xóa
                                 </button>
                               </div>
                             </div>
@@ -3959,19 +4350,19 @@ export default function DashboardPage() {
                   const getOrderStatusBadge = (status: string) => {
                     switch (status) {
                       case 'pending':
-                        return <span className="px-2.5 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-xl text-[10px] font-black uppercase">Chờ duyệt</span>;
+                        return <span className="px-2.5 py-0.5 bg-amber-500/15 text-amber-600 dark:text-amber-400 rounded-full text-[10px] font-black uppercase">Chờ duyệt</span>;
                       case 'confirmed':
-                        return <span className="px-2.5 py-1 bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30 rounded-xl text-[10px] font-black uppercase">Chờ pha chế</span>;
+                        return <span className="px-2.5 py-0.5 bg-sky-500/15 text-sky-600 dark:text-[#38BDF8] rounded-full text-[10px] font-black uppercase">Chờ pha chế</span>;
                       case 'cooking':
-                        return <span className="px-2.5 py-1 bg-sky-500/20 text-sky-500 border border-sky-500/40 rounded-xl text-[10px] font-black uppercase flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-ping" />Đang pha chế</span>;
+                        return <span className="px-2.5 py-0.5 bg-sky-500/20 text-[#38BDF8] rounded-full text-[10px] font-black uppercase">Đang pha chế</span>;
                       case 'ready':
-                        return <span className="px-2.5 py-1 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded-xl text-[10px] font-black uppercase">Chờ ra món</span>;
+                        return <span className="px-2.5 py-0.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-black uppercase">Chờ ra món</span>;
                       case 'completed':
-                        return <span className="px-2.5 py-1 bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 rounded-xl text-[10px] font-black uppercase">Chờ thanh toán</span>;
+                        return <span className="px-2.5 py-0.5 bg-amber-500/15 text-amber-700 dark:text-amber-300 rounded-full text-[10px] font-black uppercase">Chờ thanh toán</span>;
                       case 'paid':
-                        return <span className="px-2.5 py-1 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase">Đã thanh toán</span>;
+                        return <span className="px-2.5 py-0.5 bg-emerald-600/20 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-black uppercase">Đã thanh toán</span>;
                       default:
-                        return <span className="px-2.5 py-1 bg-slate-200 text-slate-700 rounded-xl text-[10px] font-black uppercase">Đang xử lý</span>;
+                        return <span className="px-2.5 py-0.5 bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full text-[10px] font-black uppercase">Đang xử lý</span>;
                     }
                   };
 
@@ -3981,19 +4372,19 @@ export default function DashboardPage() {
                   return (
                     <div
                       key={order._id}
-                      className={`bg-white dark:bg-[#131929] border rounded-3xl p-4 sm:p-5 shadow-xs dark:shadow-xl flex flex-col justify-between transition-all duration-200 hover:shadow-md ${
+                      className={`bg-white dark:bg-[#0E131F] border rounded-2xl p-4 sm:p-4.5 shadow-xs dark:shadow-md flex flex-col justify-between transition-all duration-200 hover:shadow-lg hover:border-[#38BDF8]/40 ${
                         isSelected
-                          ? 'border-[#38BDF8] ring-2 ring-[#38BDF8]/60 bg-sky-50/20 dark:bg-[#38BDF8]/5'
+                          ? 'border-[#38BDF8] ring-2 ring-[#38BDF8]/40 bg-sky-50/20 dark:bg-sky-500/5'
                           : order.status === 'pending'
-                          ? 'border-amber-400 dark:border-amber-500/60 ring-2 ring-amber-400/20 shadow-lg shadow-amber-500/5'
+                          ? 'border-amber-400/80 dark:border-amber-500/60 shadow-md shadow-amber-500/5'
                           : isPaid
-                          ? 'border-emerald-500/30 hover:border-slate-300 dark:hover:border-slate-700'
-                          : 'border-slate-200/80 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-700'
+                          ? 'border-emerald-500/30'
+                          : 'border-slate-200/80 dark:border-white/10'
                       }`}
                     >
                       <div>
-                        {/* Card Header: Table Name & Status */}
-                        <div className="flex items-start justify-between pb-3 border-b border-slate-100 dark:border-[#1e293b] mb-3 gap-2">
+                        {/* Card Header: Checkbox + Table + Status */}
+                        <div className="flex items-start justify-between pb-3 border-b border-slate-100 dark:border-white/10 mb-3 gap-2">
                           <div className="flex items-start gap-2.5 min-w-0">
                             <input
                               type="checkbox"
@@ -4009,7 +4400,7 @@ export default function DashboardPage() {
                             />
                             <div className="min-w-0">
                               <div className="flex items-center gap-1.5">
-                                <h3 className="text-base font-black text-slate-900 dark:text-white font-heading truncate">
+                                <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white font-heading truncate">
                                   {order.isTakeaway || !order.tableId ? (
                                     <span className="text-[#0284c7] dark:text-[#38BDF8]">Mang về</span>
                                   ) : (
@@ -4017,18 +4408,18 @@ export default function DashboardPage() {
                                   )}
                                 </h3>
                                 {order.paymentNotified && order.status !== 'paid' && (
-                                  <span className="px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9.5px] font-black uppercase animate-pulse shrink-0">
+                                  <span className="px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9.5px] font-black uppercase shrink-0">
                                     Báo CK
                                   </span>
                                 )}
                               </div>
 
                               <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-500 dark:text-slate-400 font-semibold flex-wrap">
-                                <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-md text-[10px] font-extrabold uppercase">
+                                <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 rounded-md text-[10px] font-extrabold uppercase">
                                   {order.paymentMethod === 'bank_transfer' ? 'VietQR' : order.paymentMethod === 'momo' ? 'MoMo' : 'Tiền mặt'}
                                 </span>
                                 {(order.customerName || order.customerPhone) && (
-                                  <span className="truncate max-w-[100px]">
+                                  <span className="truncate max-w-[110px]">
                                     • {order.customerName || 'Khách'}
                                   </span>
                                 )}
@@ -4038,40 +4429,27 @@ export default function DashboardPage() {
 
                           <div className="flex flex-col items-end gap-1 shrink-0">
                             {getOrderStatusBadge(order.status)}
-                            <span className="text-[10px] font-mono text-slate-400">
+                            <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
                               {order.createdAt ? new Date(order.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : ''}
                             </span>
                           </div>
                         </div>
 
-                        {/* Order Items Container */}
-                        <div className="bg-slate-50/70 dark:bg-slate-900/40 rounded-2xl p-3 space-y-2 mb-3 border border-slate-100 dark:border-slate-800/50">
+                        {/* Order Items List (Clean & Modern typography, no redundant icons) */}
+                        <div className="py-1 space-y-2 mb-3">
                           {order.items?.map((item, idx) => (
-                            <div key={idx} className="flex items-center justify-between text-xs gap-2">
-                              <div className="flex items-center gap-2.5 min-w-0">
-                                <span className="px-2 py-0.5 bg-sky-500/10 text-sky-600 dark:text-sky-400 font-extrabold text-[11px] rounded-lg shrink-0">
-                                  {item.quantity}x
-                                </span>
-                                <div className="truncate">
-                                  <p className="text-slate-800 dark:text-slate-200 font-bold truncate text-[12.5px]">
-                                    {item.foodId?.name || 'Món ăn'}
+                            <div key={idx} className="flex items-start gap-2.5 text-xs">
+                              <span className="px-2 py-0.5 rounded-md bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] font-black text-[11px] shrink-0 font-mono">
+                                {item.quantity}x
+                              </span>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-slate-800 dark:text-slate-200 font-bold text-[12.5px] leading-snug">
+                                  {item.foodId?.name || 'Món ăn'}
+                                </p>
+                                {item.note && (
+                                  <p className="text-[11px] text-slate-400 dark:text-slate-500 italic mt-0.5">
+                                    Ghi chú: {item.note}
                                   </p>
-                                  {item.note && (
-                                    <p className="text-[11px] text-slate-500 dark:text-slate-400 italic truncate">
-                                      Ghi chú: {item.note}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0">
-                                {(user?.role !== 'barista' || !['ready', 'served', 'completed', 'paid'].includes(order.status)) && (
-                                  <button
-                                    onClick={() => setOrderToDelete(order._id)}
-                                    className="text-slate-300 dark:text-slate-600 hover:text-red-500 transition-colors p-0.5 cursor-pointer"
-                                    title="Xóa món"
-                                  >
-                                    <span className="material-symbols-outlined text-sm">close</span>
-                                  </button>
                                 )}
                               </div>
                             </div>
@@ -4080,16 +4458,16 @@ export default function DashboardPage() {
                       </div>
 
                       {/* Card Bottom Action Buttons */}
-                      <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-[#1e293b]">
+                      <div className="space-y-2.5 pt-2.5 border-t border-slate-100 dark:border-white/10">
                         {/* Payment Status Display */}
-                        <div className="flex items-center justify-between px-1">
+                        <div className="flex items-center justify-between px-0.5">
                           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Thanh toán</span>
-                          <span className={`text-xs font-black px-2 py-0.5 rounded-md ${
+                          <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-full ${
                             order.status === 'paid' || order.paymentStatus === 'paid'
-                              ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400'
+                              ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
                               : order.paymentNotified
-                              ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400'
-                              : 'bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400'
+                              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                              : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
                           }`}>
                             {order.status === 'paid' || order.paymentStatus === 'paid'
                               ? 'Đã thanh toán'
@@ -4102,28 +4480,23 @@ export default function DashboardPage() {
                         {/* Step 1 -> 2: Phục vụ xác nhận & gửi pha chế hoặc Từ chối */}
                         {order.status === 'pending' && (
                           user?.role === 'barista' ? (
-                            <button
-                              disabled
-                              className="w-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-extrabold text-xs py-2.5 rounded-xl cursor-not-allowed text-center border border-amber-500/20"
-                            >
-                              Chờ Phục vụ duyệt đơn
-                            </button>
+                            <div className="w-full py-2.5 text-center text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 rounded-xl border border-amber-500/20 select-none">
+                              Chờ phục vụ duyệt đơn
+                            </div>
                           ) : (
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => handleUpdateStatus(order._id, 'confirmed')}
-                                className="flex-1 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] hover:text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+                                className="flex-1 h-10 bg-[#38BDF8] hover:bg-sky-400 text-slate-950 font-black text-xs rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
                               >
-                                <span className="material-symbols-outlined text-base">check_circle</span>
-                                <span>Duyệt Đơn</span>
+                                Duyệt đơn
                               </button>
                               <button
                                 onClick={() => handleUpdateStatus(order._id, 'cancelled')}
-                                className="px-3.5 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 hover:border-rose-500/50 font-extrabold text-xs rounded-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1"
+                                className="h-10 px-4 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 font-bold text-xs rounded-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center uppercase"
                                 title="Từ chối đơn rác / Khách không có tại bàn"
                               >
-                                <span className="material-symbols-outlined text-base">cancel</span>
-                                <span>Từ chối</span>
+                                Từ chối
                               </button>
                             </div>
                           )
@@ -4134,18 +4507,14 @@ export default function DashboardPage() {
                           user?.role === 'barista' || user?.role === 'admin' ? (
                             <button
                               onClick={() => handleUpdateStatus(order._id, 'cooking')}
-                              className="w-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center"
+                              className="w-full h-10 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-xs rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
                             >
-                              <span>Bắt Đầu Pha Chế</span>
+                              Bắt đầu pha chế
                             </button>
                           ) : (
-                            <button
-                              disabled
-                              className="w-full bg-slate-100 dark:bg-[#1e293b] text-slate-500 dark:text-slate-400 font-extrabold text-xs py-2.5 rounded-xl cursor-not-allowed flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-800"
-                            >
-                              <span className="w-2 h-2 rounded-full bg-sky-400 animate-ping" />
-                              <span>Đã chuyển quầy pha chế</span>
-                            </button>
+                            <div className="w-full py-2.5 text-center text-xs font-bold text-sky-600 dark:text-[#38BDF8] bg-sky-500/10 rounded-xl border border-sky-500/20 select-none">
+                              Đã chuyển quầy pha chế
+                            </div>
                           )
                         )}
 
@@ -4154,33 +4523,29 @@ export default function DashboardPage() {
                           user?.role === 'barista' || user?.role === 'admin' ? (
                             <button
                               onClick={() => handleUpdateStatus(order._id, 'ready')}
-                              className="w-full bg-amber-500 hover:bg-amber-600 text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center"
+                              className="w-full h-10 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
                             >
-                              <span>Hoàn Tất Pha Chế (Báo Phục Vụ)</span>
+                              Hoàn tất pha chế
                             </button>
                           ) : (
-                            <button
-                              disabled
-                              className="w-full bg-sky-500/10 text-sky-600 dark:text-sky-400 font-extrabold text-xs py-2.5 rounded-xl cursor-not-allowed flex items-center justify-center gap-2 border border-sky-500/20"
-                            >
-                              <span className="w-2 h-2 rounded-full bg-sky-400 animate-ping" />
-                              <span>Đang pha chế tại quầy...</span>
-                            </button>
+                            <div className="w-full py-2.5 text-center text-xs font-bold text-sky-600 dark:text-[#38BDF8] bg-sky-500/10 rounded-xl border border-sky-500/20 select-none">
+                              Đang pha chế tại quầy
+                            </div>
                           )
                         )}
 
                         {/* Step 4 -> 5: Phục vụ mang đồ ra bàn cho Khách */}
                         {order.status === 'ready' && (
                           user?.role === 'barista' ? (
-                            <button disabled className="w-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-extrabold text-xs py-2.5 rounded-xl cursor-not-allowed flex items-center justify-center border border-emerald-500/20">
-                              Đã báo Phục vụ ra món
-                            </button>
+                            <div className="w-full py-2.5 text-center text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 rounded-xl border border-emerald-500/20 select-none">
+                              Đã báo phục vụ ra món
+                            </div>
                           ) : (
                             <button
                               onClick={() => handleUpdateStatus(order._id, 'completed')}
-                              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center"
+                              className="w-full h-10 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
                             >
-                              <span>Đã Ra Món Tại Bàn</span>
+                              Xác nhận ra món
                             </button>
                           )
                         )}
@@ -4188,22 +4553,22 @@ export default function DashboardPage() {
                         {/* Step 5: Phục vụ thanh toán */}
                         {order.status === 'completed' && (
                           user?.role === 'barista' ? (
-                            <button disabled className="w-full bg-slate-100 dark:bg-[#1e293b] text-slate-500 dark:text-slate-400 font-extrabold text-xs py-2.5 rounded-xl cursor-not-allowed flex items-center justify-center border border-slate-200 dark:border-slate-800">
-                              Đã hoàn tất pha chế & ra món
-                            </button>
+                            <div className="w-full py-2.5 text-center text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-white/5 select-none">
+                              Đã hoàn tất món
+                            </div>
                           ) : (
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handleUpdateStatus(order._id, 'paid')}
-                                className="flex-1 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center"
+                                className="flex-1 h-10 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-xs rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
                               >
-                                <span>Xác nhận Đã nhận tiền</span>
+                                Xác nhận nhận tiền
                               </button>
                               <button
                                 onClick={() => setActiveInvoice(order)}
-                                className="px-3 py-2.5 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center"
+                                className="h-10 px-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center uppercase"
                               >
-                                <span>HD</span>
+                                Hóa đơn
                               </button>
                             </div>
                           )
@@ -4211,9 +4576,9 @@ export default function DashboardPage() {
                         {isPaid && (
                           <button
                             onClick={() => setActiveInvoice(order)}
-                            className="w-full py-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-[#38BDF8] hover:text-[#090D16] text-[#0284c7] dark:text-[#38BDF8] text-xs font-extrabold rounded-xl transition-all flex items-center justify-center"
+                            className="w-full h-10 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 hover:text-sky-500 dark:hover:text-[#38BDF8] text-xs font-black rounded-xl transition-all flex items-center justify-center uppercase tracking-wider cursor-pointer"
                           >
-                            <span>Xem hóa đơn chi tiết</span>
+                            Xem hóa đơn chi tiết
                           </button>
                         )}
                       </div>
@@ -4962,11 +5327,11 @@ export default function DashboardPage() {
                         <div className="flex justify-end gap-2 pt-0.5">
                           <button
                             onClick={() => handleUpdateShiftSwapStatus(swap._id, 'rejected')}
-                            className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-600 dark:text-rose-400 font-bold text-[11px] rounded-lg transition-all cursor-pointer"
+                            className="px-3.5 py-1.5 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-600 dark:text-rose-400 font-bold text-[11px] rounded-xl border border-rose-500/20 hover:border-rose-500 transition-all cursor-pointer active:scale-95"
                           >Từ chối</button>
                           <button
                             onClick={() => handleUpdateShiftSwapStatus(swap._id, 'approved')}
-                            className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[11px] rounded-lg transition-all cursor-pointer"
+                            className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-[11px] rounded-xl shadow-xs shadow-emerald-500/20 transition-all cursor-pointer active:scale-95"
                           >Duyệt đổi ca</button>
                         </div>
                       </div>
@@ -4987,28 +5352,36 @@ export default function DashboardPage() {
               </div>
 
               {user?.role === 'admin' && (
-                <div className="flex items-center bg-slate-100 dark:bg-[#131929] p-1 rounded-xl border border-slate-200 dark:border-[#1e293b] text-xs font-bold w-fit">
+                <div className="flex items-center bg-slate-100/90 dark:bg-[#090D16] p-1 rounded-2xl border border-slate-200/80 dark:border-white/10 text-xs font-bold w-fit shadow-2xs">
                   <button
                     onClick={() => setPayrollViewMode('weekly')}
-                    className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                    className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer font-extrabold ${
                       payrollViewMode === 'weekly'
-                        ? 'bg-amber-500 text-white shadow-xs'
-                        : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                        ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 shadow-xs shadow-[#0284c7]/20 dark:shadow-[#38BDF8]/20 active:scale-95'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/5'
                     }`}
                   >
-                    <span className="material-symbols-outlined text-sm">date_range</span>
-                    <span>Gộp Theo Tuần</span>
+                    <span>Theo Tuần</span>
                   </button>
                   <button
                     onClick={() => setPayrollViewMode('daily')}
-                    className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                    className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer font-extrabold ${
                       payrollViewMode === 'daily'
-                        ? 'bg-amber-500 text-white shadow-xs'
-                        : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                        ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 shadow-xs shadow-[#0284c7]/20 dark:shadow-[#38BDF8]/20 active:scale-95'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/5'
                     }`}
                   >
-                    <span className="material-symbols-outlined text-sm">view_list</span>
-                    <span>Chi Tiết Từng Ca</span>
+                    <span>Theo Ca / Ngày</span>
+                  </button>
+                  <button
+                    onClick={() => setPayrollViewMode('hourly')}
+                    className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer font-extrabold ${
+                      payrollViewMode === 'hourly'
+                        ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 shadow-xs shadow-[#0284c7]/20 dark:shadow-[#38BDF8]/20 active:scale-95'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/5'
+                    }`}
+                  >
+                    <span>Theo Giờ</span>
                   </button>
                 </div>
               )}
@@ -5084,18 +5457,42 @@ export default function DashboardPage() {
                               )}
                             </div>
                             {user?.role === 'admin' && (
-                              wp.unpaidSalary > 0 ? (
+                              <div className="flex items-center gap-2">
                                 <button
-                                  onClick={() => handlePayStaffSalary(wp.staffId, wp.unpaidHours, wp.hourlyRate, wp.unpaidAttendances.map((a) => a._id))}
-                                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 flex items-center gap-1"
+                                  onClick={() => handleOpenSalaryConfig({ _id: wp.staffId, name: wp.staffName, role: wp.staffRole })}
+                                  className="px-3 py-1.5 bg-white dark:bg-[#131929] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
                                 >
-                                  Trả lương Tuần
+                                  Cấu hình
                                 </button>
-                              ) : (
-                                <span className="px-3 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20">
-                                  ✓ Đã trả hết
-                                </span>
-                              )
+                                {wp.unpaidSalary > 0 ? (
+                                  <button
+                                    onClick={() =>
+                                      handleOpenDisbursement({
+                                        staffId: wp.staffId,
+                                        staffName: wp.staffName,
+                                        staffRole: wp.staffRole,
+                                        periodType: 'weekly',
+                                        periodLabel: wp.weekLabel,
+                                        totalShifts: wp.totalShifts,
+                                        totalHours: wp.unpaidHours,
+                                        rate: wp.hourlyRate,
+                                        basePay: wp.unpaidSalary,
+                                        allowances: wp.allowances,
+                                        bonuses: wp.bonuses,
+                                        attendanceIds: wp.unpaidAttendances.map((a) => a._id),
+                                      })
+                                    }
+                                    className="px-3.5 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-extrabold text-xs rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-md active:scale-95 transition-all cursor-pointer"
+                                  >
+                                    Chi trả Tuần
+                                  </button>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 shrink-0">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                    <span>Đã trả hết</span>
+                                  </span>
+                                )}
+                              </div>
                             )}
                           </div>
                         </div>
@@ -5197,18 +5594,273 @@ export default function DashboardPage() {
                                 )}
                                 {user?.role === 'admin' && (
                                   <td className="py-3.5 px-4 text-right">
-                                    {wp.unpaidSalary > 0 ? (
+                                    <div className="flex items-center justify-end gap-2">
                                       <button
-                                        onClick={() => handlePayStaffSalary(wp.staffId, wp.unpaidHours, wp.hourlyRate, wp.unpaidAttendances.map((a) => a._id))}
-                                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 flex items-center gap-1 ml-auto"
+                                        onClick={() => handleOpenSalaryConfig({ _id: wp.staffId, name: wp.staffName, role: wp.staffRole })}
+                                        className="px-3 py-1.5 bg-white dark:bg-[#131929] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-[11px] rounded-xl border border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
                                       >
-                                        Trả lương Tuần
+                                        Cấu hình
                                       </button>
-                                    ) : (
-                                      <span className="px-3 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 inline-block">
-                                        ✓ Đã trả hết
+                                      {wp.unpaidSalary > 0 ? (
+                                        <button
+                                          onClick={() =>
+                                            handleOpenDisbursement({
+                                              staffId: wp.staffId,
+                                              staffName: wp.staffName,
+                                              staffRole: wp.staffRole,
+                                              periodType: 'weekly',
+                                              periodLabel: wp.weekLabel,
+                                              totalShifts: wp.totalShifts,
+                                              totalHours: wp.unpaidHours,
+                                              rate: wp.hourlyRate,
+                                              basePay: wp.unpaidSalary,
+                                              allowances: wp.allowances,
+                                              bonuses: wp.bonuses,
+                                              attendanceIds: wp.unpaidAttendances.map((a) => a._id),
+                                            })
+                                          }
+                                          className="px-3.5 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-extrabold text-[11px] rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-md hover:shadow-[#0284c7]/30 dark:hover:shadow-[#38BDF8]/30 active:scale-95 transition-all cursor-pointer"
+                                        >
+                                          Chi trả Tuần
+                                        </button>
+                                      ) : (
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] rounded-xl border border-emerald-500/20 shrink-0">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                          <span>Đã trả hết</span>
+                                        </span>
+                                      )}
+                                    </div>
+                                  </td>
+                                )}
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            ) : payrollViewMode === 'hourly' ? (
+              <>
+                {/* ── HOURLY PAYROLL VIEW ───────────────────────────────────────── */}
+                {/* Hourly Mobile View (< sm) */}
+                <div className="grid grid-cols-1 gap-3 sm:hidden">
+                  {hourlyPayrolls.length === 0 ? (
+                    <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-10 text-center shadow-xs">
+                      <p className="text-sm font-bold text-slate-400 dark:text-slate-500">Chưa có dữ liệu bảng lương theo giờ</p>
+                    </div>
+                  ) : (
+                    hourlyPayrolls.map((hp) => {
+                      const initials = hp.staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
+                      const roleLabel = hp.staffRole === 'admin' ? 'Quản trị' : hp.staffRole === 'barista' ? 'Pha chế' : hp.staffRole === 'waiter' ? 'Phục vụ' : 'Nhân viên';
+                      const roleColor = hp.staffRole === 'admin' ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' :
+                        hp.staffRole === 'barista' ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300' :
+                        hp.staffRole === 'waiter' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' :
+                        'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
+
+                      return (
+                        <div key={hp.staffId} className="bg-white dark:bg-[#131929] rounded-2xl shadow-xs overflow-hidden border border-slate-200/80 dark:border-[#1e293b] p-4 space-y-3">
+                          <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-[#1e293b] pb-2">
+                            <span className="text-xs font-black text-[#38BDF8] font-mono">
+                              Đơn giá: {formatPrice(hp.hourlyRate)}/h
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${roleColor}`}>
+                              {roleLabel}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-black text-sm flex items-center justify-center shrink-0">
+                              {initials}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h4 className="font-extrabold text-slate-900 dark:text-white text-sm truncate">{hp.staffName}</h4>
+                              <p className="text-[10px] text-slate-400 truncate">{hp.staffEmail}</p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div className="bg-slate-50 dark:bg-[#0d1525] p-2 rounded-xl">
+                              <span className="block text-[10px] text-slate-400 font-medium">Tổng ca làm</span>
+                              <span className="block font-bold text-slate-800 dark:text-slate-200 font-mono">
+                                {hp.totalShifts} ca
+                              </span>
+                            </div>
+                            <div className="bg-slate-50 dark:bg-[#0d1525] p-2 rounded-xl">
+                              <span className="block text-[10px] text-slate-400 font-medium">Giờ chưa trả</span>
+                              <span className="block font-bold text-slate-800 dark:text-slate-200 font-mono">
+                                {hp.unpaidHours}h <span className="text-[10px] text-slate-400 font-normal">/ {hp.totalHours}h</span>
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-[#1e293b]">
+                            <div>
+                              <span className="block text-[10px] text-slate-400 font-medium">Lương Giờ Còn Lại</span>
+                              <span className="text-sm font-black text-[#38BDF8] font-mono">
+                                {formatPrice(hp.unpaidSalary)}
+                              </span>
+                              {hp.paidHours > 0 && (
+                                <span className="block text-[9px] text-slate-400">
+                                  Đã trả: {formatPrice(hp.alreadyPaidSalary)} / Tổng: {formatPrice(hp.totalSalary)}
+                                </span>
+                              )}
+                            </div>
+                            {user?.role === 'admin' && (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleOpenSalaryConfig({ _id: hp.staffId, name: hp.staffName, role: hp.staffRole })}
+                                  className="px-3 py-1.5 bg-white dark:bg-[#131929] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
+                                >
+                                  Cấu hình
+                                </button>
+                                {hp.unpaidSalary > 0 ? (
+                                  <button
+                                    onClick={() =>
+                                      handleOpenDisbursement({
+                                        staffId: hp.staffId,
+                                        staffName: hp.staffName,
+                                        staffRole: hp.staffRole,
+                                        periodType: 'hourly',
+                                        periodLabel: `Theo Giờ (${hp.unpaidHours}h)`,
+                                        totalShifts: hp.totalShifts,
+                                        totalHours: hp.unpaidHours,
+                                        rate: hp.hourlyRate,
+                                        basePay: hp.unpaidSalary,
+                                        attendanceIds: hp.unpaidAttendanceIds,
+                                      })
+                                    }
+                                    className="px-3.5 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-extrabold text-xs rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-md active:scale-95 transition-all cursor-pointer"
+                                  >
+                                    Chi trả Giờ
+                                  </button>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 shrink-0">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                    <span>Đã trả hết</span>
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Hourly Desktop View (>= sm) */}
+                <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200/80 dark:border-[#1e293b] rounded-2xl overflow-hidden shadow-xs">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[850px]">
+                      <thead className="bg-slate-50 dark:bg-[#0d1525] border-b border-slate-200/80 dark:border-[#1e293b] text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-wider font-bold">
+                        <tr>
+                          <th className="py-3 px-4">Nhân Viên</th>
+                          <th className="py-3 px-4">Vai Trò</th>
+                          <th className="py-3 px-4 text-center">Tổng Ca Làm</th>
+                          <th className="py-3 px-4 text-center">Giờ Chưa Trả / Tổng</th>
+                          {user?.role === 'admin' && <th className="py-3 px-4">Mức Lương/Giờ</th>}
+                          {user?.role === 'admin' && <th className="py-3 px-4">Lương Còn Lại (VND)</th>}
+                          {user?.role === 'admin' && <th className="py-3 px-4 text-right">Hành Động</th>}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b]/60">
+                        {hourlyPayrolls.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} className="py-10 text-center text-slate-400 font-medium">
+                              Chưa có dữ liệu bảng lương theo giờ
+                            </td>
+                          </tr>
+                        ) : (
+                          hourlyPayrolls.map((hp) => {
+                            const initials = hp.staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
+                            return (
+                              <tr key={hp.staffId} className="hover:bg-slate-50/70 dark:hover:bg-[#182035]/50 transition-colors">
+                                <td className="py-3.5 px-4">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-extrabold text-xs flex items-center justify-center shrink-0">
+                                      {initials}
+                                    </div>
+                                    <div className="min-w-0">
+                                      <div className="font-bold text-slate-900 dark:text-white text-xs truncate">
+                                        {hp.staffName}
+                                      </div>
+                                      {hp.staffEmail && <div className="text-[10px] text-slate-400 truncate">{hp.staffEmail}</div>}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-3.5 px-4">
+                                  <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                    hp.staffRole === 'admin' ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' :
+                                    hp.staffRole === 'barista' ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300' :
+                                    hp.staffRole === 'waiter' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' :
+                                    'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                                  }`}>
+                                    {hp.staffRole === 'admin' ? 'Quản trị' : hp.staffRole === 'barista' ? 'Pha chế' : hp.staffRole === 'waiter' ? 'Phục vụ' : 'Nhân viên'}
+                                  </span>
+                                </td>
+                                <td className="py-3.5 px-4 text-center font-mono font-bold text-xs text-slate-800 dark:text-slate-200">
+                                  {hp.totalShifts} ca
+                                </td>
+                                <td className="py-3.5 px-4 text-center font-mono font-bold text-xs text-slate-800 dark:text-slate-200">
+                                  {hp.unpaidHours}h <span className="text-[10px] text-slate-400 font-normal">/ {hp.totalHours}h</span>
+                                </td>
+                                {user?.role === 'admin' && (
+                                  <td className="py-3.5 px-4">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="font-mono font-bold text-xs text-slate-900 dark:text-white">
+                                        {formatPrice(hp.hourlyRate)}/h
                                       </span>
+                                    </div>
+                                  </td>
+                                )}
+                                {user?.role === 'admin' && (
+                                  <td className="py-3.5 px-4 font-mono font-extrabold text-sm text-[#38BDF8]">
+                                    <div>{formatPrice(hp.unpaidSalary)}</div>
+                                    {hp.paidHours > 0 && (
+                                      <div className="text-[10px] text-slate-400 font-normal">
+                                        Đã trả: {formatPrice(hp.alreadyPaidSalary)} / Tổng: {formatPrice(hp.totalSalary)}
+                                      </div>
                                     )}
+                                  </td>
+                                )}
+                                {user?.role === 'admin' && (
+                                  <td className="py-3.5 px-4 text-right">
+                                    <div className="flex items-center justify-end gap-2">
+                                      <button
+                                        onClick={() => handleOpenSalaryConfig({ _id: hp.staffId, name: hp.staffName, role: hp.staffRole })}
+                                        className="px-3 py-1.5 bg-white dark:bg-[#131929] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-[11px] rounded-xl border border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
+                                      >
+                                        Cấu hình
+                                      </button>
+                                      {hp.unpaidSalary > 0 ? (
+                                        <button
+                                          onClick={() =>
+                                            handleOpenDisbursement({
+                                              staffId: hp.staffId,
+                                              staffName: hp.staffName,
+                                              staffRole: hp.staffRole,
+                                              periodType: 'hourly',
+                                              periodLabel: `Theo Giờ (${hp.unpaidHours}h)`,
+                                              totalShifts: hp.totalShifts,
+                                              totalHours: hp.unpaidHours,
+                                              rate: hp.hourlyRate,
+                                              basePay: hp.unpaidSalary,
+                                              attendanceIds: hp.unpaidAttendanceIds,
+                                            })
+                                          }
+                                          className="px-3.5 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-extrabold text-[11px] rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-md hover:shadow-[#0284c7]/30 dark:hover:shadow-[#38BDF8]/30 active:scale-95 transition-all cursor-pointer"
+                                        >
+                                          Chi trả Giờ
+                                        </button>
+                                      ) : (
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] rounded-xl border border-emerald-500/20 shrink-0">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                          <span>Đã trả hết</span>
+                                        </span>
+                                      )}
+                                    </div>
                                   </td>
                                 )}
                               </tr>
@@ -5343,15 +5995,29 @@ export default function DashboardPage() {
                               {user?.role === 'admin' && (
                                 <div className="flex items-center gap-1.5">
                                   {att.isPaid ? (
-                                    <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold text-[10px] rounded-lg border border-emerald-500/20">
-                                      ✓ Đã trả
+                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-[10px] rounded-lg border border-emerald-500/20">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                      <span>Đã trả</span>
                                     </span>
                                   ) : (
                                     <button
-                                      onClick={() => handlePayStaffSalary(staffId, hoursWorked, hourlyRate, [att._id])}
-                                      className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded-lg transition-all shadow-xs cursor-pointer active:scale-95"
+                                      onClick={() =>
+                                        handleOpenDisbursement({
+                                          staffId,
+                                          staffName,
+                                          staffRole,
+                                          periodType: 'daily',
+                                          periodLabel: `${shiftLabel} (${formattedDate})`,
+                                          totalShifts: 1,
+                                          totalHours: hoursWorked,
+                                          rate: hourlyRate,
+                                          basePay: totalSalary,
+                                          attendanceIds: [att._id],
+                                        })
+                                      }
+                                      className="px-3 py-1 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-extrabold text-[11px] rounded-lg shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 active:scale-95 transition-all cursor-pointer"
                                     >
-                                      Trả lương
+                                      Chi trả Ca
                                     </button>
                                   )}
                                   <button
@@ -5364,13 +6030,13 @@ export default function DashboardPage() {
                                       });
                                       setIsAttendanceModalOpen(true);
                                     }}
-                                    className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-bold rounded-lg transition-colors cursor-pointer hover:bg-slate-200"
+                                    className="px-2.5 py-1 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-700 transition-all cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95"
                                   >
                                     Sửa
                                   </button>
                                   <button
                                     onClick={() => setAttendanceToDelete(att._id)}
-                                    className="px-2 py-1 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 text-[11px] font-bold rounded-lg transition-colors cursor-pointer hover:bg-rose-100"
+                                    className="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500 text-rose-600 dark:text-rose-400 hover:text-white text-[11px] font-bold rounded-lg border border-rose-500/20 transition-all cursor-pointer active:scale-95"
                                   >
                                     Xóa
                                   </button>
@@ -5438,6 +6104,10 @@ export default function DashboardPage() {
                                 return String(raw);
                               }
                             })();
+
+                            const shiftLabel =
+                              att.shift === 'morning' ? 'Ca Sáng' :
+                              att.shift === 'afternoon' ? 'Ca Chiều' : 'Ca Tối';
 
                             const initials = staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
 
@@ -5552,16 +6222,36 @@ export default function DashboardPage() {
                                 {user?.role === 'admin' && (
                                   <td className="py-3 px-4 text-right">
                                     <div className="flex items-center justify-end gap-1.5">
+                                      <button
+                                        onClick={() => handleOpenSalaryConfig({ _id: staffId, name: staffName, role: staffRole })}
+                                        className="px-2.5 py-1.5 bg-white dark:bg-[#131929] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-[11px] font-bold rounded-xl border border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                                      >
+                                        Cấu hình
+                                      </button>
                                       {att.isPaid ? (
-                                        <span className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold text-[11px] rounded-lg border border-emerald-500/20">
-                                          ✓ Đã trả
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] rounded-xl border border-emerald-500/20 shrink-0">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                          <span>Đã trả</span>
                                         </span>
                                       ) : (
                                         <button
-                                          onClick={() => handlePayStaffSalary(staffId, hoursWorked, hourlyRate, [att._id])}
-                                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded-lg transition-all shadow-xs cursor-pointer active:scale-95"
+                                          onClick={() =>
+                                            handleOpenDisbursement({
+                                              staffId,
+                                              staffName,
+                                              staffRole,
+                                              periodType: 'daily',
+                                              periodLabel: `${shiftLabel} (${formattedDate})`,
+                                              totalShifts: 1,
+                                              totalHours: hoursWorked,
+                                              rate: hourlyRate,
+                                              basePay: totalSalary,
+                                              attendanceIds: [att._id],
+                                            })
+                                          }
+                                          className="px-3 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-extrabold text-[11px] rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-md active:scale-95 transition-all cursor-pointer"
                                         >
-                                          Trả lương
+                                          Chi trả Ca
                                         </button>
                                       )}
                                       <button
@@ -5574,13 +6264,13 @@ export default function DashboardPage() {
                                           });
                                           setIsAttendanceModalOpen(true);
                                         }}
-                                        className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-bold rounded-lg transition-colors cursor-pointer hover:bg-slate-200"
+                                        className="px-2.5 py-1.5 bg-white dark:bg-[#131929] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-[11px] font-bold rounded-xl border border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs active:scale-95 transition-all cursor-pointer"
                                       >
                                         Sửa
                                       </button>
                                       <button
                                         onClick={() => setAttendanceToDelete(att._id)}
-                                        className="px-2 py-1 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 text-[11px] font-bold rounded-lg transition-colors cursor-pointer hover:bg-rose-100"
+                                        className="px-2.5 py-1.5 bg-rose-500/10 hover:bg-rose-500 text-rose-600 dark:text-rose-400 hover:text-white text-[11px] font-bold rounded-xl border border-rose-500/20 hover:border-rose-500 active:scale-95 transition-all cursor-pointer"
                                       >
                                         Xóa
                                       </button>
@@ -5603,19 +6293,174 @@ export default function DashboardPage() {
         {/* Analytics View: ADMIN ONLY */}
         {activeTab === 'analytics' && user?.role === 'admin' && (
           <div className="flex-1 overflow-y-auto space-y-6 pb-24 lg:pb-10 scrollbar-thin">
-            {/* ── DAILY FINANCIAL KPI DASHBOARD ────────────────────────────────────────── */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-heading">
-                  <span className="material-symbols-outlined text-[#38BDF8] text-base">query_stats</span>
-                  <span>Báo Cáo Tài Chính Realtime Hôm Nay</span>
-                </h3>
-                <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-[#1e293b] px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-800">
-                  Cập nhật tự động từ Đơn hàng, Chấm công & Kho
-                </span>
+            {/* ── BÁO CÁO THU - CHI CỬA HÀNG (ADMIN ONLY) ────────────────────────── */}
+            <div className="space-y-4">
+              {/* Header Title & Segmented Period Toggle */}
+              <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 sm:p-5 rounded-3xl shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[#0284c7] dark:text-[#38BDF8] text-2xl">account_balance</span>
+                    <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
+                      Báo Cáo Thu - Chi Cửa Hàng
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                      Chỉ Admin
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    {analyticsPeriodMode === 'day'
+                      ? 'Quản lý Doanh thu, Chi phí Lương, Tiền Nguyên liệu & Tiền Phát Sinh theo ngày'
+                      : 'Tổng hợp dòng tiền và chi tiết từng ngày trong tháng'}
+                  </p>
+                </div>
+
+                {/* Segmented Mode Switcher */}
+                <div className="flex items-center bg-slate-100 dark:bg-[#0B0F17] p-1.5 rounded-2xl border border-slate-200/80 dark:border-[#1e293b] self-start md:self-auto shrink-0 shadow-inner">
+                  <button
+                    onClick={() => {
+                      setAnalyticsPeriodMode('day');
+                      if (token) fetchAnalytics(token, analyticsSelectedDate, analyticsSelectedMonth, 'day');
+                    }}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                      analyticsPeriodMode === 'day'
+                        ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 shadow-sm'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-sm">calendar_today</span>
+                    <span>Theo Ngày</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setAnalyticsPeriodMode('month');
+                      if (token) fetchAnalytics(token, analyticsSelectedDate, analyticsSelectedMonth, 'month');
+                    }}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                      analyticsPeriodMode === 'month'
+                        ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 shadow-sm'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-sm">calendar_month</span>
+                    <span>Tổng Hợp Theo Tháng</span>
+                  </button>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {/* Sub-bar: Date/Month picker, Quick Buttons, and Add Expense CTA */}
+              <div className="bg-slate-50 dark:bg-[#131929]/70 border border-slate-200 dark:border-[#1e293b] p-3 sm:p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                {analyticsPeriodMode === 'day' ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 shrink-0">Chọn ngày:</span>
+                    <button
+                      onClick={() => {
+                        const now = new Date();
+                        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                        setAnalyticsSelectedDate(todayStr);
+                        if (token) fetchAnalytics(token, todayStr, undefined, 'day');
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        analyticsSelectedDate === `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`
+                          ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/40'
+                          : 'bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#1e293b] hover:bg-slate-100 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      Hôm Nay
+                    </button>
+                    <button
+                      onClick={() => {
+                        const yest = new Date(Date.now() - 86400000);
+                        const yestStr = `${yest.getFullYear()}-${String(yest.getMonth() + 1).padStart(2, '0')}-${String(yest.getDate()).padStart(2, '0')}`;
+                        setAnalyticsSelectedDate(yestStr);
+                        if (token) fetchAnalytics(token, yestStr, undefined, 'day');
+                      }}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#1e293b] hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                    >
+                      Hôm Qua
+                    </button>
+                    <input
+                      type="date"
+                      value={analyticsSelectedDate}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val) {
+                          setAnalyticsSelectedDate(val);
+                          if (token) fetchAnalytics(token, val, undefined, 'day');
+                        }
+                      }}
+                      className="px-3 py-1.5 bg-white dark:bg-[#0B0F17] border border-slate-200 dark:border-[#1e293b] rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:border-[#0284c7] dark:focus:border-[#38BDF8]"
+                    />
+                    <span className="text-[11px] font-bold text-[#0284c7] dark:text-[#38BDF8] bg-sky-50 dark:bg-[#38BDF8]/10 px-2.5 py-1 rounded-lg border border-sky-200 dark:border-sky-500/20">
+                      {(() => {
+                        const [y, m, d] = (analyticsSelectedDate || '').split('-').map(Number);
+                        if (!y || !m || !d) return '';
+                        const dt = new Date(y, m - 1, d);
+                        const dn = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+                        return `${dn[dt.getDay()]}, ${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
+                      })()}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 shrink-0">Chọn tháng:</span>
+                    <button
+                      onClick={() => {
+                        const now = new Date();
+                        const curMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                        setAnalyticsSelectedMonth(curMonth);
+                        if (token) fetchAnalytics(token, undefined, curMonth, 'month');
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        analyticsSelectedMonth === `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`
+                          ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/40'
+                          : 'bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#1e293b] hover:bg-slate-100 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      Tháng Này
+                    </button>
+                    <input
+                      type="month"
+                      value={analyticsSelectedMonth}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val) {
+                          setAnalyticsSelectedMonth(val);
+                          if (token) fetchAnalytics(token, undefined, val, 'month');
+                        }
+                      }}
+                      className="px-3 py-1.5 bg-white dark:bg-[#0B0F17] border border-slate-200 dark:border-[#1e293b] rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:border-[#0284c7] dark:focus:border-[#38BDF8]"
+                    />
+                    <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 px-2.5 py-1 rounded-lg border border-purple-200 dark:border-purple-500/20">
+                      {(() => {
+                        const [y, m] = (analyticsSelectedMonth || '').split('-');
+                        return `Tổng hợp Tháng ${m}/${y}`;
+                      })()}
+                    </span>
+                  </div>
+                )}
+
+                {/* Right Quick Action: Add Incidental Expense */}
+                <button
+                  onClick={() => {
+                    setExpenseForm({
+                      title: '',
+                      amount: '',
+                      category: 'Vật tư & Tiện ích',
+                      note: '',
+                      date: analyticsSelectedDate,
+                    });
+                    setIsAddExpenseModalOpen(true);
+                  }}
+                  className="flex items-center justify-center gap-1.5 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black shadow-xs hover:shadow-md active:scale-95 transition-all cursor-pointer self-start sm:self-auto shrink-0"
+                >
+                  <span className="material-symbols-outlined text-sm">add_circle</span>
+                  <span>+ Thêm Chi Phí Phát Sinh</span>
+                </button>
+              </div>
+
+              {/* 5 Financial KPI Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
                 {/* Card 1: Gross Revenue */}
                 <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 sm:p-5 rounded-2xl shadow-xs hover:border-emerald-500/40 transition-all group relative overflow-hidden">
                   <div className="flex items-center justify-between">
@@ -5625,26 +6470,30 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div className="mt-3">
-                    <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-heading tracking-tight">
-                      {formatPrice(analyticsSummary?.todayGross || 0)}
+                    <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-heading tracking-tight">
+                      {formatPrice(analyticsSummary?.periodGross ?? analyticsSummary?.todayGross ?? 0)}
                     </span>
-                    <p className="text-[10.5px] text-slate-400 mt-1 font-medium">Tổng thu từ tất cả đơn hàng hôm nay</p>
+                    <p className="text-[10px] text-slate-400 mt-1 font-medium">
+                      {analyticsPeriodMode === 'day' ? 'Thu từ đơn hàng ngày này' : 'Tổng thu cả tháng'}
+                    </p>
                   </div>
                 </div>
 
                 {/* Card 2: Salary Costs */}
                 <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 sm:p-5 rounded-2xl shadow-xs hover:border-amber-500/40 transition-all group relative overflow-hidden">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-500 dark:text-slate-400 text-xs font-bold">2. Tổng Tiền Lương</span>
+                    <span className="text-slate-500 dark:text-slate-400 text-xs font-bold">2. Chi Phí Lương</span>
                     <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl">
                       <span className="material-symbols-outlined text-xl">badge</span>
                     </div>
                   </div>
                   <div className="mt-3">
-                    <span className="text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400 font-heading tracking-tight">
-                      {formatPrice(analyticsSummary?.todaySalary || 0)}
+                    <span className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 font-heading tracking-tight">
+                      {formatPrice(analyticsSummary?.periodSalary ?? analyticsSummary?.todaySalary ?? 0)}
                     </span>
-                    <p className="text-[10.5px] text-slate-400 mt-1 font-medium">Lương nhân viên chấm công hôm nay</p>
+                    <p className="text-[10px] text-slate-400 mt-1 font-medium">
+                      {analyticsPeriodMode === 'day' ? 'Lương ca làm tính theo ngày' : 'Tổng quỹ lương trong tháng'}
+                    </p>
                   </div>
                 </div>
 
@@ -5657,29 +6506,494 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div className="mt-3">
-                    <span className="text-2xl sm:text-3xl font-black text-[#0284c7] dark:text-[#38BDF8] font-heading tracking-tight">
-                      {formatPrice(analyticsSummary?.todayIngredientCost || 0)}
+                    <span className="text-xl sm:text-2xl font-black text-[#0284c7] dark:text-[#38BDF8] font-heading tracking-tight">
+                      {formatPrice(analyticsSummary?.periodIngredientCost ?? 0)}
                     </span>
-                    <p className="text-[10.5px] text-slate-400 mt-1 font-medium">Chi phí nguyên vật liệu tiêu hao</p>
+                    <p className="text-[10px] text-slate-400 mt-1 font-medium">
+                      {analyticsPeriodMode === 'day' ? 'Tiêu hao pha chế trong ngày' : 'Tổng tiêu hao trong tháng'}
+                    </p>
+                    {analyticsSummary?.totalInventoryValue !== undefined && (
+                      <p className="text-[9px] text-slate-400 mt-0.5 font-medium">
+                        Vốn kho hiện tại: <span className="font-bold text-slate-600 dark:text-slate-300">{formatPrice(analyticsSummary.totalInventoryValue)}</span>
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                {/* Card 4: Net Profit */}
-                <div className="bg-white dark:bg-[#131929] border border-emerald-500/30 dark:border-emerald-500/20 p-4 sm:p-5 rounded-2xl shadow-xs hover:border-emerald-500 transition-all group relative overflow-hidden bg-gradient-to-br from-emerald-500/5 to-transparent">
+                {/* Card 4: Incidental / Operating Expenses (Chi Mới) */}
+                <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 sm:p-5 rounded-2xl shadow-xs hover:border-purple-500/40 transition-all group relative overflow-hidden">
                   <div className="flex items-center justify-between">
-                    <span className="text-emerald-600 dark:text-emerald-400 text-xs font-extrabold">4. Lợi Nhuận Hôm Nay</span>
+                    <span className="text-slate-500 dark:text-slate-400 text-xs font-bold">4. Tiền Phát Sinh</span>
+                    <button
+                      onClick={() => {
+                        setExpenseForm({
+                          title: '',
+                          amount: '',
+                          category: 'Vật tư & Tiện ích',
+                          note: '',
+                          date: analyticsSelectedDate,
+                        });
+                        setIsAddExpenseModalOpen(true);
+                      }}
+                      className="p-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded-lg transition-colors cursor-pointer"
+                      title="Thêm chi phí phát sinh"
+                    >
+                      <span className="material-symbols-outlined text-base">add</span>
+                    </button>
+                  </div>
+                  <div className="mt-3">
+                    <span className="text-xl sm:text-2xl font-black text-purple-600 dark:text-purple-400 font-heading tracking-tight">
+                      {formatPrice(analyticsSummary?.periodExpenseCost ?? analyticsSummary?.todayExpenseCost ?? 0)}
+                    </span>
+                    <p className="text-[10px] text-slate-400 mt-1 font-medium">
+                      Mua đá, sửa chữa, phụ phí...
+                    </p>
+                  </div>
+                </div>
+
+                {/* Card 5: Net Profit */}
+                <div className="bg-white dark:bg-[#131929] border border-emerald-500/40 dark:border-emerald-500/30 p-4 sm:p-5 rounded-2xl shadow-xs hover:border-emerald-500 transition-all group relative overflow-hidden bg-gradient-to-br from-emerald-500/10 via-sky-500/5 to-transparent">
+                  <div className="flex items-center justify-between">
+                    <span className="text-emerald-600 dark:text-emerald-400 text-xs font-black">5. Lợi Nhuận Ròng</span>
                     <div className="p-2 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl">
                       <span className="material-symbols-outlined text-xl">trending_up</span>
                     </div>
                   </div>
                   <div className="mt-3">
-                    <span className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 font-heading tracking-tight">
-                      {formatPrice(analyticsSummary?.todayNetProfit ?? analyticsSummary?.today ?? 0)}
+                    <span className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 font-heading tracking-tight">
+                      {formatPrice(analyticsSummary?.periodNetProfit ?? analyticsSummary?.todayNetProfit ?? 0)}
                     </span>
-                    <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-1 font-medium">Doanh thu trừ Lương & Nguyên liệu</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-bold">
+                      Thu - Lương - NL - Phát sinh
+                    </p>
                   </div>
                 </div>
               </div>
+
+              {/* Detailed Breakdown Section: Day Ledger OR Monthly Aggregation Table */}
+              {analyticsPeriodMode === 'day' ? (
+                /* ── DAY LEDGER DETAILS (4 TABS) ───────────────────────── */
+                <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-4 sm:p-6 shadow-xs space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-[#1e293b] pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[#0284c7] dark:text-[#38BDF8] text-xl">menu_book</span>
+                      <h4 className="text-sm font-black text-slate-900 dark:text-white font-heading">
+                        Sổ Kê Chi Tiết Thu - Chi Trong Ngày ({analyticsSelectedDate})
+                      </h4>
+                    </div>
+
+                    {/* Day Ledger Tabs */}
+                    <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 dark:bg-[#0B0F17] p-1 rounded-xl border border-slate-200/60 dark:border-[#1e293b]">
+                      <button
+                        onClick={() => setAnalyticsDayLedgerTab('orders')}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          analyticsDayLedgerTab === 'orders'
+                            ? 'bg-white dark:bg-[#1e293b] text-emerald-600 dark:text-emerald-400 shadow-xs'
+                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                      >
+                        Thu: Đơn Hàng ({analyticsSummary?.dayOrders?.length || 0})
+                      </button>
+
+                      <button
+                        onClick={() => setAnalyticsDayLedgerTab('attendances')}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          analyticsDayLedgerTab === 'attendances'
+                            ? 'bg-white dark:bg-[#1e293b] text-amber-600 dark:text-amber-400 shadow-xs'
+                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                      >
+                        Chi: Ca Làm Lương ({analyticsSummary?.dayAttendances?.length || 0})
+                      </button>
+
+                      <button
+                        onClick={() => setAnalyticsDayLedgerTab('expenses')}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          analyticsDayLedgerTab === 'expenses'
+                            ? 'bg-white dark:bg-[#1e293b] text-purple-600 dark:text-purple-400 shadow-xs'
+                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                      >
+                        Chi: Tiền Phát Sinh ({analyticsSummary?.dayExpenses?.length || 0})
+                      </button>
+
+                      <button
+                        onClick={() => setAnalyticsDayLedgerTab('ingredients')}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          analyticsDayLedgerTab === 'ingredients'
+                            ? 'bg-white dark:bg-[#1e293b] text-[#0284c7] dark:text-[#38BDF8] shadow-xs'
+                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                      >
+                        Chi: Tiêu Hao Nguyên Liệu ({analyticsSummary?.dayIngredientUsages?.length || 0})
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Tab 1: Orders (Thu) */}
+                  {analyticsDayLedgerTab === 'orders' && (
+                    <div className="overflow-x-auto">
+                      {(!analyticsSummary?.dayOrders || analyticsSummary.dayOrders.length === 0) ? (
+                        <div className="py-12 text-center text-slate-400 text-xs">
+                          <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">receipt</span>
+                          Không có đơn hàng nào đã thanh toán trong ngày này.
+                        </div>
+                      ) : (
+                        <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
+                          <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
+                            <tr>
+                              <th className="p-3">Mã đơn</th>
+                              <th className="p-3">Thời gian</th>
+                              <th className="p-3">Bàn / Hình thức</th>
+                              <th className="p-3">Món gọi</th>
+                              <th className="p-3">Thanh toán</th>
+                              <th className="p-3 text-right">Số tiền</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
+                            {analyticsSummary.dayOrders.map((ord: any, idx: number) => {
+                              const paidDate = ord.paidAt ? new Date(ord.paidAt) : (ord.createdAt ? new Date(ord.createdAt) : null);
+                              const timeStr = paidDate ? `${String(paidDate.getHours()).padStart(2, '0')}:${String(paidDate.getMinutes()).padStart(2, '0')}` : '--:--';
+                              return (
+                                <tr key={ord._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
+                                  <td className="p-3 font-mono font-bold text-slate-900 dark:text-white">
+                                    #{String(ord._id).slice(-5).toUpperCase()}
+                                  </td>
+                                  <td className="p-3 text-slate-500 font-medium">{timeStr}</td>
+                                  <td className="p-3 font-bold text-slate-800 dark:text-slate-200">
+                                    {ord.isTakeaway ? (
+                                      <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                                        <span className="material-symbols-outlined text-xs">takeout_dining</span> Mang về
+                                      </span>
+                                    ) : (
+                                      <span>Bàn {ord.tableId?.tableNumber || ord.tableNumber || 'Tại chỗ'}</span>
+                                    )}
+                                  </td>
+                                  <td className="p-3 text-slate-600 dark:text-slate-300 max-w-xs truncate">
+                                    {ord.items?.length ? `${ord.items.length} món (${ord.items.map((i: any) => `${i.foodId?.name || 'Món'} x${i.quantity || 1}`).join(', ')})` : 'Chi tiết đơn'}
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase">
+                                      {ord.paymentMethod === 'bank' || ord.paymentMethod === 'bank_transfer' ? 'Chuyển khoản' : (ord.paymentMethod === 'momo' ? 'MoMo' : 'Tiền mặt')}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 text-right font-black text-emerald-600 dark:text-emerald-400">
+                                    {formatPrice(ord.totalAmount || 0)}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Tab 2: Attendances (Chi lương ca làm) */}
+                  {analyticsDayLedgerTab === 'attendances' && (
+                    <div className="overflow-x-auto">
+                      {(!analyticsSummary?.dayAttendances || analyticsSummary.dayAttendances.length === 0) ? (
+                        <div className="py-12 text-center text-slate-400 text-xs">
+                          <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">badge</span>
+                          Không có ca làm việc nào được ghi nhận trong ngày này.
+                        </div>
+                      ) : (
+                        <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
+                          <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
+                            <tr>
+                              <th className="p-3">Nhân viên</th>
+                              <th className="p-3">Ca làm</th>
+                              <th className="p-3">Check-in</th>
+                              <th className="p-3">Check-out</th>
+                              <th className="p-3 text-center">Tổng giờ</th>
+                              <th className="p-3 text-right">Chi phí lương tính toán</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
+                            {analyticsSummary.dayAttendances.map((att: any, idx: number) => {
+                              const inTime = att.checkIn ? new Date(att.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--';
+                              const outTime = att.checkOut ? new Date(att.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (att.checkIn ? 'Đang làm' : '--:--');
+                              const hours = att.totalHours || (att.checkIn && att.checkOut ? Math.max(0, (new Date(att.checkOut).getTime() - new Date(att.checkIn).getTime()) / 3600000) : 0);
+                              const estPay = Math.round(hours * 25000);
+                              return (
+                                <tr key={att._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
+                                  <td className="p-3 font-bold text-slate-900 dark:text-white">
+                                    {att.userId?.name || att.userId?.username || 'Nhân viên'}
+                                    <span className="block text-[10px] text-slate-400 font-normal">
+                                      {att.userId?.role === 'barista' ? 'Pha chế' : (att.userId?.role === 'admin' ? 'Quản trị' : 'Phục vụ')}
+                                    </span>
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 capitalize">
+                                      Ca {att.shift === 'morning' ? 'Sáng' : (att.shift === 'afternoon' ? 'Chiều' : (att.shift === 'evening' ? 'Tối' : att.shift))}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 font-medium text-slate-600 dark:text-slate-300">{inTime}</td>
+                                  <td className="p-3 font-medium text-slate-600 dark:text-slate-300">{outTime}</td>
+                                  <td className="p-3 text-center font-bold text-[#0284c7] dark:text-[#38BDF8]">
+                                    {hours > 0 ? `${hours.toFixed(1)}h` : '--'}
+                                  </td>
+                                  <td className="p-3 text-right font-black text-amber-600 dark:text-amber-400">
+                                    {formatPrice(estPay)}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Tab 3: Incidental Expenses (Chi tiền phát sinh) */}
+                  {analyticsDayLedgerTab === 'expenses' && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-slate-500 font-medium">
+                          Các khoản chi phát sinh ngoài kho trong ngày: mua đá, sửa chữa, phụ phí...
+                        </span>
+                        <button
+                          onClick={() => {
+                            setExpenseForm({
+                              title: '',
+                              amount: '',
+                              category: 'Vật tư & Tiện ích',
+                              note: '',
+                              date: analyticsSelectedDate,
+                            });
+                            setIsAddExpenseModalOpen(true);
+                          }}
+                          className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-sm">add</span>
+                          <span>Thêm Khoản Chi</span>
+                        </button>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        {(!analyticsSummary?.dayExpenses || analyticsSummary.dayExpenses.length === 0) ? (
+                          <div className="py-12 text-center text-slate-400 text-xs">
+                            <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">receipt_long</span>
+                            Chưa có khoản chi phát sinh nào trong ngày này.
+                          </div>
+                        ) : (
+                          <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
+                            <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
+                              <tr>
+                                <th className="p-3">Khoản chi</th>
+                                <th className="p-3">Danh mục</th>
+                                <th className="p-3">Ghi chú</th>
+                                <th className="p-3">Người ghi nhận</th>
+                                <th className="p-3 text-right">Số tiền</th>
+                                <th className="p-3 text-center">Hành động</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
+                              {analyticsSummary.dayExpenses.map((exp: any, idx: number) => (
+                                <tr key={exp._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
+                                  <td className="p-3 font-bold text-slate-900 dark:text-white">
+                                    {exp.title}
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                                      {exp.category || 'Vật tư & Tiện ích'}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 text-slate-500 dark:text-slate-400">{exp.note || '--'}</td>
+                                  <td className="p-3 text-slate-600 dark:text-slate-300">{exp.createdBy || 'Admin'}</td>
+                                  <td className="p-3 text-right font-black text-purple-600 dark:text-purple-400">
+                                    {formatPrice(exp.amount || 0)}
+                                  </td>
+                                  <td className="p-3 text-center">
+                                    <button
+                                      onClick={() => handleDeleteExpense(exp._id)}
+                                      className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+                                      title="Xóa khoản chi này"
+                                    >
+                                      <span className="material-symbols-outlined text-base">delete</span>
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tab 4: Ingredient Usages (Chi tiêu hao nguyên liệu trong ngày) */}
+                  {analyticsDayLedgerTab === 'ingredients' && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-slate-500 font-medium">
+                          Ghi nhận tự động mỗi khi giảm số lượng nguyên liệu trong kho (pha chế, xuất dùng).
+                        </span>
+                        <span className="text-xs font-bold text-[#0284c7] dark:text-[#38BDF8]">
+                          Tổng tiêu hao: {formatPrice(analyticsSummary?.periodIngredientCost || 0)}
+                        </span>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        {(!analyticsSummary?.dayIngredientUsages || analyticsSummary.dayIngredientUsages.length === 0) ? (
+                          <div className="py-12 text-center text-slate-400 text-xs">
+                            <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">inventory_2</span>
+                            Chưa có ghi nhận tiêu hao nguyên liệu nào trong ngày này.
+                          </div>
+                        ) : (
+                          <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
+                            <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
+                              <tr>
+                                <th className="p-3">Nguyên liệu</th>
+                                <th className="p-3">Lượng giảm</th>
+                                <th className="p-3">Đơn giá</th>
+                                <th className="p-3">Thời gian</th>
+                                <th className="p-3">Người cập nhật</th>
+                                <th className="p-3 text-right">Thành tiền tiêu hao</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
+                              {analyticsSummary.dayIngredientUsages.map((usage: any, idx: number) => {
+                                const uDate = usage.date ? new Date(usage.date) : (usage.createdAt ? new Date(usage.createdAt) : null);
+                                const timeStr = uDate ? `${String(uDate.getHours()).padStart(2, '0')}:${String(uDate.getMinutes()).padStart(2, '0')}` : '--:--';
+                                return (
+                                  <tr key={usage._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
+                                    <td className="p-3 font-bold text-slate-900 dark:text-white">
+                                      {usage.ingredientName || 'Nguyên liệu'}
+                                      {usage.note && (
+                                        <span className="block text-[10px] text-slate-400 font-normal">
+                                          {usage.note}
+                                        </span>
+                                      )}
+                                    </td>
+                                    <td className="p-3 font-bold text-rose-500">
+                                      -{usage.quantity} {usage.unit || ''}
+                                    </td>
+                                    <td className="p-3 text-slate-500 font-medium">
+                                      {formatPrice(usage.unitPrice || 0)} / {usage.unit || 'đv'}
+                                    </td>
+                                    <td className="p-3 text-slate-500 font-medium">{timeStr}</td>
+                                    <td className="p-3 text-slate-600 dark:text-slate-300">{usage.updatedBy || 'Pha chế'}</td>
+                                    <td className="p-3 text-right font-black text-[#0284c7] dark:text-[#38BDF8]">
+                                      {formatPrice(usage.totalCost || 0)}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* ── MONTHLY BREAKDOWN TABLE ───────────────────────────── */
+                <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-4 sm:p-6 shadow-xs space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-[#1e293b] pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-purple-600 dark:text-purple-400 text-xl">table_view</span>
+                      <h4 className="text-sm font-black text-slate-900 dark:text-white font-heading">
+                        Bảng Tổng Hợp Doanh Thu & Chi Phí Từng Ngày ({analyticsSelectedMonth})
+                      </h4>
+                    </div>
+                    <span className="text-xs text-slate-400">
+                      Bấm "Xem Ngày" để vào sổ chi tiết của ngày đó
+                    </span>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    {(!analyticsSummary?.dailyBreakdown || analyticsSummary.dailyBreakdown.length === 0) ? (
+                      <div className="py-12 text-center text-slate-400 text-xs">
+                        Chưa có dữ liệu tổng hợp cho tháng này.
+                      </div>
+                    ) : (
+                      <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[750px]">
+                        <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
+                          <tr>
+                            <th className="p-3">Ngày</th>
+                            <th className="p-3 text-center">Số đơn</th>
+                            <th className="p-3 text-right text-emerald-600 dark:text-emerald-400">1. Doanh Thu</th>
+                            <th className="p-3 text-right text-amber-600 dark:text-amber-400">2. Lương</th>
+                            <th className="p-3 text-right text-[#0284c7] dark:text-[#38BDF8]">3. Nguyên Liệu</th>
+                            <th className="p-3 text-right text-purple-600 dark:text-purple-400">4. Phát Sinh</th>
+                            <th className="p-3 text-right text-emerald-600 dark:text-emerald-400 font-extrabold">5. Lợi Nhuận</th>
+                            <th className="p-3 text-center">Thao tác</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
+                          {analyticsSummary.dailyBreakdown.map((row: any) => (
+                            <tr key={row.date} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
+                              <td className="p-3 font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <span className={`px-2 py-0.5 text-[10px] font-extrabold rounded-md ${
+                                  row.dayOfWeek === 'CN' ? 'bg-rose-500/10 text-rose-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                                }`}>
+                                  {row.dayOfWeek}
+                                </span>
+                                <span>{row.date}</span>
+                              </td>
+                              <td className="p-3 text-center font-bold text-slate-700 dark:text-slate-300">
+                                {row.ordersCount}
+                              </td>
+                              <td className="p-3 text-right font-black text-slate-900 dark:text-white">
+                                {formatPrice(row.grossRevenue || 0)}
+                              </td>
+                              <td className="p-3 text-right font-bold text-amber-600 dark:text-amber-400">
+                                {formatPrice(row.salaryCost || 0)}
+                              </td>
+                              <td className="p-3 text-right font-bold text-[#0284c7] dark:text-[#38BDF8]">
+                                {formatPrice(row.ingredientCost || 0)}
+                              </td>
+                              <td className="p-3 text-right font-bold text-purple-600 dark:text-purple-400">
+                                {formatPrice(row.expenseCost || 0)}
+                              </td>
+                              <td className="p-3 text-right font-black text-emerald-600 dark:text-emerald-400 text-sm">
+                                {formatPrice(row.netProfit || 0)}
+                              </td>
+                              <td className="p-3 text-center">
+                                <button
+                                  onClick={() => {
+                                    setAnalyticsSelectedDate(row.date);
+                                    setAnalyticsPeriodMode('day');
+                                    if (token) fetchAnalytics(token, row.date, undefined, 'day');
+                                  }}
+                                  className="px-2.5 py-1 text-[11px] font-bold bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] rounded-lg hover:bg-[#0284c7] hover:text-white transition-all cursor-pointer"
+                                >
+                                  Xem ngày
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot className="bg-slate-100 dark:bg-[#1e293b] font-black text-xs text-slate-900 dark:text-white border-t border-slate-300 dark:border-slate-700">
+                          <tr>
+                            <td className="p-3">TỔNG CỘNG THÁNG</td>
+                            <td className="p-3 text-center">
+                              {analyticsSummary.dailyBreakdown.reduce((s: number, r: any) => s + (r.ordersCount || 0), 0)}
+                            </td>
+                            <td className="p-3 text-right text-slate-900 dark:text-white">
+                              {formatPrice(analyticsSummary.dailyBreakdown.reduce((s: number, r: any) => s + (r.grossRevenue || 0), 0))}
+                            </td>
+                            <td className="p-3 text-right text-amber-600 dark:text-amber-400">
+                              {formatPrice(analyticsSummary.dailyBreakdown.reduce((s: number, r: any) => s + (r.salaryCost || 0), 0))}
+                            </td>
+                            <td className="p-3 text-right text-[#0284c7] dark:text-[#38BDF8]">
+                              {formatPrice(analyticsSummary.dailyBreakdown.reduce((s: number, r: any) => s + (r.ingredientCost || 0), 0))}
+                            </td>
+                            <td className="p-3 text-right text-purple-600 dark:text-purple-400">
+                              {formatPrice(analyticsSummary.dailyBreakdown.reduce((s: number, r: any) => s + (r.expenseCost || 0), 0))}
+                            </td>
+                            <td className="p-3 text-right text-emerald-600 dark:text-emerald-400 text-sm font-black">
+                              {formatPrice(analyticsSummary.dailyBreakdown.reduce((s: number, r: any) => s + (r.netProfit || 0), 0))}
+                            </td>
+                            <td></td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Overview Weekly/Monthly & Review Indicators */}
@@ -7288,6 +8602,338 @@ export default function DashboardPage() {
         )}
       </AnimatePresence>
 
+      {/* 3.6 Salary Config Modal */}
+      <AnimatePresence>
+        {isSalaryConfigModalOpen && (
+          <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsSalaryConfigModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-lg bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[90vh] overflow-y-auto scrollbar-thin">
+              <div className="flex justify-between items-start border-b border-slate-200 dark:border-[#1e293b] pb-3">
+                <div>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider">Cấu Hình Mức Lương</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Nhân viên: <span className="font-bold text-[#38BDF8]">{salaryConfigForm.staffName}</span>
+                  </p>
+                </div>
+                <button onClick={() => setIsSalaryConfigModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer text-sm font-bold px-2 py-1">
+                  Đóng
+                </button>
+              </div>
+
+              <div className="space-y-4 text-xs">
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1.5">Hình thức tính lương chính</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { id: 'hourly', label: 'Theo Giờ' },
+                      { id: 'daily', label: 'Theo Ca/Ngày' },
+                      { id: 'weekly', label: 'Theo Tuần' },
+                      { id: 'monthly', label: 'Theo Tháng' },
+                    ].map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setSalaryConfigForm({ ...salaryConfigForm, type: opt.id })}
+                        className={`py-2 px-3 rounded-xl border text-center font-bold transition-all cursor-pointer ${
+                          salaryConfigForm.type === opt.id
+                            ? 'bg-[#38BDF8] text-slate-950 border-[#38BDF8]'
+                            : 'border-slate-200 dark:border-[#1e293b] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#090D16]'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Mức lương theo Giờ (VND/h)</label>
+                    <input
+                      type="number"
+                      step="1000"
+                      value={salaryConfigForm.hourlyRate}
+                      onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, hourlyRate: Number(e.target.value) })}
+                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Lương ngày công chuẩn (VND/ngày)</label>
+                    <input
+                      type="number"
+                      step="5000"
+                      value={salaryConfigForm.dailyRate}
+                      onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, dailyRate: Number(e.target.value) })}
+                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1.5">Đơn giá định mức theo từng Ca (VND/ca)</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <span className="block text-[10px] text-slate-400 font-medium mb-1">Ca Sáng (06:00 - 12:00)</span>
+                      <input
+                        type="number"
+                        step="5000"
+                        value={salaryConfigForm.morningRate}
+                        onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, morningRate: Number(e.target.value) })}
+                        className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
+                      />
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-slate-400 font-medium mb-1">Ca Chiều (12:00 - 18:00)</span>
+                      <input
+                        type="number"
+                        step="5000"
+                        value={salaryConfigForm.afternoonRate}
+                        onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, afternoonRate: Number(e.target.value) })}
+                        className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
+                      />
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-slate-400 font-medium mb-1">Ca Tối (18:00 - 23:00)</span>
+                      <input
+                        type="number"
+                        step="5000"
+                        value={salaryConfigForm.eveningRate}
+                        onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, eveningRate: Number(e.target.value) })}
+                        className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Phụ cấp ăn ca (VND/ca)</label>
+                    <input
+                      type="number"
+                      step="5000"
+                      value={salaryConfigForm.mealAllowancePerShift}
+                      onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, mealAllowancePerShift: Number(e.target.value) })}
+                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Thưởng chuyên cần tuần (VND)</label>
+                    <input
+                      type="number"
+                      step="10000"
+                      value={salaryConfigForm.weeklyAttendanceBonus}
+                      onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, weeklyAttendanceBonus: Number(e.target.value) })}
+                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
+                    />
+                  </div>
+                </div>
+
+                {salaryConfigForm.type === 'weekly' && (
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Lương khoán theo tuần cố định (VND/tuần)</label>
+                    <input
+                      type="number"
+                      step="50000"
+                      value={salaryConfigForm.weeklyBaseRate}
+                      onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, weeklyBaseRate: Number(e.target.value) })}
+                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
+                    />
+                  </div>
+                )}
+
+                {salaryConfigForm.type === 'monthly' && (
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Lương cơ bản tháng (VND/tháng)</label>
+                    <input
+                      type="number"
+                      step="100000"
+                      value={salaryConfigForm.monthlyBaseSalary}
+                      onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, monthlyBaseSalary: Number(e.target.value) })}
+                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-[#1e293b]">
+                <button
+                  type="button"
+                  onClick={() => setIsSalaryConfigModalOpen(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs transition-all cursor-pointer active:scale-95 border border-slate-200/60 dark:border-slate-700/60"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveSalaryConfig}
+                  disabled={isSavingSalaryConfig}
+                  className="px-5 py-2 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-extrabold rounded-xl text-xs shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-md transition-all cursor-pointer disabled:opacity-50 active:scale-95"
+                >
+                  {isSavingSalaryConfig ? 'Đang lưu...' : 'Lưu Cấu Hình Lương'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 3.7 Payroll Slip & Disbursement Modal */}
+      <AnimatePresence>
+        {isDisbursementModalOpen && disbursementData && (
+          <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => !isProcessingDisbursement && setIsDisbursementModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-md bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[90vh] overflow-y-auto scrollbar-thin">
+              <div className="flex justify-between items-start border-b border-slate-200 dark:border-[#1e293b] pb-3">
+                <div>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider">Phiếu Chi Trả Lương</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Nhân viên: <span className="font-bold text-slate-900 dark:text-white">{disbursementData.staffName}</span> • <span className="text-[#38BDF8] font-bold">{disbursementData.periodLabel}</span>
+                  </p>
+                </div>
+                <button
+                  disabled={isProcessingDisbursement}
+                  onClick={() => setIsDisbursementModalOpen(false)}
+                  className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer text-sm font-bold px-2 py-1"
+                >
+                  Đóng
+                </button>
+              </div>
+
+              {/* Attendance metrics */}
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="bg-slate-50 dark:bg-[#090D16] p-3 rounded-xl">
+                  <span className="block text-[10px] text-slate-400 font-medium">Số ca làm việc</span>
+                  <span className="block font-mono font-black text-sm text-slate-900 dark:text-white mt-0.5">
+                    {disbursementData.totalShifts} ca
+                  </span>
+                </div>
+                <div className="bg-slate-50 dark:bg-[#090D16] p-3 rounded-xl">
+                  <span className="block text-[10px] text-slate-400 font-medium">Tổng số giờ</span>
+                  <span className="block font-mono font-black text-sm text-slate-900 dark:text-white mt-0.5">
+                    {disbursementData.totalHours} giờ
+                  </span>
+                </div>
+              </div>
+
+              {/* Financial calculations */}
+              <div className="space-y-2.5 text-xs bg-slate-50 dark:bg-[#090D16] p-4 rounded-xl border border-slate-200/60 dark:border-[#1e293b]/60">
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+                  <span>Lương cơ bản / Định mức</span>
+                  <span className="font-mono font-bold text-slate-900 dark:text-white">{formatPrice(disbursementData.basePay)}</span>
+                </div>
+
+                {disbursementData.allowances > 0 && (
+                  <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+                    <span>Phụ cấp ăn ca</span>
+                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">+{formatPrice(disbursementData.allowances)}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between gap-3 pt-1">
+                  <span className="text-slate-600 dark:text-slate-400">Thưởng thêm (VND)</span>
+                  <input
+                    type="number"
+                    step="10000"
+                    min="0"
+                    value={disbursementData.bonuses}
+                    onChange={(e) => {
+                      const b = Number(e.target.value) || 0;
+                      const net = Math.max(0, disbursementData.basePay + disbursementData.allowances + b - disbursementData.deductions);
+                      setDisbursementData({ ...disbursementData, bonuses: b, netSalary: net });
+                    }}
+                    className="w-28 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-lg p-1.5 text-right font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-slate-600 dark:text-slate-400">Khấu trừ / Tạm ứng (VND)</span>
+                  <input
+                    type="number"
+                    step="10000"
+                    min="0"
+                    value={disbursementData.deductions}
+                    onChange={(e) => {
+                      const d = Number(e.target.value) || 0;
+                      const net = Math.max(0, disbursementData.basePay + disbursementData.allowances + disbursementData.bonuses - d);
+                      setDisbursementData({ ...disbursementData, deductions: d, netSalary: net });
+                    }}
+                    className="w-28 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-lg p-1.5 text-right font-mono font-bold text-rose-600 dark:text-rose-400 focus:outline-none focus:border-[#38BDF8]"
+                  />
+                </div>
+
+                <div className="pt-2 border-t border-slate-200 dark:border-[#1e293b] flex items-center justify-between font-black text-sm">
+                  <span className="text-slate-900 dark:text-white uppercase tracking-wider">Thực Lĩnh (Net)</span>
+                  <span className="text-base text-[#38BDF8] font-mono">
+                    {formatPrice(disbursementData.netSalary)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Payment method selector */}
+              <div className="space-y-1.5 text-xs">
+                <label className="block text-slate-700 dark:text-slate-300 font-bold">Hình thức chi trả</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDisbursementData({ ...disbursementData, paidMethod: 'cash' })}
+                    className={`py-2 px-3 rounded-xl border text-center font-bold transition-all cursor-pointer ${
+                      disbursementData.paidMethod === 'cash'
+                        ? 'bg-[#38BDF8] text-slate-950 border-[#38BDF8]'
+                        : 'border-slate-200 dark:border-[#1e293b] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#090D16]'
+                    }`}
+                  >
+                    Tiền mặt
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDisbursementData({ ...disbursementData, paidMethod: 'bank_transfer' })}
+                    className={`py-2 px-3 rounded-xl border text-center font-bold transition-all cursor-pointer ${
+                      disbursementData.paidMethod === 'bank_transfer'
+                        ? 'bg-[#38BDF8] text-slate-950 border-[#38BDF8]'
+                        : 'border-slate-200 dark:border-[#1e293b] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#090D16]'
+                    }`}
+                  >
+                    Chuyển khoản
+                  </button>
+                </div>
+              </div>
+
+              {/* Note input */}
+              <div className="text-xs">
+                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Ghi chú chi trả</label>
+                <input
+                  type="text"
+                  placeholder="Ví dụ: Đã thanh toán tiền mặt cuối ca..."
+                  value={disbursementData.note}
+                  onChange={(e) => setDisbursementData({ ...disbursementData, note: e.target.value })}
+                  className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
+                />
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-200 dark:border-[#1e293b]">
+                <button
+                  type="button"
+                  disabled={isProcessingDisbursement}
+                  onClick={() => setIsDisbursementModalOpen(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs transition-all cursor-pointer active:scale-95 border border-slate-200/60 dark:border-slate-700/60"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  disabled={isProcessingDisbursement}
+                  onClick={handleConfirmDisbursement}
+                  className="px-5 py-2.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-extrabold rounded-xl text-xs transition-all shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-md cursor-pointer disabled:opacity-50 active:scale-95"
+                >
+                  {isProcessingDisbursement ? 'Đang xử lý...' : 'Xác Nhận Chi Trả & Khóa Ca'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* 4. Profile Update Modal (Premium Modern Redesign) */}
       <AnimatePresence>
         {isProfileModalOpen && (
@@ -8222,6 +9868,149 @@ export default function DashboardPage() {
                   <span>Đăng Xuất Tài Khoản</span>
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 9. Add Store Incidental Expense Modal (Admin Only) */}
+      <AnimatePresence>
+        {isAddExpenseModalOpen && user?.role === 'admin' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsAddExpenseModalOpen(false)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-xs"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="relative z-10 w-full max-w-md bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1E2638] rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1E2638] pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-lg">receipt_long</span>
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-slate-900 dark:text-white font-heading">
+                      Ghi Nhận Chi Phí Phát Sinh
+                    </h3>
+                    <p className="text-[11px] text-slate-400">Tiền đá, vật tư, sửa chữa, phụ phí vận hành ngoài kho</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsAddExpenseModalOpen(false)}
+                  className="w-7 h-7 rounded-full bg-slate-100 dark:bg-[#181B21] text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-base">close</span>
+                </button>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleAddExpense} className="space-y-3.5 pt-1 text-xs">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Tên khoản chi <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="VD: Mua 2 bao đá lạnh, Mua túi đựng cốc mang về..."
+                    value={expenseForm.title}
+                    onChange={(e) => setExpenseForm({ ...expenseForm, title: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl font-medium text-slate-900 dark:text-white focus:outline-hidden focus:border-purple-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Số tiền chi (VNĐ) <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min={1000}
+                      step={1000}
+                      placeholder="VD: 30000"
+                      value={expenseForm.amount}
+                      onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl font-black text-purple-600 dark:text-purple-400 focus:outline-hidden focus:border-purple-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Danh mục chi
+                    </label>
+                    <select
+                      value={expenseForm.category}
+                      onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl font-medium text-slate-900 dark:text-white focus:outline-hidden focus:border-purple-500"
+                    >
+                      <option value="Vật tư & Tiện ích">Vật tư & Tiện ích</option>
+                      <option value="Đá & Đồ uống phụ">Đá & Đồ uống phụ</option>
+                      <option value="Sửa chữa & Bảo trì">Sửa chữa & Bảo trì</option>
+                      <option value="Khác">Chi phí khác</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Ngày chi
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={expenseForm.date || analyticsSelectedDate}
+                    onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })}
+                    className="w-full px-3.5 py-2 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl font-bold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:border-purple-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Ghi chú chi tiết (nếu có)
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="VD: Mua đá từ đại lý Minh Quân, có biên lai tay..."
+                    value={expenseForm.note}
+                    onChange={(e) => setExpenseForm({ ...expenseForm, note: e.target.value })}
+                    className="w-full px-3.5 py-2 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl font-medium text-slate-900 dark:text-white focus:outline-hidden focus:border-purple-500 resize-none"
+                  />
+                </div>
+
+                <div className="pt-2 flex items-center justify-end gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddExpenseModalOpen(false)}
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold transition-all cursor-pointer"
+                  >
+                    Hủy Bỏ
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingExpense}
+                    className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-xs hover:shadow-md transition-all active:scale-95 disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+                  >
+                    {isSubmittingExpense ? (
+                      <span>Đang lưu...</span>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-sm">check_circle</span>
+                        <span>Lưu Khoản Chi</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </div>
         )}

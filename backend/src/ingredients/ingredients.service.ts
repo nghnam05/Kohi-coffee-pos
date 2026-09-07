@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Ingredient, IngredientDocument } from './schemas/ingredient.schema.js';
+import { IngredientUsage, IngredientUsageDocument } from './schemas/ingredient-usage.schema.js';
 import { CreateIngredientDto } from './dto/create-ingredient.dto.js';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto.js';
 import { OrdersGateway } from '../orders/orders.gateway.js';
@@ -11,6 +12,7 @@ export class IngredientsService {
   constructor(
     @InjectModel(Ingredient.name) private ingredientModel: Model<IngredientDocument>,
     private ordersGateway: OrdersGateway,
+    @Optional() @InjectModel(IngredientUsage.name) private ingredientUsageModel?: Model<IngredientUsageDocument>,
   ) {}
 
   async findAll(): Promise<Ingredient[]> {
@@ -69,10 +71,17 @@ export class IngredientsService {
     }
 
     let newQuantity = existing.currentQuantity;
+    let reducedQuantity = 0;
     if (typeof dto.quantityChange === 'number') {
       newQuantity = Math.max(0, existing.currentQuantity + dto.quantityChange);
+      if (dto.quantityChange < 0) {
+        reducedQuantity = existing.currentQuantity - newQuantity;
+      }
     } else if (typeof dto.currentQuantity === 'number') {
       newQuantity = Math.max(0, dto.currentQuantity);
+      if (newQuantity < existing.currentQuantity) {
+        reducedQuantity = existing.currentQuantity - newQuantity;
+      }
     }
 
     const minThreshold = typeof dto.minThreshold === 'number' ? dto.minThreshold : existing.minThreshold;
@@ -98,6 +107,27 @@ export class IngredientsService {
     existing.lastUpdatedBy = dto.lastUpdatedBy || 'Nhân viên';
 
     const updated = await existing.save();
+
+    // ⚡ Ghi nhận tiêu hao: khi giảm nguyên liệu thì cộng giá trị tiêu hao vào thống kê ngày đó
+    if (reducedQuantity > 0 && this.ingredientUsageModel) {
+      try {
+        const effectivePrice = updated.unitPrice || existing.unitPrice || 0;
+        const totalCost = Math.round(reducedQuantity * effectivePrice);
+        await new this.ingredientUsageModel({
+          ingredientId: existing._id,
+          ingredientName: updated.name || existing.name,
+          unit: updated.unit || existing.unit,
+          quantity: reducedQuantity,
+          unitPrice: effectivePrice,
+          totalCost,
+          date: new Date(),
+          updatedBy: dto.lastUpdatedBy || 'Nhân viên',
+          note: dto.note || `Xuất tiêu hao: -${reducedQuantity} ${updated.unit || existing.unit}`,
+        }).save();
+      } catch (err) {
+        console.error('Lỗi khi ghi nhận tiêu hao nguyên liệu:', err);
+      }
+    }
 
     if (status !== 'in_stock') {
       this.ordersGateway.emitLowStockAlert(updated);

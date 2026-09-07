@@ -353,11 +353,11 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
       </AnimatePresence>
 
       {/* ── FLOATING ACTION BUTTON (FAB) ─────────────────────────────────── */}
-      {/* Auto-hidden on mobile when bottom sheet is open to prevent duplicate buttons */}
+      {/* Auto-hidden on desktop (lg) since LeftSidebar already has the full Kohi AI Box */}
       <button
         type="button"
         onClick={() => setIsAiChatOpen(!isAiChatOpen)}
-        className={`fixed left-4 md:left-auto md:right-6 lg:right-[380px] bottom-5 md:bottom-6 z-30 w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 text-white shadow-xl shadow-blue-500/30 items-center justify-center transition-all duration-200 active:scale-90 border-2 border-white/25 cursor-pointer backdrop-blur-md ${
+        className={`lg:hidden fixed right-4 bottom-5 md:right-6 md:bottom-6 z-30 w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 text-white shadow-xl shadow-blue-500/30 items-center justify-center transition-all duration-200 active:scale-90 border-2 border-white/25 cursor-pointer backdrop-blur-md ${
           isAiChatOpen ? 'hidden md:flex' : 'flex'
         }`}
         title="Kohi AI Assistant"

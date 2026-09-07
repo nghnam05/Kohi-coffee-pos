@@ -19,6 +19,7 @@ import { CategoriesModule } from './categories/categories.module.js';
 import { ShiftSwapsModule } from './shift-swaps/shift-swaps.module.js';
 import { PaymentsModule } from './payments/payments.module.js';
 import { IngredientsModule } from './ingredients/ingredients.module.js';
+import { ExpensesModule } from './expenses/expenses.module.js';
 
 @Module({
   controllers: [AppController],
@@ -49,6 +50,7 @@ import { IngredientsModule } from './ingredients/ingredients.module.js';
     ShiftSwapsModule,
     PaymentsModule,
     IngredientsModule,
+    ExpensesModule,
   ],
 })
 export class AppModule {}
