@@ -65,6 +65,7 @@ interface CartSidebarProps {
   setIsCartOpen?: (open: boolean) => void;
   currentDeviceId?: string;
   customerName?: string;
+  hasPendingOrder?: boolean;
 }
 
 export const CartSidebar: React.FC<CartSidebarProps> = ({
@@ -94,6 +95,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
   setIsCartOpen,
   currentDeviceId,
   customerName,
+  hasPendingOrder = false,
 }) => {
   const renderCartItems = () => {
     const myItems = cart.filter((item) =>
@@ -367,17 +369,37 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
         </div>
       </div>
 
+      {/* Pending Order Notice */}
+      {hasPendingOrder && (
+        <div className="mt-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs font-bold flex items-center gap-2.5">
+          <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping shrink-0" />
+          <span>
+            {lang === 'en'
+              ? 'An order is pending staff approval. Please wait a moment before adding more!'
+              : lang === 'zh'
+              ? '当前桌位有一笔订单等待服务员确认中，请稍候再加点！'
+              : 'Bàn đang có 1 đơn chờ nhân viên xác nhận. Vui lòng đợi trong giây lát!'}
+          </span>
+        </div>
+      )}
+
       {/* Submit CTA Button */}
       <button
         onClick={handleSubmitOrder}
-        disabled={cart.length === 0 || isSubmitting}
+        disabled={cart.length === 0 || isSubmitting || hasPendingOrder}
         className={`w-full h-[52px] mt-2 rounded-xl text-[14px] font-black uppercase tracking-[0.04em] flex items-center justify-center transition-all font-sans shadow-md ${
-          cart.length === 0
+          cart.length === 0 || hasPendingOrder
             ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
             : 'uiverse-btn shadow-lg'
         }`}
       >
-        <span>{isSubmitting ? t.submitting : (t.checkoutBtn || (lang === 'en' ? 'CONFIRM ORDER' : lang === 'zh' ? '确认提交订单' : 'XÁC NHẬN GỌI MÓN'))}</span>
+        <span>
+          {isSubmitting
+            ? t.submitting
+            : hasPendingOrder
+            ? (lang === 'en' ? 'WAITING FOR APPROVAL...' : lang === 'zh' ? '正在等待确认...' : 'ĐANG CHỜ DUYỆT ĐƠN...')
+            : (t.checkoutBtn || (lang === 'en' ? 'CONFIRM ORDER' : lang === 'zh' ? '确认提交订单' : 'XÁC NHẬN GỌI MÓN'))}
+        </span>
       </button>
     </div>
   );
