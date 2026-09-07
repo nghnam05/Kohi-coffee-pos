@@ -2,6 +2,7 @@ import * as nodeCrypto from 'node:crypto';
 if (typeof (globalThis as any).crypto === 'undefined' || !(globalThis as any).crypto?.getRandomValues) {
   (globalThis as any).crypto = nodeCrypto;
 }
+process.env.TZ = 'Asia/Ho_Chi_Minh';
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
