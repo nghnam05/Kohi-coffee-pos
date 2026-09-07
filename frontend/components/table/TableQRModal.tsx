@@ -57,11 +57,11 @@ export const TableQRModal: React.FC<TableQRModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: 20 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full max-w-sm bg-white dark:bg-[#131929] rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden relative"
+            className="w-full max-w-sm bg-white dark:bg-[#0F172A] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden relative"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Top Accent Gradient */}
-            <div className="h-1.5 w-full bg-gradient-to-r from-[#3AA6FF] via-[#5B9EFF] to-[#3AA6FF]" />
+            <div className="h-1 w-full bg-gradient-to-r from-[#3B82F6] via-[#38BDF8] to-[#3B82F6]" />
 
             {/* Close Button */}
             <button

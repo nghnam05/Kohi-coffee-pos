@@ -194,4 +194,12 @@ export class PaymentsService implements OnModuleInit {
       deletedCount: result.modifiedCount,
     };
   }
+
+  async updateTableForOrders(orderIds: string[], toTableId: string, toTableName: string): Promise<void> {
+    if (!orderIds || orderIds.length === 0) return;
+    await this.paymentModel.updateMany(
+      { orderId: { $in: orderIds } },
+      { $set: { tableId: toTableId, tableName: toTableName } },
+    ).exec();
+  }
 }

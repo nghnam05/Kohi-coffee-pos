@@ -4,6 +4,7 @@ import { ReviewsService } from '../../src/reviews/reviews.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { Review } from '../../src/reviews/schemas/review.schema';
 import { Order } from '../../src/orders/schemas/order.schema';
+import { ConfigService } from '@nestjs/config';
 
 describe('ReviewsService', () => {
   let service: ReviewsService;
@@ -68,6 +69,12 @@ describe('ReviewsService', () => {
         ReviewsService,
         { provide: getModelToken(Review.name), useValue: reviewModelMock },
         { provide: getModelToken(Order.name), useValue: orderModelMock },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue('mock-gemini-api-key'),
+          },
+        },
       ],
     }).compile();
 

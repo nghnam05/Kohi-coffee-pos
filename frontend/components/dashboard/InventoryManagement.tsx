@@ -281,7 +281,7 @@ export const InventoryManagement: React.FC<InventoryManagementProps> = ({
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Top Action Bar (Admin Add Button + Live Counter) */}
-      <div className="flex items-center justify-between gap-3 bg-white dark:bg-[#121824] p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-[#1E2638] shadow-xs">
+      <div className="flex items-center justify-between gap-3 bg-white dark:bg-[#0F172A] p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-xs">
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping shrink-0" />
           <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200">
@@ -292,7 +292,7 @@ export const InventoryManagement: React.FC<InventoryManagementProps> = ({
         {userRole === 'admin' && (
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+            className="px-4 sm:px-5 py-2.5 bg-[#3B82F6] hover:bg-blue-600 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-blue-500/20 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
           >
             <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
             <span>Thêm nguyên liệu mới</span>
@@ -303,7 +303,7 @@ export const InventoryManagement: React.FC<InventoryManagementProps> = ({
       {/* Summary Stat Cards - Compact 3 Column Grid */}
       <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
         {/* Total Ingredients */}
-        <div className="bg-white dark:bg-[#121824] p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-[#1E2638] flex flex-col justify-between">
+        <div className="bg-white dark:bg-[#0F172A] p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-white/10 flex flex-col justify-between">
           <span className="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider truncate">
             Tổng hàng
           </span>
@@ -316,7 +316,7 @@ export const InventoryManagement: React.FC<InventoryManagementProps> = ({
         <div className={`p-3 sm:p-4 rounded-2xl border flex flex-col justify-between transition-all ${
           lowStockCount > 0
             ? 'bg-amber-500/10 border-amber-500/30 dark:bg-amber-500/10'
-            : 'bg-white dark:bg-[#121824] border-slate-200/80 dark:border-[#1E2638]'
+            : 'bg-white dark:bg-[#0F172A] border-slate-200/80 dark:border-white/10'
         }`}>
           <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate ${
             lowStockCount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'
@@ -334,7 +334,7 @@ export const InventoryManagement: React.FC<InventoryManagementProps> = ({
         <div className={`p-3 sm:p-4 rounded-2xl border flex flex-col justify-between transition-all ${
           outOfStockCount > 0
             ? 'bg-rose-500/10 border-rose-500/40 dark:bg-rose-500/15'
-            : 'bg-white dark:bg-[#121824] border-slate-200/80 dark:border-[#1E2638]'
+            : 'bg-white dark:bg-[#0F172A] border-slate-200/80 dark:border-white/10'
         }`}>
           <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate ${
             outOfStockCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'
@@ -359,8 +359,8 @@ export const InventoryManagement: React.FC<InventoryManagementProps> = ({
               onClick={() => setSelectedCategory(cat)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 selectedCategory === cat
-                  ? 'bg-[#0284c7] text-white dark:bg-[#38BDF8] dark:text-slate-950 shadow-xs'
-                  : 'bg-slate-100 dark:bg-[#181B21] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-[#222732]'
+                  ? 'bg-[#3B82F6] text-white dark:bg-blue-500/20 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 shadow-xs'
+                  : 'bg-slate-100 dark:bg-slate-900 border border-transparent dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'
               }`}
             >
               {cat === 'all' ? 'Tất cả danh mục' : cat}
@@ -375,7 +375,7 @@ export const InventoryManagement: React.FC<InventoryManagementProps> = ({
             placeholder="Tìm kiếm nguyên liệu..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-3.5 py-2 bg-white dark:bg-[#121824] border border-slate-200 dark:border-[#1E2638] rounded-xl text-xs font-medium text-slate-800 dark:text-white focus:outline-hidden focus:border-[#0284c7] dark:focus:border-[#38BDF8] placeholder-slate-400"
+            className="w-full px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-medium text-slate-800 dark:text-white focus:outline-hidden focus:border-[#3B82F6] dark:focus:border-[#38BDF8] placeholder-slate-400"
           />
         </div>
       </div>
@@ -386,7 +386,7 @@ export const InventoryManagement: React.FC<InventoryManagementProps> = ({
           Đang kết nối tải dữ liệu kho nguyên liệu...
         </div>
       ) : filteredIngredients.length === 0 ? (
-        <div className="p-8 text-center bg-white dark:bg-[#121824] rounded-2xl border border-slate-200/80 dark:border-[#1E2638] text-xs text-slate-400">
+        <div className="p-8 text-center bg-white dark:bg-[#0F172A] rounded-2xl border border-slate-200/80 dark:border-white/10 text-xs text-slate-400">
           Không tìm thấy nguyên liệu nào phù hợp.
         </div>
       ) : (
@@ -405,7 +405,7 @@ export const InventoryManagement: React.FC<InventoryManagementProps> = ({
                     ? 'bg-rose-500/10 border-rose-500/40 text-rose-700 dark:text-rose-200 shadow-xs'
                     : isLow
                     ? 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-200'
-                    : 'bg-white dark:bg-[#121824] border-slate-200/80 dark:border-[#1E2638]'
+                    : 'bg-white dark:bg-[#0F172A] border-slate-200/80 dark:border-white/10'
                 }`}
               >
                 <div>
@@ -527,7 +527,7 @@ export const InventoryManagement: React.FC<InventoryManagementProps> = ({
       {/* Add Ingredient Modal (Admin Only) */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#121824] border border-slate-200 dark:border-[#1E2638] rounded-2xl w-full max-w-md p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 rounded-2xl w-full max-w-md p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">
               Thêm Nguyên Liệu Vào Kho
             </h3>
@@ -685,7 +685,7 @@ export const InventoryManagement: React.FC<InventoryManagementProps> = ({
       {/* Edit Ingredient Modal (Admin Only) */}
       {editingIngredient && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#121824] border border-slate-200 dark:border-[#1E2638] rounded-2xl w-full max-w-md p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 rounded-2xl w-full max-w-md p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">
               Chỉnh Sửa Nguyên Liệu Kho
             </h3>

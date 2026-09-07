@@ -59,7 +59,7 @@ export class ReservationsService implements OnModuleInit {
     const table = await this.tablesService.findOne(dto.tableId);
     if (!table) throw new NotFoundException('Không tìm thấy bàn được chọn.');
 
-    // ⚡ BẢO VỆ CHỐNG ĐẶT TRÙNG BÀN: Bàn đang có khách hoặc đã giữ chỗ thì không cho đặt
+    // ⚡ 1. Bàn đang có khách hoặc đã giữ chỗ thì không cho đặt
     if (table.status === 'serving') {
       throw new BadRequestException(`${table.tableName} hiện đang có khách ngồi. Vui lòng chọn bàn khác.`);
     }
@@ -73,18 +73,62 @@ export class ReservationsService implements OnModuleInit {
       throw new BadRequestException(`${table.tableName} đã được giữ chỗ trước. Vui lòng chọn bàn trống khác.`);
     }
 
+    // ⚡ 2. Ràng buộc 1 SĐT chỉ được có 1 đơn đặt bàn đang hoạt động
+    const cleanPhone = dto.customerPhone.trim();
+    const activeResByPhone = await this.reservationModel.findOne({
+      customerPhone: cleanPhone,
+      status: { $in: ['pending', 'confirmed'] },
+      isDeleted: { $ne: true },
+    });
+    if (activeResByPhone) {
+      throw new BadRequestException('Số điện thoại này đã có 1 đơn đặt bàn đang chờ hoặc đã xác nhận. Không thể đặt thêm bàn khác.');
+    }
+
+    // ⚡ 3. Ràng buộc thời gian chờ 30 phút sau khi hủy đặt bàn
+    const recentCancelledRes = await this.reservationModel
+      .findOne({
+        customerPhone: cleanPhone,
+        status: 'cancelled',
+        cancelledAt: { $ne: null },
+        isDeleted: { $ne: true },
+      })
+      .sort({ cancelledAt: -1 })
+      .exec();
+
+    if (recentCancelledRes && recentCancelledRes.cancelledAt) {
+      const timeSinceCancelMs = Date.now() - new Date(recentCancelledRes.cancelledAt).getTime();
+      const timeSinceCancelMins = timeSinceCancelMs / (1000 * 60);
+      if (timeSinceCancelMins < 30) {
+        const remainingMins = Math.ceil(30 - timeSinceCancelMins);
+        throw new BadRequestException(
+          `Bạn vừa hủy đặt bàn gần đây. Vui lòng chờ ${remainingMins} phút nữa để thực hiện đặt lại.`,
+        );
+      }
+    }
+
+    // ⚡ 4. Ràng buộc thời gian hẹn và Giờ hoạt động của quán (06:00 - 23:00)
     const resTime = new Date(dto.reservationTime);
     if (isNaN(resTime.getTime())) {
       throw new BadRequestException('Thời gian đặt bàn không hợp lệ.');
     }
 
+    if (resTime.getTime() < Date.now() - 5 * 60 * 1000) {
+      throw new BadRequestException('Thời gian đặt bàn phải ở thời điểm tương lai.');
+    }
+
+    const hours = resTime.getHours();
+    const minutes = resTime.getMinutes();
+    if (hours < 6 || hours > 23 || (hours === 23 && minutes > 0)) {
+      throw new BadRequestException('Thời gian đặt bàn phải nằm trong khung giờ hoạt động của quán (06:00 - 23:00).');
+    }
+
     const reservation = new this.reservationModel({
       ...dto,
+      customerPhone: cleanPhone,
       reservationTime: resTime,
     });
     const saved = await reservation.save();
 
-    // ⚡ Tự động cập nhật trạng thái bàn sang 'reserved' ngay lập tức trong Database
     await this.tablesService.update(dto.tableId, { status: 'reserved' }).catch(() => {});
 
     const populated = await this.reservationModel
@@ -182,13 +226,22 @@ export class ReservationsService implements OnModuleInit {
 
   async customerCancel(id: string): Promise<ReservationDocument> {
     const resDoc = await this.reservationModel.findById(id).exec();
-    if (!resDoc) throw new NotFoundException(`Không tìm thấy đơn đặt bàn ID: ${id}`);
+    if (!resDoc || resDoc.isDeleted) throw new NotFoundException(`Không tìm thấy đơn đặt bàn ID: ${id}`);
 
     if (resDoc.status === 'arrived') {
       throw new BadRequestException('Khách hàng đã đến quán, không thể hủy đơn đặt bàn.');
     }
 
+    const resTime = new Date(resDoc.reservationTime).getTime();
+    const diffMinutes = (resTime - Date.now()) / (1000 * 60);
+    if (diffMinutes <= 30) {
+      throw new BadRequestException(
+        'Chỉ được phép tự hủy bàn trước thời gian hẹn ít nhất 30 phút. Vui lòng liên hệ nhân viên để được hỗ trợ.',
+      );
+    }
+
     resDoc.status = 'cancelled';
+    resDoc.cancelledAt = new Date();
     const updated = await resDoc.save();
 
     const tableId = (updated.tableId as any)?._id || updated.tableId;
@@ -206,5 +259,35 @@ export class ReservationsService implements OnModuleInit {
     }
 
     return populated || updated;
+  }
+
+  async customerArrive(id: string): Promise<any> {
+    const resDoc = await this.reservationModel.findById(id).populate('tableId').exec();
+    if (!resDoc || resDoc.isDeleted) throw new NotFoundException(`Không tìm thấy đơn đặt bàn ID: ${id}`);
+
+    if (resDoc.status === 'cancelled') {
+      throw new BadRequestException('Đơn đặt bàn này đã bị hủy.');
+    }
+
+    resDoc.status = 'arrived';
+    await resDoc.save();
+
+    const tableIdStr = (resDoc.tableId as any)?._id
+      ? (resDoc.tableId as any)._id.toString()
+      : resDoc.tableId?.toString();
+
+    if (tableIdStr) {
+      await this.tablesService.update(tableIdStr, { status: 'serving' }).catch(() => {});
+      if (this.ordersGateway) {
+        this.ordersGateway.emitTableUpdate(tableIdStr, 'serving');
+        this.ordersGateway.emitReservationStatusUpdate(id, 'arrived');
+      }
+    }
+
+    return {
+      message: 'Xác nhận đã đến quán thành công!',
+      tableId: tableIdStr,
+      tableName: (resDoc.tableId as any)?.tableName || 'Bàn',
+    };
   }
 }

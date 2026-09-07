@@ -91,7 +91,7 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <LanguageProvider>
-      <NextThemesProvider attribute="class" defaultTheme="system" enableSystem>
+      <NextThemesProvider attribute="class" defaultTheme="dark" enableSystem>
         {children}
         <Toaster
           position="top-right"

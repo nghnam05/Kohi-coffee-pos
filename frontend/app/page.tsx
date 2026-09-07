@@ -259,6 +259,26 @@ export default function Home() {
     }
   };
 
+  // Customer arrive & go to menu
+  const handleCustomerArrive = async (resId: string, targetTableId: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/reservations/${resId}/customer-arrive`, {
+        method: 'PATCH',
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Không thể cập nhật trạng thái đã đến.');
+      }
+      playWelcomeChime();
+      toast.success(lang === 'en' ? 'Welcome! Redirecting to menu...' : 'Chào mừng quý khách! Đang chuyển tới Menu gọi món...');
+      setTimeout(() => {
+        router.push(`/table/${targetTableId}`);
+      }, 1000);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Có lỗi xảy ra.');
+    }
+  };
+
   // Customer cancel reservation
   const handleCustomerCancelReservation = async (id: string) => {
     if (!confirm(lang === 'en' ? 'Are you sure you want to cancel this reservation?' : lang === 'zh' ? '您确定要取消此预订吗？' : 'Bạn có chắc chắn muốn hủy đơn đặt bàn này không?')) return;
@@ -383,9 +403,9 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50/80 dark:bg-[#070A10] text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans flex flex-col justify-between relative antialiased">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans flex flex-col justify-between relative antialiased">
       {/* Top Header Bar */}
-      <header className="bg-white/95 dark:bg-[#0F141F]/95 border-b border-slate-200 dark:border-slate-800 sticky top-0 left-0 w-full z-50 shadow-xs backdrop-blur-md">
+      <header className="bg-white/90 dark:bg-[#0B0F17]/80 border-b border-slate-200 dark:border-white/10 sticky top-0 left-0 w-full z-50 shadow-xs backdrop-blur-xl">
         <div className="flex justify-between items-center w-full px-3 sm:px-6 md:px-12 py-2.5 sm:py-3.5 max-w-7xl mx-auto gap-2">
           <BrandLogo onClick={() => router.push('/')} />
 
@@ -400,7 +420,7 @@ export default function Home() {
             <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
             <button
               onClick={() => router.push('/login')}
-              className="bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 transition-colors duration-200 px-3 sm:px-4 h-[28px] sm:h-[34px] rounded-full text-[11px] sm:text-xs font-bold shadow-xs whitespace-nowrap cursor-pointer active:scale-95 flex items-center shrink-0"
+              className="bg-[#3B82F6] hover:bg-blue-600 text-white transition-colors duration-200 px-3 sm:px-4 h-[30px] sm:h-[36px] rounded-xl text-[11px] sm:text-xs font-bold shadow-xs whitespace-nowrap cursor-pointer active:scale-95 flex items-center shrink-0"
             >
               <span className="sm:hidden">Đăng nhập</span>
               <span className="hidden sm:inline">{t.btnLogin}</span>
@@ -413,7 +433,7 @@ export default function Home() {
       <main className="flex-grow pt-8 sm:pt-12 pb-16 px-4 md:px-12 w-full max-w-7xl mx-auto">
         {/* Hero Section */}
         <section className="text-center mb-8 sm:mb-12">
-          <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-sky-500/10 dark:bg-sky-500/20 text-[#0284c7] dark:text-[#38BDF8] text-[11px] sm:text-xs font-bold uppercase tracking-wider mb-4 sm:mb-6 border border-sky-500/20">
+          <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-blue-500/10 text-[#3B82F6] dark:text-[#38BDF8] text-[11px] sm:text-xs font-bold uppercase tracking-wider mb-4 sm:mb-6 border border-blue-500/20">
             {t.heroBadge}
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white mb-3 sm:mb-4 tracking-tight">
@@ -425,7 +445,7 @@ export default function Home() {
         </section>
 
         {/* Tab Navigation: Đặt Bàn vs Tra Cứu */}
-        <nav className="flex justify-center border-b border-slate-200 dark:border-slate-800 mb-8 sm:mb-12">
+        <nav className="flex justify-center border-b border-slate-200 dark:border-white/10 mb-8 sm:mb-12">
           <button
             onClick={() => {
               setActiveTab('reserve');
@@ -433,7 +453,7 @@ export default function Home() {
             }}
             className={`px-6 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-bold transition-all border-b-2 cursor-pointer ${
               activeTab === 'reserve'
-                ? 'text-[#0284c7] dark:text-[#38BDF8] border-[#0284c7] dark:border-[#38BDF8] translate-y-[1px]'
+                ? 'text-[#3B82F6] dark:text-[#38BDF8] border-[#3B82F6] dark:border-[#38BDF8] translate-y-[1px]'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 border-transparent'
             }`}
           >
@@ -446,7 +466,7 @@ export default function Home() {
             }}
             className={`px-6 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-bold transition-all border-b-2 cursor-pointer ${
               activeTab === 'lookup'
-                ? 'text-[#0284c7] dark:text-[#38BDF8] border-[#0284c7] dark:border-[#38BDF8] translate-y-[1px]'
+                ? 'text-[#3B82F6] dark:text-[#38BDF8] border-[#3B82F6] dark:border-[#38BDF8] translate-y-[1px]'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 border-transparent'
             }`}
           >
@@ -458,8 +478,8 @@ export default function Home() {
         {activeTab === 'reserve' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
             {/* LEFT COLUMN: Sơ Đồ Chọn Bàn (7 Cols) */}
-            <div className="lg:col-span-7 bg-white dark:bg-[#0F141F] rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-7 shadow-xs border border-slate-200/90 dark:border-slate-800/90">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 pb-6 border-b border-slate-200 dark:border-slate-800">
+            <div className="lg:col-span-7 bg-white dark:bg-[#0F172A]/70 rounded-2xl p-5 sm:p-6 lg:p-7 shadow-xs border border-slate-200/90 dark:border-white/10 backdrop-blur-xl">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 pb-6 border-b border-slate-200 dark:border-white/10">
                 <div>
                   <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-1">
                     {t.selectTableLabel}
@@ -469,12 +489,12 @@ export default function Home() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-[11px] font-bold">
+                  <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-900 border border-transparent dark:border-white/10 rounded-xl text-[11px] font-bold">
                     <button
                       onClick={() => setTableFilter('all')}
                       className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
                         tableFilter === 'all'
-                          ? 'bg-white dark:bg-[#161D2C] text-[#0284c7] dark:text-[#38BDF8] shadow-xs'
+                          ? 'bg-white dark:bg-[#1E293B] text-[#3B82F6] dark:text-[#38BDF8] shadow-xs'
                           : 'text-slate-500 dark:text-slate-400'
                       }`}
                     >
@@ -484,7 +504,7 @@ export default function Home() {
                       onClick={() => setTableFilter('available')}
                       className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
                         tableFilter === 'available'
-                          ? 'bg-white dark:bg-[#161D2C] text-[#0284c7] dark:text-[#38BDF8] shadow-xs'
+                          ? 'bg-white dark:bg-[#1E293B] text-[#3B82F6] dark:text-[#38BDF8] shadow-xs'
                           : 'text-slate-500 dark:text-slate-400'
                       }`}
                     >
@@ -493,7 +513,7 @@ export default function Home() {
                   </div>
                   <button
                     onClick={fetchTables}
-                    className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer min-h-[36px]"
+                    className="px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer min-h-[36px]"
                   >
                     {t.refreshMap}
                   </button>
@@ -553,9 +573,9 @@ export default function Home() {
                             setSelectedTable(tbl);
                             setError('');
                           }}
-                          className="relative bg-white dark:bg-[#0F141F] border-2 border-[#0284c7] dark:border-[#38BDF8] rounded-xl sm:rounded-2xl p-4 sm:p-5 cursor-pointer shadow-md transition-all group overflow-hidden"
+                          className="relative bg-white dark:bg-slate-900 border-2 border-[#3B82F6] dark:border-[#38BDF8] rounded-2xl p-4 sm:p-5 cursor-pointer shadow-md shadow-blue-500/10 transition-all group overflow-hidden"
                         >
-                          <div className="absolute inset-0 bg-[#0284c7]/5 dark:bg-[#38BDF8]/10 pointer-events-none" />
+                          <div className="absolute inset-0 bg-[#3B82F6]/10 pointer-events-none" />
                           <div className="flex justify-between items-center mb-3 sm:mb-4 relative z-10">
                             <span className={`w-2 h-2 rounded-full ${statusDot}`} />
                             <span className="text-[11px] sm:text-xs font-bold text-emerald-600 dark:text-emerald-400">
@@ -563,7 +583,7 @@ export default function Home() {
                             </span>
                           </div>
                           <div className="text-center mb-1 relative z-10">
-                            <span className="text-lg sm:text-xl font-extrabold text-[#0284c7] dark:text-[#38BDF8]">
+                            <span className="text-lg sm:text-xl font-extrabold text-[#3B82F6] dark:text-[#38BDF8]">
                               {formattedName}
                             </span>
                           </div>
@@ -585,10 +605,10 @@ export default function Home() {
                             setError('');
                           }
                         }}
-                        className={`relative rounded-xl sm:rounded-2xl p-4 sm:p-5 text-left transition-all group overflow-hidden border ${
+                        className={`relative rounded-2xl p-4 sm:p-5 text-left transition-all group overflow-hidden border ${
                           isBookable
-                            ? 'bg-slate-50/80 dark:bg-[#161D2C]/60 border-slate-200 dark:border-slate-800 cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm'
-                            : 'bg-slate-100/50 dark:bg-slate-900/30 border-slate-200/50 dark:border-slate-800/40 opacity-60 cursor-not-allowed'
+                            ? 'bg-slate-50/80 dark:bg-slate-900/60 border-slate-200 dark:border-white/10 cursor-pointer hover:border-slate-300 dark:hover:border-white/20 hover:shadow-sm'
+                            : 'bg-slate-100/50 dark:bg-slate-900/30 border-slate-200/50 dark:border-white/5 opacity-60 cursor-not-allowed'
                         }`}
                       >
                         <div className="flex justify-between items-center mb-3 sm:mb-4">
@@ -598,7 +618,7 @@ export default function Home() {
                           </span>
                         </div>
                         <div className="text-center mb-1">
-                          <span className={`text-lg sm:text-xl font-bold ${isBookable ? 'text-slate-800 dark:text-slate-200 group-hover:text-[#0284c7] dark:group-hover:text-[#38BDF8] transition-colors' : 'text-slate-400 dark:text-slate-500'}`}>
+                          <span className={`text-lg sm:text-xl font-bold ${isBookable ? 'text-slate-800 dark:text-slate-200 group-hover:text-[#3B82F6] dark:group-hover:text-[#38BDF8] transition-colors' : 'text-slate-400 dark:text-slate-500'}`}>
                             {formattedName}
                           </span>
                         </div>
@@ -613,7 +633,7 @@ export default function Home() {
             </div>
 
             {/* RIGHT COLUMN: Form Nhập Thông Tin Đặt Bàn (5 Cols) */}
-            <div className="lg:col-span-5 bg-white dark:bg-[#0F141F] rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-7 shadow-xs border border-slate-200/90 dark:border-slate-800/90 h-fit lg:sticky lg:top-24 space-y-5">
+            <div className="lg:col-span-5 bg-white dark:bg-[#0F172A]/70 rounded-2xl p-5 sm:p-6 lg:p-7 shadow-xs border border-slate-200/90 dark:border-white/10 backdrop-blur-xl h-fit lg:sticky lg:top-24 space-y-5">
               <div>
                 <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-1">
                   {t.bookingFormTitle}
@@ -624,16 +644,16 @@ export default function Home() {
               </div>
 
               {/* Selected Table Banner */}
-              <div className="bg-[#0284c7]/5 dark:bg-[#38BDF8]/10 border border-[#0284c7]/20 dark:border-[#38BDF8]/20 rounded-xl p-4 flex justify-between items-center">
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 flex justify-between items-center">
                 <div>
                   <p className="text-[10.5px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
                     {t.selectedTableLabel}
                   </p>
-                  <p className="text-base sm:text-lg font-extrabold text-[#0284c7] dark:text-[#38BDF8] leading-none">
+                  <p className="text-base sm:text-lg font-extrabold text-[#3B82F6] dark:text-[#38BDF8] leading-none">
                     {selectedTable ? formatTableName(selectedTable.tableName, lang) : t.noTableSelected}
                   </p>
                 </div>
-                <span className="w-3 h-3 rounded-full bg-[#0284c7] dark:bg-[#38BDF8] shadow-xs shrink-0 animate-pulse" />
+                <span className="w-3 h-3 rounded-full bg-[#3B82F6] dark:bg-[#38BDF8] shadow-xs shrink-0 animate-pulse" />
               </div>
 
               {error && (
@@ -655,7 +675,7 @@ export default function Home() {
                     placeholder={t.customerNamePlaceholder}
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-[#161D2C] border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0284c7] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all"
+                    className="w-full bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all"
                   />
                 </div>
 
@@ -679,7 +699,7 @@ export default function Home() {
                         if (error) setError('');
                       }
                     }}
-                    className="w-full bg-slate-50 dark:bg-[#161D2C] border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0284c7] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all"
+                    className="w-full bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all"
                   />
                 </div>
 
@@ -695,7 +715,7 @@ export default function Home() {
                       required
                       value={reservationTime}
                       onChange={(e) => setReservationTime(e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-[#161D2C] border border-slate-200 dark:border-slate-800 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all"
+                      className="w-full bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3B82F6] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all"
                     />
                   </div>
 
@@ -711,7 +731,7 @@ export default function Home() {
                       required
                       value={guestCount}
                       onChange={(e) => setGuestCount(Number(e.target.value))}
-                      className="w-full bg-slate-50 dark:bg-[#161D2C] border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0284c7] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all"
+                      className="w-full bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3B82F6] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all"
                     />
                   </div>
                 </div>
@@ -725,28 +745,28 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => setPresetTime(1)}
-                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-[#0284c7] hover:text-white dark:hover:bg-[#38BDF8] dark:hover:text-slate-950 transition-all cursor-pointer"
+                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-[#3B82F6] hover:text-white dark:hover:bg-[#3B82F6] dark:hover:text-white transition-all cursor-pointer"
                     >
                       {t.presetIn1h}
                     </button>
                     <button
                       type="button"
                       onClick={() => setPresetTime(2)}
-                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-[#0284c7] hover:text-white dark:hover:bg-[#38BDF8] dark:hover:text-slate-950 transition-all cursor-pointer"
+                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-[#3B82F6] hover:text-white dark:hover:bg-[#3B82F6] dark:hover:text-white transition-all cursor-pointer"
                     >
                       {t.presetIn2h}
                     </button>
                     <button
                       type="button"
                       onClick={() => setSpecificTimePreset(19, false)}
-                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-[#0284c7] hover:text-white dark:hover:bg-[#38BDF8] dark:hover:text-slate-950 transition-all cursor-pointer"
+                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-[#3B82F6] hover:text-white dark:hover:bg-[#3B82F6] dark:hover:text-white transition-all cursor-pointer"
                     >
                       {t.presetTonight}
                     </button>
                     <button
                       type="button"
                       onClick={() => setSpecificTimePreset(12, true)}
-                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-[#0284c7] hover:text-white dark:hover:bg-[#38BDF8] dark:hover:text-slate-950 transition-all cursor-pointer"
+                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-[#3B82F6] hover:text-white dark:hover:bg-[#3B82F6] dark:hover:text-white transition-all cursor-pointer"
                     >
                       {t.presetTomorrowNoon}
                     </button>
@@ -763,7 +783,7 @@ export default function Home() {
                     placeholder={t.notePlaceholder}
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-[#161D2C] border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0284c7] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all resize-none"
+                    className="w-full bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl p-3 sm:p-4 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all resize-none"
                   />
                 </div>
 
@@ -771,7 +791,7 @@ export default function Home() {
                 <button
                   type="submit"
                   disabled={isSubmitting || !selectedTable}
-                  className="w-full bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 text-xs sm:text-sm font-extrabold py-3.5 sm:py-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 uppercase tracking-wider cursor-pointer active:scale-[0.98] disabled:opacity-50 mt-2 min-h-[44px]"
+                  className="w-full bg-[#3B82F6] hover:bg-blue-600 text-white text-xs sm:text-sm font-extrabold py-3.5 sm:py-4 rounded-xl shadow-md hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-200 uppercase tracking-wider cursor-pointer active:scale-[0.98] disabled:opacity-50 mt-2 min-h-[44px]"
                 >
                   <span>{isSubmitting ? t.btnSubmitting : t.btnSubmitBooking}</span>
                 </button>
@@ -782,7 +802,7 @@ export default function Home() {
 
         {/* TAB 2: LOOKUP & CUSTOMER CANCEL RESERVATIONS */}
         {activeTab === 'lookup' && (
-          <div className="max-w-xl mx-auto bg-white dark:bg-[#0F141F] border border-slate-200/90 dark:border-slate-800/90 rounded-xl sm:rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs transition-all font-sans">
+          <div className="max-w-xl mx-auto bg-white dark:bg-[#0F172A]/70 border border-slate-200/90 dark:border-white/10 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs backdrop-blur-xl transition-all font-sans">
             <div className="text-center space-y-1.5">
               <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                 {t.lookupTitle}
@@ -814,12 +834,12 @@ export default function Home() {
                     if (error) setError('');
                   }
                 }}
-                className="flex-1 bg-slate-50 dark:bg-[#161D2C] border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#0284c7] dark:focus:ring-[#38BDF8]"
+                className="flex-1 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6] dark:focus:ring-[#38BDF8]"
               />
               <button
                 type="submit"
                 disabled={isSearchingLookup}
-                className="h-11 px-6 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-bold rounded-xl text-xs sm:text-sm uppercase tracking-wider transition-all shadow-md active:scale-95 flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-50 min-h-[44px]"
+                className="h-11 px-6 bg-[#3B82F6] hover:bg-blue-600 text-white font-bold rounded-xl text-xs sm:text-sm uppercase tracking-wider transition-all shadow-md active:scale-95 flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-50 min-h-[44px]"
               >
                 <span>{isSearchingLookup ? t.btnSearching : t.btnSearchNow}</span>
               </button>
@@ -828,9 +848,9 @@ export default function Home() {
             {hasSearchedLookup && (
               <div className="space-y-4 pt-2">
                 {lookupResults.length === 0 ? (
-                  <div className="bg-slate-50 dark:bg-[#161D2C]/60 border border-slate-200/80 dark:border-slate-800 rounded-xl p-6 text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                  <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-white/10 rounded-xl p-6 text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
                     {lang === 'en' ? 'No reservation found matching phone number ' : 'Không tìm thấy đơn đặt bàn nào với số điện thoại '}
-                    <span className="font-bold text-[#0284c7] dark:text-[#38BDF8]">{lookupPhone}</span>.
+                    <span className="font-bold text-[#3B82F6] dark:text-[#38BDF8]">{lookupPhone}</span>.
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -843,7 +863,7 @@ export default function Home() {
                       let statusLabel = lang === 'en' ? 'Pending' : 'Chờ xác nhận';
 
                       if (res.status === 'confirmed') {
-                        statusBadge = 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20';
+                        statusBadge = 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
                         statusLabel = lang === 'en' ? 'Confirmed' : 'Đã xác nhận';
                       } else if (res.status === 'arrived') {
                         statusBadge = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
@@ -861,14 +881,14 @@ export default function Home() {
                       return (
                         <div
                           key={res._id}
-                          className="bg-slate-50/90 dark:bg-[#161D2C]/90 border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-xl space-y-3 shadow-xs"
+                          className="bg-slate-50/90 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 p-4 sm:p-5 rounded-xl space-y-3 shadow-xs"
                         >
                           <div className="flex justify-between items-start">
                             <div>
                               <h4 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
                                 {res.customerName}
                               </h4>
-                              <p className="text-xs text-[#0284c7] dark:text-[#38BDF8] font-bold mt-0.5">
+                              <p className="text-xs text-[#3B82F6] dark:text-[#38BDF8] font-bold mt-0.5">
                                 {res.customerPhone}
                               </p>
                             </div>
@@ -877,7 +897,7 @@ export default function Home() {
                             </span>
                           </div>
 
-                          <div className="py-2.5 border-t border-b border-slate-200/80 dark:border-slate-800 space-y-1.5 text-xs sm:text-sm">
+                          <div className="py-2.5 border-t border-b border-slate-200/80 dark:border-white/10 space-y-1.5 text-xs sm:text-sm">
                             <div className="flex justify-between">
                               <span className="text-slate-500 dark:text-slate-400 font-medium">
                                 {lang === 'en' ? 'Selected Table:' : lang === 'zh' ? '预订桌位：' : 'Bàn chọn:'}
@@ -911,20 +931,29 @@ export default function Home() {
                             <button
                               type="button"
                               onClick={() => router.push(`/table/${targetTableId}`)}
-                              className="w-full h-11 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center min-h-[44px]"
+                              className="w-full h-11 bg-[#3B82F6] hover:bg-blue-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center min-h-[44px]"
                             >
                               {lang === 'en' ? `GO TO TABLE ORDER (${tableNameStr})` : lang === 'zh' ? `进入桌位点餐 (${tableNameStr})` : `VÀO BÀN GỌI MÓN (${tableNameStr})`}
                             </button>
                           )}
 
-                          {canCancel && (
-                            <button
-                              type="button"
-                              onClick={() => handleCustomerCancelReservation(res._id)}
-                              className="w-full h-10 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-500 border border-rose-500/20 text-xs font-bold rounded-xl transition-all flex items-center justify-center cursor-pointer active:scale-95 min-h-[44px]"
-                            >
-                              {lang === 'en' ? 'CANCEL THIS RESERVATION' : lang === 'zh' ? '取消此预订' : 'HỦY ĐƠN ĐẶT BÀN NÀY'}
-                            </button>
+                          {canCancel && targetTableId && (
+                            <div className="space-y-2">
+                              <button
+                                type="button"
+                                onClick={() => handleCustomerArrive(res._id, targetTableId)}
+                                className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center min-h-[44px]"
+                              >
+                                {lang === 'en' ? `I HAVE ARRIVED - OPEN MENU (${tableNameStr})` : lang === 'zh' ? `我已到达 - 打开菜单 (${tableNameStr})` : `TÔI ĐÃ ĐẾN - VÀO MENU GỌI MÓN (${tableNameStr})`}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleCustomerCancelReservation(res._id)}
+                                className="w-full h-10 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-500 border border-rose-500/20 text-xs font-bold rounded-xl transition-all flex items-center justify-center cursor-pointer active:scale-95 min-h-[44px]"
+                              >
+                                {lang === 'en' ? 'CANCEL THIS RESERVATION' : lang === 'zh' ? '取消此预订' : 'HỦY ĐƠN ĐẶT BÀN NÀY'}
+                              </button>
+                            </div>
                           )}
                         </div>
                       );
@@ -945,7 +974,7 @@ export default function Home() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setBookingSuccess(null)}
-                className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs"
+                className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
               />
 
               <motion.div
@@ -953,7 +982,7 @@ export default function Home() {
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.95, opacity: 0, y: 15 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                className="relative w-full max-w-md rounded-2xl bg-white dark:bg-[#0F141F] border border-slate-200 dark:border-slate-800 p-6 sm:p-8 text-center space-y-6 shadow-2xl z-10 font-sans"
+                className="relative w-full max-w-md rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 p-6 sm:p-8 text-center space-y-6 shadow-2xl z-10 font-sans"
               >
                 <div className="space-y-2">
                   <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
@@ -965,31 +994,31 @@ export default function Home() {
                 </div>
 
                 {/* Card Info Container */}
-                <div className="space-y-2 text-xs sm:text-sm text-left p-3.5 rounded-xl bg-slate-50 dark:bg-[#161D2C] border border-slate-200/80 dark:border-slate-800">
-                  <div className="flex justify-between items-center px-3.5 py-2.5 rounded-lg bg-white dark:bg-[#0F141F] border border-slate-200/60 dark:border-slate-800">
+                <div className="space-y-2 text-xs sm:text-sm text-left p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-white/10">
+                  <div className="flex justify-between items-center px-3.5 py-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/10">
                     <span className="text-slate-500 dark:text-slate-400 font-bold">
                       {lang === 'en' ? 'Customer Name' : lang === 'zh' ? '顾客姓名' : 'Khách hàng'}
                     </span>
                     <span className="font-extrabold text-slate-900 dark:text-white">{bookingSuccess.customerName}</span>
                   </div>
 
-                  <div className="flex justify-between items-center px-3.5 py-2.5 rounded-lg bg-white dark:bg-[#0F141F] border border-slate-200/60 dark:border-slate-800">
+                  <div className="flex justify-between items-center px-3.5 py-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/10">
                     <span className="text-slate-500 dark:text-slate-400 font-bold">
                       {lang === 'en' ? 'Phone Number' : lang === 'zh' ? '联系电话' : 'Số điện thoại'}
                     </span>
-                    <span className="font-extrabold text-[#0284c7] dark:text-[#38BDF8]">{bookingSuccess.customerPhone}</span>
+                    <span className="font-extrabold text-[#3B82F6] dark:text-[#38BDF8]">{bookingSuccess.customerPhone}</span>
                   </div>
 
-                  <div className="flex justify-between items-center px-3.5 py-2.5 rounded-lg bg-sky-500/10 border border-sky-500/25">
-                    <span className="text-[#0284c7] dark:text-[#38BDF8] font-bold">
+                  <div className="flex justify-between items-center px-3.5 py-2.5 rounded-lg bg-blue-500/10 border border-blue-500/25">
+                    <span className="text-[#3B82F6] dark:text-[#38BDF8] font-bold">
                       {lang === 'en' ? 'Reserved Table' : lang === 'zh' ? '预订桌位' : 'Bàn giữ chỗ'}
                     </span>
-                    <span className="font-black text-[#0284c7] dark:text-[#38BDF8] tracking-wide">
+                    <span className="font-black text-[#3B82F6] dark:text-[#38BDF8] tracking-wide">
                       {formatTableName(bookingSuccess.tableId?.tableName, lang)}
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center px-3.5 py-2.5 rounded-lg bg-white dark:bg-[#0F141F] border border-slate-200/60 dark:border-slate-800">
+                  <div className="flex justify-between items-center px-3.5 py-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/10">
                     <span className="text-slate-500 dark:text-slate-400 font-bold">
                       {lang === 'en' ? 'Reservation Time' : lang === 'zh' ? '入座时间' : 'Thời gian nhận bàn'}
                     </span>
@@ -998,7 +1027,7 @@ export default function Home() {
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center px-3.5 py-2.5 rounded-lg bg-white dark:bg-[#0F141F] border border-slate-200/60 dark:border-slate-800">
+                  <div className="flex justify-between items-center px-3.5 py-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/10">
                     <span className="text-slate-500 dark:text-slate-400 font-bold">
                       {lang === 'en' ? 'Guest Count' : lang === 'zh' ? '顾客人数' : 'Số lượng khách'}
                     </span>
@@ -1011,7 +1040,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setBookingSuccess(null)}
-                  className="w-full h-11 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-extrabold text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center min-h-[44px]"
+                  className="w-full h-11 rounded-xl bg-[#3B82F6] hover:bg-blue-600 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center min-h-[44px]"
                 >
                   <span>{t.doneAndClose}</span>
                 </button>
@@ -1022,19 +1051,19 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-[#0F141F] border-t border-slate-200 dark:border-slate-800 mt-auto w-full">
+      <footer className="bg-white dark:bg-[#0B0F17] border-t border-slate-200 dark:border-white/10 mt-auto w-full">
         <div className="flex flex-col md:flex-row justify-between items-center w-full px-4 md:px-12 py-5 max-w-7xl mx-auto gap-4">
           <p className="text-xs text-slate-500 dark:text-slate-400 text-center md:text-left font-medium">
             © {new Date().getFullYear()} Kohi Coffee & Pastry. Smart Online Reservation & QR Solution.
           </p>
           <div className="flex gap-6">
-            <Link href="/privacy" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#0284c7] dark:hover:text-[#38BDF8] underline transition-colors">
+            <Link href="/privacy" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#3B82F6] dark:hover:text-[#38BDF8] underline transition-colors">
               {lang === 'en' ? 'Privacy Policy' : lang === 'zh' ? '隐私政策' : 'Chính sách bảo mật'}
             </Link>
-            <Link href="/terms" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#0284c7] dark:hover:text-[#38BDF8] underline transition-colors">
+            <Link href="/terms" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#3B82F6] dark:hover:text-[#38BDF8] underline transition-colors">
               {lang === 'en' ? 'Terms of Service' : lang === 'zh' ? '服务条款' : 'Điều khoản dịch vụ'}
             </Link>
-            <Link href="/contact" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#0284c7] dark:hover:text-[#38BDF8] underline transition-colors">
+            <Link href="/contact" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#3B82F6] dark:hover:text-[#38BDF8] underline transition-colors">
               {lang === 'en' ? 'Contact Us' : lang === 'zh' ? '联系我们' : 'Liên hệ chúng tôi'}
             </Link>
           </div>

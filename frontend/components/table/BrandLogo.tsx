@@ -23,10 +23,13 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ onClick }) => {
         />
       </div>
       <div>
-        <h1 className="text-lg sm:text-xl font-[800] text-[#000000] dark:text-[#FFFFFF] tracking-tight leading-none font-heading group-hover:text-[#38BDF8] transition-colors">
+        <h1
+          style={{ fontFamily: 'var(--font-pinyon), "Pinyon Script", cursive' }}
+          className="text-3xl sm:text-[34px] font-normal text-slate-900 dark:text-white tracking-wide leading-none group-hover:text-sky-400 transition-colors drop-shadow-xs -mb-0.5"
+        >
           Kohi
         </h1>
-        <p className="hidden sm:block text-[10px] font-[700] text-[#38BDF8] uppercase tracking-[0.05em] mt-0.5 font-sans">
+        <p className="hidden sm:block text-[9px] font-extrabold text-sky-500 dark:text-sky-400 uppercase tracking-[0.16em] mt-1 font-sans">
           COFFEE & PASTRY
         </p>
       </div>

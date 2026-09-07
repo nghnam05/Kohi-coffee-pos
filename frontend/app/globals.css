@@ -111,24 +111,24 @@
 }
 
 :root {
-  --background: #f9f9ff;
-  --foreground: #181c23;
-  --accent: #9b4000;
-  --primary: #0059b9;
+  --background: #0B0F17;
+  --foreground: #FFFFFF;
+  --accent: #F59E0B;
+  --primary: #3B82F6;
 }
 
 [data-theme="dark"],
 .dark {
   --background: #0B0F17;
-  --foreground: #F8FAFC;
-  --accent: #38BDF8;
-  --primary: #0084FF;
+  --foreground: #FFFFFF;
+  --accent: #F59E0B;
+  --primary: #3B82F6;
 }
 
 body {
   color: var(--text-primary, var(--foreground));
   background: var(--bg-primary, var(--background));
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Premium smooth custom scrollbar */
@@ -291,36 +291,74 @@ html.lenis body {
   transform: translateY(0) scale(1) !important;
 }
 
+/* ── Bento-Grid Glassmorphism & Card System ─────────────────────────────── */
+.glass-card,
+.bento-card {
+  background-color: rgba(15, 23, 42, 0.65) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+  transition: all 200ms ease;
+}
+
+.glass-card:hover,
+.bento-card:hover {
+  border-color: rgba(59, 130, 246, 0.35) !important;
+  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.15), 0 0 14px rgba(59, 130, 246, 0.08);
+}
+
+.glass-panel,
+.bento-panel {
+  background-color: rgba(11, 15, 23, 0.85) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.bento-cell {
+  background-color: rgba(30, 41, 59, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  transition: all 200ms ease;
+}
+
+.bento-cell:hover {
+  background-color: rgba(30, 41, 59, 0.7);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
 /* ── UIverse Outline Hover Button System ─────────────────────────────────── */
 .uiverse-btn {
   display: inline-flex;
   justify-content: center;
   align-items: center;
   gap: 10px;
-  background-color: var(--brand-primary, #3AA6FF);
-  outline: 3px solid var(--brand-primary, #3AA6FF);
+  background-color: var(--brand-primary, #3B82F6);
+  outline: 3px solid var(--brand-primary, #3B82F6);
   outline-offset: -3px;
   border-radius: var(--radius-md, 12px);
   border: none;
   color: #FFFFFF !important;
   font-weight: 700;
   cursor: pointer;
-  transition: background-color 400ms ease, color 400ms ease, border-color 400ms ease, outline-color 400ms ease, transform 150ms ease;
+  transition: background-color 250ms ease, color 250ms ease, border-color 250ms ease, outline-color 250ms ease, transform 150ms ease;
 }
 
 .uiverse-btn:hover:not(:disabled) {
   background-color: transparent !important;
-  color: var(--brand-primary, #3AA6FF) !important;
+  color: var(--brand-primary, #3B82F6) !important;
 }
 
 .uiverse-btn:hover:not(:disabled) svg path {
-  fill: var(--brand-primary, #3AA6FF) !important;
-  transition: fill 400ms ease;
+  fill: var(--brand-primary, #3B82F6) !important;
+  transition: fill 250ms ease;
 }
 
 .uiverse-btn:hover:not(:disabled) .material-symbols-outlined {
-  color: var(--brand-primary, #3AA6FF) !important;
-  transition: color 400ms ease;
+  color: var(--brand-primary, #3B82F6) !important;
+  transition: color 250ms ease;
 }
 
 /* ── UIverse Sun & Moon Theme Switcher ────────────────────────────────────── */

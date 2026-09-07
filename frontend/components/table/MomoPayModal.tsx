@@ -74,7 +74,7 @@ export const MomoPayModal: React.FC<MomoPayModalProps> = ({
       // 3. Play signature MoMo chime
       try {
         playMomoChime();
-      } catch (e) {}
+      } catch (e) { }
 
       toast.success('Thanh toán Ví MoMo thành công! Đơn hàng đã được xác nhận.');
 
@@ -117,7 +117,7 @@ export const MomoPayModal: React.FC<MomoPayModalProps> = ({
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.92, opacity: 0, y: 20 }}
           transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-          className="relative w-full max-w-md bg-white dark:bg-[#121620] border border-pink-500/30 rounded-3xl shadow-2xl z-10 overflow-hidden text-center"
+          className="relative w-full max-w-md bg-[#0F172A] border border-white/10 rounded-2xl shadow-2xl z-10 overflow-hidden text-center"
         >
           {/* Top Magenta Bar & MoMo Header */}
           <div className="bg-gradient-to-r from-[#A50064] via-[#D82D8B] to-[#A50064] p-5 text-white relative">

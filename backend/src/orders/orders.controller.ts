@@ -49,6 +49,37 @@ export class OrdersController {
     return this.ordersService.findOne(id);
   }
 
+  @Post('transfer-request')
+  async requestTransfer(
+    @Body() body: { fromTableId: string; toTableId: string; customerName?: string },
+  ): Promise<any> {
+    return this.ordersService.requestTableTransfer(body.fromTableId, body.toTableId, body.customerName);
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin', 'waiter', 'barista', 'staff')
+  @Get('transfer-requests')
+  async getPendingTransferRequests(): Promise<any[]> {
+    return this.ordersService.getPendingTransferRequests();
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin', 'waiter', 'barista', 'staff')
+  @Patch('approve-transfer/:requestId')
+  async approveTransfer(@Param('requestId') requestId: string): Promise<any> {
+    return this.ordersService.approveTableTransfer(requestId);
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin', 'waiter', 'barista', 'staff')
+  @Patch('reject-transfer/:requestId')
+  async rejectTransfer(
+    @Param('requestId') requestId: string,
+    @Body('reason') reason?: string,
+  ): Promise<any> {
+    return this.ordersService.rejectTableTransfer(requestId, reason);
+  }
+
   @Patch('transfer-table')
   async transferTable(
     @Body('fromTableId') fromTableId: string,

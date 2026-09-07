@@ -103,12 +103,12 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 15 }}
           transition={{ type: 'spring', stiffness: 380, damping: 26 }}
-          className="relative w-full max-w-sm sm:max-w-md bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl z-10 overflow-hidden text-slate-900 dark:text-slate-100 my-auto"
+          className="relative w-full max-w-sm sm:max-w-md bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl z-10 overflow-hidden text-slate-900 dark:text-slate-100 my-auto"
         >
           {/* Header */}
-          <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-white/10 flex items-center justify-between bg-white dark:bg-[#0F172A]">
             <div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-[#0284c7] dark:text-[#38BDF8] block">
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#0284c7] dark:text-sky-400 block">
                 Chuyển khoản Ngân hàng (VietQR)
               </span>
               <h3 className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white">
@@ -117,7 +117,7 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-slate-200/60 dark:bg-slate-800 hover:bg-slate-200 text-slate-500 dark:text-slate-400 flex items-center justify-center transition-all cursor-pointer"
+              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer"
             >
               ✕
             </button>
@@ -126,22 +126,22 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
           {/* Body */}
           <div className="p-4 sm:p-5 space-y-4">
             {/* Amount Banner */}
-            <div className="p-3.5 bg-[#0284c7]/10 dark:bg-[#38BDF8]/10 border border-[#0284c7]/20 dark:border-[#38BDF8]/20 rounded-2xl flex items-center justify-between">
+            <div className="p-3.5 bg-blue-500/15 border border-blue-500/30 rounded-xl flex items-center justify-between">
               <div>
                 <span className="text-[10.5px] font-extrabold text-slate-500 dark:text-slate-400 block uppercase">
                   Tổng tiền cần thanh toán
                 </span>
-                <span className="text-xl sm:text-2xl font-black text-[#0284c7] dark:text-[#38BDF8]">
+                <span className="text-xl sm:text-2xl font-black text-[#0284c7] dark:text-sky-400">
                   {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalAmount)}
                 </span>
               </div>
-              <span className="px-2.5 py-1 bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 font-black text-xs rounded-xl shadow-xs">
+              <span className="px-2.5 py-1 bg-[#3B82F6] text-white font-black text-xs rounded-xl shadow-xs">
                 {tableName}
               </span>
             </div>
 
             {/* QR Code Container */}
-            <div className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-center shadow-xs space-y-2">
+            <div className="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-white/10 text-center shadow-xs space-y-2">
               <div className="relative inline-block bg-white p-2 rounded-xl">
                 <img
                   src={qrUrl}
@@ -154,30 +154,30 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
                   }}
                 />
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                 Quét mã QR bằng ứng dụng ngân hàng bất kỳ để tự động điền số tiền và nội dung
               </p>
             </div>
 
             {/* Transfer Details Card */}
-            <div className="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-2.5 text-xs">
-              <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800 pb-2">
+            <div className="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-white/10 space-y-2.5 text-xs">
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">Ngân hàng</span>
-                <span className="font-extrabold text-slate-900 dark:text-slate-100">{bankName}</span>
+                <span className="font-extrabold text-slate-900 dark:text-white">{bankName}</span>
               </div>
 
-              <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800 pb-2">
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">Chủ tài khoản</span>
-                <span className="font-extrabold text-slate-900 dark:text-slate-100 uppercase">{accountName}</span>
+                <span className="font-extrabold text-slate-900 dark:text-white uppercase">{accountName}</span>
               </div>
 
-              <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800 pb-2">
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">Số tài khoản</span>
                 <div className="flex items-center gap-2">
                   <span className="font-mono font-black text-slate-900 dark:text-white">{accountNo}</span>
                   <button
                     onClick={() => handleCopy(accountNo, 'Số tài khoản')}
-                    className="px-2 py-0.5 bg-slate-200 dark:bg-slate-800 hover:bg-[#0284c7] hover:text-white dark:hover:bg-[#38BDF8] dark:hover:text-slate-950 font-bold rounded-lg text-[10px] transition-all cursor-pointer"
+                    className="px-2 py-0.5 bg-slate-200 hover:bg-[#3B82F6] dark:bg-slate-800 dark:hover:bg-[#3B82F6] text-slate-700 hover:text-white dark:text-slate-300 font-bold rounded-lg text-[10px] transition-all cursor-pointer"
                   >
                     {copiedField === 'Số tài khoản' ? 'Đã chép' : 'Sao chép'}
                   </button>
@@ -187,12 +187,12 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
               <div className="flex items-center justify-between pt-0.5">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">Nội dung CK</span>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-black text-[#0284c7] dark:text-[#38BDF8] uppercase">
+                  <span className="font-mono font-black text-[#0284c7] dark:text-sky-400 uppercase">
                     {transferMemo}
                   </span>
                   <button
                     onClick={() => handleCopy(transferMemo, 'Nội dung')}
-                    className="px-2 py-0.5 bg-slate-200 dark:bg-slate-800 hover:bg-[#0284c7] hover:text-white dark:hover:bg-[#38BDF8] dark:hover:text-slate-950 font-bold rounded-lg text-[10px] transition-all cursor-pointer"
+                    className="px-2 py-0.5 bg-slate-200 hover:bg-[#3B82F6] dark:bg-slate-800 dark:hover:bg-[#3B82F6] text-slate-700 hover:text-white dark:text-slate-300 font-bold rounded-lg text-[10px] transition-all cursor-pointer"
                   >
                     {copiedField === 'Nội dung' ? 'Đã chép' : 'Sao chép'}
                   </button>
@@ -202,7 +202,7 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
 
             {/* Waiting Status Bar */}
             <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-center">
-              <span className="text-[11px] font-extrabold text-amber-700 dark:text-amber-400 flex items-center justify-center gap-2">
+              <span className="text-[11px] font-extrabold text-amber-500 dark:text-amber-400 flex items-center justify-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
                 Đang chờ Nhân viên phục vụ xác nhận tiền về...
               </span>
@@ -212,10 +212,10 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
             <button
               onClick={handleNotifyPayment}
               disabled={isProcessing || hasNotified}
-              className={`w-full py-3 text-white font-extrabold rounded-2xl text-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 ${
+              className={`w-full py-3 text-white font-extrabold rounded-xl text-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 ${
                 hasNotified
                   ? 'bg-amber-500 hover:bg-amber-600 shadow-xs'
-                  : 'bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50'
+                  : 'bg-[#3B82F6] hover:bg-blue-600 disabled:opacity-50'
               }`}
             >
               {isProcessing ? (

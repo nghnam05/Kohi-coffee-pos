@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { io, Socket } from 'socket.io-client';
 import { playAlertPing } from '../../utils/sound';
 import { toast } from 'react-hot-toast';
+import { translateText } from '@/utils/translateService';
 
 import { LeftSidebar } from '@/components/table/LeftSidebar';
 import { Header } from '@/components/table/Header';
@@ -241,6 +242,86 @@ const formatPrice = (amount: number, lang: Lang): string => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Master Category Translations & Normalization
+// ─────────────────────────────────────────────────────────────────────────────
+function normalizeCategoryKey(key: string): string {
+  if (!key) return '';
+  return key
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'd')
+    .replace(/[^a-z0-9]/g, '');
+}
+
+const CATEGORY_TRANSLATIONS: Record<string, Record<Lang, string>> = {
+  // Cà Phê / Coffee
+  'caphe': { vi: 'Cà Phê', en: 'Coffee', zh: '特调咖啡' },
+  'coffee': { vi: 'Cà Phê', en: 'Coffee', zh: '特调咖啡' },
+  'caphespecialty': { vi: 'Cà Phê Specialty', en: 'Specialty Coffee', zh: '精品咖啡 Specialty' },
+  'specialtycoffee': { vi: 'Cà Phê Specialty', en: 'Specialty Coffee', zh: '精品咖啡 Specialty' },
+  'caphemay': { vi: 'Cà Phê Máy', en: 'Espresso Bar', zh: '意式现磨咖啡' },
+  'espresso': { vi: 'Espresso', en: 'Espresso', zh: '浓缩咖啡' },
+  'caphetruyenthong': { vi: 'Cà Phê Truyền Thống', en: 'Traditional Coffee', zh: '传统滴漏咖啡' },
+
+  // Bánh Ngọt / Bakery & Pastry
+  'banhngot': { vi: 'Bánh Ngọt', en: 'Bakery & Pastry', zh: '手工烘焙糕点' },
+  'bakery': { vi: 'Bánh Ngọt', en: 'Bakery & Pastry', zh: '手工烘焙糕点' },
+  'pastry': { vi: 'Bánh Ngọt', en: 'Bakery & Pastry', zh: '手工烘焙糕点' },
+  'banhngotpastry': { vi: 'Bánh Ngọt & Pastry', en: 'Bakery & Pastry', zh: '手工烘焙糕点' },
+  'banhngotthucong': { vi: 'Bánh Ngọt Thủ Công', en: 'Handcrafted Pastry', zh: '精致手工甜点' },
+  'dessert': { vi: 'Tráng Miệng & Bánh', en: 'Desserts & Cakes', zh: '精选甜点' },
+  'trangmieng': { vi: 'Tráng Miệng & Bánh', en: 'Desserts & Cakes', zh: '精选甜点' },
+  'banh': { vi: 'Bánh Ngọt', en: 'Bakery & Pastry', zh: '精选糕点' },
+
+  // Đồ Ăn Nhẹ / Snacks & Light Bites
+  'doannhe': { vi: 'Đồ Ăn Nhẹ', en: 'Snacks & Light Bites', zh: '休闲小食' },
+  'snacks': { vi: 'Đồ Ăn Nhẹ', en: 'Snacks & Light Bites', zh: '休闲小食' },
+  'snack': { vi: 'Đồ Ăn Nhẹ', en: 'Snacks & Light Bites', zh: '休闲小食' },
+  'doan': { vi: 'Đồ Ăn', en: 'Food & Meals', zh: '美味简餐' },
+  'food': { vi: 'Đồ Ăn', en: 'Food & Meals', zh: '美味简餐' },
+  'anvat': { vi: 'Ăn Vặt', en: 'Snacks & Finger Food', zh: '风味小食' },
+
+  // Trà & Trái Cây / Fruit Tea
+  'tratraicay': { vi: 'Trà Trái Cây', en: 'Fruit Tea', zh: '鲜果茶类' },
+  'fruittea': { vi: 'Trà Trái Cây', en: 'Fruit Tea', zh: '鲜果茶类' },
+  'tratraicayfresh': { vi: 'Trà & Trái Cây', en: 'Fruit Tea & Fresh Tea', zh: '水果茶 & 鲜茶' },
+  'tra': { vi: 'Trà Thảo Mộc', en: 'Herbal Tea & Fresh Tea', zh: '特选茗茶' },
+  'tea': { vi: 'Trà Thảo Mộc', en: 'Herbal Tea & Fresh Tea', zh: '特选茗茶' },
+  'trahoaqua': { vi: 'Trà Hoa Quả', en: 'Fresh Fruit Tea', zh: '新鲜水果茶' },
+
+  // Trà Sữa / Milk Tea
+  'trasua': { vi: 'Trà Sữa', en: 'Milk Tea', zh: '经典奶茶' },
+  'milktea': { vi: 'Trà Sữa', en: 'Milk Tea', zh: '经典奶茶' },
+  'bubbletea': { vi: 'Trà Sữa Trân Châu', en: 'Bubble Milk Tea', zh: '珍珠奶茶' },
+
+  // Đá Xay / Ice Blended
+  'daxay': { vi: 'Đá Xay', en: 'Ice Blended', zh: '特调冰沙' },
+  'iceblended': { vi: 'Đá Xay', en: 'Ice Blended', zh: '特调冰沙' },
+  'frappe': { vi: 'Đá Xay Frappe', en: 'Frappe', zh: '法布奇诺冰沙' },
+  'daxayanvat': { vi: 'Đá Xay & Ăn Vặt', en: 'Ice Blended & Snacks', zh: '冰沙 & 休闲小食' },
+
+  // Nước Ép & Sinh Tố / Juice & Smoothie
+  'nuocep': { vi: 'Nước Ép Tươi', en: 'Fresh Juice', zh: '鲜榨果汁' },
+  'juice': { vi: 'Nước Ép Tươi', en: 'Fresh Juice', zh: '鲜榨果汁' },
+  'freshjuice': { vi: 'Nước Ép Tươi', en: 'Fresh Juice', zh: '鲜榨果汁' },
+  'sinhto': { vi: 'Sinh Tố', en: 'Smoothie', zh: '新鲜冰昔' },
+  'smoothie': { vi: 'Sinh Tố', en: 'Smoothie', zh: '新鲜冰昔' },
+
+  // Topping & Món thêm
+  'topping': { vi: 'Topping & Thêm', en: 'Toppings & Add-ons', zh: '加料 & 配料' },
+  'toppings': { vi: 'Topping & Thêm', en: 'Toppings & Add-ons', zh: '加料 & 配料' },
+  'addon': { vi: 'Món Thêm', en: 'Add-ons', zh: '加料配料' },
+
+  // Khác / Other
+  'khac': { vi: 'Món Khác', en: 'Other Specials', zh: '其他特色' },
+  'other': { vi: 'Món Khác', en: 'Other Specials', zh: '其他特色' },
+  'others': { vi: 'Món Khác', en: 'Other Specials', zh: '其他特色' },
+};
+
 export default function TableMenuPage() {
   const params = useParams();
   const router = useRouter();
@@ -251,6 +332,15 @@ export default function TableMenuPage() {
   const [mounted, setMounted] = useState(false);
 
   const [lang, setLang] = useState<Lang>('vi');
+  const [dynamicCategoryMap, setDynamicCategoryMap] = useState<Record<string, string>>({});
+
+  const handleSetLang = useCallback((newLang: Lang) => {
+    setLang(newLang);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('pho-beyond-lang', newLang);
+    }
+  }, []);
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -376,16 +466,42 @@ export default function TableMenuPage() {
   const t = DICTIONARY[lang];
   const isDark = resolvedTheme === 'dark';
 
-  const translateCategory = useCallback((cat: string) => {
-    const categoryMap = (t as any).categories;
-    if (!categoryMap) return cat;
-    return categoryMap[cat] || cat;
-  }, [t]);
+  const translateCategory = useCallback((cat: string): string => {
+    if (!cat) return '';
+
+    // 1. Check normalized key in master category dictionary (Instant 0ms match)
+    const normKey = normalizeCategoryKey(cat);
+    const masterMatch = CATEGORY_TRANSLATIONS[normKey];
+    if (masterMatch && masterMatch[lang]) {
+      return masterMatch[lang];
+    }
+
+    // 2. Check localized DICTIONARY categories map
+    const categoryMap = (t as any)?.categories;
+    if (categoryMap && categoryMap[cat]) {
+      return categoryMap[cat];
+    }
+
+    // 3. Check dynamic online translation cache
+    const cacheKey = `${lang}_${normKey}`;
+    if (dynamicCategoryMap[cacheKey]) {
+      return dynamicCategoryMap[cacheKey];
+    }
+
+    // 4. Default fallback: original category name
+    return cat;
+  }, [lang, t, dynamicCategoryMap]);
 
   useEffect(() => {
     setMounted(true);
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      setViewMode('list');
+    if (typeof window !== 'undefined') {
+      const savedLang = localStorage.getItem('pho-beyond-lang') as Lang;
+      if (savedLang && (savedLang === 'vi' || savedLang === 'en' || savedLang === 'zh')) {
+        setLang(savedLang);
+      }
+      if (window.innerWidth < 768) {
+        setViewMode('list');
+      }
     }
   }, []);
 
@@ -529,6 +645,24 @@ export default function TableMenuPage() {
           },
           ...prev,
         ]);
+      }
+    });
+
+    socketRef.current.on('tableTransferApproved', ({ fromTableId: evtFromId, toTableId: evtToId, toTableName: evtToName }: any) => {
+      const currentTableId = typeof tableId === 'string' ? tableId : (tableId as any)?._id;
+      if (evtFromId === currentTableId) {
+        try { playAlertPing(); } catch {}
+        toast.success(`Yêu cầu chuyển sang ${evtToName || 'bàn mới'} đã được nhân viên duyệt! Đang chuyển sang bàn mới...`);
+        setTimeout(() => {
+          router.push(`/table/${evtToId}`);
+        }, 1500);
+      }
+    });
+
+    socketRef.current.on('tableTransferRejected', ({ fromTableId: evtFromId, reason }: any) => {
+      const currentTableId = typeof tableId === 'string' ? tableId : (tableId as any)?._id;
+      if (evtFromId === currentTableId) {
+        toast.error(reason || 'Yêu cầu chuyển bàn đã bị nhân viên từ chối.');
       }
     });
 
@@ -703,9 +837,36 @@ export default function TableMenuPage() {
     fetchTables();
   }, [isTransferModalOpen, tableId]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeCategory, searchQuery]);
+  const handleTransferTable = async () => {
+    if (!selectedTransferTableId || isTransferring) return;
+    setIsTransferring(true);
+    try {
+      const savedName = localStorage.getItem(`chika_name_${tableId}`);
+      if (savedName) {
+        localStorage.setItem(`chika_name_${selectedTransferTableId}`, savedName);
+      }
+
+      const res = await fetch(`${API_BASE}/orders/transfer-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromTableId: tableId,
+          toTableId: selectedTransferTableId,
+          customerName: customerName || savedName || 'Khách tại bàn',
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Không thể gửi yêu cầu chuyển bàn.');
+      }
+      toast.success(data.message || 'Yêu cầu chuyển bàn đã được gửi đến nhân viên phục vụ!');
+      setIsTransferModalOpen(false);
+    } catch (err: any) {
+      toast.error(err.message || 'Lỗi gửi yêu cầu chuyển bàn.');
+    } finally {
+      setIsTransferring(false);
+    }
+  };
 
   const handleCallStaff = async () => {
     if (callStaffCooldown > 0 || isCallingStaff) return;
@@ -731,49 +892,6 @@ export default function TableMenuPage() {
       toast(err instanceof Error ? err.message : 'Lỗi gửi yêu cầu.', { icon: null });
     } finally {
       setIsCallingStaff(false);
-    }
-  };
-
-  const handleTransferTable = async () => {
-    if (!selectedTransferTableId || isTransferring) return;
-    setIsTransferring(true);
-    try {
-      // 1. Chuyển tên khách hàng lưu trong localStorage từ bàn cũ sang bàn mới
-      const savedName = localStorage.getItem(`chika_name_${tableId}`);
-      if (savedName) {
-        localStorage.setItem(`chika_name_${selectedTransferTableId}`, savedName);
-      }
-
-      // 2. Gọi API backend chuyển đơn hàng & giỏ hàng từ bàn cũ sang bàn mới
-      const res = await fetch(`${API_BASE}/orders/transfer-table`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fromTableId: tableId,
-          toTableId: selectedTransferTableId,
-        }),
-      });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || 'Không thể chuyển bàn ăn.');
-      }
-
-      // 3. Giữ nguyên giỏ hàng đang chọn và đồng bộ qua socket sang bàn mới
-      if (socketRef.current && cart.length > 0) {
-        const cName = savedName || customerName || 'Khách';
-        socketRef.current.emit('updateGroupCart', {
-          tableId: selectedTransferTableId,
-          items: cart,
-          senderName: cName,
-        });
-      }
-
-      setIsTransferModalOpen(false);
-      router.push(`/table/${selectedTransferTableId}`);
-    } catch (err) {
-      toast(err instanceof Error ? err.message : 'Lỗi khi chuyển bàn.', { icon: null });
-    } finally {
-      setIsTransferring(false);
     }
   };
 
@@ -1145,13 +1263,42 @@ export default function TableMenuPage() {
     return combined.filter(Boolean);
   }, [foods, dbCategories]);
 
+  // Background dynamic translation for custom/unmapped categories
+  useEffect(() => {
+    if (lang === 'vi' || categories.length === 0) return;
+
+    categories.forEach(async (cat) => {
+      const normKey = normalizeCategoryKey(cat);
+      if (!CATEGORY_TRANSLATIONS[normKey]) {
+        const cacheKey = `${lang}_${normKey}`;
+        if (!dynamicCategoryMap[cacheKey]) {
+          try {
+            const translated = await translateText(cat, lang, 'vi');
+            if (translated && translated !== cat) {
+              setDynamicCategoryMap((prev) => ({ ...prev, [cacheKey]: translated }));
+            }
+          } catch {}
+        }
+      }
+    });
+  }, [categories, lang, dynamicCategoryMap]);
+
   const filteredFoods = useMemo(() => {
-    return foods.filter(
-      (f) =>
-        (!activeCategory || f.category === activeCategory) &&
-        f.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [foods, activeCategory, searchQuery]);
+    const q = searchQuery.trim().toLowerCase();
+    return foods.filter((f) => {
+      const matchesCategory = !activeCategory || f.category === activeCategory;
+      if (!q) return matchesCategory;
+
+      const translatedCat = translateCategory(f.category).toLowerCase();
+      const matchesSearch =
+        f.name.toLowerCase().includes(q) ||
+        f.category.toLowerCase().includes(q) ||
+        translatedCat.includes(q) ||
+        (f.description && f.description.toLowerCase().includes(q));
+
+      return matchesCategory && matchesSearch;
+    });
+  }, [foods, activeCategory, searchQuery, translateCategory]);
 
   const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
   const totalAmount = cart.reduce((sum, item) => sum + (item.unitPrice ?? item.food.price) * item.quantity, 0);
@@ -1240,7 +1387,7 @@ export default function TableMenuPage() {
         isDark={isDark}
         setTheme={setTheme}
         lang={lang}
-        setLang={setLang}
+        setLang={handleSetLang}
         handleOpenOrderHistory={handleOpenOrderHistory}
         activeOrders={activeOrders}
         onOpenQRModal={() => setIsQRModalOpen(true)}
@@ -1250,7 +1397,7 @@ export default function TableMenuPage() {
         unreadNotificationCount={unreadNotificationCount}
       />
 
-      <div className="min-h-screen w-full max-w-full overflow-x-hidden flex flex-col md:flex-row md:h-screen md:overflow-hidden bg-[#FFFFFF] dark:bg-[#090D16] text-[var(--text-primary)] font-sans antialiased selection:bg-[#3AA6FF] selection:text-white">
+      <div className="min-h-screen w-full max-w-full overflow-x-hidden flex flex-col md:flex-row md:h-screen md:overflow-hidden bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-white font-sans antialiased selection:bg-[#3B82F6] selection:text-white transition-colors duration-200">
         {/* Left Sidebar (Desktop/Tablet Column 1) */}
         <LeftSidebar
           isLoading={isLoading}
@@ -1267,7 +1414,7 @@ export default function TableMenuPage() {
           isDark={isDark}
           setTheme={setTheme}
           lang={lang}
-          setLang={setLang}
+          setLang={handleSetLang}
           setIsTransferModalOpen={setIsTransferModalOpen}
           isAiChatOpen={isAiChatOpen}
           setIsAiChatOpen={setIsAiChatOpen}
@@ -1279,12 +1426,12 @@ export default function TableMenuPage() {
         {/* Main Catalog View (Desktop/Tablet Column 2) */}
         <main
           data-lenis-prevent
-          className="flex-1 w-full min-w-0 md:h-full md:overflow-y-auto scrollbar-none bg-[#FFFFFF] dark:bg-[#090D16] text-[var(--text-primary)] relative pt-16 sm:pt-18 md:pt-0 pb-24 md:pb-12 transition-colors"
+          className="flex-1 w-full min-w-0 md:h-full md:overflow-y-auto scrollbar-none bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-white relative pt-16 sm:pt-18 md:pt-0 pb-24 md:pb-12 transition-colors duration-200"
         >
           <div
             className="absolute inset-0 pointer-events-none opacity-[0.03]"
             style={{
-              backgroundImage: 'radial-gradient(var(--brand-primary) 1px, transparent 1px)',
+              backgroundImage: 'radial-gradient(#3B82F6 1px, transparent 1px)',
               backgroundSize: '24px 24px',
             }}
           />
@@ -1302,13 +1449,13 @@ export default function TableMenuPage() {
 
           <div className="px-4 md:px-6">
             {/* Mobile Category Horizontal Scroll Bar */}
-            <div className="-mx-4 px-4 flex md:hidden gap-2 overflow-x-auto pb-3 mb-3.5 scrollbar-none border-b border-[var(--border-color)] flex-shrink-0">
+            <div className="-mx-4 px-4 flex md:hidden gap-2 overflow-x-auto pb-3 mb-3.5 scrollbar-none border-b border-slate-200 dark:border-white/10 flex-shrink-0">
               <button
                 onClick={() => setActiveCategory('')}
                 className={`px-4 py-2 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 ${
                   activeCategory === ''
-                    ? 'bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] shadow-[0_4px_12px_rgba(0,132,255,0.3)]'
-                    : 'bg-[var(--bg-card)] text-[var(--text-secondary)] border border-[var(--border-color)] hover:text-[var(--text-primary)]'
+                    ? 'bg-[#3B82F6] text-white shadow-[0_4px_14px_rgba(59,130,246,0.35)]'
+                    : 'bg-white dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white shadow-xs'
                 }`}
               >
                 {lang === 'en' ? 'All' : lang === 'zh' ? '全部' : 'Tất cả'}
@@ -1319,8 +1466,8 @@ export default function TableMenuPage() {
                   onClick={() => setActiveCategory(cat)}
                   className={`px-4 py-2 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 ${
                     activeCategory === cat
-                      ? 'bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] shadow-[0_4px_12px_rgba(0,132,255,0.3)]'
-                      : 'bg-[var(--bg-card)] text-[var(--text-secondary)] border border-[var(--border-color)] hover:text-[var(--text-primary)]'
+                      ? 'bg-[#3B82F6] text-white shadow-[0_4px_14px_rgba(59,130,246,0.35)]'
+                      : 'bg-white dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white shadow-xs'
                   }`}
                 >
                   {translateCategory(cat)}
@@ -1331,7 +1478,7 @@ export default function TableMenuPage() {
             {/* Mobile Search Bar & View Mode Toggle Row */}
             <div className="flex items-center gap-2 mb-4 md:hidden flex-shrink-0">
               <div className="relative flex-1">
-                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] text-lg pointer-events-none">
+                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">
                   search
                 </span>
                 <input
@@ -1339,18 +1486,18 @@ export default function TableMenuPage() {
                   placeholder={t.searchPlaceholder}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl py-2.5 pl-10 pr-3.5 text-[13.5px] font-normal text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)] shadow-2xs font-sans placeholder-[var(--text-tertiary)] transition-colors"
+                  className="w-full bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl py-2.5 pl-10 pr-3.5 text-[13.5px] font-normal text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 shadow-xs font-sans placeholder-slate-400 transition-colors"
                 />
               </div>
 
               {/* Mobile View Mode Toggle (Grid/List) */}
-              <div className="bg-[var(--bg-card)] text-[var(--text-primary)] rounded-xl p-1 border border-[var(--border-color)] shadow-2xs flex items-center shrink-0">
+              <div className="bg-white dark:bg-slate-900/80 text-slate-700 dark:text-white rounded-xl p-1 border border-slate-200 dark:border-white/10 shadow-xs flex items-center shrink-0">
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-1.5 rounded-lg transition-colors flex items-center justify-center cursor-pointer ${
                     viewMode === 'grid'
-                      ? 'bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] shadow-2xs font-bold'
-                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                      ? 'bg-[#3B82F6] text-white shadow-2xs font-bold'
+                      : 'text-slate-400 hover:text-slate-800 dark:hover:text-white'
                   }`}
                   title="Dạng lưới"
                 >
@@ -1360,8 +1507,8 @@ export default function TableMenuPage() {
                   onClick={() => setViewMode('list')}
                   className={`p-1.5 rounded-lg transition-colors flex items-center justify-center cursor-pointer ${
                     viewMode === 'list'
-                      ? 'bg-[var(--brand-primary)] text-[var(--brand-primary-fg)] shadow-2xs font-bold'
-                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                      ? 'bg-[#3B82F6] text-white shadow-2xs font-bold'
+                      : 'text-slate-400 hover:text-slate-800 dark:hover:text-white'
                   }`}
                   title="Dạng danh sách"
                 >
@@ -1382,7 +1529,7 @@ export default function TableMenuPage() {
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
                   <div
                     key={i}
-                    className="bg-[var(--bg-card)] rounded-[var(--radius-lg)] h-64 animate-pulse border border-[var(--border-color)]"
+                    className="bg-slate-200/80 dark:bg-slate-900/60 rounded-2xl h-64 animate-pulse border border-slate-200 dark:border-white/10"
                   />
                 ))}
               </div>

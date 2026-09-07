@@ -1,16 +1,18 @@
 import {
-  Injectable, NotFoundException, BadRequestException, ConflictException,
+  Injectable, NotFoundException, BadRequestException, ConflictException, Optional,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, isValidObjectId } from 'mongoose';
 import { Attendance, AttendanceDocument } from './schemas/attendance.schema.js';
+import { User, UserDocument } from '../users/schemas/user.schema.js';
 import { OrdersGateway } from '../orders/orders.gateway.js';
 
 @Injectable()
 export class AttendanceService {
   constructor(
     @InjectModel(Attendance.name) private readonly attendanceModel: Model<AttendanceDocument>,
-    private readonly ordersGateway: OrdersGateway,
+    @Optional() @InjectModel(User.name) private readonly userModel?: Model<UserDocument>,
+    private readonly ordersGateway?: OrdersGateway,
   ) {}
 
   /** Nhân viên bấm bắt đầu ca */
@@ -19,25 +21,51 @@ export class AttendanceService {
       throw new BadRequestException('ID người dùng không hợp lệ.');
     }
     const now = new Date();
-    // Use local date parts to build timezone-safe range (avoids UTC midnight boundary issues)
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
     const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
     const dateOnly = startOfDay;
 
-    // Auto calculate shift if not provided or invalid
-    let shift = 'morning';
-    if (requestedShift && ['morning', 'afternoon', 'evening'].includes(requestedShift)) {
-      shift = requestedShift;
+    // ⚡ Auto calculate shift based on current actual time
+    let currentActualShift = 'morning';
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+    const totalMinutes = hour * 60 + minute;
+
+    // Ca Sáng: 06:00 - 12:00 (mở check-in từ 05:45 đến 12:00)
+    // Ca Chiều: 12:00 - 18:00 (mở check-in từ 11:45 đến 18:00)
+    // Ca Tối: 18:00 - 23:00 (mở check-in từ 17:45 đến 23:00)
+    if (totalMinutes >= 345 && totalMinutes < 720) {
+      currentActualShift = 'morning';
+    } else if (totalMinutes >= 705 && totalMinutes < 1080) {
+      currentActualShift = 'afternoon';
+    } else if (totalMinutes >= 1065 && totalMinutes <= 1380) {
+      currentActualShift = 'evening';
     } else {
-      const hour = now.getHours();
-      if (hour >= 5 && hour < 12) {
-        shift = 'morning';
-      } else if (hour >= 12 && hour < 18) {
-        shift = 'afternoon';
-      } else {
-        shift = 'evening';
+      currentActualShift = 'outside';
+    }
+
+    // ⚡ Kiểm tra ca được phân công (assignedShift) của nhân viên trong CSDL
+    if (this.userModel) {
+      const user = await this.userModel.findById(userId).lean().exec();
+      if (user && user.assignedShift) {
+        const assigned = user.assignedShift;
+        const shiftLabels: Record<string, string> = {
+          morning: 'Ca Sáng (06:00 - 12:00)',
+          afternoon: 'Ca Chiều (12:00 - 18:00)',
+          evening: 'Ca Tối (18:00 - 23:00)',
+        };
+        if (currentActualShift === 'outside' || assigned !== currentActualShift) {
+          const currentTimeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+          throw new BadRequestException(
+            `Bạn được phân công ${shiftLabels[assigned] || assigned}. Hiện tại là ${currentTimeStr}, không nằm trong khung giờ ca làm việc của bạn nên hệ thống khóa tính năng điểm danh.`,
+          );
+        }
       }
     }
+
+    const shift = requestedShift && ['morning', 'afternoon', 'evening'].includes(requestedShift)
+      ? requestedShift
+      : currentActualShift;
 
     // Kiểm tra đã chấm công hôm nay chưa – dùng range query để tránh lỗi timezone
     const existing = await this.attendanceModel.findOne({

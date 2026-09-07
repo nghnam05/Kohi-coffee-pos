@@ -70,19 +70,19 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <>
       {/* ── Mobile Top App Bar ──────────────────────────────────────────────── */}
-      <header className="fixed top-0 left-0 right-0 z-40 h-16 px-4 bg-[var(--bg-primary)]/95 backdrop-blur-md border-b border-[var(--border-color)] flex justify-between items-center md:hidden shadow-xs transition-colors">
+      <header className="fixed top-0 left-0 right-0 z-40 h-16 px-4 bg-white/90 dark:bg-[#0B0F17]/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 flex justify-between items-center md:hidden shadow-xs transition-colors">
         <BrandLogo />
         <div className="flex items-center gap-2">
           {/* Notification Button */}
           <button
             type="button"
             onClick={onOpenNotifications || handleOpenOrderHistory}
-            className="relative w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 hover:text-[#0284c7] dark:hover:text-[#38BDF8] flex items-center justify-center shadow-xs active:scale-95 transition-all cursor-pointer"
+            className="relative w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 flex items-center justify-center shadow-xs active:scale-95 transition-all cursor-pointer"
             title="Xem danh sách thông báo"
           >
             <span className="material-symbols-outlined text-xl">notifications</span>
             {unreadNotificationCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-black bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 rounded-full shadow-xs leading-none animate-pulse">
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-black bg-[#3B82F6] text-white rounded-full shadow-xs leading-none animate-pulse">
                 {unreadNotificationCount}
               </span>
             )}
@@ -92,10 +92,10 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={togglePopup}
-            className={`relative w-10 h-10 rounded-2xl border flex items-center justify-center shadow-xs active:scale-95 transition-all cursor-pointer ${
+            className={`relative w-10 h-10 rounded-xl border flex items-center justify-center shadow-xs active:scale-95 transition-all cursor-pointer ${
               isFloatingPopupOpen
-                ? 'bg-[#0284c7] text-white border-[#0284c7] shadow-sky-500/30'
-                : 'bg-slate-100 dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 hover:text-[#0284c7] dark:hover:text-[#38BDF8]'
+                ? 'bg-[#3B82F6] text-white border-[#3B82F6] shadow-blue-500/30'
+                : 'bg-slate-100 dark:bg-slate-900/80 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400'
             }`}
             title="Danh mục tùy chọn"
           >
@@ -105,7 +105,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Notification Dot Badge */}
             {!isFloatingPopupOpen && (totalQuantity > 0 || activeOrders.length > 0) && (
-              <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900" />
+              <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-rose-500 rounded-full border-2 border-white dark:border-[#0B0F17]" />
             )}
           </button>
         </div>
@@ -121,185 +121,210 @@ export const Header: React.FC<HeaderProps> = ({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closePopup}
-              className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-xs md:hidden"
+              className="fixed inset-0 z-40 bg-black/75 backdrop-blur-xs md:hidden"
             />
 
-            {/* Bottom Sheet Container (Solid Background for Ultra Sharp Contrast) */}
+            {/* Bottom Sheet Container (Bento Grid Dark Theme) */}
             <motion.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 26, stiffness: 300 }}
-              className="fixed inset-x-0 bottom-0 z-50 bg-white dark:bg-[#0F172A] border-t border-slate-200 dark:border-slate-800 rounded-t-[32px] p-5 pt-3 shadow-[0_-16px_48px_rgba(0,0,0,0.35)] md:hidden font-sans space-y-4 max-h-[85vh] overflow-y-auto"
+              className="fixed inset-x-0 bottom-0 z-50 bg-white dark:bg-[#0F172A] border-t border-slate-200 dark:border-white/10 rounded-t-[28px] p-5 pt-3 shadow-2xl md:hidden font-sans space-y-4 max-h-[85vh] overflow-y-auto"
             >
               {/* Drag Handle Indicator */}
-              <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto opacity-70" />
+              <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto opacity-70 mb-2" />
 
               {/* High Contrast Header: Table Info & QR Button */}
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10">
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400 dark:text-slate-400">Vị trí bàn</p>
-                  <h4 className="text-base font-black text-slate-900 dark:text-white">
-                    {table?.tableName ?? 'Bàn 01'} (Tầng 1)
+                  <p className="text-[10px] uppercase tracking-wider font-extrabold text-slate-500 dark:text-slate-400">
+                    {lang === 'en' ? 'CURRENT TABLE' : lang === 'zh' ? '当前桌位' : 'VỊ TRÍ BÀN'}
+                  </p>
+                  <h4 className="text-base font-black text-slate-900 dark:text-white mt-0.5">
+                    {table?.tableName ?? (lang === 'en' ? 'Table 01' : lang === 'zh' ? '01号桌' : 'Bàn 01')}{' '}
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      {lang === 'en' ? '(1st Floor)' : lang === 'zh' ? '(1层)' : '(Tầng 1)'}
+                    </span>
                   </h4>
                 </div>
 
                 <div className="flex items-center gap-2">
                   {onOpenQRModal && (
                     <button
+                      type="button"
                       onClick={() => {
                         closePopup();
                         onOpenQRModal();
                       }}
-                      className="px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 text-[#0284c7] dark:text-[#38BDF8] text-xs font-bold transition-all active:scale-95 border border-sky-200 dark:border-sky-800"
+                      className="px-3 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold transition-all active:scale-95 border border-blue-500/30 cursor-pointer"
                     >
-                      Mã QR
+                      {lang === 'en' ? 'QR Code' : lang === 'zh' ? '二维码' : 'Mã QR'}
                     </button>
                   )}
 
                   <button
+                    type="button"
                     onClick={closePopup}
-                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95"
+                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+                    title={lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng'}
                   >
                     <span className="material-symbols-outlined text-lg">close</span>
                   </button>
                 </div>
               </div>
 
-              {/* Main Action Grid (High-Contrast Vibrant Cards) */}
-              <div className="grid grid-cols-2 gap-3">
-                {/* 1. Menu Thực Đơn */}
+              {/* 1. Primary Actions (Modern Inset Grouped List - Clean Typography & Badges) */}
+              <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-slate-200/80 dark:divide-white/5 shadow-xs">
+                {/* 1.1 Menu Thực Đơn */}
                 <button
+                  type="button"
                   onClick={() => {
                     closePopup();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/90 hover:bg-sky-50 dark:hover:bg-slate-800/90 border border-slate-200 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-3 cursor-pointer active:scale-95 shadow-xs"
+                  className="w-full px-4 py-3.5 flex items-center justify-between text-left hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition-colors active:scale-[0.99] cursor-pointer group"
                 >
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-black text-slate-900 dark:text-white">
-                      {lang === 'en' ? 'Menu' : lang === 'zh' ? '菜单' : 'Thực đơn'}
+                  <div>
+                    <h5 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      {lang === 'en' ? 'Menu' : lang === 'zh' ? '完整菜单' : 'Thực đơn'}
+                    </h5>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      {lang === 'en' ? 'Browse coffee & food' : lang === 'zh' ? '浏览咖啡与点心' : 'Xem danh sách món ăn'}
                     </p>
-                    <span className="material-symbols-outlined text-xl text-[#0284c7] dark:text-[#38BDF8]">
-                      restaurant_menu
-                    </span>
                   </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Danh sách món ăn</p>
+                  <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all">
+                    →
+                  </span>
                 </button>
 
-                {/* 2. Giỏ Hàng */}
+                {/* 1.2 Giỏ Hàng */}
                 <button
+                  type="button"
                   onClick={() => {
                     closePopup();
                     if (setIsCartOpen) setIsCartOpen(true);
                   }}
-                  className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/90 hover:bg-emerald-50 dark:hover:bg-slate-800/90 border border-slate-200 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-3 cursor-pointer active:scale-95 shadow-xs relative"
+                  className="w-full px-4 py-3.5 flex items-center justify-between text-left hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition-colors active:scale-[0.99] cursor-pointer group"
                 >
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-black text-slate-900 dark:text-white">
-                      {lang === 'en' ? 'Cart' : lang === 'zh' ? '购物车' : 'Giỏ hàng'}
+                  <div>
+                    <h5 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                      {lang === 'en' ? 'Your Cart' : lang === 'zh' ? '购物车' : 'Giỏ hàng'}
+                    </h5>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      {totalQuantity > 0
+                        ? (lang === 'en' ? `${totalQuantity} items selected` : lang === 'zh' ? `已选择 ${totalQuantity} 件商品` : `Đã chọn ${totalQuantity} món`)
+                        : (lang === 'en' ? 'No items selected' : lang === 'zh' ? '尚未选择商品' : 'Chưa có món nào')}
                     </p>
-                    <div className="flex items-center gap-1.5">
-                      {totalQuantity > 0 && (
-                        <span className="px-2 py-0.5 text-[10px] font-black bg-emerald-600 text-white rounded-lg shadow-2xs">
-                          {totalQuantity} món
-                        </span>
-                      )}
-                      <span className="material-symbols-outlined text-xl text-emerald-600 dark:text-emerald-400">
-                        shopping_bag
-                      </span>
-                    </div>
                   </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Xem món đã chọn</p>
+                  {totalQuantity > 0 ? (
+                    <span className="px-2.5 py-1 text-xs font-black bg-emerald-500 text-white rounded-lg shadow-2xs">
+                      {totalQuantity} {lang === 'en' ? 'items' : lang === 'zh' ? '件' : 'món'}
+                    </span>
+                  ) : (
+                    <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
+                      {lang === 'en' ? 'Empty' : lang === 'zh' ? '空' : 'Trống'}
+                    </span>
+                  )}
                 </button>
 
-                {/* 3. Lịch Sử Đơn Hàng */}
+                {/* 1.3 Lịch Sử Đơn Hàng */}
                 <button
+                  type="button"
                   onClick={() => {
                     closePopup();
                     handleOpenOrderHistory();
                   }}
-                  className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/90 hover:bg-indigo-50 dark:hover:bg-slate-800/90 border border-slate-200 dark:border-slate-800 text-left transition-all flex flex-col justify-between gap-3 cursor-pointer active:scale-95 shadow-xs"
+                  className="w-full px-4 py-3.5 flex items-center justify-between text-left hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition-colors active:scale-[0.99] cursor-pointer group"
                 >
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-black text-slate-900 dark:text-white">
-                      {lang === 'en' ? 'Orders' : lang === 'zh' ? '订单' : 'Đơn hàng'}
+                  <div>
+                    <h5 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      {lang === 'en' ? 'Orders' : lang === 'zh' ? '点单记录' : 'Đơn hàng'}
+                    </h5>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      {activeOrders.length > 0
+                        ? (lang === 'en' ? `${activeOrders.length} active orders` : lang === 'zh' ? `${activeOrders.length} 笔订单进行中` : `${activeOrders.length} đơn đang theo dõi`)
+                        : (lang === 'en' ? 'No active orders' : lang === 'zh' ? '暂无进行中订单' : 'Chưa có đơn nào')}
                     </p>
-                    <div className="flex items-center gap-1.5">
-                      {activeOrders.length > 0 && (
-                        <span className="px-2 py-0.5 text-[10px] font-black bg-indigo-600 text-white rounded-lg shadow-2xs">
-                          {activeOrders.length}
-                        </span>
-                      )}
-                      <span className="material-symbols-outlined text-xl text-indigo-600 dark:text-indigo-400">
-                        receipt_long
-                      </span>
-                    </div>
                   </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Theo dõi chế biến</p>
-                </button>
-
-                {/* 4. Gọi Nhân Viên */}
-                <button
-                  onClick={() => {
-                    handleCallStaff();
-                  }}
-                  disabled={callStaffCooldown > 0 || isCallingStaff}
-                  className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between gap-3 cursor-pointer active:scale-95 shadow-xs ${
-                    callStaffCooldown > 0
-                      ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-300 opacity-80'
-                      : 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800/80 text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/50'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-black text-amber-950 dark:text-amber-100">
-                      {callStaffCooldown > 0
-                        ? `Chờ ${callStaffCooldown}s`
-                        : lang === 'en'
-                        ? 'Call Staff'
-                        : lang === 'zh'
-                        ? '呼叫服务'
-                        : 'Gọi nhân viên'}
-                    </p>
-                    <span className={`material-symbols-outlined text-xl text-amber-600 dark:text-amber-400 ${callStaffCooldown === 0 ? 'animate-bounce' : ''}`}>
-                      notifications_active
+                  {activeOrders.length > 0 ? (
+                    <span className="px-2.5 py-1 text-xs font-black bg-blue-500 text-white rounded-lg shadow-2xs">
+                      {activeOrders.length} {lang === 'en' ? 'orders' : lang === 'zh' ? '单' : 'đơn'}
                     </span>
-                  </div>
-                  <p className="text-[11px] text-amber-700 dark:text-amber-300 font-medium">Yêu cầu hỗ trợ</p>
+                  ) : (
+                    <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all">
+                      →
+                    </span>
+                  )}
                 </button>
               </div>
 
-              {/* Utility Actions (Grid 2 Columns - Sharp Borders) */}
-              <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
-                {/* Yêu cầu đổi vị trí bàn */}
+              {/* 2. High Visibility Call Staff Banner (No Decorative Icon) */}
+              <button
+                type="button"
+                onClick={handleCallStaff}
+                disabled={callStaffCooldown > 0 || isCallingStaff}
+                className={`w-full p-4 rounded-2xl border text-left transition-all flex items-center justify-between cursor-pointer active:scale-[0.99] shadow-xs ${
+                  callStaffCooldown > 0
+                    ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 opacity-80 cursor-not-allowed'
+                    : 'bg-amber-500/15 hover:bg-amber-500/25 border-amber-500/35 text-amber-700 dark:text-amber-300'
+                }`}
+              >
+                <div>
+                  <h5 className="text-sm font-extrabold leading-tight">
+                    {callStaffCooldown > 0
+                      ? (lang === 'en' ? `Please wait (${callStaffCooldown}s)` : lang === 'zh' ? `请稍候 (${callStaffCooldown}秒)` : `Đang gọi (Chờ ${callStaffCooldown}s)`)
+                      : (lang === 'en' ? 'Call Staff' : lang === 'zh' ? '呼叫服务员' : 'Gọi nhân viên')}
+                  </h5>
+                  <p className="text-xs opacity-80 mt-0.5 font-medium">
+                    {callStaffCooldown > 0
+                      ? (lang === 'en' ? 'Staff is being notified' : lang === 'zh' ? '服务员正在前往' : 'Nhân viên đang tiếp nhận thông tin')
+                      : (lang === 'en' ? 'Request table assistance' : lang === 'zh' ? '需要餐桌协助与服务' : 'Yêu cầu phục vụ tại bàn')}
+                  </p>
+                </div>
+                <span className="px-3 py-1.5 rounded-xl bg-amber-500 text-white text-xs font-black shadow-xs shrink-0">
+                  {callStaffCooldown > 0
+                    ? `${callStaffCooldown}s`
+                    : (lang === 'en' ? 'Request' : lang === 'zh' ? '立即呼叫' : 'Gửi yêu cầu')}
+                </span>
+              </button>
+
+              {/* 3. Secondary Table Actions (Change Table / Leave Table) */}
+              <div className="grid grid-cols-2 gap-2.5">
                 <button
+                  type="button"
                   onClick={() => {
                     closePopup();
                     setIsTransferModalOpen(true);
                   }}
-                  className="px-3.5 py-3 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all cursor-pointer border border-slate-200 dark:border-slate-800 text-center truncate shadow-2xs"
+                  className="px-3.5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-900/80 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all cursor-pointer border border-slate-200 dark:border-white/10 text-center truncate shadow-2xs active:scale-95"
                 >
-                  {lang === 'vi' ? 'Đổi bàn ăn' : lang === 'zh' ? '更换桌位' : 'Change Table'}
+                  {lang === 'en' ? 'Change Table' : lang === 'zh' ? '更换桌位' : 'Yêu cầu đổi bàn'}
                 </button>
 
-                {/* Rời khỏi bàn */}
                 {handleLeaveTable && (
                   <button
+                    type="button"
                     onClick={() => {
                       closePopup();
                       handleLeaveTable();
                     }}
-                    className="px-3.5 py-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-xs font-bold text-rose-700 dark:text-rose-300 transition-all cursor-pointer border border-rose-200 dark:border-rose-900/60 text-center truncate shadow-2xs"
+                    className="px-3.5 py-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-xs font-bold text-rose-600 dark:text-rose-400 transition-all cursor-pointer border border-rose-500/30 text-center truncate shadow-2xs active:scale-95"
                   >
-                    {lang === 'vi' ? 'Rời bàn' : lang === 'zh' ? '离开桌位' : 'Leave Table'}
+                    {lang === 'en' ? 'Leave Table' : lang === 'zh' ? '离开桌位' : 'Rời bàn'}
                   </button>
                 )}
               </div>
 
-              {/* Footer Settings: Theme & Language */}
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
-                <LanguageToggleSwitch lang={lang} setLang={setLang} />
+              {/* 4. Footer Settings: Theme & Language */}
+              <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                  {lang === 'en' ? 'Theme & Language' : lang === 'zh' ? '主题与语言' : 'Giao diện & Ngôn ngữ'}
+                </span>
+                <div className="flex items-center gap-2">
+                  <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
+                  <LanguageToggleSwitch lang={lang} setLang={setLang} />
+                </div>
               </div>
             </motion.div>
           </>

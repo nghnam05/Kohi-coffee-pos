@@ -29,6 +29,12 @@ export class ReservationsController {
     return this.reservationsService.customerCancel(id);
   }
 
+  // PATCH /api/v1/reservations/:id/customer-arrive (Public - Khách hàng tự xác nhận đã đến quán và vào menu)
+  @Patch(':id/customer-arrive')
+  customerArrive(@Param('id') id: string) {
+    return this.reservationsService.customerArrive(id);
+  }
+
   // GET /api/v1/reservations (Cho phép Admin và Staff xem danh sách đặt bàn)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin', 'waiter', 'barista', 'staff')

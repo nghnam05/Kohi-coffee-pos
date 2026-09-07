@@ -41,7 +41,7 @@ export const LeaveTableModal: React.FC<LeaveTableModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-            className="relative w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 shadow-2xl z-10 text-center"
+            className="relative w-full max-w-sm bg-white dark:bg-[#0F172A] border border-slate-200/80 dark:border-white/10 rounded-2xl p-6 shadow-2xl z-10 text-center"
           >
             {/* Content */}
             <h3 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">

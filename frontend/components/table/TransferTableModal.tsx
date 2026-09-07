@@ -52,10 +52,10 @@ export const TransferTableModal: React.FC<TransferTableModalProps> = ({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.96, opacity: 0, y: 10 }}
             transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-            className="relative w-full max-w-xl bg-white dark:bg-[#0D111A] border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-2xl z-10 max-h-[90vh] flex flex-col font-sans text-left"
+            className="relative w-full max-w-xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 rounded-2xl p-6 sm:p-7 shadow-2xl z-10 max-h-[90vh] flex flex-col font-sans text-left"
           >
             {/* Header */}
-            <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-slate-800/80 shrink-0">
+            <div className="flex items-start justify-between pb-4 border-b border-slate-200 dark:border-white/10 shrink-0">
               <div>
                 <h3 className="text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
                   {lang === 'en' ? 'Select New Table' : lang === 'zh' ? '选择新桌位' : 'Chuyển sang bàn mới'}
@@ -71,7 +71,7 @@ export const TransferTableModal: React.FC<TransferTableModalProps> = ({
 
               <button
                 onClick={() => setIsTransferModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center font-bold text-sm transition-all cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center justify-center font-bold text-sm transition-all cursor-pointer"
                 title="Đóng"
               >
                 ✕
@@ -79,7 +79,7 @@ export const TransferTableModal: React.FC<TransferTableModalProps> = ({
             </div>
 
             {/* Minimal Legend Bar */}
-            <div className="flex items-center gap-5 text-xs py-3 border-b border-slate-100 dark:border-slate-800/80 shrink-0 text-slate-600 dark:text-slate-400 font-medium">
+            <div className="flex items-center gap-5 text-xs py-3 border-b border-slate-200 dark:border-white/10 shrink-0 text-slate-500 dark:text-slate-400 font-medium">
               <span className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 {lang === 'en' ? 'Available' : lang === 'zh' ? '空桌' : 'Bàn trống'}
@@ -110,14 +110,14 @@ export const TransferTableModal: React.FC<TransferTableModalProps> = ({
                       onClick={() => {
                         if (isEmpty) setSelectedTransferTableId(tItem._id);
                       }}
-                      className={`p-4 rounded-2xl border transition-all flex flex-col items-center justify-center gap-1.5 min-h-[92px] ${
+                      className={`p-4 rounded-xl border transition-all flex flex-col items-center justify-center gap-1.5 min-h-[92px] ${
                         isCurrentTable
-                          ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800/60 text-amber-700 dark:text-amber-400 cursor-not-allowed'
+                          ? 'bg-amber-500/10 border-amber-500/40 text-amber-500 dark:text-amber-400 cursor-not-allowed'
                           : isSelected
-                          ? 'bg-sky-50 dark:bg-sky-950/30 border-[#0284c7] dark:border-[#38BDF8] text-[#0284c7] dark:text-[#38BDF8] ring-2 ring-[#0284c7]/20 shadow-sm'
+                          ? 'bg-blue-500/20 border-[#3B82F6] text-blue-600 dark:text-blue-400 ring-2 ring-blue-500/30 shadow-sm'
                           : isEmpty
-                          ? 'bg-slate-50/60 hover:bg-white dark:bg-[#131824] dark:hover:bg-[#182030] border-slate-200/80 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700 cursor-pointer'
-                          : 'bg-slate-100/50 dark:bg-slate-900/40 border-slate-200/40 dark:border-slate-800/40 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60'
+                          ? 'bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/60 dark:hover:bg-slate-800/80 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white hover:border-blue-500/50 cursor-pointer'
+                          : 'bg-slate-100 dark:bg-slate-900/30 border-slate-200/60 dark:border-white/5 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60'
                       }`}
                     >
                       <span className="text-sm font-extrabold tracking-tight">
@@ -126,9 +126,9 @@ export const TransferTableModal: React.FC<TransferTableModalProps> = ({
 
                       <span className={`text-[11px] font-semibold ${
                         isCurrentTable
-                          ? 'text-amber-600 dark:text-amber-400'
+                          ? 'text-amber-500 dark:text-amber-400'
                           : isSelected
-                          ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                          ? 'text-blue-600 dark:text-blue-400'
                           : isEmpty
                           ? 'text-emerald-600 dark:text-emerald-400'
                           : 'text-slate-400 dark:text-slate-500'
@@ -148,18 +148,17 @@ export const TransferTableModal: React.FC<TransferTableModalProps> = ({
             </div>
 
             {/* Footer Buttons */}
-            <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-end gap-2.5 shrink-0">
+            <div className="pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-end gap-2.5 shrink-0">
               <button
                 onClick={() => setIsTransferModalOpen(false)}
                 className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all cursor-pointer"
               >
-                {lang === 'en' ? 'Cancel' : lang === 'zh' ? '取消' : 'Hủy'}
               </button>
 
               <button
                 onClick={handleTransferTable}
                 disabled={!selectedTransferTableId || isTransferring}
-                className="px-5 py-2.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-black rounded-xl text-xs tracking-wide transition-all shadow-md active:scale-95 disabled:opacity-40 cursor-pointer"
+                className="px-5 py-2.5 bg-[#3B82F6] hover:bg-blue-600 text-white font-black rounded-xl text-xs tracking-wide transition-all shadow-md active:scale-95 disabled:opacity-40 cursor-pointer"
               >
                 {isTransferring
                   ? (lang === 'en' ? 'Transferring...' : lang === 'zh' ? '正在换桌...' : 'Đang chuyển...')

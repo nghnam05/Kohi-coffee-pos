@@ -38,26 +38,26 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.92, opacity: 0, y: 20 }}
             transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-            className="relative w-full max-w-sm bg-[#FFFFFF] dark:bg-[#181B21] border border-[#E2E8F0] dark:border-[#222732] rounded-2xl shadow-2xl z-10 overflow-hidden text-center font-sans"
+            className="relative w-full max-w-sm bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl z-10 overflow-hidden text-center font-sans"
           >
             {/* Top accent bar */}
-            <div className="h-1 w-full bg-gradient-to-r from-[#3AA6FF] via-[#5B9EFF] to-[#3AA6FF]" />
+            <div className="h-1 w-full bg-gradient-to-r from-blue-600 via-sky-400 to-blue-600" />
 
             <div className="p-7 flex flex-col gap-5 text-center">
               {/* Status pill */}
               <div className="flex justify-center">
-                <span className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-[#3AA6FF]/10 dark:bg-[#5B9EFF]/15 border border-[#3AA6FF]/25 dark:border-[#5B9EFF]/30 rounded-full text-[11px] font-[600] text-[#3AA6FF] dark:text-[#5B9EFF] uppercase tracking-[0.06em]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#3AA6FF] dark:bg-[#5B9EFF] animate-pulse" />
+                <span className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-blue-500/15 border border-blue-500/30 rounded-full text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-[0.06em]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-blue-400 animate-pulse" />
                   {lang === 'en' ? 'Order Placed' : lang === 'zh' ? '下单成功' : 'Đặt hàng thành công'}
                 </span>
               </div>
 
               {/* Main content */}
               <div className="space-y-2">
-                <h3 className="text-[20px] font-[700] text-[#0F172A] dark:text-[#F1F5F9] leading-tight font-heading">
+                <h3 className="text-[20px] font-black text-slate-900 dark:text-white leading-tight font-heading">
                   {lang === 'en' ? 'Order Received!' : lang === 'zh' ? '订单已收到！' : 'Đơn hàng đã được ghi nhận!'}
                 </h3>
-                <p className="text-[13px] font-[400] text-[#64748B] dark:text-[#9CA3AF] leading-relaxed">
+                <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
                   {lang === 'en'
                     ? 'Your order has been sent to the barista station and will be served shortly.'
                     : lang === 'zh'
@@ -67,7 +67,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
               </div>
 
               {/* Divider */}
-              <div className="border-t border-[#E2E8F0] dark:border-[#222732]" />
+              <div className="border-t border-slate-200 dark:border-white/10" />
 
               {/* Action buttons */}
               <div className="flex flex-col gap-2.5">
@@ -77,7 +77,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
                       setIsOrderSuccessModalOpen(false);
                       onOpenBankPayModal(latestCreatedOrder);
                     }}
-                    className="w-full py-3 bg-[#0284c7] hover:bg-[#0369a1] text-white rounded-xl text-[13.5px] font-bold transition-all active:scale-95 shadow-lg cursor-pointer flex items-center justify-center"
+                    className="w-full py-3 bg-[#3B82F6] hover:bg-blue-600 text-white rounded-xl text-[13.5px] font-bold transition-all active:scale-95 shadow-lg cursor-pointer flex items-center justify-center"
                   >
                     <span>{lang === 'en' ? 'Pay via VietQR' : lang === 'zh' ? '扫码银行转账' : 'Thanh toán VietQR'}</span>
                   </button>
@@ -88,14 +88,14 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
                     setIsOrderSuccessModalOpen(false);
                     router.push(`/table/${tableId}/order-status/${latestCreatedOrder._id}`);
                   }}
-                  className="w-full py-3 uiverse-btn text-white rounded-xl text-[13.5px] font-bold transition-all active:scale-95 shadow-lg shadow-[#3AA6FF]/25 cursor-pointer flex items-center justify-center"
+                  className="w-full py-3 uiverse-btn text-white rounded-xl text-[13.5px] font-bold transition-all active:scale-95 shadow-lg shadow-blue-500/25 cursor-pointer flex items-center justify-center"
                 >
                   <span>{lang === 'en' ? 'Track Order Status' : lang === 'zh' ? '追踪订单进度' : 'Theo dõi tiến độ'}</span>
                 </button>
 
                 <button
                   onClick={() => setIsOrderSuccessModalOpen(false)}
-                  className="w-full py-3 bg-transparent border border-[#E2E8F0] dark:border-[#222732] text-[#64748B] dark:text-[#9CA3AF] hover:text-[#3AA6FF] dark:hover:text-[#5B9EFF] hover:border-[#3AA6FF]/40 dark:hover:border-[#5B9EFF]/40 rounded-xl text-[13px] font-semibold transition-all cursor-pointer"
+                  className="w-full py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl text-[13px] font-bold transition-all cursor-pointer"
                 >
                   {lang === 'en' ? 'Order More Items' : lang === 'zh' ? '加点其他商品' : 'Chọn thêm món khác'}
                 </button>
