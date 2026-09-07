@@ -7,6 +7,7 @@ import { Reservation, ReservationDocument } from './schemas/reservation.schema.j
 import { CreateReservationDto } from './dto/create-reservation.dto.js';
 import { TablesService } from '../tables/tables.service.js';
 import { OrdersGateway } from '../orders/orders.gateway.js';
+import { getVietnamTime } from '../common/time.util.js';
 
 @Injectable()
 export class ReservationsService implements OnModuleInit {
@@ -116,8 +117,9 @@ export class ReservationsService implements OnModuleInit {
       throw new BadRequestException('Thời gian đặt bàn phải ở thời điểm tương lai.');
     }
 
-    const hours = resTime.getHours();
-    const minutes = resTime.getMinutes();
+    const vnRes = getVietnamTime(resTime);
+    const hours = vnRes.hour;
+    const minutes = vnRes.minute;
     if (hours < 6 || hours > 23 || (hours === 23 && minutes > 0)) {
       throw new BadRequestException('Thời gian đặt bàn phải nằm trong khung giờ hoạt động của quán (06:00 - 23:00).');
     }

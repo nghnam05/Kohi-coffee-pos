@@ -7,6 +7,8 @@ import { Attendance, AttendanceDocument } from './schemas/attendance.schema.js';
 import { User, UserDocument } from '../users/schemas/user.schema.js';
 import { OrdersGateway } from '../orders/orders.gateway.js';
 
+import { getVietnamTime } from '../common/time.util.js';
+
 @Injectable()
 export class AttendanceService {
   constructor(
@@ -21,15 +23,16 @@ export class AttendanceService {
       throw new BadRequestException('ID người dùng không hợp lệ.');
     }
     const now = new Date();
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    const vnTime = getVietnamTime(now);
+    const startOfDay = vnTime.startOfDay;
+    const endOfDay = vnTime.endOfDay;
     const dateOnly = startOfDay;
 
-    // ⚡ Auto calculate shift based on current actual time
+    // ⚡ Auto calculate shift based on current actual time (theo giờ Việt Nam UTC+7)
     let currentActualShift = 'morning';
-    const hour = now.getHours();
-    const minute = now.getMinutes();
-    const totalMinutes = hour * 60 + minute;
+    const hour = vnTime.hour;
+    const minute = vnTime.minute;
+    const totalMinutes = vnTime.totalMinutes;
 
     // Ca Sáng: 06:00 - 12:00 (mở check-in từ 05:45 đến 12:00)
     // Ca Chiều: 12:00 - 18:00 (mở check-in từ 11:45 đến 18:00)
@@ -108,9 +111,9 @@ export class AttendanceService {
       throw new BadRequestException('ID người dùng không hợp lệ.');
     }
     const now = new Date();
-    // Use timezone-safe range query (same as checkIn)
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    const vnTime = getVietnamTime(now);
+    const startOfDay = vnTime.startOfDay;
+    const endOfDay = vnTime.endOfDay;
 
     const record = await this.attendanceModel.findOne({
       userId,
