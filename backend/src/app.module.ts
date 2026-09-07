@@ -28,6 +28,7 @@ import { IngredientsModule } from './ingredients/ingredients.module.js';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URI'),
+        dbName: 'kohi-coffee',
       }),
       inject: [ConfigService],
     }),
