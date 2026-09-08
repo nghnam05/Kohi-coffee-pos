@@ -31,4 +31,13 @@ export class IngredientsController {
   remove(@Param('id') id: string) {
     return this.ingredientsService.remove(id);
   }
+
+  @Post('apply-restock')
+  applyRestock(
+    @Body('items') items: Array<{ name: string; quantity: number; unitPrice?: number; unit?: string; category?: string }>,
+    @Body('restockedBy') restockedBy?: string,
+  ) {
+    return this.ingredientsService.applyRestockSuggestion(items, restockedBy);
+  }
 }
+

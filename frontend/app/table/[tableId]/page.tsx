@@ -26,6 +26,7 @@ import dynamic from 'next/dynamic';
 
 const AiChatWidget = dynamic(() => import('@/components/table/AiChatWidget').then(m => m.AiChatWidget), { ssr: false });
 const TableQRModal = dynamic(() => import('@/components/table/TableQRModal').then(m => m.TableQRModal), { ssr: false });
+const VoiceOrderModal = dynamic(() => import('@/components/table/VoiceOrderModal').then(m => m.VoiceOrderModal), { ssr: false });
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -364,6 +365,7 @@ export default function TableMenuPage() {
   const [modalNote, setModalNote] = useState('');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'bank_transfer' | 'momo'>('cash');
+  const [isVoiceOrderOpen, setIsVoiceOrderOpen] = useState(false);
 
   // Custom Detail Options
   const [selectedSize, setSelectedSize] = useState<'S' | 'M' | 'L'>('M');
@@ -1142,6 +1144,95 @@ export default function TableMenuPage() {
     });
   }, [tableId, customerName]);
 
+  const handleVoiceAddItemsToCart = useCallback((parsedItems: any[], isTakeawayOrder: boolean) => {
+    const devId = typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest';
+    const cName = typeof window !== 'undefined' ? (localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Bạn').trim() : 'Bạn';
+
+    setCart((prev) => {
+      let updated = [...prev];
+      for (const item of parsedItems) {
+        const matchedFood = foods.find(
+          (f) => f._id === item.foodId || f.name.toLowerCase() === item.foodName.toLowerCase()
+        );
+        if (matchedFood) {
+          const noteParts = [
+            item.size !== 'M' ? `Size ${item.size}` : '',
+            item.ice && item.ice !== 'Bình thường' ? item.ice : '',
+            item.sugar && item.sugar !== 'Bình thường' ? item.sugar : '',
+            item.note || '',
+          ].filter(Boolean);
+
+          const combinedNote = noteParts.join(', ');
+          const existing = updated.find(
+            (c) => c.food._id === matchedFood._id && c.note === combinedNote && c.addedByDeviceId === devId
+          );
+
+          if (existing) {
+            existing.quantity += item.quantity;
+          } else {
+            updated.push({
+              food: matchedFood,
+              quantity: item.quantity,
+              note: combinedNote,
+              unitPrice: item.unitPrice || matchedFood.price,
+              addedBy: cName,
+              addedByDeviceId: devId,
+            });
+          }
+        }
+      }
+
+      if (socketRef.current && tableId) {
+        socketRef.current.emit('updateGroupCart', {
+          tableId,
+          items: updated,
+          senderName: cName,
+        });
+      }
+      return updated;
+    });
+
+    playAlertPing();
+    toast.success(
+      lang === 'en'
+        ? `Added ${parsedItems.length} items to cart via AI Voice!`
+        : `Kohi AI đã thêm ${parsedItems.length} món vào giỏ hàng!`
+    );
+
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setIsCartOpen(true);
+    }
+  }, [foods, tableId, customerName, lang]);
+
+  const handleViewVoiceItemDetail = useCallback((item: any) => {
+    const matchedFood = foods.find(
+      (f) => f._id === item.foodId || f.name.toLowerCase() === item.foodName.toLowerCase()
+    );
+    if (matchedFood) {
+      setSelectedFood(matchedFood);
+      if (item.size && ['S', 'M', 'L'].includes(item.size)) {
+        setSelectedSize(item.size);
+      } else {
+        setSelectedSize('M');
+      }
+      setModalQuantity(item.quantity || 1);
+
+      const noteParts = [
+        item.ice && item.ice !== 'Bình thường' ? item.ice : '',
+        item.sugar && item.sugar !== 'Bình thường' ? item.sugar : '',
+        item.note || '',
+      ].filter(Boolean);
+
+      setModalNote(noteParts.join(', '));
+      setSelectedAddons([]);
+
+      // Đóng voice modal để xem chi tiết món ăn
+      setIsVoiceOrderOpen(false);
+    } else {
+      toast.error('Không tìm thấy thông tin chi tiết món này.');
+    }
+  }, [foods]);
+
   const handleConfirmName = () => {
     const trimmed = nameInput.trim();
     const finalName = trimmed || '';
@@ -1553,6 +1644,7 @@ export default function TableMenuPage() {
               viewMode={viewMode}
               setViewMode={setViewMode}
               lang={lang}
+              onOpenVoiceOrder={() => setIsVoiceOrderOpen(true)}
             />
 
             {/* Realtime Table Members Bar (Clean, Minimalist, Icon-free, Modern) */}
@@ -1652,6 +1744,17 @@ export default function TableMenuPage() {
                   className="w-full bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl py-2 pl-10 pr-3.5 text-xs font-normal text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 shadow-xs font-sans placeholder-slate-400 transition-colors"
                 />
               </div>
+
+              {/* Mobile Voice Order Button */}
+              <button
+                onClick={() => setIsVoiceOrderOpen(true)}
+                className="px-3 py-2 rounded-xl bg-sky-500/15 border border-sky-400/40 text-[#38BDF8] hover:bg-[#38BDF8] hover:text-slate-950 transition-all shadow-xs flex items-center gap-1 shrink-0 text-xs font-extrabold active:scale-95"
+                title="Gọi món bằng giọng nói (Kohi AI)"
+              >
+                <span className="material-symbols-outlined text-base">mic</span>
+                <span className="hidden sm:inline">AI Voice</span>
+              </button>
+
 
               {/* Mobile View Mode Toggle (Grid/List) */}
               <div className="bg-slate-100 dark:bg-slate-900/80 text-slate-700 dark:text-white rounded-xl p-1 border border-slate-200 dark:border-white/10 shadow-xs flex items-center shrink-0">
@@ -1971,6 +2074,15 @@ export default function TableMenuPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Voice Order Modal */}
+      <VoiceOrderModal
+        isOpen={isVoiceOrderOpen}
+        onClose={() => setIsVoiceOrderOpen(false)}
+        onAddItemsToCart={handleVoiceAddItemsToCart}
+        onViewFoodDetail={handleViewVoiceItemDetail}
+        lang={lang}
+      />
     </>
   );
 }

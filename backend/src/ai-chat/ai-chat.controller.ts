@@ -11,4 +11,14 @@ export class AiChatController {
     if (!question?.trim()) return { answer: 'Vui lòng nhập câu hỏi!' };
     return this.aiChatService.ask(question.trim().substring(0, 500));
   }
+
+  /** POST /api/v1/ai-chat/parse-voice-order – Public */
+  @Post('parse-voice-order')
+  parseVoiceOrder(
+    @Body('transcript') transcript: string,
+    @Body('lang') lang?: string,
+  ) {
+    return this.aiChatService.parseVoiceOrder(transcript, lang || 'vi');
+  }
 }
+

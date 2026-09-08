@@ -12,6 +12,7 @@ interface CatalogHeaderProps {
   viewMode: 'grid' | 'list';
   setViewMode: (mode: 'grid' | 'list') => void;
   lang?: Lang;
+  onOpenVoiceOrder?: () => void;
 }
 
 export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
@@ -22,7 +23,9 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
   viewMode,
   setViewMode,
   lang = 'vi',
+  onOpenVoiceOrder,
 }) => {
+
   const getSubtitle = () => {
     if (lang === 'en') {
       return customerName
@@ -52,9 +55,23 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
 
       {/* Header Actions */}
       <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+        {/* Desktop Voice Order Button */}
+        {onOpenVoiceOrder && (
+          <button
+            onClick={onOpenVoiceOrder}
+            className="hidden md:flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-sky-500 dark:hover:text-[#38BDF8] hover:border-sky-500/50 transition-all shadow-xs active:scale-95 cursor-pointer font-sans group"
+            title="Gọi món bằng giọng nói (Kohi AI)"
+          >
+            <span className="material-symbols-outlined text-base text-[#38BDF8] group-hover:scale-110 transition-transform">mic</span>
+            <span>Gọi món bằng AI</span>
+          </button>
+        )}
+
+
         {/* Desktop Order History Button */}
         <button
           onClick={handleOpenOrderHistory}
+
           className="hidden md:flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-500/50 transition-all shadow-xs active:scale-95 cursor-pointer font-sans"
           title={lang === 'en' ? 'View order history & status' : lang === 'zh' ? '查看点单记录与状态' : 'Xem lịch sử & trạng thái đơn hàng'}
         >

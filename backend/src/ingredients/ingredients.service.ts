@@ -144,4 +144,55 @@ export class IngredientsService {
     }
     return { message: 'Đã xóa nguyên liệu khỏi kho thành công!' };
   }
+
+  /**
+   * Duyệt nhập kho hàng loạt theo danh sách đề xuất của AI (1-Click Restock).
+   */
+  async applyRestockSuggestion(
+    items: Array<{ name: string; quantity: number; unitPrice?: number; unit?: string; category?: string }>,
+    restockedBy: string = 'Quản trị viên (AI Restock)',
+  ): Promise<{ success: boolean; message: string; updatedItems: Ingredient[] }> {
+    const updatedItems: Ingredient[] = [];
+
+    for (const item of items) {
+      if (!item.name || !item.quantity || item.quantity <= 0) continue;
+
+      let existing = await this.ingredientModel
+        .findOne({ name: { $regex: new RegExp(`^${item.name.trim()}$`, 'i') } })
+        .exec();
+
+      if (existing) {
+        existing.currentQuantity = Math.round((existing.currentQuantity + item.quantity) * 100) / 100;
+        if (typeof item.unitPrice === 'number' && item.unitPrice > 0) {
+          existing.unitPrice = item.unitPrice;
+        }
+        existing.status = existing.currentQuantity > existing.minThreshold ? 'in_stock' : 'low_stock';
+        existing.lastUpdatedBy = restockedBy;
+        const saved = await existing.save();
+        this.ordersGateway.emitIngredientUpdated(saved);
+        updatedItems.push(saved);
+      } else {
+        const newIng = new this.ingredientModel({
+          name: item.name.trim(),
+          category: item.category || 'Cà phê & Đồ uống',
+          unit: item.unit || 'kg',
+          currentQuantity: item.quantity,
+          unitPrice: item.unitPrice || 50000,
+          minThreshold: 2,
+          status: 'in_stock',
+          lastUpdatedBy: restockedBy,
+        });
+        const saved = await newIng.save();
+        this.ordersGateway.emitIngredientUpdated(saved);
+        updatedItems.push(saved);
+      }
+    }
+
+    return {
+      success: true,
+      message: `Đã nhập kho thành công ${updatedItems.length} mặt hàng theo đề xuất của AI!`,
+      updatedItems,
+    };
+  }
 }
+

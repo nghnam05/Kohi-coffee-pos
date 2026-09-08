@@ -32,4 +32,10 @@ export class AnalyticsController {
     const d = date || new Date().toISOString().split('T')[0];
     return this.analyticsService.getHourly(d);
   }
+
+  @Get('ai-forecast')
+  getAiDemandForecast() {
+    return this.analyticsService.getAiDemandForecast();
+  }
 }
+
