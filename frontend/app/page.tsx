@@ -170,6 +170,10 @@ export default function Home() {
   // Tables list state
   const [tables, setTables] = useState<any[]>([]);
   const [selectedTable, setSelectedTable] = useState<any | null>(null);
+  const [tablePage, setTablePage] = useState(1);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isTableFilterOpen, setIsTableFilterOpen] = useState(false);
+  const tableFilterRef = useRef<HTMLDivElement>(null);
 
   // Reservation form state
   const [customerName, setCustomerName] = useState('');
@@ -273,6 +277,31 @@ export default function Home() {
       socket.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (tableFilterRef.current && !tableFilterRef.current.contains(event.target as Node)) {
+        setIsTableFilterOpen(false);
+      }
+    };
+    if (isTableFilterOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [isTableFilterOpen]);
 
   const setPresetTime = (hoursFromNow: number) => {
     const now = new Date();
@@ -511,6 +540,7 @@ export default function Home() {
       setGuestCount(2);
       setNote('');
       setSelectedTable(null);
+      setTablePage(1);
       setPresetTime(2);
 
       fetchTables();
@@ -528,16 +558,32 @@ export default function Home() {
       return tbl.status === 'empty';
     }
     return true;
+  }).sort((a, b) => {
+    const numA = parseInt(a.tableName?.replace(/\D/g, '') || '0', 10);
+    const numB = parseInt(b.tableName?.replace(/\D/g, '') || '0', 10);
+    if (!isNaN(numA) && !isNaN(numB) && numA !== numB) {
+      return numA - numB;
+    }
+    return (a.tableName || '').localeCompare(b.tableName || '', undefined, { numeric: true, sensitivity: 'base' });
   });
 
+  // Trên màn hình mobile (2 cột) chỉ hiển thị 4 hàng (8 bàn / trang)
+  const TABLES_PER_PAGE = isMobile ? 8 : 12;
+  const totalTablePages = Math.ceil(filteredTables.length / TABLES_PER_PAGE) || 1;
+  const currentPage = Math.min(Math.max(1, tablePage), totalTablePages);
+  const paginatedTables = filteredTables.slice(
+    (currentPage - 1) * TABLES_PER_PAGE,
+    currentPage * TABLES_PER_PAGE
+  );
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans flex flex-col justify-between relative antialiased">
-      {/* Top Header Bar */}
-      <header className="bg-white/90 dark:bg-[#0B0F17]/80 border-b border-slate-200 dark:border-white/10 sticky top-0 left-0 w-full z-50 shadow-xs backdrop-blur-xl">
-        <div className="flex justify-between items-center w-full px-3 sm:px-6 md:px-12 py-2.5 sm:py-3.5 max-w-7xl mx-auto gap-2">
+    <div className="fixed inset-0 w-full h-full flex flex-col overflow-hidden bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans antialiased">
+      {/* Top Header Bar (Fixed / Stationary: Không bao giờ cuộn) */}
+      <header className="shrink-0 z-40 bg-white/95 dark:bg-[#0B0F17]/95 border-b border-slate-200 dark:border-white/10 w-full shadow-xs backdrop-blur-xl">
+        <div className="flex justify-between items-center w-full px-3 sm:px-6 md:px-12 py-2 sm:py-3 max-w-7xl mx-auto gap-2">
           <BrandLogo onClick={() => router.push('/')} />
 
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <LanguageToggleSwitch
               lang={lang as Lang}
               setLang={(l) => {
@@ -548,7 +594,7 @@ export default function Home() {
             <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
             <button
               onClick={() => router.push('/login')}
-              className="bg-[#3B82F6] hover:bg-blue-600 text-white transition-colors duration-200 px-3 sm:px-4 h-[30px] sm:h-[36px] rounded-xl text-[11px] sm:text-xs font-bold shadow-xs whitespace-nowrap cursor-pointer active:scale-95 flex items-center shrink-0"
+              className="bg-[#3B82F6] hover:bg-blue-600 text-white transition-colors duration-200 px-3 sm:px-4 h-[32px] sm:h-[36px] rounded-xl text-[11px] sm:text-xs font-bold shadow-xs whitespace-nowrap cursor-pointer active:scale-95 flex items-center shrink-0"
             >
               <span className="sm:hidden">Đăng nhập</span>
               <span className="hidden sm:inline">{t.btnLogin}</span>
@@ -557,123 +603,220 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main Container */}
-      <main className="flex-grow pt-8 sm:pt-12 pb-16 px-4 md:px-12 w-full max-w-7xl mx-auto">
-        {/* Hero Section */}
-        <section className="text-center mb-8 sm:mb-12">
-          <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-blue-500/10 text-[#3B82F6] dark:text-[#38BDF8] text-[11px] sm:text-xs font-bold uppercase tracking-wider mb-4 sm:mb-6 border border-blue-500/20">
-            {t.heroBadge}
-          </div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white mb-3 sm:mb-4 tracking-tight">
-            {t.heroTitle}
-          </h2>
-          <p className="text-xs sm:text-sm lg:text-base text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            {t.heroSubtitle}
-          </p>
-        </section>
+      {/* Scrollable Body: Pure Content Scroll */}
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain w-full flex flex-col justify-between scrollbar-thin" style={{ WebkitOverflowScrolling: 'touch' }}>
+        {/* Main Container */}
+        <main className="flex-grow pt-4 sm:pt-8 pb-12 px-3.5 sm:px-6 md:px-12 w-full max-w-7xl mx-auto">
+          {/* Hero Section */}
+          <section className="text-center mb-4 sm:mb-8">
+            <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-blue-500/10 text-[#3B82F6] dark:text-[#38BDF8] text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 sm:mb-3 border border-blue-500/20">
+              {t.heroBadge}
+            </div>
+            <h2 className="text-xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white mb-1.5 sm:mb-2 tracking-tight">
+              {t.heroTitle}
+            </h2>
+            <p className="text-xs sm:text-sm lg:text-base text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed px-2">
+              {t.heroSubtitle}
+            </p>
+          </section>
 
-        {/* Tab Navigation: Đặt Bàn vs Tra Cứu */}
-        <nav className="flex justify-center border-b border-slate-200 dark:border-white/10 mb-8 sm:mb-12">
-          <button
-            onClick={() => {
-              setActiveTab('reserve');
-              setError('');
-            }}
-            className={`px-6 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-bold transition-all border-b-2 cursor-pointer ${
-              activeTab === 'reserve'
-                ? 'text-[#3B82F6] dark:text-[#38BDF8] border-[#3B82F6] dark:border-[#38BDF8] translate-y-[1px]'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 border-transparent'
-            }`}
-          >
-            <span>{t.btnBookTab}</span>
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab('lookup');
-              setError('');
-            }}
-            className={`px-6 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-bold transition-all border-b-2 cursor-pointer ${
-              activeTab === 'lookup'
-                ? 'text-[#3B82F6] dark:text-[#38BDF8] border-[#3B82F6] dark:border-[#38BDF8] translate-y-[1px]'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 border-transparent'
-            }`}
-          >
-            <span>{t.btnLookupTab}</span>
-          </button>
-        </nav>
+          {/* Tab Navigation: Đặt Bàn vs Tra Cứu */}
+          <nav className="flex justify-center border-b border-slate-200 dark:border-white/10 mb-4 sm:mb-8">
+            <button
+              onClick={() => {
+                setActiveTab('reserve');
+                setError('');
+              }}
+              className={`px-4 sm:px-8 py-2 sm:py-3.5 text-xs sm:text-sm font-bold transition-all border-b-2 cursor-pointer ${
+                activeTab === 'reserve'
+                  ? 'text-[#3B82F6] dark:text-[#38BDF8] border-[#3B82F6] dark:border-[#38BDF8] translate-y-[1px]'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 border-transparent'
+              }`}
+            >
+              <span>{t.btnBookTab}</span>
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('lookup');
+                setError('');
+              }}
+              className={`px-4 sm:px-8 py-2 sm:py-3.5 text-xs sm:text-sm font-bold transition-all border-b-2 cursor-pointer ${
+                activeTab === 'lookup'
+                  ? 'text-[#3B82F6] dark:text-[#38BDF8] border-[#3B82F6] dark:border-[#38BDF8] translate-y-[1px]'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 border-transparent'
+              }`}
+            >
+              <span>{t.btnLookupTab}</span>
+            </button>
+          </nav>
 
-        {/* TAB 1: TABLE RESERVATION MAIN GRID */}
-        {activeTab === 'reserve' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-            {/* LEFT COLUMN: Sơ Đồ Chọn Bàn (7 Cols) */}
-            <div className="lg:col-span-7 bg-white dark:bg-[#0F172A]/70 rounded-2xl p-5 sm:p-6 lg:p-7 shadow-xs border border-slate-200/90 dark:border-white/10 backdrop-blur-xl">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 pb-6 border-b border-slate-200 dark:border-white/10">
-                <div>
-                  <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-1">
-                    {t.selectTableLabel}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
-                    {t.selectTableSub}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-900 border border-transparent dark:border-white/10 rounded-xl text-[11px] font-bold">
+          {/* TAB 1: TABLE RESERVATION MAIN GRID */}
+          {activeTab === 'reserve' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-start">
+              {/* LEFT COLUMN: Sơ Đồ Chọn Bàn (7 Cols) */}
+              <div className="lg:col-span-7 bg-white dark:bg-[#0F172A]/70 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 lg:p-6 shadow-xs border border-slate-200/90 dark:border-white/10 backdrop-blur-xl">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5 sm:gap-3 mb-3 pb-3 border-b border-slate-200 dark:border-white/10">
+                  <div>
+                    <h3 className="text-base sm:text-xl font-bold text-slate-900 dark:text-white mb-0.5">
+                      {t.selectTableLabel}
+                    </h3>
+                    <p className="text-[11px] sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                      {t.selectTableSub}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                    {/* Desktop Pill Filter */}
+                    <div className="hidden sm:flex items-center p-0.5 sm:p-1 bg-slate-100 dark:bg-slate-900 border border-transparent dark:border-white/10 rounded-xl text-[10.5px] sm:text-[11px] font-bold">
+                      <button
+                        onClick={() => {
+                          setTableFilter('all');
+                          setTablePage(1);
+                        }}
+                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                          tableFilter === 'all'
+                            ? 'bg-white dark:bg-[#1E293B] text-[#3B82F6] dark:text-[#38BDF8] shadow-xs'
+                            : 'text-slate-500 dark:text-slate-400'
+                        }`}
+                      >
+                        {t.filterAll}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setTableFilter('available');
+                          setTablePage(1);
+                        }}
+                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                          tableFilter === 'available'
+                            ? 'bg-white dark:bg-[#1E293B] text-[#3B82F6] dark:text-[#38BDF8] shadow-xs'
+                            : 'text-slate-500 dark:text-slate-400'
+                        }`}
+                      >
+                        {t.filterAvailable}
+                      </button>
+                    </div>
+
+                    {/* Mobile Dropdown Filter */}
+                    <div ref={tableFilterRef} className="sm:hidden relative inline-block">
+                      <button
+                        type="button"
+                        onClick={() => setIsTableFilterOpen(!isTableFilterOpen)}
+                        className={`h-8 px-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-700/90 border transition-all cursor-pointer shadow-xs active:scale-95 flex items-center gap-1 font-sans text-xs font-bold ${
+                          isTableFilterOpen
+                            ? 'border-sky-500 ring-2 ring-sky-500/20 bg-white dark:bg-slate-800 text-[#0284c7] dark:text-[#38BDF8]'
+                            : 'border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200'
+                        }`}
+                        aria-expanded={isTableFilterOpen}
+                        aria-haspopup="listbox"
+                        aria-label="Lọc danh sách bàn"
+                      >
+                        <span className="text-[#0284c7] dark:text-[#38BDF8] tracking-tight">
+                          {tableFilter === 'all' ? t.filterAll : t.filterAvailable}
+                        </span>
+                        <span
+                          className={`material-symbols-outlined text-[15px] text-slate-400 dark:text-slate-400 transition-transform duration-200 leading-none ${
+                            isTableFilterOpen ? 'rotate-180 text-[#0284c7] dark:text-[#38BDF8]' : ''
+                          }`}
+                        >
+                          expand_more
+                        </span>
+                      </button>
+
+                      <AnimatePresence>
+                        {isTableFilterOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -4, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -4, scale: 0.95 }}
+                            transition={{ duration: 0.15, ease: 'easeOut' }}
+                            className="absolute left-0 top-full mt-1.5 min-w-[145px] z-50 p-1.5 bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-xl border border-slate-200/90 dark:border-white/15 rounded-2xl shadow-xl shadow-black/10 dark:shadow-black/60 space-y-1 font-sans"
+                            role="listbox"
+                          >
+                            <button
+                              type="button"
+                              role="option"
+                              aria-selected={tableFilter === 'all'}
+                              onClick={() => {
+                                setTableFilter('all');
+                                setTablePage(1);
+                                setIsTableFilterOpen(false);
+                              }}
+                              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all cursor-pointer text-left ${
+                                tableFilter === 'all'
+                                  ? 'bg-sky-50 dark:bg-sky-500/15 text-[#0284c7] dark:text-[#38BDF8] font-black'
+                                  : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70 font-semibold'
+                              }`}
+                            >
+                              <span>{t.filterAll}</span>
+                              {tableFilter === 'all' && (
+                                <span className="material-symbols-outlined text-[16px] text-[#0284c7] dark:text-[#38BDF8] leading-none">
+                                  check
+                                </span>
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              role="option"
+                              aria-selected={tableFilter === 'available'}
+                              onClick={() => {
+                                setTableFilter('available');
+                                setTablePage(1);
+                                setIsTableFilterOpen(false);
+                              }}
+                              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all cursor-pointer text-left ${
+                                tableFilter === 'available'
+                                  ? 'bg-sky-50 dark:bg-sky-500/15 text-[#0284c7] dark:text-[#38BDF8] font-black'
+                                  : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70 font-semibold'
+                              }`}
+                            >
+                              <span>{t.filterAvailable}</span>
+                              {tableFilter === 'available' && (
+                                <span className="material-symbols-outlined text-[16px] text-[#0284c7] dark:text-[#38BDF8] leading-none">
+                                  check
+                                </span>
+                              )}
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                     <button
-                      onClick={() => setTableFilter('all')}
-                      className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                        tableFilter === 'all'
-                          ? 'bg-white dark:bg-[#1E293B] text-[#3B82F6] dark:text-[#38BDF8] shadow-xs'
-                          : 'text-slate-500 dark:text-slate-400'
-                      }`}
+                      onClick={fetchTables}
+                      className="px-2.5 sm:px-3 py-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-[11px] sm:text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer min-h-[32px] sm:min-h-[36px]"
                     >
-                      {t.filterAll}
-                    </button>
-                    <button
-                      onClick={() => setTableFilter('available')}
-                      className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                        tableFilter === 'available'
-                          ? 'bg-white dark:bg-[#1E293B] text-[#3B82F6] dark:text-[#38BDF8] shadow-xs'
-                          : 'text-slate-500 dark:text-slate-400'
-                      }`}
-                    >
-                      {t.filterAvailable}
+                      {t.refreshMap}
                     </button>
                   </div>
-                  <button
-                    onClick={fetchTables}
-                    className="px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer min-h-[36px]"
-                  >
-                    {t.refreshMap}
-                  </button>
                 </div>
-              </div>
 
-              {/* Status Legend Row */}
-              <div className="flex flex-wrap items-center gap-4 sm:gap-6 mb-6 sm:mb-8 text-xs font-semibold text-slate-600 dark:text-slate-400">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                  <span>{t.tableStatusEmpty}</span>
+                {/* Status Legend Row */}
+                <div className="flex items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-4 text-[11px] sm:text-xs font-semibold text-slate-600 dark:text-slate-400">
+                  <div className="flex items-center gap-3 sm:gap-6">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <span>{t.tableStatusEmpty}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-amber-500" />
+                      <span>{t.tableStatusReserved}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-slate-400" />
+                      <span>{t.tableStatusServing}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                  <span>{t.tableStatusReserved}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-slate-400" />
-                  <span>{t.tableStatusServing}</span>
-                </div>
-              </div>
 
-              {/* Table Map Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 sm:gap-4">
-                {filteredTables.length === 0 ? (
-                  <div className="col-span-full text-center py-12 text-xs text-slate-400 dark:text-slate-500 font-medium">
+              {/* Table Map Grid (No Scroll, Paginated) */}
+              <div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+                  {paginatedTables.length === 0 ? (
+                  <div className="col-span-full text-center py-10 text-xs text-slate-400 dark:text-slate-500 font-medium">
                     {tables.length === 0
                       ? (lang === 'en' ? 'Loading table map...' : 'Đang tải danh sách bàn...')
                       : (lang === 'en' ? 'No available tables found.' : 'Không có bàn trống nào.')}
                   </div>
                 ) : (
-                  filteredTables.map((tbl) => {
+                  paginatedTables.map((tbl) => {
                     const isSelected = selectedTable?._id === tbl._id;
                     const isBookable = tbl.status !== 'reserved' && tbl.status !== 'serving';
                     let statusDot = 'bg-emerald-500';
@@ -701,21 +844,21 @@ export default function Home() {
                             setSelectedTable(tbl);
                             setError('');
                           }}
-                          className="relative bg-white dark:bg-slate-900 border-2 border-[#3B82F6] dark:border-[#38BDF8] rounded-2xl p-4 sm:p-5 cursor-pointer shadow-md shadow-blue-500/10 transition-all group overflow-hidden"
+                          className="relative bg-white dark:bg-slate-900 border-2 border-[#3B82F6] dark:border-[#38BDF8] rounded-xl sm:rounded-2xl p-2.5 sm:p-3 cursor-pointer shadow-md shadow-blue-500/10 transition-all group overflow-hidden min-h-[76px] sm:min-h-[82px] flex flex-col justify-between"
                         >
                           <div className="absolute inset-0 bg-[#3B82F6]/10 pointer-events-none" />
-                          <div className="flex justify-between items-center mb-3 sm:mb-4 relative z-10">
+                          <div className="flex justify-between items-center mb-1.5 relative z-10">
                             <span className={`w-2 h-2 rounded-full ${statusDot}`} />
-                            <span className="text-[11px] sm:text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                            <span className="text-[10px] sm:text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
                               {statusText}
                             </span>
                           </div>
-                          <div className="text-center mb-1 relative z-10">
-                            <span className="text-lg sm:text-xl font-extrabold text-[#3B82F6] dark:text-[#38BDF8]">
+                          <div className="text-center mb-0.5 relative z-10">
+                            <span className="text-xs sm:text-sm font-black text-[#3B82F6] dark:text-[#38BDF8]">
                               {formattedName}
                             </span>
                           </div>
-                          <div className="text-center text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium relative z-10 truncate">
+                          <div className="text-center text-[10px] text-slate-500 dark:text-slate-400 font-medium relative z-10 truncate">
                             {formattedFloor}
                           </div>
                         </div>
@@ -733,29 +876,92 @@ export default function Home() {
                             setError('');
                           }
                         }}
-                        className={`relative rounded-2xl p-4 sm:p-5 text-left transition-all group overflow-hidden border ${
+                        className={`relative rounded-xl sm:rounded-2xl p-2.5 sm:p-3 text-left transition-all group overflow-hidden border min-h-[76px] sm:min-h-[82px] flex flex-col justify-between ${
                           isBookable
-                            ? 'bg-slate-50/80 dark:bg-slate-900/60 border-slate-200 dark:border-white/10 cursor-pointer hover:border-slate-300 dark:hover:border-white/20 hover:shadow-sm'
+                            ? 'bg-slate-50/80 dark:bg-slate-900/60 border-slate-200 dark:border-white/10 cursor-pointer hover:border-slate-300 dark:hover:border-white/20 hover:shadow-xs'
                             : 'bg-slate-100/50 dark:bg-slate-900/30 border-slate-200/50 dark:border-white/5 opacity-60 cursor-not-allowed'
                         }`}
                       >
-                        <div className="flex justify-between items-center mb-3 sm:mb-4">
+                        <div className="flex justify-between items-center mb-1.5">
                           <span className={`w-2 h-2 rounded-full ${statusDot}`} />
-                          <span className={`text-[11px] sm:text-xs font-medium ${isBookable ? 'text-slate-500 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors' : statusColorClass}`}>
+                          <span className={`text-[10px] sm:text-[11px] font-medium ${isBookable ? 'text-slate-500 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors' : statusColorClass}`}>
                             {statusText}
                           </span>
                         </div>
-                        <div className="text-center mb-1">
-                          <span className={`text-lg sm:text-xl font-bold ${isBookable ? 'text-slate-800 dark:text-slate-200 group-hover:text-[#3B82F6] dark:group-hover:text-[#38BDF8] transition-colors' : 'text-slate-400 dark:text-slate-500'}`}>
+                        <div className="text-center mb-0.5">
+                          <span className={`text-xs sm:text-sm font-black ${isBookable ? 'text-slate-800 dark:text-slate-200 group-hover:text-[#3B82F6] dark:group-hover:text-[#38BDF8] transition-colors' : 'text-slate-400 dark:text-slate-500'}`}>
                             {formattedName}
                           </span>
                         </div>
-                        <div className="text-center text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
+                        <div className="text-center text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">
                           {formattedFloor}
                         </div>
                       </button>
                     );
                   })
+                )}
+                </div>
+
+                {/* Table Pagination Controls */}
+                {totalTablePages > 1 && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-3 mt-3 border-t border-slate-200/80 dark:border-white/10 select-none">
+                    <div className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400">
+                      {lang === 'en' ? (
+                        <>Showing <strong className="text-slate-800 dark:text-slate-200">{(currentPage - 1) * TABLES_PER_PAGE + 1} - {Math.min(currentPage * TABLES_PER_PAGE, filteredTables.length)}</strong> of <strong className="text-slate-800 dark:text-slate-200">{filteredTables.length}</strong> tables</>
+                      ) : lang === 'zh' ? (
+                        <>显示 <strong className="text-slate-800 dark:text-slate-200">{(currentPage - 1) * TABLES_PER_PAGE + 1} - {Math.min(currentPage * TABLES_PER_PAGE, filteredTables.length)}</strong> / <strong className="text-slate-800 dark:text-slate-200">{filteredTables.length}</strong> 桌</>
+                      ) : (
+                        <>Hiển thị <strong className="text-slate-800 dark:text-slate-200">{(currentPage - 1) * TABLES_PER_PAGE + 1} - {Math.min(currentPage * TABLES_PER_PAGE, filteredTables.length)}</strong> trong <strong className="text-slate-800 dark:text-slate-200">{filteredTables.length}</strong> bàn</>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1 sm:gap-1.5">
+                      <button
+                        type="button"
+                        disabled={currentPage === 1}
+                        onClick={() => setTablePage(p => Math.max(1, p - 1))}
+                        className={`h-8 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-0.5 cursor-pointer active:scale-95 ${
+                          currentPage === 1
+                            ? 'opacity-35 cursor-not-allowed text-slate-400 bg-slate-100 dark:bg-slate-800/40'
+                            : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-2xs'
+                        }`}
+                        aria-label="Trang trước"
+                      >
+                        <span className="material-symbols-outlined text-sm">chevron_left</span>
+                        <span className="text-[11px] sm:text-xs">{lang === 'en' ? 'Prev' : lang === 'zh' ? '上页' : 'Trước'}</span>
+                      </button>
+
+                      {Array.from({ length: totalTablePages }, (_, i) => i + 1).map((pageNum) => (
+                        <button
+                          key={pageNum}
+                          type="button"
+                          onClick={() => setTablePage(pageNum)}
+                          className={`w-8 h-8 rounded-xl text-xs font-black transition-all cursor-pointer active:scale-95 flex items-center justify-center ${
+                            pageNum === currentPage
+                              ? 'bg-[#3B82F6] dark:bg-[#38BDF8] text-white dark:text-[#090D16] shadow-sm shadow-blue-500/20 dark:shadow-[#38BDF8]/20 ring-2 ring-[#3B82F6]/30 dark:ring-[#38BDF8]/30'
+                              : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      ))}
+
+                      <button
+                        type="button"
+                        disabled={currentPage === totalTablePages}
+                        onClick={() => setTablePage(p => Math.min(totalTablePages, p + 1))}
+                        className={`h-8 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-0.5 cursor-pointer active:scale-95 ${
+                          currentPage === totalTablePages
+                            ? 'opacity-35 cursor-not-allowed text-slate-400 bg-slate-100 dark:bg-slate-800/40'
+                            : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-2xs'
+                        }`}
+                        aria-label="Trang sau"
+                      >
+                        <span className="text-[11px] sm:text-xs">{lang === 'en' ? 'Next' : lang === 'zh' ? '下页' : 'Sau'}</span>
+                        <span className="material-symbols-outlined text-sm">chevron_right</span>
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -1363,7 +1569,7 @@ export default function Home() {
                       Hiện các bàn khác đều đang bận. Bạn vui lòng chờ đến giờ hẹn để nhận bàn cũ nhé!
                     </div>
                   ) : (
-                    <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    <div className="space-y-2 max-h-56 overflow-y-auto pr-1.5 table-scroll-container scroll-smooth">
                       {occupiedData.suggestedTables.map((tbl: any) => (
                         <button
                           key={tbl._id}
@@ -1489,6 +1695,7 @@ export default function Home() {
           </div>
         </div>
       </footer>
+      </div>
     </div>
   );
 }

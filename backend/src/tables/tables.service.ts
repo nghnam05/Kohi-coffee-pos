@@ -43,7 +43,14 @@ export class TablesService {
 
   async findAll(): Promise<any[]> {
     const tables = await this.tableModel.find().sort({ tableName: 1 }).lean().exec();
-    return tables;
+    return tables.sort((a, b) => {
+      const numA = parseInt(a.tableName?.replace(/\D/g, '') || '0', 10);
+      const numB = parseInt(b.tableName?.replace(/\D/g, '') || '0', 10);
+      if (!isNaN(numA) && !isNaN(numB) && numA !== numB) {
+        return numA - numB;
+      }
+      return (a.tableName || '').localeCompare(b.tableName || '', undefined, { numeric: true, sensitivity: 'base' });
+    });
   }
 
   async findOne(id: string): Promise<any> {
