@@ -15,6 +15,9 @@ interface BankPayModalProps {
   onSuccess?: () => void;
   apiBase?: string;
   orderStatus?: string;
+  selectedItemIndexes?: number[];
+  payerName?: string;
+  selectedItemNames?: string[];
 }
 
 export const BankPayModal: React.FC<BankPayModalProps> = ({
@@ -23,9 +26,13 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
   orderId,
   tableName = 'Bàn',
   totalAmount,
+  customerName,
   onSuccess,
   apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1',
   orderStatus,
+  selectedItemIndexes,
+  payerName,
+  selectedItemNames,
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasNotified, setHasNotified] = useState(false);
@@ -38,7 +45,9 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
   const accountName = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NAME || 'KOHI COFFEE';
 
   const shortCode = orderId ? `#${orderId.slice(-6).toUpperCase()}` : '';
-  const transferMemo = `KOHI ${tableName.replace(/\s+/g, '')} ${shortCode}`;
+  const effectivePayer = (payerName || customerName || '').trim();
+  const payerMemo = effectivePayer ? ` ${effectivePayer.replace(/[^a-zA-Z0-9]/g, '')}`.toUpperCase() : '';
+  const transferMemo = `KOHI ${tableName.replace(/\s+/g, '')} ${shortCode}${payerMemo}`.trim();
 
   const qrUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${totalAmount}&addInfo=${encodeURIComponent(
     transferMemo
@@ -64,15 +73,37 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
   };
 
   const handleNotifyPayment = async () => {
+    if (orderStatus === 'pending') {
+      toast.error('Đơn hàng đang chờ phục vụ duyệt. Vui lòng thanh toán sau khi đơn được duyệt.');
+      return;
+    }
     if (isProcessing || hasNotified) return;
     setIsProcessing(true);
     try {
-      const res = await fetch(`${apiBase}/orders/${orderId}/notify-payment`, {
+      const isSplit = Array.isArray(selectedItemIndexes) && selectedItemIndexes.length > 0;
+      const url = isSplit
+        ? `${apiBase}/orders/${orderId}/notify-split-payment`
+        : `${apiBase}/orders/${orderId}/notify-payment`;
+
+      const body = isSplit
+        ? JSON.stringify({
+            amount: totalAmount,
+            payerName: effectivePayer || 'Khách',
+            itemIndexes: selectedItemIndexes,
+            paymentMethod: 'bank_transfer',
+          })
+        : undefined;
+
+      const res = await fetch(url, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
+        ...(body ? { body } : {}),
       });
 
-      if (!res.ok) throw new Error('Không thể gửi thông báo chuyển khoản.');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Không thể gửi thông báo chuyển khoản.');
+      }
 
       toast.success('Đã gửi thông báo chuyển khoản tới Nhân viên phục vụ!');
       setHasNotified(true);
@@ -108,7 +139,7 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
           {/* Header */}
           <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-white/10 flex items-center justify-between bg-white dark:bg-[#0F172A]">
             <div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-[#0284c7] dark:text-sky-400 block">
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#0284c7] dark:text-sky-400 block font-mono">
                 Chuyển khoản Ngân hàng (VietQR)
               </span>
               <h3 className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white">
@@ -117,28 +148,42 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer"
+              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer font-bold text-lg"
             >
-              ✕
+              ×
             </button>
           </div>
 
           {/* Body */}
           <div className="p-4 sm:p-5 space-y-4">
             {/* Amount Banner */}
-            <div className="p-3.5 bg-blue-500/15 border border-blue-500/30 rounded-xl flex items-center justify-between">
+            <div className="p-3.5 bg-sky-500/15 border border-sky-500/30 rounded-xl flex items-center justify-between">
               <div>
                 <span className="text-[10.5px] font-extrabold text-slate-500 dark:text-slate-400 block uppercase">
-                  Tổng tiền cần thanh toán
+                  {selectedItemIndexes && selectedItemIndexes.length > 0
+                    ? `Thanh toán phần chọn (${selectedItemIndexes.length} món)`
+                    : 'Tổng tiền thanh toán'}
                 </span>
-                <span className="text-xl sm:text-2xl font-black text-[#0284c7] dark:text-sky-400">
+                <span className="text-xl sm:text-2xl font-black text-[#0284c7] dark:text-sky-400 font-mono">
                   {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalAmount)}
                 </span>
               </div>
-              <span className="px-2.5 py-1 bg-[#3B82F6] text-white font-black text-xs rounded-xl shadow-xs">
+              <span className="px-2.5 py-1 bg-[#38BDF8] text-slate-950 font-black text-xs rounded-xl shadow-xs font-mono">
                 {tableName}
               </span>
             </div>
+
+            {/* Selected Items preview */}
+            {selectedItemNames && selectedItemNames.length > 0 && (
+              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 text-xs">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                  Món trong đợt thanh toán này:
+                </span>
+                <p className="font-semibold text-slate-800 dark:text-slate-200 line-clamp-2">
+                  {selectedItemNames.join(', ')}
+                </p>
+              </div>
+            )}
 
             {/* QR Code Container */}
             <div className="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-white/10 text-center shadow-xs space-y-2">
@@ -200,25 +245,37 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
               </div>
             </div>
 
-            {/* Waiting Status Bar */}
-            <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-center">
-              <span className="text-[11px] font-extrabold text-amber-500 dark:text-amber-400 flex items-center justify-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-                Đang chờ Nhân viên phục vụ xác nhận tiền về...
-              </span>
-            </div>
+            {/* Status Bar */}
+            {orderStatus === 'pending' ? (
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-center">
+                <span className="text-[11px] font-extrabold text-amber-500 dark:text-amber-400 block">
+                  Đơn hàng đang chờ phục vụ duyệt. Vui lòng thanh toán sau khi đơn được duyệt.
+                </span>
+              </div>
+            ) : (
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-center">
+                <span className="text-[11px] font-extrabold text-amber-500 dark:text-amber-400 flex items-center justify-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                  Đang chờ Nhân viên phục vụ xác nhận tiền về...
+                </span>
+              </div>
+            )}
 
             {/* Confirm Payment Notification Button */}
             <button
               onClick={handleNotifyPayment}
-              disabled={isProcessing || hasNotified}
+              disabled={isProcessing || hasNotified || orderStatus === 'pending'}
               className={`w-full py-3 text-white font-extrabold rounded-xl text-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 ${
-                hasNotified
+                orderStatus === 'pending'
+                  ? 'bg-slate-400 dark:bg-slate-700 opacity-60 cursor-not-allowed'
+                  : hasNotified
                   ? 'bg-amber-500 hover:bg-amber-600 shadow-xs'
                   : 'bg-[#3B82F6] hover:bg-blue-600 disabled:opacity-50'
               }`}
             >
-              {isProcessing ? (
+              {orderStatus === 'pending' ? (
+                'Chờ phục vụ duyệt đơn...'
+              ) : isProcessing ? (
                 'Đang gửi...'
               ) : hasNotified ? (
                 <>

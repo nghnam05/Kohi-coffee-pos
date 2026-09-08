@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Order, OrderDocument } from './schemas/order.schema.js';
 import { CreateOrderDto } from './dto/create-order.dto.js';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto.js';
+import { NotifySplitPaymentDto, ConfirmSplitPaymentDto } from './dto/split-payment.dto.js';
 import { OrdersGateway } from './orders.gateway.js';
 import { FoodsService } from '../foods/foods.service.js';
 import { TablesService } from '../tables/tables.service.js';
@@ -22,54 +23,7 @@ export class OrdersService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    const count = await this.orderModel.countDocuments();
-    if (count === 0) {
-      try {
-        const foods = await this.foodsService.findAll();
-        const tables = await this.tablesService.findAll();
-        if (foods.length > 0) {
-          const sampleOrders: any[] = [];
-          const now = new Date();
-          const food1 = foods[0]._id;
-          const food2 = foods[1] ? foods[1]._id : food1;
-          const food3 = foods[2] ? foods[2]._id : food1;
-          const table1 = tables[0] ? tables[0]._id : null;
-
-          for (let i = 0; i < 15; i++) {
-            const dateOffset = Math.floor(i / 3);
-            const orderDate = new Date(now);
-            orderDate.setDate(now.getDate() - dateOffset);
-            orderDate.setHours(9 + (i % 8), (i * 17) % 60);
-
-            sampleOrders.push({
-              tableId: table1,
-              customerName: `Khách hàng #${101 + i}`,
-              items: [
-                { foodId: food1, quantity: (i % 3) + 1 },
-                { foodId: food2, quantity: (i % 2) + 1 },
-                { foodId: food3, quantity: 1 },
-              ],
-              totalAmount: 120000 + i * 15000,
-              status: 'paid',
-              paymentStatus: 'paid',
-              paymentMethod: i % 2 === 0 ? 'momo' : 'cash',
-              paidAt: orderDate,
-              createdAt: orderDate,
-            });
-          }
-          const insertedOrders = await this.orderModel.insertMany(sampleOrders);
-          console.log('[Seed] Sample Paid Orders initialized in Database for Revenue & Top Selling statistics.');
-
-          if (this.paymentsService) {
-            for (const ord of insertedOrders) {
-              await this.paymentsService.createFromOrder(ord).catch(() => {});
-            }
-          }
-        }
-      } catch (err) {
-        console.error('[Seed Error] Failed to seed sample orders:', err);
-      }
-    }
+    // Không tự động tạo đơn ảo để số liệu doanh thu luôn phản ánh đúng dữ liệu bán hàng thực tế
   }
 
   async cleanupExpiredPaidOrders() {
@@ -150,6 +104,12 @@ export class OrdersService implements OnModuleInit {
       this.ordersGateway.emitNewOrder(populatedOrder);
       if (createOrderDto.tableId) {
         this.ordersGateway.emitClearGroupCart(createOrderDto.tableId.toString());
+        this.ordersGateway.emitGroupOrderSubmitted({
+          tableId: createOrderDto.tableId.toString(),
+          orderId: populatedOrder._id.toString(),
+          customerName: populatedOrder.customerName || 'Bàn',
+          submittedBy: createOrderDto.customerName || 'Khách',
+        });
       }
       return populatedOrder;
     }
@@ -456,6 +416,14 @@ export class OrdersService implements OnModuleInit {
   }
 
   async notifyPayment(id: string): Promise<OrderDocument> {
+    const existingOrder = await this.orderModel.findById(id).exec();
+    if (!existingOrder) {
+      throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${id}`);
+    }
+    if (existingOrder.status === 'pending') {
+      throw new BadRequestException('Đơn hàng đang chờ phục vụ duyệt. Vui lòng đợi nhân viên xác nhận trước khi thanh toán.');
+    }
+
     const updatedOrder = await this.orderModel
       .findByIdAndUpdate(
         id,
@@ -475,6 +443,169 @@ export class OrdersService implements OnModuleInit {
     }
 
     return updatedOrder;
+  }
+
+  async notifySplitPayment(id: string, dto: NotifySplitPaymentDto): Promise<OrderDocument> {
+    const order = await this.orderModel.findById(id).exec();
+    if (!order) {
+      throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${id}`);
+    }
+
+    if (order.status === 'pending') {
+      throw new BadRequestException('Đơn hàng đang chờ phục vụ duyệt. Vui lòng đợi nhân viên xác nhận trước khi thanh toán.');
+    }
+
+    const transactionId = 'SPLIT-' + Math.random().toString(36).substring(2, 9).toUpperCase();
+    const newPartial = {
+      transactionId,
+      payerName: dto.payerName || 'Khách',
+      deviceId: dto.deviceId || null,
+      amount: dto.amount,
+      paymentMethod: dto.paymentMethod || 'bank_transfer',
+      itemIndexes: dto.itemIndexes || [],
+      paidAt: new Date(),
+      status: 'pending' as const,
+    };
+
+    order.partialPayments = order.partialPayments || [];
+    order.partialPayments.push(newPartial as any);
+    order.paymentNotified = true;
+    await order.save();
+
+    const populated = await this.orderModel
+      .findById(id)
+      .populate('tableId')
+      .populate('items.foodId')
+      .exec();
+
+    if (!populated) {
+      throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${id}`);
+    }
+
+    const tableIdStr = (populated.tableId as any)?._id?.toString() || populated.tableId?.toString();
+
+    if (this.ordersGateway) {
+      this.ordersGateway.emitSplitPaymentNotified({
+        orderId: id,
+        tableId: tableIdStr,
+        tableName: (populated.tableId as any)?.tableName || 'Bàn',
+        splitPayment: newPartial,
+        order: populated,
+      });
+    }
+
+    return populated;
+  }
+
+  async confirmSplitPayment(id: string, dto: ConfirmSplitPaymentDto, userRole?: string): Promise<OrderDocument> {
+    if (userRole === 'barista') {
+      throw new ForbiddenException('Nhân viên pha chế không có quyền xác nhận thanh toán.');
+    }
+
+    const order = await this.orderModel.findById(id).exec();
+    if (!order) {
+      throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${id}`);
+    }
+
+    const payer = dto.payerName || 'Khách';
+    const amount = Number(dto.amount) || 0;
+    const now = new Date();
+
+    // Mark selected items as paid
+    if (Array.isArray(dto.itemIndexes) && dto.itemIndexes.length > 0) {
+      dto.itemIndexes.forEach((idx) => {
+        if (order.items && order.items[idx]) {
+          order.items[idx].isPaid = true;
+          order.items[idx].paidBy = payer;
+          order.items[idx].paidAt = now;
+        }
+      });
+    }
+
+    // Update paidAmount
+    order.paidAmount = (order.paidAmount || 0) + amount;
+
+    // Update or append partial payment record
+    order.partialPayments = order.partialPayments || [];
+    let recordFound = false;
+    if (dto.transactionId) {
+      const match = order.partialPayments.find((p) => p.transactionId === dto.transactionId);
+      if (match) {
+        match.status = 'confirmed';
+        recordFound = true;
+      }
+    }
+    if (!recordFound) {
+      order.partialPayments.push({
+        transactionId: dto.transactionId || 'SPLIT-' + Math.random().toString(36).substring(2, 9).toUpperCase(),
+        payerName: payer,
+        amount,
+        paymentMethod: dto.paymentMethod || 'bank_transfer',
+        itemIndexes: dto.itemIndexes || [],
+        paidAt: now,
+        status: 'confirmed',
+      });
+    }
+
+    // Check if all items paid or total amount reached
+    const allItemsPaid = order.items.length > 0 && order.items.every((item) => item.isPaid === true);
+    const fullAmountReached = order.paidAmount >= order.totalAmount;
+
+    const isFullyPaid = allItemsPaid || fullAmountReached;
+
+    if (isFullyPaid) {
+      order.status = 'paid';
+      order.paymentStatus = 'paid';
+      order.paidAt = now;
+      order.paymentNotified = false;
+    }
+
+    await order.save();
+
+    const populated = await this.orderModel
+      .findById(id)
+      .populate('tableId')
+      .populate('items.foodId')
+      .exec();
+
+    if (!populated) {
+      throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${id}`);
+    }
+
+    const tableIdStr = (populated.tableId as any)?._id?.toString() || populated.tableId?.toString();
+
+    if (this.ordersGateway) {
+      this.ordersGateway.emitSplitPaymentUpdated({
+        orderId: id,
+        tableId: tableIdStr,
+        order: populated,
+      });
+
+      if (isFullyPaid) {
+        this.ordersGateway.emitStatusUpdate(id, 'paid');
+      }
+    }
+
+    if (isFullyPaid) {
+      console.log(`[Split Payment Complete] Đơn hàng ${id} đã thanh toán đủ 100%.`);
+      if (this.couponsService) {
+        await this.checkAndIssueRewardVoucher(populated);
+      }
+      if (this.paymentsService) {
+        await this.paymentsService.createFromOrder(populated).catch((err) => {
+          console.error('[Payment Record Error]:', err);
+        });
+      }
+      if (tableIdStr) {
+        const occupantCount = this.tablesService.getOccupantCount(tableIdStr);
+        if (occupantCount === 0) {
+          await this.tablesService.update(tableIdStr, { status: 'empty' }).catch(() => {});
+          this.ordersGateway.emitTableUpdate(tableIdStr, 'empty');
+        }
+      }
+    }
+
+    return populated;
   }
 
   async transferTable(fromTableId: string, toTableId: string): Promise<any> {

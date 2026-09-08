@@ -12,55 +12,7 @@ export class PaymentsService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    try {
-      const count = await this.paymentModel.countDocuments();
-      if (count === 0 && this.orderModel) {
-        const paidOrders = await this.orderModel
-          .find({ status: 'paid' })
-          .populate('tableId')
-          .populate('items.foodId')
-          .exec();
-
-        if (paidOrders.length > 0) {
-          const samplePayments: any[] = [];
-          for (let i = 0; i < paidOrders.length; i++) {
-            const ord = paidOrders[i];
-            const invoiceCode = `HD-${100000 + i + 1}`;
-            const tableName = (ord.tableId as any)?.tableName || 'Bàn ' + (i + 1);
-            const items = (ord.items || []).map((item: any) => ({
-              foodId: (item.foodId as any)?._id || item.foodId,
-              foodName: (item.foodId as any)?.name || 'Món ăn',
-              price: (item.foodId as any)?.price || 35000,
-              quantity: item.quantity || 1,
-              total: ((item.foodId as any)?.price || 35000) * (item.quantity || 1),
-              note: item.note || '',
-            }));
-
-            const subtotal = items.reduce((sum, item) => sum + item.total, 0);
-
-            samplePayments.push({
-              invoiceCode,
-              orderId: ord._id,
-              tableId: (ord.tableId as any)?._id || ord.tableId,
-              tableName,
-              customerName: ord.customerName || `Khách hàng #${i + 1}`,
-              items,
-              subtotal,
-              discountAmount: ord.discountAmount || 0,
-              couponCode: ord.couponCode || null,
-              totalAmount: ord.totalAmount || subtotal,
-              paymentMethod: ord.paymentMethod || (i % 2 === 0 ? 'momo' : 'cash'),
-              transactionCode: ord.paymentMethod === 'momo' ? `MM-${Math.floor(10000000 + Math.random() * 90000000)}` : null,
-              paidAt: ord.paidAt || (ord as any).createdAt || new Date(),
-            });
-          }
-          await this.paymentModel.insertMany(samplePayments);
-          console.log(`[Seed] Successfully seeded ${samplePayments.length} Payment Receipts in Database.`);
-        }
-      }
-    } catch (err) {
-      console.error('[Seed Payment Error]:', err);
-    }
+    // Không tự động tạo hoá đơn mẫu để số liệu kế toán phản ánh đúng thực tế
   }
 
   async generateInvoiceCode(): Promise<string> {

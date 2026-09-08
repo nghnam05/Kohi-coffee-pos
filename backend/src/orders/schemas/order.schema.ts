@@ -27,6 +27,36 @@ export class OrderItem {
     type: String,
   })
   note: string;
+
+  @Prop({
+    type: String,
+    default: null,
+  })
+  orderedBy?: string;
+
+  @Prop({
+    type: String,
+    default: null,
+  })
+  deviceId?: string;
+
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  isPaid?: boolean;
+
+  @Prop({
+    type: String,
+    default: null,
+  })
+  paidBy?: string;
+
+  @Prop({
+    type: Date,
+    default: null,
+  })
+  paidAt?: Date;
 }
 
 export const OrderItemSchema = SchemaFactory.createForClass(OrderItem);
@@ -95,6 +125,35 @@ export class Order {
 
   @Prop({ type: Date, default: null })
   paidAt: Date;
+
+  @Prop({ type: Number, default: 0, min: 0 })
+  paidAmount: number;
+
+  @Prop({
+    type: [
+      {
+        transactionId: { type: String, default: null },
+        payerName: { type: String, default: 'Khách' },
+        deviceId: { type: String, default: null },
+        amount: { type: Number, required: true },
+        paymentMethod: { type: String, default: 'cash' },
+        itemIndexes: { type: [Number], default: [] },
+        paidAt: { type: Date, default: () => new Date() },
+        status: { type: String, enum: ['pending', 'confirmed'], default: 'confirmed' },
+      },
+    ],
+    default: [],
+  })
+  partialPayments: Array<{
+    transactionId?: string;
+    payerName: string;
+    deviceId?: string;
+    amount: number;
+    paymentMethod: string;
+    itemIndexes: number[];
+    paidAt: Date;
+    status: 'pending' | 'confirmed';
+  }>;
 
   @Prop({ type: Boolean, default: false })
   paymentNotified: boolean;

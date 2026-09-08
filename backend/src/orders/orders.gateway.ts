@@ -25,6 +25,16 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected via WebSocket: ${client.id}`);
+    for (const [tableId, membersMap] of this.tableMembers.entries()) {
+      for (const [key, val] of membersMap.entries()) {
+        if (val.socketId === client.id) {
+          membersMap.delete(key);
+          const membersList = Array.from(membersMap.values()).map((m) => ({ deviceId: m.deviceId, name: m.name }));
+          this.server.to(`table_${tableId}`).emit('tableMembersUpdated', { tableId, members: membersList });
+          break;
+        }
+      }
+    }
   }
 
   @SubscribeMessage('register')
@@ -157,16 +167,73 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   private sharedCarts = new Map<string, any[]>();
+  private tableMembers = new Map<string, Map<string, { socketId: string; deviceId: string; name: string }>>();
 
   @SubscribeMessage('joinTableRoom')
   handleJoinTableRoom(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { tableId: string },
+    @MessageBody() data: { tableId: string; member?: { deviceId: string; name: string } },
   ) {
     if (data?.tableId) {
       client.join(`table_${data.tableId}`);
+      let roomMembers = this.tableMembers.get(data.tableId);
+      if (!roomMembers) {
+        roomMembers = new Map();
+        this.tableMembers.set(data.tableId, roomMembers);
+      }
+
+      if (data.member?.deviceId) {
+        roomMembers.set(data.member.deviceId, {
+          socketId: client.id,
+          deviceId: data.member.deviceId,
+          name: data.member.name || 'Khách',
+        });
+      }
+
+      const membersList = Array.from(roomMembers.values()).map((m) => ({
+        deviceId: m.deviceId,
+        name: m.name,
+      }));
+
+      // Phát danh sách thành viên mới cho cả bàn
+      this.server.to(`table_${data.tableId}`).emit('tableMembersUpdated', {
+        tableId: data.tableId,
+        members: membersList,
+      });
+
+      // Gửi trạng thái giỏ hàng và danh sách thành viên hiện tại cho máy vừa kết nối
       const cart = this.sharedCarts.get(data.tableId) || [];
-      client.emit('groupCartState', { tableId: data.tableId, items: cart });
+      client.emit('groupCartState', { tableId: data.tableId, items: cart, members: membersList });
+    }
+  }
+
+  @SubscribeMessage('updateMemberName')
+  handleUpdateMemberName(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { tableId: string; deviceId: string; name: string },
+  ) {
+    if (data?.tableId && data?.deviceId) {
+      const roomMembers = this.tableMembers.get(data.tableId);
+      if (roomMembers) {
+        const existing = roomMembers.get(data.deviceId);
+        if (existing) {
+          existing.name = data.name;
+        } else {
+          roomMembers.set(data.deviceId, {
+            socketId: client.id,
+            deviceId: data.deviceId,
+            name: data.name,
+          });
+        }
+        const membersList = Array.from(roomMembers.values()).map((m) => ({
+          deviceId: m.deviceId,
+          name: m.name,
+        }));
+        this.server.to(`table_${data.tableId}`).emit('tableMembersUpdated', {
+          tableId: data.tableId,
+          members: membersList,
+        });
+      }
     }
   }
 
@@ -205,12 +272,23 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  emitGroupOrderSubmitted(data: { tableId: string; orderId: string; customerName: string; submittedBy: string }): void {
+    if (this.server && data?.tableId) {
+      this.server.to(`table_${data.tableId}`).emit('groupOrderSubmitted', data);
+    }
+  }
+
   transferGroupCart(fromTableId: string, toTableId: string): void {
     if (!fromTableId || !toTableId) return;
     const cart = this.sharedCarts.get(fromTableId) || [];
     if (cart.length > 0) {
       this.sharedCarts.set(toTableId, cart);
       this.sharedCarts.delete(fromTableId);
+    }
+    const members = this.tableMembers.get(fromTableId);
+    if (members) {
+      this.tableMembers.set(toTableId, members);
+      this.tableMembers.delete(fromTableId);
     }
     if (this.server) {
       this.server.to(`table_${toTableId}`).emit('groupCartUpdated', {
@@ -245,6 +323,24 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   emitTableTransferRejected(data: any): void {
     if (this.server) {
       this.server.emit('tableTransferRejected', data);
+    }
+  }
+
+  emitSplitPaymentNotified(data: any): void {
+    if (this.server) {
+      this.server.emit('splitPaymentNotified', data);
+      if (data?.tableId) {
+        this.server.to(`table_${data.tableId}`).emit('splitPaymentNotified', data);
+      }
+    }
+  }
+
+  emitSplitPaymentUpdated(data: any): void {
+    if (this.server) {
+      this.server.emit('splitPaymentUpdated', data);
+      if (data?.tableId) {
+        this.server.to(`table_${data.tableId}`).emit('splitPaymentUpdated', data);
+      }
     }
   }
 }

@@ -348,6 +348,7 @@ export default function TableMenuPage() {
   const [dbCategories, setDbCategories] = useState<string[]>([]);
   const [table, setTable] = useState<Table | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [tableMembers, setTableMembers] = useState<{ socketId?: string; deviceId: string; name: string }[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('');
 
   const [isLoading, setIsLoading] = useState(true);
@@ -529,11 +530,39 @@ export default function TableMenuPage() {
     if (!tableId) return;
     socketRef.current = io(SOCKET_BASE);
 
-    socketRef.current.emit('joinTableRoom', { tableId });
+    const devId = typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest';
+    const savedName = typeof window !== 'undefined' ? (localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Khách').trim() : 'Khách';
 
-    socketRef.current.on('groupCartState', ({ items }: { items: any[] }) => {
-      if (Array.isArray(items) && items.length > 0) {
+    socketRef.current.emit('joinTableRoom', {
+      tableId,
+      member: {
+        deviceId: devId,
+        name: savedName,
+      },
+    });
+
+    socketRef.current.on('groupCartState', ({ items, members }: { items: any[]; members?: any[] }) => {
+      if (Array.isArray(items)) {
         setCart(items);
+      }
+      if (Array.isArray(members)) {
+        setTableMembers(members);
+      }
+    });
+
+    socketRef.current.on('tableMembersUpdated', ({ members }: { members: any[] }) => {
+      if (Array.isArray(members)) {
+        setTableMembers(members);
+      }
+    });
+
+    socketRef.current.on('groupOrderSubmitted', ({ orderId, customerName: submitter }: { orderId: string; customerName?: string }) => {
+      setCart([]);
+      toast.success(`${submitter || 'Thành viên cùng bàn'} đã gửi đơn gọi món cho cả bàn! Đang chuyển sang trang theo dõi...`);
+      if (orderId) {
+        setTimeout(() => {
+          router.push(`/table/${tableId}/order-status/${orderId}`);
+        }, 1200);
       }
     });
 
@@ -733,11 +762,31 @@ export default function TableMenuPage() {
   }, [tableId]);
 
   const handleLeaveTable = () => {
+    const hasUnpaid = activeOrders.some(
+      (o) => o.status !== 'paid' && o.status !== 'cancelled'
+    );
+    if (hasUnpaid) {
+      toast('Bàn của bạn còn đơn hàng chưa thanh toán. Vui lòng thanh toán trước khi rời bàn.', {
+        icon: null,
+      });
+      return;
+    }
     setKitchenNotification(null);
     setIsLeaveTableModalOpen(true);
   };
 
   const executeLeaveTable = async () => {
+    const hasUnpaid = activeOrders.some(
+      (o) => o.status !== 'paid' && o.status !== 'cancelled'
+    );
+    if (hasUnpaid) {
+      toast('Bàn của bạn còn đơn hàng chưa thanh toán. Vui lòng thanh toán trước khi rời bàn.', {
+        icon: null,
+      });
+      setIsLeaveTableModalOpen(false);
+      return;
+    }
+
     setIsLeavingTable(true);
     try {
       let devId = localStorage.getItem('kohi_device_id');
@@ -750,23 +799,25 @@ export default function TableMenuPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ deviceId: devId }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.isTableCleared) {
-          toast('Bạn là người cuối cùng rời bàn. Bàn đã được đưa về trạng thái bàn trống.', { icon: null });
-        } else {
-          toast(`Bạn đã rời bàn thành công. Nhóm của bạn vẫn còn ${data.remainingCount} người đang ở tại bàn.`, { icon: null });
-        }
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Không thể rời bàn lúc này.');
       }
+      const data = await res.json();
+      if (data.isTableCleared) {
+        toast('Bạn là người cuối cùng rời bàn. Bàn đã được đưa về trạng thái bàn trống.', { icon: null });
+      } else {
+        toast(`Bạn đã rời bàn thành công. Nhóm của bạn vẫn còn ${data.remainingCount} người đang ở tại bàn.`, { icon: null });
+      }
+      localStorage.removeItem(`chika_name_${tableId}`);
+      localStorage.removeItem(`chika_name_dismissed_${tableId}`);
+      router.push('/');
     } catch (err) {
-      console.error('Error leaving session:', err);
+      toast(err instanceof Error ? err.message : 'Không thể rời bàn lúc này.', { icon: null });
     } finally {
       setIsLeavingTable(false);
       setIsLeaveTableModalOpen(false);
     }
-    localStorage.removeItem(`chika_name_${tableId}`);
-    localStorage.removeItem(`chika_name_dismissed_${tableId}`);
-    router.push('/');
   };
 
   useEffect(() => {
@@ -1101,6 +1152,14 @@ export default function TableMenuPage() {
     } else {
       localStorage.setItem(`chika_name_dismissed_${tableId}`, 'true');
     }
+    if (socketRef.current && tableId) {
+      const devId = typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest';
+      socketRef.current.emit('updateMemberName', {
+        tableId,
+        deviceId: devId,
+        name: finalName || 'Khách',
+      });
+    }
     setIsNamePromptOpen(false);
   };
 
@@ -1124,6 +1183,8 @@ export default function TableMenuPage() {
             foodId: item.food._id,
             quantity: item.quantity,
             note: itemCaller ? `[${itemCaller}] ${item.note || ''}`.trim() : item.note || undefined,
+            orderedBy: itemCaller || undefined,
+            deviceId: item.addedByDeviceId || undefined,
           };
         }),
         paymentMethod,
@@ -1150,6 +1211,9 @@ export default function TableMenuPage() {
       });
       setTable((prev) => (prev ? { ...prev, status: 'serving' } : null));
 
+      if (socketRef.current && tableId) {
+        socketRef.current.emit('clearGroupCart', { tableId });
+      }
       setCart([]);
       setCouponInput('');
       setCouponResult(null);
@@ -1328,6 +1392,23 @@ export default function TableMenuPage() {
   const totalAmount = cart.reduce((sum, item) => sum + (item.unitPrice ?? item.food.price) * item.quantity, 0);
   const cartMap = new Map(cart.map((item) => [item.food._id, item]));
 
+  const myDeviceId = typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest';
+  const myCartMap = useMemo(() => {
+    const map = new Map<string, CartItem>();
+    cart.forEach((item) => {
+      if (item.addedByDeviceId === myDeviceId || (!item.addedByDeviceId && item.addedBy === customerName)) {
+        map.set(item.food._id, item);
+      }
+    });
+    return map;
+  }, [cart, myDeviceId, customerName]);
+
+  const myTotalQuantity = useMemo(() => {
+    return cart
+      .filter((item) => item.addedByDeviceId === myDeviceId || (!item.addedByDeviceId && item.addedBy === customerName))
+      .reduce((sum, item) => sum + item.quantity, 0);
+  }, [cart, myDeviceId, customerName]);
+
   if (!mounted) return null;
 
   if (error && !isLoading) {
@@ -1474,6 +1555,62 @@ export default function TableMenuPage() {
               lang={lang}
             />
 
+            {/* Realtime Table Members Bar (Clean, Minimalist, Icon-free, Modern) */}
+            <div className="px-4 md:px-6 py-2 border-t border-slate-100 dark:border-white/5 flex items-center justify-between gap-2 flex-wrap text-xs bg-slate-50/70 dark:bg-[#0F172A]/50">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  {lang === 'en' ? 'Table Members' : lang === 'zh' ? '同桌成员' : 'Cùng bàn'} ({tableMembers.length > 0 ? tableMembers.length : 1}):
+                </span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {tableMembers.length > 0 ? (
+                    tableMembers.map((member) => {
+                      const isMe = member.deviceId === myDeviceId || (customerName && member.name === customerName);
+                      return (
+                        <button
+                          key={member.deviceId}
+                          onClick={() => {
+                            if (isMe) {
+                              setNameInput(customerName);
+                              setIsNamePromptOpen(true);
+                            }
+                          }}
+                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all ${
+                            isMe
+                              ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 hover:bg-sky-500/25 cursor-pointer'
+                              : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10'
+                          }`}
+                          title={isMe ? (lang === 'en' ? 'Click to change your name' : 'Bấm để đổi tên hiển thị') : undefined}
+                        >
+                          {member.name || 'Khách'} {isMe && (lang === 'en' ? '(You)' : '(Bạn)')}
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setNameInput(customerName);
+                        setIsNamePromptOpen(true);
+                      }}
+                      className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 hover:bg-sky-500/25 cursor-pointer"
+                    >
+                      {customerName || (lang === 'en' ? 'You' : 'Bạn')} {lang === 'en' ? '(You)' : '(Bạn)'}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Group Cart Brief Indicator */}
+              <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 hidden sm:block">
+                {cart.length > 0 ? (
+                  <span>
+                    Giỏ chung: <strong className="text-sky-600 dark:text-sky-400 font-bold">{totalQuantity} món</strong> • {formatPrice(totalAmount, lang)}
+                  </span>
+                ) : (
+                  <span>Chưa có món trong giỏ chung</span>
+                )}
+              </div>
+            </div>
+
             {/* Mobile Category Horizontal Scroll Bar */}
             <div className="px-4 flex md:hidden gap-2 overflow-x-auto pb-2.5 scrollbar-none flex-shrink-0">
               <button
@@ -1584,7 +1721,7 @@ export default function TableMenuPage() {
                 }
               >
                 {filteredFoods.map((food) => {
-                  const cartItem = cartMap.get(food._id);
+                  const cartItem = myCartMap.get(food._id);
                   const quantity = cartItem?.quantity ?? 0;
 
                   return (
@@ -1814,21 +1951,21 @@ export default function TableMenuPage() {
               className="w-full bg-[#090D16]/95 dark:bg-[#0F172A]/95 text-white backdrop-blur-xl border border-sky-500/40 rounded-2xl p-3 sm:p-3.5 shadow-2xl flex items-center justify-between cursor-pointer active:scale-[0.99] transition-transform font-sans group hover:border-sky-400"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="px-3 py-1.5 rounded-xl bg-sky-500/20 border border-sky-400/40 text-sky-400 font-black text-xs shrink-0">
+                <div className="px-3 py-1.5 rounded-xl bg-sky-500/20 border border-sky-400/40 text-sky-400 font-black text-xs shrink-0 font-mono">
                   {totalQuantity} {lang === 'en' ? 'items' : lang === 'zh' ? '件' : 'món'}
                 </div>
                 <div className="min-w-0">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    {lang === 'en' ? 'Total' : lang === 'zh' ? '总计' : 'Tổng cộng'}
+                    {myTotalQuantity > 0 ? (lang === 'en' ? `You: ${myTotalQuantity} • Table` : `Bạn: ${myTotalQuantity} • Cả bàn`) : (lang === 'en' ? 'Table Cart' : 'Giỏ hàng cả bàn')}
                   </p>
-                  <p className="text-sm font-black text-white truncate">
+                  <p className="text-sm font-black text-white truncate font-mono">
                     {formatPrice(totalAmount, lang)}
                   </p>
                 </div>
               </div>
 
               <div className="bg-[#38BDF8] hover:bg-sky-400 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs uppercase tracking-wider shrink-0 shadow-md">
-                {lang === 'en' ? 'Confirm Order' : lang === 'zh' ? '确认点餐' : 'Xác nhận gọi món'}
+                {lang === 'en' ? 'Review & Order' : lang === 'zh' ? '查看并下单' : 'Xem & Gọi món'}
               </div>
             </div>
           </motion.div>

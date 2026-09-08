@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, Optional, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException, Optional, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, isValidObjectId, Types } from 'mongoose';
 import { Table, TableDocument } from './schemas/table.schema.js';
@@ -176,10 +176,6 @@ export class TablesService {
     const table = await this.findOne(tableId).catch(() => null);
     const tableName = table?.tableName || `Bàn số ${tableId.slice(-4)}`;
 
-    if (deviceId && this.activeOccupantsMap.has(tableId)) {
-      this.activeOccupantsMap.get(tableId)!.delete(deviceId);
-    }
-
     // Kiểm tra số lượng đơn hàng chưa thanh toán còn lại của bàn
     const activeOrdersCount = this.orderModel
       ? await this.orderModel.countDocuments({
@@ -189,8 +185,16 @@ export class TablesService {
         }).exec().catch(() => 0)
       : 0;
 
-    // Nếu không còn đơn hàng nào chưa thanh toán, tự động dọn dẹp bàn về trạng thái 'empty'
-    if (activeOrdersCount === 0) {
+    if (activeOrdersCount > 0) {
+      throw new BadRequestException('Bàn hiện còn đơn hàng chưa thanh toán. Quý khách vui lòng hoàn tất thanh toán trước khi rời bàn.');
+    }
+
+    if (deviceId && this.activeOccupantsMap.has(tableId)) {
+      this.activeOccupantsMap.get(tableId)!.delete(deviceId);
+    }
+
+    const remainingCount = this.activeOccupantsMap.get(tableId)?.size || 0;
+    if (remainingCount === 0) {
       this.activeOccupantsMap.delete(tableId);
       await this.update(tableId, { status: 'empty' });
       if (this.ordersGateway) {
@@ -199,14 +203,6 @@ export class TablesService {
       return { isTableCleared: true, remainingCount: 0 };
     }
 
-    const remainingCount = this.activeOccupantsMap.get(tableId)?.size || 0;
-    if (remainingCount === 0) {
-      await this.update(tableId, { status: 'empty' });
-      if (this.ordersGateway) {
-        this.ordersGateway.emitGuestLeft({ tableId, tableName });
-      }
-      return { isTableCleared: true, remainingCount: 0 };
-    }
     return { isTableCleared: false, remainingCount };
   }
 

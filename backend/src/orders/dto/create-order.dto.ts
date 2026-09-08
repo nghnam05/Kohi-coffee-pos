@@ -25,6 +25,14 @@ export class OrderItemDto {
   @IsString()
   @IsOptional()
   note?: string;
+
+  @IsString()
+  @IsOptional()
+  orderedBy?: string;
+
+  @IsString()
+  @IsOptional()
+  deviceId?: string;
 }
 
 // Main DTO: Dữ liệu đầu vào để tạo một đơn hàng mới (không nhận totalAmount từ frontend để chống gian lận)
