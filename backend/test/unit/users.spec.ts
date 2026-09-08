@@ -118,6 +118,7 @@ describe('UsersService', () => {
 
   describe('remove', () => {
     it('should throw NotFoundException if user does not exist', async () => {
+      userModelMock.findById.mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(null) });
       userModelMock.findByIdAndDelete.mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(null) });
       await expect(service.remove('nonexistent')).rejects.toThrow(NotFoundException);
     });

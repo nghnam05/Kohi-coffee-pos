@@ -15,45 +15,7 @@ export class CouponsService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    const count = await this.couponModel.countDocuments();
-    if (count === 0) {
-      await this.couponModel.insertMany([
-        {
-          code: 'KOHI10',
-          type: 'percent',
-          value: 10,
-          maxDiscount: 30000,
-          minOrderAmount: 50000,
-          maxUsage: 100,
-          usedCount: 12,
-          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          isActive: true,
-        },
-        {
-          code: 'KOHI20',
-          type: 'percent',
-          value: 20,
-          maxDiscount: 50000,
-          minOrderAmount: 100000,
-          maxUsage: 50,
-          usedCount: 5,
-          expiresAt: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
-          isActive: true,
-        },
-        {
-          code: 'WELCOME50K',
-          type: 'fixed',
-          value: 50000,
-          maxDiscount: 50000,
-          minOrderAmount: 150000,
-          maxUsage: 200,
-          usedCount: 28,
-          expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
-          isActive: true,
-        },
-      ]);
-      console.log('[Seed] Default Coupon Codes initialized in Database.');
-    }
+    // Không tự động tạo lại mã giảm giá mẫu để bảo toàn thao tác xóa của quản trị viên
   }
 
   async create(dto: CreateCouponDto): Promise<CouponDocument> {

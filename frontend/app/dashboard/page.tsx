@@ -419,6 +419,11 @@ interface FoodItem {
   };
   quantity: number;
   note?: string;
+  orderedBy?: string;
+  deviceId?: string;
+  isPaid?: boolean;
+  paidBy?: string;
+  paidAt?: string;
 }
 
 interface Order {
@@ -429,6 +434,14 @@ interface Order {
   } | null;
   items: FoodItem[];
   totalAmount: number;
+  paidAmount?: number;
+  partialPayments?: Array<{
+    amount: number;
+    payerName: string;
+    paymentMethod: string;
+    paidAt: string;
+    itemIndexes: number[];
+  }>;
   status: 'pending' | 'confirmed' | 'cooking' | 'ready' | 'completed' | 'cancelled' | 'paid';
   paymentStatus?: 'unpaid' | 'paid';
   paymentMethod: 'cash' | 'momo' | 'bank_transfer';
@@ -527,6 +540,18 @@ export default function DashboardPage() {
 
   // Bulk Selection for Orders
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
+
+  // Real-time Split Payment Notifications State
+  const [pendingSplitNotifications, setPendingSplitNotifications] = useState<
+    Array<{
+      orderId: string;
+      amount: number;
+      payerName: string;
+      itemIndexes: number[];
+      paymentMethod: string;
+      createdAt: Date;
+    }>
+  >([]);
 
   // Shift Swap Requests State
   const [shiftSwaps, setShiftSwaps] = useState<any[]>([]);
@@ -849,6 +874,7 @@ export default function DashboardPage() {
     code: '',
     type: 'percent',
     value: '',
+    maxDiscount: '',
     maxUsage: '',
     minOrderAmount: '',
     expiresAt: '',
@@ -967,6 +993,7 @@ export default function DashboardPage() {
       fetchReviews(token);
       fetchPayrolls(token);
       fetchSalaryConfigs(token);
+      fetchCoupons(token);
     }
     fetchAttendance(token, user?.role || 'admin');
     fetchReservations(token);
@@ -1116,6 +1143,37 @@ export default function DashboardPage() {
       toast.success(`Khách tại ${notifiedOrder?.tableId?.tableName || 'bàn'} vừa bấm Xác nhận Đã chuyển khoản!`, {
         duration: 6000,
       });
+    });
+
+    socketRef.current.on('splitPaymentNotified', ({ orderId, notification }: any) => {
+      fetchOrders(token);
+      try {
+        playAlertPing();
+      } catch (e) {}
+      setPendingSplitNotifications((prev) => [
+        {
+          orderId,
+          amount: notification?.amount || 0,
+          payerName: notification?.payerName || 'Khách',
+          itemIndexes: notification?.itemIndexes || [],
+          paymentMethod: notification?.paymentMethod || 'bank_transfer',
+          createdAt: new Date(),
+        },
+        ...prev.filter(
+          (p) => !(p.orderId === orderId && p.payerName === notification?.payerName && p.amount === notification?.amount)
+        ),
+      ]);
+      const formattedAmount = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(notification?.amount || 0);
+      toast.success(
+        `Khách ${notification?.payerName || ''} vừa báo thanh toán ${formattedAmount} (${notification?.paymentMethod === 'cash' ? 'Tiền mặt' : 'Chuyển khoản'})!`,
+        { duration: 7000 }
+      );
+    });
+
+    socketRef.current.on('splitPaymentUpdated', ({ orderId, order: updatedOrder }: any) => {
+      fetchOrders(token);
+      fetchTables(token);
+      setPendingSplitNotifications((prev) => prev.filter((p) => p.orderId !== orderId));
     });
 
     socketRef.current.on('guestJoined', ({ tableId, tableName }: { tableId: string; tableName: string }) => {
@@ -1526,7 +1584,8 @@ export default function DashboardPage() {
 
   const handleCreateOrUpdateCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token) return;
+    const authToken = token || localStorage.getItem('token');
+    if (!authToken) return;
 
     const cleanCode = couponForm.code.toUpperCase().trim();
     const cleanValue = Number(couponForm.value);
@@ -1546,6 +1605,7 @@ export default function DashboardPage() {
         code: cleanCode,
         type: couponForm.type,
         value: cleanValue,
+        maxDiscount: couponForm.type === 'percent' ? (Number(couponForm.maxDiscount) || 0) : cleanValue,
         maxUsage: Number(couponForm.maxUsage) || 0,
         minOrderAmount: Number(couponForm.minOrderAmount) || 0,
         expiresAt: couponForm.expiresAt ? new Date(couponForm.expiresAt).toISOString() : new Date(Date.now() + 30 * 86400000).toISOString(),
@@ -1559,32 +1619,42 @@ export default function DashboardPage() {
         method,
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error('Không thể lưu mã giảm giá.');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        const msg = Array.isArray(errData.message) ? errData.message.join(', ') : errData.message;
+        throw new Error(msg || 'Không thể lưu mã giảm giá.');
+      }
       showToast('Lưu mã giảm giá thành công!', 'success');
       setIsCouponModalOpen(false);
-      fetchCoupons(token);
+      fetchCoupons(authToken);
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Lỗi lưu mã giảm giá.', 'error');
     }
   };
 
   const handleDeleteCoupon = async (id: string) => {
-    if (!token) return;
+    const authToken = token || localStorage.getItem('token');
+    if (!authToken) return;
+    if (!confirm('Bạn có chắc chắn muốn xóa mã giảm giá này không?')) return;
     try {
       const res = await fetch(`${API_BASE}/coupons/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${authToken}` },
       });
-      if (!res.ok) throw new Error('Không thể xóa mã giảm giá.');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Không thể xóa mã giảm giá.');
+      }
       setCoupons((prev) => prev.filter((c) => c._id !== id));
       showToast('Đã xóa mã giảm giá thành công!', 'success');
+      fetchCoupons(authToken);
     } catch (err) {
-      showToast('Không thể xóa mã giảm giá.', 'error');
+      showToast(err instanceof Error ? err.message : 'Không thể xóa mã giảm giá.', 'error');
     }
   };
 
@@ -2273,7 +2343,8 @@ export default function DashboardPage() {
   // Food Create / Update Handler
   const handleCreateOrUpdateFood = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token) return;
+    const authToken = token || localStorage.getItem('token');
+    if (!authToken) return;
 
     const cleanName = foodForm.name.trim();
     const cleanPrice = Number(foodForm.price);
@@ -2310,7 +2381,7 @@ export default function DashboardPage() {
         method,
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify(payload),
       });
@@ -2322,7 +2393,7 @@ export default function DashboardPage() {
       }
       showToast(t.toastSaveSuccess, 'success');
       setIsFoodModalOpen(false);
-      fetchFoods(token);
+      fetchFoods(authToken);
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Có lỗi xảy ra.', 'error');
     }
@@ -2637,9 +2708,53 @@ export default function DashboardPage() {
     }
   };
 
+  const handleConfirmSplitPayment = async (notif: {
+    orderId: string;
+    amount: number;
+    payerName: string;
+    itemIndexes: number[];
+    paymentMethod: string;
+  }) => {
+    const authToken = token || localStorage.getItem('token');
+    if (!authToken) return;
+    try {
+      const res = await fetch(`${API_BASE}/orders/${notif.orderId}/confirm-split-payment`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({
+          amount: notif.amount,
+          payerName: notif.payerName,
+          itemIndexes: notif.itemIndexes,
+          paymentMethod: notif.paymentMethod,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Không thể xác nhận thanh toán.');
+      }
+      showToast(
+        `Đã xác nhận thanh toán ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(notif.amount)} của ${notif.payerName}!`,
+        'success'
+      );
+      setPendingSplitNotifications((prev) =>
+        prev.filter(
+          (p) => !(p.orderId === notif.orderId && p.payerName === notif.payerName && p.amount === notif.amount)
+        )
+      );
+      fetchOrders(authToken);
+      fetchTables(authToken);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Lỗi xác nhận.', 'error');
+    }
+  };
+
   const handleSaveCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token) return;
+    const authToken = token || localStorage.getItem('token');
+    if (!authToken) return;
     try {
       const url = editingCategory
         ? `${API_BASE}/categories/${editingCategory._id}`
@@ -2650,7 +2765,7 @@ export default function DashboardPage() {
         method,
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           name: categoryForm.name,
@@ -2661,7 +2776,7 @@ export default function DashboardPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.message || 'Không thể lưu danh mục.');
       }
 
@@ -2676,14 +2791,18 @@ export default function DashboardPage() {
   };
 
   const handleDeleteCategory = async (categoryId: string) => {
-    if (!token) return;
+    const authToken = token || localStorage.getItem('token');
+    if (!authToken) return;
     if (!confirm('Bạn có chắc chắn muốn xóa danh mục này không?')) return;
     try {
       const res = await fetch(`${API_BASE}/categories/${categoryId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${authToken}` },
       });
-      if (!res.ok) throw new Error('Không thể xóa danh mục.');
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || 'Không thể xóa danh mục.');
+      }
       showToast('Đã xóa danh mục!', 'success');
       fetchCategories();
     } catch (err) {
@@ -2713,13 +2832,17 @@ export default function DashboardPage() {
       }
     } else if (foodToDelete) {
       try {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
         const res = await fetch(`${API_BASE}/foods/${foodToDelete}`, {
           method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` },
+          headers,
         });
-        if (!res.ok) throw new Error('Không thể xóa món.');
+        const errData = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(errData.message || 'Không thể xóa món.');
         setFoods((prev) => prev.filter((f) => f._id !== foodToDelete));
         showToast(t.toastDeleteFood, 'success');
+        if (authToken) fetchFoods(authToken);
       } catch (err) {
         showToast(err instanceof Error ? err.message : 'Không thể xóa.', 'error');
       } finally {
@@ -2741,13 +2864,17 @@ export default function DashboardPage() {
       }
     } else if (userToDelete) {
       try {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
         const res = await fetch(`${API_BASE}/users/${userToDelete}`, {
           method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` },
+          headers,
         });
-        if (!res.ok) throw new Error('Không thể xóa nhân viên.');
+        const resData = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(resData.message || 'Không thể xóa nhân viên.');
         setUsersList((prev) => prev.filter((u) => u._id !== userToDelete));
-        showToast(t.toastDeleteUser, 'success');
+        showToast(t.toastDeleteUser || 'Đã xóa nhân viên thành công!', 'success');
+        if (authToken) fetchUsers(authToken);
       } catch (err) {
         showToast(err instanceof Error ? err.message : 'Không thể xóa.', 'error');
       } finally {
@@ -4378,6 +4505,11 @@ export default function DashboardPage() {
                                   <div key={idx} className="flex justify-between items-center text-[11px]">
                                     <span className="truncate pr-2 font-medium">
                                       <strong className="text-slate-900 dark:text-white font-bold">{item.quantity}x</strong> {name}
+                                      {(item.orderedBy || (item.note && item.note.match(/^\[(.*?)\]/)?.[1])) && (
+                                        <span className="ml-1.5 px-1.5 py-0.2 rounded text-[9px] font-bold bg-sky-500/15 text-sky-600 dark:text-sky-400 font-mono">
+                                          {item.orderedBy || item.note.match(/^\[(.*?)\]/)?.[1]}
+                                        </span>
+                                      )}
                                     </span>
                                     <span className="font-semibold text-slate-500">{formatPrice(itemTotal)}</span>
                                   </div>
@@ -4526,18 +4658,83 @@ export default function DashboardPage() {
                                 {item.quantity}x
                               </span>
                               <div className="min-w-0 flex-1">
-                                <p className="text-slate-800 dark:text-slate-200 font-bold text-[12.5px] leading-snug">
-                                  {item.foodId?.name || 'Món ăn'}
-                                </p>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <p className={`font-bold text-[12.5px] leading-snug ${item.isPaid ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-200'}`}>
+                                    {item.foodId?.name || 'Món ăn'}
+                                  </p>
+                                  {(item.orderedBy || (item.note && item.note.match(/^\[(.*?)\]/)?.[1])) && (
+                                    <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-sky-500/15 text-sky-600 dark:text-sky-400 font-mono">
+                                      {item.orderedBy || (item.note ? item.note.match(/^\[(.*?)\]/)?.[1] : '')}
+                                    </span>
+                                  )}
+                                  {item.isPaid && (
+                                    <span className="px-1.5 py-0.2 rounded text-[10px] font-black bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-mono shrink-0">
+                                      ✓ Đã trả {item.paidBy ? `(${item.paidBy})` : ''}
+                                    </span>
+                                  )}
+                                </div>
                                 {item.note && (
                                   <p className="text-[11px] text-slate-400 dark:text-slate-500 italic mt-0.5">
-                                    Ghi chú: {item.note}
+                                    Ghi chú: {item.note.replace(/^\[.*?\]\s*/, '')}
                                   </p>
                                 )}
                               </div>
                             </div>
                           ))}
                         </div>
+
+                        {/* Split Payment Progress Bar */}
+                        {order.paidAmount && order.paidAmount > 0 && order.status !== 'paid' ? (
+                          <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-white/5 space-y-1.5 mb-3">
+                            <div className="flex justify-between text-[10.5px] font-bold">
+                              <span className="text-slate-500 dark:text-slate-400">Tiến độ thanh toán:</span>
+                              <span className="text-emerald-600 dark:text-emerald-400 font-mono">
+                                {Math.round((order.paidAmount / order.totalAmount) * 100)}%
+                              </span>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                                style={{ width: `${Math.min(100, Math.round((order.paidAmount / order.totalAmount) * 100))}%` }}
+                              />
+                            </div>
+                            <div className="flex justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400">
+                              <span>Đã thu: {formatPrice(order.paidAmount)}</span>
+                              <span>Còn lại: {formatPrice(Math.max(0, order.totalAmount - order.paidAmount))}</span>
+                            </div>
+                          </div>
+                        ) : null}
+
+                        {/* Pending Split Payment Confirmation Banners */}
+                        {(() => {
+                          const orderNotifs = pendingSplitNotifications.filter((n) => n.orderId === order._id);
+                          if (orderNotifs.length === 0) return null;
+                          return (
+                            <div className="space-y-1.5 mb-3">
+                              {orderNotifs.map((notif, nIdx) => (
+                                <div
+                                  key={nIdx}
+                                  className="p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-between gap-2"
+                                >
+                                  <div className="min-w-0">
+                                    <span className="text-[10px] font-black uppercase text-amber-600 dark:text-amber-400 block truncate">
+                                      {notif.payerName} báo {notif.paymentMethod === 'cash' ? 'tiền mặt' : 'chuyển khoản'}
+                                    </span>
+                                    <span className="text-xs font-black font-mono text-slate-900 dark:text-white">
+                                      {formatPrice(notif.amount)} ({notif.itemIndexes.length} món)
+                                    </span>
+                                  </div>
+                                  <button
+                                    onClick={() => handleConfirmSplitPayment(notif)}
+                                    className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-black text-[10.5px] rounded-lg shadow-xs transition-all active:scale-95 cursor-pointer uppercase shrink-0"
+                                  >
+                                    Xác nhận
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       {/* Card Bottom Action Buttons */}
@@ -4559,6 +4756,50 @@ export default function DashboardPage() {
                               : 'Chưa thanh toán'}
                           </span>
                         </div>
+
+                        {/* Quick Collect by Member for Table Orders */}
+                        {(() => {
+                          if (order.status === 'paid' || order.status === 'cancelled') return null;
+                          const personUnpaidMap = new Map<string, { indexes: number[]; amount: number }>();
+                          order.items?.forEach((item, idx) => {
+                            if (item.isPaid) return;
+                            const person = item.orderedBy || (item.note && item.note.match(/^\[(.*?)\]/)?.[1]) || order.customerName || 'Khách';
+                            const current = personUnpaidMap.get(person) || { indexes: [], amount: 0 };
+                            current.indexes.push(idx);
+                            current.amount += (item.foodId?.price || 0) * item.quantity;
+                            personUnpaidMap.set(person, current);
+                          });
+
+                          if (personUnpaidMap.size <= 1) return null;
+
+                          return (
+                            <div className="pt-2 border-t border-dashed border-slate-200 dark:border-slate-800">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                                Thu tiền từng người:
+                              </span>
+                              <div className="flex flex-wrap gap-1.5">
+                                {Array.from(personUnpaidMap.entries()).map(([person, data]) => (
+                                  <button
+                                    key={person}
+                                    onClick={() =>
+                                      handleConfirmSplitPayment({
+                                        orderId: order._id,
+                                        amount: data.amount,
+                                        payerName: person,
+                                        itemIndexes: data.indexes,
+                                        paymentMethod: 'cash',
+                                      })
+                                    }
+                                    className="px-2 py-1 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-[#38BDF8] border border-sky-500/20 text-[10px] font-black font-mono transition-all active:scale-95 cursor-pointer"
+                                    title={`Xác nhận thu ${formatPrice(data.amount)} của ${person}`}
+                                  >
+                                    Thu {person}: {formatPrice(data.amount)}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()}
 
                         {/* Step 1 -> 2: Phục vụ xác nhận & gửi pha chế hoặc Từ chối */}
                         {order.status === 'pending' && (
@@ -4953,7 +5194,6 @@ export default function DashboardPage() {
                 );
                 const hasActiveOrders = tableOrders.length > 0;
                 const effectiveStatus = hasActiveOrders ? 'serving' : (tbl.status || 'empty');
-                const totalBill = tableOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
 
                 let cardBorder = 'border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-700';
                 let headerBg = 'bg-white dark:bg-slate-900/50';
@@ -5007,7 +5247,7 @@ export default function DashboardPage() {
                             {hasActiveOrders && (
                               <div>
                                 <p className="text-[10.5px] font-extrabold text-slate-700 dark:text-slate-300">
-                                  {tableOrders.length} đơn • {formatPrice(totalBill)}
+                                  {tableOrders.length} đơn
                                 </p>
                                 {tableOrders.some((o) => o.status === 'completed') ? (
                                   <span className="inline-block mt-0.5 px-1.5 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded text-[9.5px] font-extrabold animate-pulse">
@@ -5146,13 +5386,15 @@ export default function DashboardPage() {
                     >
                       <span className="material-symbols-outlined text-base">edit</span>
                     </button>
-                    <button
-                      onClick={() => setUserToDelete(u._id!)}
-                      className="p-2 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 rounded-xl hover:text-red-500 transition-colors"
-                      title="Xóa nhân viên"
-                    >
-                      <span className="material-symbols-outlined text-base">delete</span>
-                    </button>
+                    {u.email !== 'admin@kohi.vn' && (
+                      <button
+                        onClick={() => setUserToDelete(u._id!)}
+                        className="p-2 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 rounded-xl hover:text-red-500 transition-colors"
+                        title="Xóa nhân viên"
+                      >
+                        <span className="material-symbols-outlined text-base">delete</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -5219,13 +5461,15 @@ export default function DashboardPage() {
                         >
                           <span className="material-symbols-outlined text-base">edit</span>
                         </button>
-                        <button
-                          onClick={() => setUserToDelete(u._id!)}
-                          className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
-                          title="Xóa nhân viên"
-                        >
-                          <span className="material-symbols-outlined text-base">delete</span>
-                        </button>
+                        {u.email !== 'admin@kohi.vn' && (
+                          <button
+                            onClick={() => setUserToDelete(u._id!)}
+                            className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
+                            title="Xóa nhân viên"
+                          >
+                            <span className="material-symbols-outlined text-base">delete</span>
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -6382,7 +6626,6 @@ export default function DashboardPage() {
               <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 sm:p-5 rounded-3xl shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[#0284c7] dark:text-[#38BDF8] text-2xl">account_balance</span>
                     <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
                       Báo Cáo Thu - Chi Cửa Hàng
                     </h3>
@@ -6404,13 +6647,12 @@ export default function DashboardPage() {
                       setAnalyticsPeriodMode('day');
                       if (token) fetchAnalytics(token, analyticsSelectedDate, analyticsSelectedMonth, 'day');
                     }}
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                    className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
                       analyticsPeriodMode === 'day'
                         ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 shadow-sm'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
-                    <span className="material-symbols-outlined text-sm">calendar_today</span>
                     <span>Theo Ngày</span>
                   </button>
 
@@ -6419,13 +6661,12 @@ export default function DashboardPage() {
                       setAnalyticsPeriodMode('month');
                       if (token) fetchAnalytics(token, analyticsSelectedDate, analyticsSelectedMonth, 'month');
                     }}
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                    className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
                       analyticsPeriodMode === 'month'
                         ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 shadow-sm'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
-                    <span className="material-symbols-outlined text-sm">calendar_month</span>
                     <span>Tổng Hợp Theo Tháng</span>
                   </button>
                 </div>
@@ -6535,9 +6776,8 @@ export default function DashboardPage() {
                     });
                     setIsAddExpenseModalOpen(true);
                   }}
-                  className="flex items-center justify-center gap-1.5 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black shadow-xs hover:shadow-md active:scale-95 transition-all cursor-pointer self-start sm:self-auto shrink-0"
+                  className="flex items-center justify-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black shadow-xs hover:shadow-md active:scale-95 transition-all cursor-pointer self-start sm:self-auto shrink-0"
                 >
-                  <span className="material-symbols-outlined text-sm">add_circle</span>
                   <span>+ Thêm Chi Phí Phát Sinh</span>
                 </button>
               </div>
@@ -6659,7 +6899,6 @@ export default function DashboardPage() {
                 <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-4 sm:p-6 shadow-xs space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-[#1e293b] pb-3">
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[#0284c7] dark:text-[#38BDF8] text-xl">menu_book</span>
                       <h4 className="text-sm font-black text-slate-900 dark:text-white font-heading">
                         Sổ Kê Chi Tiết Thu - Chi Trong Ngày ({analyticsSelectedDate})
                       </h4>
@@ -6745,8 +6984,8 @@ export default function DashboardPage() {
                                   <td className="p-3 text-slate-500 font-medium">{timeStr}</td>
                                   <td className="p-3 font-bold text-slate-800 dark:text-slate-200">
                                     {ord.isTakeaway ? (
-                                      <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400">
-                                        <span className="material-symbols-outlined text-xs">takeout_dining</span> Mang về
+                                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                                        Mang về
                                       </span>
                                     ) : (
                                       <span>Bàn {ord.tableId?.tableNumber || ord.tableNumber || 'Tại chỗ'}</span>
@@ -6846,10 +7085,9 @@ export default function DashboardPage() {
                             });
                             setIsAddExpenseModalOpen(true);
                           }}
-                          className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                          className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
                         >
-                          <span className="material-symbols-outlined text-sm">add</span>
-                          <span>Thêm Khoản Chi</span>
+                          <span>+ Thêm Khoản Chi</span>
                         </button>
                       </div>
 
@@ -6975,7 +7213,6 @@ export default function DashboardPage() {
                 <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-4 sm:p-6 shadow-xs space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-[#1e293b] pb-3">
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-purple-600 dark:text-purple-400 text-xl">table_view</span>
                       <h4 className="text-sm font-black text-slate-900 dark:text-white font-heading">
                         Bảng Tổng Hợp Doanh Thu & Chi Phí Từng Ngày ({analyticsSelectedMonth})
                       </h4>
@@ -7307,10 +7544,10 @@ export default function DashboardPage() {
             <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl flex justify-between items-center shadow-xs">
               <div>
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading">
-                  Quản lý Mã giảm giá (Coupons)
+                  Chương trình Khuyến mãi & Voucher
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Tạo và quản lý các chương trình ưu đãi chiết khấu cho khách hàng
+                  Thiết lập mã giảm giá chiết khấu, voucher tri ân và ưu đãi tự động cho hóa đơn
                 </p>
               </div>
               <button
@@ -7320,6 +7557,7 @@ export default function DashboardPage() {
                     code: '',
                     type: 'percent',
                     value: '',
+                    maxDiscount: '',
                     maxUsage: '',
                     minOrderAmount: '',
                     expiresAt: '',
@@ -7422,6 +7660,7 @@ export default function DashboardPage() {
                             code: c.code || '',
                             type: c.type || 'percent',
                             value: String(c.value || ''),
+                            maxDiscount: String(c.maxDiscount || ''),
                             maxUsage: String(c.maxUsage || ''),
                             minOrderAmount: String(c.minOrderAmount || ''),
                             expiresAt: formatForDatetimeInput(c.expiresAt),
@@ -7955,6 +8194,11 @@ export default function DashboardPage() {
                                 <div key={idx} className="flex justify-between text-[11px]">
                                   <span className="text-slate-800 dark:text-slate-200 font-bold truncate">
                                     {item.foodId?.name || 'Món ăn'}
+                                    {(item.orderedBy || (item.note && item.note.match(/^\[(.*?)\]/)?.[1])) && (
+                                      <span className="ml-1 px-1 py-0.2 rounded text-[9px] font-mono text-sky-500 bg-sky-500/10">
+                                        {item.orderedBy || item.note.match(/^\[(.*?)\]/)?.[1]}
+                                      </span>
+                                    )}
                                   </span>
                                   <span className="text-slate-500 dark:text-slate-400 font-black">x{item.quantity}</span>
                                 </div>
@@ -9774,6 +10018,21 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
+                {couponForm.type === 'percent' && (
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Giảm tối đa (VND) — Bỏ trống nếu không giới hạn
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="VD: 50000 (tối đa 50.000đ)"
+                      value={couponForm.maxDiscount}
+                      onChange={(e) => setCouponForm({ ...couponForm, maxDiscount: e.target.value })}
+                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:border-[#38BDF8]"
+                    />
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Số lượt dùng</label>
@@ -10125,16 +10384,11 @@ export default function DashboardPage() {
             >
               {/* Header */}
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1E2638] pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-lg">receipt_long</span>
-                  </div>
-                  <div>
-                    <h3 className="text-base font-black text-slate-900 dark:text-white font-heading">
-                      Ghi Nhận Chi Phí Phát Sinh
-                    </h3>
-                    <p className="text-[11px] text-slate-400">Tiền đá, vật tư, sửa chữa, phụ phí vận hành ngoài kho</p>
-                  </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white font-heading">
+                    Ghi Nhận Chi Phí Phát Sinh
+                  </h3>
+                  <p className="text-[11px] text-slate-400">Tiền đá, vật tư, sửa chữa, phụ phí vận hành ngoài kho</p>
                 </div>
                 <button
                   onClick={() => setIsAddExpenseModalOpen(false)}
@@ -10231,15 +10485,12 @@ export default function DashboardPage() {
                   <button
                     type="submit"
                     disabled={isSubmittingExpense}
-                    className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-xs hover:shadow-md transition-all active:scale-95 disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+                    className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-xs hover:shadow-md transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
                   >
                     {isSubmittingExpense ? (
                       <span>Đang lưu...</span>
                     ) : (
-                      <>
-                        <span className="material-symbols-outlined text-sm">check_circle</span>
-                        <span>Lưu Khoản Chi</span>
-                      </>
+                      <span>Lưu Khoản Chi</span>
                     )}
                   </button>
                 </div>

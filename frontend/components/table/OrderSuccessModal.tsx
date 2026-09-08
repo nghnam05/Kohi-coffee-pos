@@ -71,7 +71,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
 
               {/* Action buttons */}
               <div className="flex flex-col gap-2.5">
-                {onOpenBankPayModal && (latestCreatedOrder?.paymentMethod === 'bank_transfer' || latestCreatedOrder?.paymentMethod === 'momo') && (
+                {onOpenBankPayModal && latestCreatedOrder?.status && latestCreatedOrder.status !== 'pending' && latestCreatedOrder.status !== 'paid' && (latestCreatedOrder?.paymentMethod === 'bank_transfer' || latestCreatedOrder?.paymentMethod === 'momo') && (
                   <button
                     onClick={() => {
                       setIsOrderSuccessModalOpen(false);

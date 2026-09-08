@@ -228,34 +228,40 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                               <span>{lang === 'en' ? 'Track' : lang === 'zh' ? '进度' : 'Theo dõi tiến độ'}</span>
                             </button>
 
-                            {/* Pay Button (if unpaid) */}
+                            {/* Pay Button or Pending Status (if unpaid) */}
                             {!isPaid && (
-                              <button
-                                onClick={() => {
-                                  if (order.paymentMethod === 'bank_transfer' || order.paymentMethod === 'momo') {
-                                    if (onOpenBankPayModal) {
-                                      onOpenBankPayModal(order);
+                              order.status === 'pending' ? (
+                                <span className="h-8 px-3 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold inline-flex items-center font-sans border border-amber-500/20">
+                                  {lang === 'en' ? 'Pending Approval' : lang === 'zh' ? '等待确认' : 'Chờ phục vụ duyệt'}
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => {
+                                    if (order.paymentMethod === 'bank_transfer' || order.paymentMethod === 'momo') {
+                                      if (onOpenBankPayModal) {
+                                        onOpenBankPayModal(order);
+                                      } else {
+                                        router.push(`/table/${tableId}/order-status/${order._id}`);
+                                      }
                                     } else {
+                                      // Cash payment: navigate to tracking page to view cash instructions
+                                      setIsOrderHistoryModalOpen(false);
                                       router.push(`/table/${tableId}/order-status/${order._id}`);
                                     }
-                                  } else {
-                                    // Cash payment: navigate to tracking page to view cash instructions
-                                    setIsOrderHistoryModalOpen(false);
-                                    router.push(`/table/${tableId}/order-status/${order._id}`);
-                                  }
-                                }}
-                                className={`h-8 px-3.5 text-white text-xs font-extrabold rounded-xl transition-all active:scale-95 cursor-pointer shadow-sm inline-flex items-center font-sans ${
-                                  order.paymentMethod === 'cash'
-                                    ? 'bg-amber-600 hover:bg-amber-700'
-                                    : 'bg-[#3B82F6] hover:bg-blue-600'
-                                }`}
-                              >
-                                <span>
-                                  {order.paymentMethod === 'cash'
-                                    ? (lang === 'en' ? 'Pay Cash' : lang === 'zh' ? '现金支付' : 'Tiền mặt')
-                                    : (lang === 'en' ? 'Pay QR' : lang === 'zh' ? '扫码支付' : 'Chuyển khoản')}
-                                </span>
-                              </button>
+                                  }}
+                                  className={`h-8 px-3.5 text-white text-xs font-extrabold rounded-xl transition-all active:scale-95 cursor-pointer shadow-sm inline-flex items-center font-sans ${
+                                    order.paymentMethod === 'cash'
+                                      ? 'bg-amber-600 hover:bg-amber-700'
+                                      : 'bg-[#3B82F6] hover:bg-blue-600'
+                                  }`}
+                                >
+                                  <span>
+                                    {order.paymentMethod === 'cash'
+                                      ? (lang === 'en' ? 'Pay Cash' : lang === 'zh' ? '现金支付' : 'Tiền mặt')
+                                      : (lang === 'en' ? 'Pay QR' : lang === 'zh' ? '扫码支付' : 'Chuyển khoản')}
+                                  </span>
+                                </button>
+                              )
                             )}
 
                             {/* Review Button */}

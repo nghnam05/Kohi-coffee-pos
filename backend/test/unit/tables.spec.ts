@@ -141,10 +141,10 @@ describe('TablesService', () => {
       const join2 = await service.joinSession(tableId, 'device_002');
       expect(join2.occupantCount).toBe(2);
 
-      // Active order count is 1 for leave1, 0 for leave2
+      // Active order count must be 0 for table leaving (business rule: no unpaid orders allowed)
       (service as any).orderModel = {
         countDocuments: jest.fn()
-          .mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(1) })
+          .mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(0) })
           .mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(0) }),
       };
 

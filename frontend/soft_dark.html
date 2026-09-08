@@ -198,19 +198,17 @@
 <aside class="w-[260px] flex-shrink-0 border-r border-outline-variant flex flex-col justify-between h-full bg-surface-container-lowest relative z-10" data-purpose="left-sidebar">
 <div class="flex-1 overflow-y-auto overflow-x-hidden">
 <!-- Brand Area -->
-<div class="p-6 flex items-center space-x-3 border-b border-outline-variant">
-<div class="w-10 h-10 bg-primary-fixed rounded-lg flex items-center justify-center text-on-primary-fixed font-bold text-xs">
-          Kohi
-        </div>
-<div>
-<h1 class="font-bold text-base leading-tight text-on-background">Kohi</h1>
-<p class="text-[10px] text-secondary font-semibold tracking-wider uppercase">COFFEE &amp; PASTRY</p>
-</div>
-</div>
+<a href="/" class="p-6 flex items-center space-x-3 border-b border-outline-variant hover:opacity-90 transition-opacity">
+  <img src="/images/kohi-logo.png" alt="Kohi Logo" class="w-10 h-10 rounded-lg object-contain bg-white/10 p-1 border border-outline-variant" onerror="this.style.display='none'" />
+  <div>
+    <h1 class="font-bold text-base leading-tight text-on-background">Kohi</h1>
+    <p class="text-[10px] text-secondary font-semibold tracking-wider uppercase">COFFEE &amp; PASTRY</p>
+  </div>
+</a>
 <!-- Navigation Links -->
 <nav aria-label="Sidebar" class="p-3 space-y-1">
 <!-- Active Nav Item -->
-<a class="sidebar-active flex items-center px-3 py-2.5 text-sm font-medium rounded-lg group" href="#">
+<a class="sidebar-active flex items-center px-3 py-2.5 text-sm font-medium rounded-lg group" href="/dashboard">
 <svg aria-hidden="true" class="mr-3 flex-shrink-0 h-5 w-5" fill="currentColor" viewbox="0 0 20 20">
 <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
 <path clip-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" fill-rule="evenodd"></path>
@@ -218,28 +216,28 @@
 <span class="flex-1 truncate font-semibold">Đơn pha chế realtime</span>
 <span class="bg-secondary-container text-on-secondary-container ml-auto inline-block py-0.5 px-2 text-xs rounded-full">0</span>
 </a>
-<a class="text-on-surface-variant hover:bg-surface-container hover:text-on-surface flex items-center px-3 py-2.5 text-sm font-medium rounded-lg group" href="#">
+<a class="text-on-surface-variant hover:bg-surface-container hover:text-on-surface flex items-center px-3 py-2.5 text-sm font-medium rounded-lg group" href="/dashboard">
 <svg class="mr-3 flex-shrink-0 h-5 w-5 text-outline group-hover:text-on-surface" fill="none" stroke="currentColor" viewbox="0 0 24 24">
 <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
 <span class="flex-1 truncate">Quản lý thực đơn</span>
 <span class="bg-surface-container-high text-on-surface ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium">60</span>
 </a>
-<a class="text-on-surface-variant hover:bg-surface-container hover:text-on-surface flex items-center px-3 py-2.5 text-sm font-medium rounded-lg group" href="#">
+<a class="text-on-surface-variant hover:bg-surface-container hover:text-on-surface flex items-center px-3 py-2.5 text-sm font-medium rounded-lg group" href="/dashboard">
 <svg class="mr-3 flex-shrink-0 h-5 w-5 text-outline group-hover:text-on-surface" fill="none" stroke="currentColor" viewbox="0 0 24 24">
 <path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
 <span class="flex-1 truncate">Quản lý bàn cà phê</span>
 <span class="bg-surface-container-high text-on-surface ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium">5</span>
 </a>
-<a class="text-on-surface-variant hover:bg-surface-container hover:text-on-surface flex items-center px-3 py-2.5 text-sm font-medium rounded-lg group" href="#">
+<a class="text-on-surface-variant hover:bg-surface-container hover:text-on-surface flex items-center px-3 py-2.5 text-sm font-medium rounded-lg group" href="/dashboard">
 <svg class="mr-3 flex-shrink-0 h-5 w-5 text-outline group-hover:text-on-surface" fill="none" stroke="currentColor" viewbox="0 0 24 24">
 <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
 <span class="flex-1 truncate">Quản lý bàn đã đặt</span>
 <span class="bg-surface-container-high text-on-surface ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium">0</span>
 </a>
-<a class="text-on-surface-variant hover:bg-surface-container hover:text-on-surface flex items-center px-3 py-2.5 text-sm font-medium rounded-lg group" href="#">
+<a class="text-on-surface-variant hover:bg-surface-container hover:text-on-surface flex items-center px-3 py-2.5 text-sm font-medium rounded-lg group" href="/dashboard">
 <svg class="mr-3 flex-shrink-0 h-5 w-5 text-outline group-hover:text-on-surface" fill="none" stroke="currentColor" viewbox="0 0 24 24">
 <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
@@ -270,11 +268,11 @@
         </div>
 <div class="flex-1">
 <p class="text-sm font-semibold text-on-background leading-tight">Nhân viên Phục vụ</p>
-<a class="text-xs text-on-surface-variant hover:text-on-surface leading-tight" href="#">Sửa thông tin</a>
+<a class="text-xs text-on-surface-variant hover:text-on-surface leading-tight" href="/dashboard">Sửa thông tin</a>
 </div>
-<button class="text-outline hover:text-on-surface">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</button>
+<a href="/login" title="Đăng xuất" class="text-outline hover:text-on-surface cursor-pointer">
+  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</a>
 </div>
 </div>
 </aside>
@@ -284,12 +282,12 @@
 <!-- Header -->
 <header class="flex-shrink-0 px-8 py-6 flex items-center justify-between border-b border-transparent">
 <h2 class="text-2xl font-bold text-on-background tracking-tight">Đơn pha chế realtime</h2>
-<button class="inline-flex items-center px-4 py-2 border border-outline-variant shadow-sm text-sm font-medium rounded-lg text-on-surface bg-surface-container-low hover:bg-surface-container focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary" type="button">
-<svg class="-ml-1 mr-2 h-5 w-5 text-outline" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-</svg>
-        Thông báo
-      </button>
+<button onclick="window.location.href='/dashboard'" class="inline-flex items-center px-4 py-2 border border-outline-variant shadow-sm text-sm font-medium rounded-lg text-on-surface bg-surface-container-low hover:bg-surface-container focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary cursor-pointer" type="button">
+  <svg class="-ml-1 mr-2 h-5 w-5 text-outline" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+    <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+  </svg>
+  Thông báo
+</button>
 </header>
 <!-- Content Area -->
 <div class="flex-1 px-8 overflow-y-auto">
@@ -308,9 +306,9 @@
 </button>
 </div>
 <!-- Action Button -->
-<button class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-semibold rounded-lg text-on-primary bg-primary hover:bg-primary-fixed-dim focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary" type="button">
-          Tạo đơn mang về
-        </button>
+<button onclick="window.location.href='/dashboard'" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-semibold rounded-lg text-on-primary bg-primary hover:bg-primary-fixed-dim focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary cursor-pointer" type="button">
+  Tạo đơn mang về
+</button>
 </div>
 <!-- Empty State Card -->
 <div class="border border-outline-variant bg-surface-container-low rounded-xl p-16 text-center shadow-sm">

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, OnModuleInit } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
@@ -15,22 +15,37 @@ export class UsersService implements OnModuleInit {
   async onModuleInit() {
     const saltRounds = 10;
     const defaultPassword = await bcrypt.hash('123456', saltRounds);
+    const totalUsers = await this.userModel.countDocuments();
 
-    const defaultUsers = [
-      { name: 'Quản trị viên (Admin)', email: 'admin@kohi.vn', role: 'admin', assignedShift: 'morning' },
-      { name: 'Nhân viên Phục vụ', email: 'phucvu@kohi.vn', role: 'waiter', assignedShift: 'morning' },
-      { name: 'Nhân viên Pha chế', email: 'phache@kohi.vn', role: 'barista', assignedShift: 'afternoon' },
-    ];
+    // 1. Chỉ tạo tài khoản mẫu khi Database hoàn toàn trống (lần đầu khởi chạy dự án)
+    if (totalUsers === 0) {
+      const defaultUsers = [
+        { name: 'Quản trị viên (Admin)', email: 'admin@kohi.vn', role: 'admin', assignedShift: 'morning' },
+        { name: 'Nhân viên Phục vụ', email: 'phucvu@kohi.vn', role: 'waiter', assignedShift: 'morning' },
+        { name: 'Nhân viên Pha chế', email: 'phache@kohi.vn', role: 'barista', assignedShift: 'afternoon' },
+      ];
 
-    for (const u of defaultUsers) {
-      const exists = await this.userModel.findOne({ email: u.email });
-      if (!exists) {
+      for (const u of defaultUsers) {
         await this.userModel.create({
           ...u,
           password: defaultPassword,
         });
-        console.log(`[Seed] Created default user: ${u.email} (${u.role})`);
+        console.log(`[Seed] Created default user on fresh install: ${u.email} (${u.role})`);
       }
+      return;
+    }
+
+    // 2. Nếu DB đã có nhân viên, chỉ đảm bảo có ít nhất 1 tài khoản Admin để không bị khóa hệ thống
+    const adminExists = await this.userModel.findOne({ role: 'admin' });
+    if (!adminExists) {
+      await this.userModel.create({
+        name: 'Quản trị viên (Admin)',
+        email: 'admin@kohi.vn',
+        role: 'admin',
+        assignedShift: 'morning',
+        password: defaultPassword,
+      });
+      console.log('[Seed] Created default admin because no admin was found: admin@kohi.vn');
     }
   }
 
@@ -86,10 +101,14 @@ export class UsersService implements OnModuleInit {
   }
 
   async remove(id: string): Promise<{ message: string }> {
-    const deletedUser = await this.userModel.findByIdAndDelete(id).exec();
-    if (!deletedUser) {
+    const user = await this.userModel.findById(id).exec();
+    if (!user) {
       throw new NotFoundException(`Không tìm thấy người dùng với ID: ${id}`);
     }
-    return { message: `Đã xóa người dùng "${deletedUser.name}" thành công.` };
+    if (user.email === 'admin@kohi.vn') {
+      throw new BadRequestException('Không thể xóa tài khoản Quản trị viên mặc định (admin@kohi.vn).');
+    }
+    await this.userModel.findByIdAndDelete(id).exec();
+    return { message: `Đã xóa người dùng "${user.name}" thành công.` };
   }
 }
