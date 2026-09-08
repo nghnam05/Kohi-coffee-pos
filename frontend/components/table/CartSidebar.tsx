@@ -254,7 +254,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                     </div>
                     <button
                       onClick={() => handleIncrease(recomFood)}
-                      className="px-2.5 py-1 bg-sky-500/15 dark:bg-sky-500/20 hover:bg-[#38BDF8] text-sky-600 dark:text-sky-400 hover:text-slate-950 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 flex-shrink-0 active:scale-95 cursor-pointer"
+                      className="px-2.5 py-1 bg-sky-500/15 dark:bg-sky-500/20 hover:bg-[#38BDF8] text-sky-600 dark:text-sky-400 hover:text-slate-950 dark:hover:text-slate-950 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 flex-shrink-0 active:scale-95 cursor-pointer"
                     >
                       <span>+ {t.addItem || (lang === 'en' ? 'Add' : lang === 'zh' ? '添加' : 'Thêm')}</span>
                     </button>

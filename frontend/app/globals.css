@@ -249,6 +249,50 @@ body::-webkit-scrollbar,
   -webkit-overflow-scrolling: touch;
 }
 
+/* ── Visible Table Scrollbar (Used when tables list overflows) ─────────────── */
+.table-scroll-container {
+  scrollbar-width: thin !important;
+  scrollbar-color: #38BDF8 transparent !important;
+  -ms-overflow-style: auto !important;
+}
+
+.table-scroll-container::-webkit-scrollbar {
+  display: block !important;
+  width: 6px !important;
+  height: 6px !important;
+}
+
+.table-scroll-container::-webkit-scrollbar-track {
+  background: rgba(148, 163, 184, 0.12) !important;
+  border-radius: 9999px !important;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb {
+  background: #38BDF8 !important;
+  border-radius: 9999px !important;
+  transition: background-color 0.2s ease;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #0284c7 !important;
+}
+
+.dark .table-scroll-container {
+  scrollbar-color: #38BDF8 transparent !important;
+}
+
+.dark .table-scroll-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.dark .table-scroll-container::-webkit-scrollbar-thumb {
+  background: #38BDF8 !important;
+}
+
+.dark .table-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #7dd3fc !important;
+}
+
 /* Lenis smooth scroll optimization */
 html.lenis,
 html.lenis body {

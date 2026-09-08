@@ -5314,7 +5314,7 @@ export default function DashboardPage() {
                     <div className="pt-3 mt-3 border-t border-slate-100 dark:border-[#1e293b] flex items-center gap-2">
                       <button
                         onClick={() => setQrTable(tbl)}
-                        className="flex-1 h-9 bg-[#38BDF8]/10 hover:bg-[#38BDF8] text-[#0284c7] dark:text-[#38BDF8] hover:text-[#090D16] rounded-xl text-xs font-bold transition-all flex items-center justify-center cursor-pointer active:scale-95"
+                        className="flex-1 h-9 bg-[#38BDF8]/10 hover:bg-[#38BDF8] text-[#0284c7] dark:text-[#38BDF8] hover:text-[#090D16] dark:hover:text-[#090D16] rounded-xl text-xs font-bold transition-all flex items-center justify-center cursor-pointer active:scale-95"
                       >
                         QR Code
                       </button>
@@ -5325,14 +5325,14 @@ export default function DashboardPage() {
                           setTableForm({ tableName: tbl.tableName || '', status: effectiveStatus || 'empty' });
                           setIsTableModalOpen(true);
                         }}
-                        className="h-9 px-3 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:text-[#38BDF8] rounded-xl transition-colors cursor-pointer text-xs font-bold active:scale-95"
+                        className="h-9 px-3 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:text-[#38BDF8] dark:hover:text-[#38BDF8] rounded-xl transition-colors cursor-pointer text-xs font-bold active:scale-95"
                       >
                         Sửa
                       </button>
 
                       <button
                         onClick={() => setTableToDelete(tbl._id)}
-                        className="h-9 px-3 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:text-rose-500 rounded-xl transition-colors cursor-pointer text-xs font-bold active:scale-95"
+                        className="h-9 px-3 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:text-rose-500 dark:hover:text-rose-500 rounded-xl transition-colors cursor-pointer text-xs font-bold active:scale-95"
                       >
                         Xóa
                       </button>
