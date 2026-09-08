@@ -18,7 +18,9 @@ import dynamic from 'next/dynamic';
 import { getTableQrUrl } from '@/utils/format';
 
 const InventoryManagement = dynamic(() => import('@/components/dashboard/InventoryManagement').then(m => m.InventoryManagement), { ssr: false });
+const AiDemandForecastCard = dynamic(() => import('@/components/dashboard/AiDemandForecastCard').then(m => m.AiDemandForecastCard), { ssr: false });
 import { AdminAiReviewInsights } from '@/components/dashboard/AdminAiReviewInsights';
+
 
 import {
   Chart as ChartJS,
@@ -7351,6 +7353,10 @@ export default function DashboardPage() {
             {/* AI Review Quality Insights */}
             <AdminAiReviewInsights token={token} />
 
+            {/* AI Demand Forecasting & Smart Restock Advice */}
+            <AiDemandForecastCard token={token} />
+
+
             {/* Chart.js Visualizations Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Chart 1: Daily Revenue Trend Line */}
@@ -7973,7 +7979,12 @@ export default function DashboardPage() {
 
         {/* Inventory View: BARISTA & ADMIN ONLY */}
         {activeTab === 'inventory' && (user?.role === 'admin' || user?.role === 'barista') && (
-          <div className="flex-1 overflow-y-auto pb-24 lg:pb-10 scrollbar-thin">
+          <div className="flex-1 overflow-y-auto pb-24 lg:pb-10 scrollbar-thin space-y-6">
+            {user?.role === 'admin' && (
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
+                <AiDemandForecastCard token={token} />
+              </div>
+            )}
             <InventoryManagement
               userRole={user?.role === 'admin' ? 'admin' : 'staff'}
               userName={user?.name || 'Nhân viên'}
@@ -7982,6 +7993,7 @@ export default function DashboardPage() {
             />
           </div>
         )}
+
           </>
         )}
       </main>

@@ -172,9 +172,8 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         {/* Button: Yêu cầu đổi bàn */}
         <button
           onClick={() => setIsTransferModalOpen(true)}
-          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/60 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all flex items-center justify-center gap-2 font-sans cursor-pointer active:scale-95 shadow-xs group"
+          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/60 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all flex items-center justify-center font-sans cursor-pointer active:scale-95 shadow-xs group"
         >
-          <span className="material-symbols-outlined text-[17px] text-slate-500 dark:text-slate-400 group-hover:rotate-180 transition-transform duration-300">change_circle</span>
           <span>{lang === 'en' ? 'Change Table' : lang === 'zh' ? '更换桌号' : 'Yêu cầu đổi bàn'}</span>
         </button>
 
@@ -182,12 +181,12 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         {handleLeaveTable && (
           <button
             onClick={handleLeaveTable}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-xs font-bold text-rose-500 dark:text-rose-400 transition-all flex items-center justify-center gap-2 font-sans cursor-pointer active:scale-95 shadow-xs group"
+            className="w-full px-3.5 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-xs font-bold text-rose-500 dark:text-rose-400 transition-all flex items-center justify-center font-sans cursor-pointer active:scale-95 shadow-xs group"
           >
-            <span className="material-symbols-outlined text-[17px] group-hover:translate-x-0.5 transition-transform duration-200">door_open</span>
             <span>{lang === 'en' ? 'Leave Table' : lang === 'zh' ? '离开餐桌' : 'Rời bàn / Thoát'}</span>
           </button>
         )}
+
 
         {/* AI Chat Bot Widget Box - Bento Glass Card */}
         <motion.div

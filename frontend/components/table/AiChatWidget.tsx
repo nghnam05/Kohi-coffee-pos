@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+
 import { motion, AnimatePresence } from 'framer-motion';
 
 export interface AiMessage {
@@ -101,9 +102,44 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
   onAddToCart,
   lang = 'vi',
 }) => {
+  const [isListeningVoice, setIsListeningVoice] = useState(false);
   const currentCategories = PROMPT_CATEGORIES[lang] || PROMPT_CATEGORIES.vi;
 
+  const toggleSpeechInput = () => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Trình duyệt chưa hỗ trợ nhận diện giọng nói. Vui lòng sử dụng Chrome, Edge hoặc Safari.');
+      return;
+    }
+    if (isListeningVoice) {
+      setIsListeningVoice(false);
+      return;
+    }
+    try {
+      const rec = new SpeechRecognition();
+      rec.lang = lang === 'zh' ? 'zh-CN' : lang === 'en' ? 'en-US' : 'vi-VN';
+      rec.continuous = false;
+      rec.interimResults = false;
+      rec.onstart = () => setIsListeningVoice(true);
+      rec.onresult = (e: any) => {
+        const text = e.results?.[0]?.[0]?.transcript?.trim();
+        if (text) {
+          setAiInput(text);
+          handleSendAiMessage(text);
+        }
+      };
+      rec.onerror = () => setIsListeningVoice(false);
+      rec.onend = () => setIsListeningVoice(false);
+      rec.start();
+    } catch (e) {
+      console.error('Lỗi nhận diện micro trong chat:', e);
+      setIsListeningVoice(false);
+    }
+  };
+
   const renderChatContent = () => (
+
     <>
       {/* Header */}
       <div className="px-4 py-3 sm:py-3.5 bg-slate-50 dark:bg-slate-900/80 border-b border-slate-200 dark:border-white/10 flex items-center justify-between shrink-0">
@@ -294,6 +330,21 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
         />
         <button
           type="button"
+
+          onClick={toggleSpeechInput}
+          className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all active:scale-95 shadow-md cursor-pointer shrink-0 ${
+            isListeningVoice
+              ? 'bg-[#38BDF8] text-white shadow-sky-500/30 animate-pulse'
+              : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-sky-500 hover:text-white'
+          }`}
+          title={isListeningVoice ? 'Đang lắng nghe... Bấm để dừng' : 'Nói để đặt câu hỏi'}
+        >
+          <span className="material-symbols-outlined text-base">
+            {isListeningVoice ? 'graphic_eq' : 'mic'}
+          </span>
+        </button>
+        <button
+          type="button"
           onClick={() => handleSendAiMessage()}
           disabled={!aiInput.trim() || isAiThinking}
           className="w-10 h-10 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 text-white flex items-center justify-center transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-blue-500/20 cursor-pointer shrink-0"
@@ -302,6 +353,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
           <span className="material-symbols-outlined text-base">send</span>
         </button>
       </div>
+
     </>
   );
 
@@ -341,11 +393,11 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
       <AnimatePresence>
         {isAiChatOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={{ opacity: 0, x: -20, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: -20, scale: 0.95 }}
             transition={{ type: 'spring', damping: 25, stiffness: 280 }}
-            className="hidden md:flex fixed right-6 bottom-24 z-40 w-[420px] h-[580px] bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden flex-col font-sans"
+            className="hidden md:flex fixed left-[268px] xl:left-[300px] bottom-6 z-40 w-[380px] xl:w-[420px] h-[580px] max-h-[calc(100vh-3.5rem)] bg-white dark:bg-[#090D16] border border-slate-200 dark:border-slate-800 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.35)] overflow-hidden flex-col font-sans"
           >
             {renderChatContent()}
           </motion.div>
@@ -353,12 +405,12 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
       </AnimatePresence>
 
       {/* ── FLOATING ACTION BUTTON (FAB) ─────────────────────────────────── */}
-      {/* Auto-hidden on desktop (lg) since LeftSidebar already has the full Kohi AI Box */}
+      {/* Auto-hidden on tablet/desktop (md+) since LeftSidebar already has the full Kohi AI Box */}
       <button
         type="button"
         onClick={() => setIsAiChatOpen(!isAiChatOpen)}
-        className={`lg:hidden fixed right-4 bottom-5 md:right-6 md:bottom-6 z-30 w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 text-white shadow-xl shadow-blue-500/30 items-center justify-center transition-all duration-200 active:scale-90 border-2 border-white/25 cursor-pointer backdrop-blur-md ${
-          isAiChatOpen ? 'hidden md:flex' : 'flex'
+        className={`md:hidden fixed right-4 bottom-5 z-30 w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 text-white shadow-xl shadow-blue-500/30 items-center justify-center transition-all duration-200 active:scale-90 border-2 border-white/25 cursor-pointer backdrop-blur-md ${
+          isAiChatOpen ? 'hidden' : 'flex'
         }`}
         title="Kohi AI Assistant"
       >
