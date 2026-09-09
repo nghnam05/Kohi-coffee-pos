@@ -581,10 +581,18 @@ export default function OrderStatusPage() {
 
                   <div className="grid grid-cols-2 gap-2.5 mt-5 pt-3.5 border-t border-[var(--border-color)]">
                     <button
-                      onClick={() => setIsLeaveModalOpen(true)}
-                      className="py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl text-xs uppercase tracking-wider active:scale-95 transition-all cursor-pointer text-center"
+                      onClick={handleExecuteLeaveTable}
+                      disabled={isLeaving}
+                      className="py-3 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white font-bold rounded-xl text-xs uppercase tracking-wider active:scale-95 transition-all cursor-pointer text-center flex items-center justify-center gap-1.5"
                     >
-                      {lang === 'en' ? 'LEAVE TABLE' : 'RỜI BÀN'}
+                      {isLeaving ? (
+                        <>
+                          <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span>{lang === 'en' ? 'LEAVING...' : 'ĐANG RỜI BÀN...'}</span>
+                        </>
+                      ) : (
+                        <span>{lang === 'en' ? 'LEAVE TABLE' : 'RỜI BÀN'}</span>
+                      )}
                     </button>
                     <button
                       onClick={() => router.push(`/table/${tableId}`)}
@@ -1106,11 +1114,12 @@ export default function OrderStatusPage() {
                               toast('Bàn còn đơn hàng chưa thanh toán. Vui lòng thanh toán trước khi rời bàn.', { icon: null });
                               return;
                             }
-                            setIsLeaveModalOpen(true);
+                            handleExecuteLeaveTable();
                           }}
-                          className="py-2.5 bg-[var(--bg-primary)] hover:bg-slate-200 dark:hover:bg-slate-800 text-[var(--text-primary)] font-bold rounded-xl text-xs uppercase tracking-wider transition-all active:scale-95 cursor-pointer text-center border border-[var(--border-color)] shadow-xs"
+                          disabled={isLeaving}
+                          className="py-2.5 bg-[var(--bg-primary)] hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-50 text-[var(--text-primary)] font-bold rounded-xl text-xs uppercase tracking-wider transition-all active:scale-95 cursor-pointer text-center border border-[var(--border-color)] shadow-xs"
                         >
-                          Rời bàn
+                          {isLeaving ? 'Đang rời bàn...' : 'Rời bàn'}
                         </button>
                       </div>
                     </div>
@@ -1224,7 +1233,7 @@ export default function OrderStatusPage() {
         isOpen={isLeaveModalOpen}
         onClose={() => setIsLeaveModalOpen(false)}
         onConfirm={handleExecuteLeaveTable}
-        tableName={order?.tableId?.tableName ? (lang === 'vi' ? `Bàn ${order.tableId.tableName}` : `Table ${order.tableId.tableName}`) : 'Bàn'}
+        tableName={formatTableName(order?.tableId?.tableName, lang)}
         lang={lang}
         isLeaving={isLeaving}
       />

@@ -25,6 +25,7 @@ interface FoodCardProps {
   translateCategory: (cat: string) => string;
   lang: Lang;
   onSelectFood: (food: Food, initialQty: number, note: string) => void;
+  index?: number;
 }
 
 export const FoodCard: React.FC<FoodCardProps> = ({
@@ -36,7 +37,11 @@ export const FoodCard: React.FC<FoodCardProps> = ({
   translateCategory,
   lang,
   onSelectFood,
+  index,
 }) => {
+  const isAboveFold = index !== undefined && index < 6;
+  const isPriority = index !== undefined && index < 4;
+
   const handleClick = () => {
     onSelectFood(food, quantity > 0 ? quantity : 1, cartItemNote);
   };
@@ -44,10 +49,9 @@ export const FoodCard: React.FC<FoodCardProps> = ({
   if (viewMode === 'list') {
     return (
       <motion.article
-        initial={{ opacity: 0, y: 15 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-20px' }}
-        transition={{ duration: 0.3, ease: 'easeOut' }}
+        initial={isAboveFold ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
+        {...(isAboveFold ? {} : { whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '-20px' } })}
+        transition={{ duration: 0.25, ease: 'easeOut' }}
         whileHover={{ y: -3, scale: 1.01 }}
         whileTap={{ scale: 0.985 }}
         className="bg-white dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/90 dark:border-white/10 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-2px_rgba(0,0,0,0.5)] hover:shadow-md dark:hover:shadow-[0_12px_28px_-4px_rgba(59,130,246,0.25)] hover:border-blue-500/40 transition-all duration-200 ease-out p-4 flex items-center gap-4 group cursor-pointer"
@@ -60,6 +64,7 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             src={food.image}
             alt={food.name}
             fill
+            priority={isPriority}
             sizes="(max-width: 640px) 96px, 120px"
             className="object-cover group-hover:scale-[1.04] transition-transform duration-300 ease-out relative z-0"
           />
@@ -111,10 +116,9 @@ export const FoodCard: React.FC<FoodCardProps> = ({
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-30px' }}
-      transition={{ duration: 0.35, ease: 'easeOut' }}
+      initial={isAboveFold ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+      {...(isAboveFold ? {} : { whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '-30px' } })}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
       whileHover={{ y: -6, scale: 1.015 }}
       whileTap={{ scale: 0.985 }}
       className="bg-white dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/90 dark:border-white/10 rounded-2xl shadow-sm dark:shadow-[0_4px_20px_-2px_rgba(0,0,0,0.5)] hover:shadow-lg dark:hover:shadow-[0_12px_28px_-4px_rgba(59,130,246,0.25)] hover:border-blue-500/40 transition-all duration-200 ease-out overflow-hidden group flex flex-col justify-between h-full cursor-pointer"
@@ -130,6 +134,7 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             src={food.image}
             alt={food.name}
             fill
+            priority={isPriority}
             className="object-cover group-hover:scale-[1.04] transition-transform duration-300 ease-out relative z-0"
             sizes="(max-width: 768px) 100vw, 350px"
           />

@@ -28,65 +28,21 @@ export function Providers({ children }: { children: ReactNode }) {
           Boolean(node?.closest?.('[data-lenis-prevent]')),
       });
 
+      let animationFrameId: number;
       const raf = (time: number) => {
         if (lenis) {
           lenis.raf(time);
-          requestAnimationFrame(raf);
+          animationFrameId = requestAnimationFrame(raf);
         }
       };
 
-      requestAnimationFrame(raf);
+      animationFrameId = requestAnimationFrame(raf);
+
+      return () => {
+        if (lenis) lenis.destroy();
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      };
     }
-
-    // Set up Scroll Reveal Intersection Observer for premium entry transitions
-    const observerOptions = {
-      root: null, // viewport
-      rootMargin: '0px 0px -60px 0px', // trigger slightly before entering viewport
-      threshold: 0.05, // trigger when 5% visible
-    };
-
-    const observer = new IntersectionObserver((entries, observerInstance) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-revealed');
-          // Optimize DOM: stop observing once transitioned
-          observerInstance.unobserve(entry.target);
-        }
-      });
-    }, observerOptions);
-
-    // Scan and observe all designated scroll elements (Debounced to prevent layout thrashing)
-    let scanTimeout: NodeJS.Timeout | null = null;
-    const observeElements = () => {
-      if (scanTimeout) clearTimeout(scanTimeout);
-      scanTimeout = setTimeout(() => {
-        const elements = document.querySelectorAll('.reveal-on-scroll');
-        elements.forEach((el) => {
-          if (!el.classList.contains('is-revealed')) {
-            observer.observe(el);
-          }
-        });
-      }, 80);
-    };
-
-    observeElements();
-
-    // Watch dynamic React DOM updates (such as switching tabs, categories, or lazy loaded orders)
-    const mutationObserver = new MutationObserver(() => {
-      observeElements();
-    });
-
-    mutationObserver.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
-
-    return () => {
-      if (lenis) lenis.destroy();
-      observer.disconnect();
-      mutationObserver.disconnect();
-      if (scanTimeout) clearTimeout(scanTimeout);
-    };
   }, []);
 
   return (

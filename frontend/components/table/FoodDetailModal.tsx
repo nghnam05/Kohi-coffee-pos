@@ -162,22 +162,32 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
               {/* Mobile Drag Indicator Handle */}
               <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mt-2.5 mb-1 md:hidden shrink-0 opacity-70" />
 
-              {/* Left Image Section - Compact Floating Hero */}
+              {/* Left Image Section - Compact Floating Hero with Full Uncropped Image */}
               <div
                 onClick={() => setIsLightboxOpen(true)}
-                className="w-full md:w-[42%] h-44 sm:h-52 md:h-auto md:min-h-[440px] bg-slate-100 dark:bg-slate-950/80 relative flex-shrink-0 cursor-pointer group flex items-center justify-center overflow-hidden"
+                className="w-full md:w-[42%] h-60 sm:h-72 md:h-auto md:min-h-[440px] bg-slate-900/90 relative flex-shrink-0 cursor-pointer group flex items-center justify-center overflow-hidden"
               >
+                {/* Layer 1: Blurred Atmosphere Background */}
+                <Image
+                  src={selectedFood.image}
+                  alt=""
+                  fill
+                  className="object-cover object-center blur-2xl scale-125 opacity-40 dark:opacity-30 pointer-events-none"
+                  aria-hidden="true"
+                />
+
+                {/* Layer 2: Main Full Uncropped Product Image */}
                 <Image
                   src={selectedFood.image}
                   alt={selectedFood.name}
                   fill
-                  className="object-cover object-center group-hover:scale-[1.03] transition-transform duration-300"
+                  className="object-contain object-center group-hover:scale-105 transition-transform duration-300 z-10 p-3 sm:p-4 drop-shadow-[0_10px_25px_rgba(0,0,0,0.5)]"
                   sizes="(max-width: 768px) 100vw, 400px"
                   priority
                 />
 
                 {/* Gradient Vignette for better contrast on mobile */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none md:hidden" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none md:hidden z-10" />
 
                 {/* Top Left Category Badge */}
                 <div className="absolute top-3 left-3 z-20">
@@ -202,9 +212,9 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                 </button>
 
                 {/* Zoom Pill Button */}
-                <div className="absolute bottom-3 right-3 z-10 px-2.5 py-1 rounded-full bg-slate-950/70 border border-white/15 text-white text-[10px] font-bold flex items-center gap-1 backdrop-blur-md pointer-events-none shadow-md">
-                  <span className="material-symbols-outlined text-xs">zoom_in</span>
-                  <span>{lang === 'en' ? 'Zoom' : lang === 'zh' ? '大图' : 'Xem ảnh'}</span>
+                <div className="absolute bottom-3 right-3 z-20 px-3 py-1.5 rounded-full bg-slate-950/80 border border-white/20 text-white text-[10px] font-extrabold flex items-center gap-1.5 backdrop-blur-md shadow-lg transition-transform group-hover:scale-105 active:scale-95">
+                  <span className="material-symbols-outlined text-xs text-[#38BDF8]">zoom_in</span>
+                  <span>{lang === 'en' ? 'Full View' : lang === 'zh' ? '全屏大图' : 'Xem full ảnh'}</span>
                 </div>
               </div>
 
@@ -493,24 +503,54 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
       {/* ── MODAL: Lightbox Full-screen Image Viewer ─────────────────────── */}
       <AnimatePresence>
         {isLightboxOpen && selectedFood && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 select-none animate-fade-in">
-            <button
-              type="button"
-              onClick={() => setIsLightboxOpen(false)}
-              className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center backdrop-blur-md transition-colors cursor-pointer"
-              title={lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng xem ảnh'}
+          <div
+            onClick={() => setIsLightboxOpen(false)}
+            className="fixed inset-0 z-[200] flex flex-col items-center justify-between bg-black/95 backdrop-blur-xl p-4 sm:p-6 select-none animate-fade-in cursor-zoom-out"
+          >
+            {/* Top Bar with Clear Close / Exit Button */}
+            <div className="w-full max-w-4xl flex items-center justify-between z-30 pt-2 shrink-0">
+              <span className="text-white/60 text-xs font-semibold hidden sm:inline-block">
+                Chạm bất kỳ đâu để thoát
+              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsLightboxOpen(false);
+                }}
+                className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 text-white backdrop-blur-md transition-all active:scale-95 cursor-pointer border border-white/25 shadow-2xl"
+                title={lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng xem ảnh'}
+              >
+                <span className="material-symbols-outlined text-lg">close</span>
+                <span className="text-xs font-black uppercase tracking-wider">
+                  {lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng'}
+                </span>
+              </button>
+            </div>
+
+            {/* Main Full Image */}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-4xl flex-1 flex items-center justify-center my-auto cursor-default min-h-[60vh]"
             >
-              <span className="material-symbols-outlined text-xl">close</span>
-            </button>
-            <div className="relative w-full max-w-4xl h-[80vh] flex items-center justify-center">
               <Image
                 src={selectedFood.image}
                 alt={selectedFood.name}
                 fill
-                className="object-contain"
+                className="object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
                 sizes="100vw"
                 priority
               />
+            </div>
+
+            {/* Bottom Caption Bar */}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="mb-2 px-5 py-2.5 rounded-full bg-slate-900/90 backdrop-blur-md border border-white/15 flex items-center gap-3 text-white text-xs font-black shadow-2xl z-10 shrink-0"
+            >
+              <span className="tracking-wide">{selectedFood.name}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+              <span className="text-[#38BDF8]">{formatPrice(selectedFood.price, lang)}</span>
             </div>
           </div>
         )}

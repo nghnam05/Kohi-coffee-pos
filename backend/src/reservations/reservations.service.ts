@@ -120,8 +120,8 @@ export class ReservationsService implements OnModuleInit {
     const vnRes = getVietnamTime(resTime);
     const hours = vnRes.hour;
     const minutes = vnRes.minute;
-    if (hours < 6 || hours > 23 || (hours === 23 && minutes > 0)) {
-      throw new BadRequestException('Thời gian đặt bàn phải nằm trong khung giờ hoạt động của quán (06:00 - 23:00).');
+    if (hours < 7 || hours > 22 || (hours === 22 && minutes > 0)) {
+      throw new BadRequestException('Thời gian đặt bàn phải nằm trong khung giờ hoạt động của quán (07:00 - 22:00).');
     }
 
     const reservation = new this.reservationModel({

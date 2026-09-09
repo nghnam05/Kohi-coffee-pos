@@ -166,3 +166,16 @@ export class Order {
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);
+
+// 🚀 Performance Optimization Indexes (Eliminating COLLSCAN):
+// 1. Table active orders lookup & session tracking
+OrderSchema.index({ tableId: 1, status: 1, isDeleted: 1 });
+
+// 2. KDS kitchen queue & Realtime orders list
+OrderSchema.index({ status: 1, isDeleted: 1, createdAt: -1 });
+
+// 3. Analytics revenue aggregations & period filters
+OrderSchema.index({ createdAt: -1, status: 1, paymentStatus: 1 });
+
+// 4. Day ledger financial settlement & paid order history
+OrderSchema.index({ paidAt: -1, status: 1 });

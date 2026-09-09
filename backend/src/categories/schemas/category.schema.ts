@@ -33,3 +33,7 @@ export class Category {
 }
 
 export const CategorySchema = SchemaFactory.createForClass(Category);
+
+// 🚀 Performance Optimization Indexes:
+// Instant menu category sorting & filtering
+CategorySchema.index({ isActive: 1, order: 1 });

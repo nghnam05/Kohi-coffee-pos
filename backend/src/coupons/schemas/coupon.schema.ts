@@ -40,3 +40,7 @@ export class Coupon {
 }
 
 export const CouponSchema = SchemaFactory.createForClass(Coupon);
+
+// 🚀 Performance Optimization Indexes:
+// Single-seek coupon validation
+CouponSchema.index({ code: 1, isActive: 1, expiresAt: 1 });

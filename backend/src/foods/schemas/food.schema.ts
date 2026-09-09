@@ -51,3 +51,7 @@ export class Food {
 }
 
 export const FoodSchema = SchemaFactory.createForClass(Food);
+
+// 🚀 Performance Optimization Indexes:
+// Fast menu filtering by availability and category
+FoodSchema.index({ isAvailable: 1, category: 1 });

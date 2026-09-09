@@ -315,26 +315,6 @@ html.lenis body {
   pointer-events: none;
 }
 
-/* Premium Apple-style Cubic Bezier Scroll Reveal Animations */
-.reveal-on-scroll {
-  opacity: 0 !important;
-  transform: translateY(28px) scale(0.97);
-  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
-}
-
-@media (max-width: 640px) {
-  .reveal-on-scroll {
-    transform: translateY(14px) scale(0.99);
-    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-}
-
-.reveal-on-scroll.is-revealed {
-  opacity: 1 !important;
-  transform: translateY(0) scale(1) !important;
-}
-
 /* ── Bento-Grid Glassmorphism & Card System ─────────────────────────────── */
 .glass-card,
 .bento-card {
