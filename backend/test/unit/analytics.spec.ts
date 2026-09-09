@@ -64,6 +64,30 @@ describe('AnalyticsService', () => {
       expect(result.todaySalary).toBe(1200000);
       expect(result.totalOrders).toBe(15);
       expect(result.todayNetProfit).toBeGreaterThanOrEqual(0);
+      expect(result.settlementStatus).toBeDefined();
+    });
+
+    it('should flag settlementStatus.isSettled as false when staff has not checked out', async () => {
+      attendanceModelMock.find.mockReturnValue({
+        populate: jest.fn().mockReturnValue({
+          sort: jest.fn().mockReturnValue({
+            lean: jest.fn().mockReturnValue({
+              exec: jest.fn().mockResolvedValue([
+                { totalHours: 0, checkIn: new Date(), checkOut: null, userId: { name: 'Nguyen Van A' } },
+              ]),
+            }),
+          }),
+        }),
+        exec: jest.fn().mockResolvedValue([
+          { totalHours: 0, checkIn: new Date(), checkOut: null, userId: { name: 'Nguyen Van A' } },
+        ]),
+      });
+
+      const result = await service.getSummary();
+      expect(result.settlementStatus.isSettled).toBe(false);
+      expect(result.settlementStatus.activeShiftsCount).toBe(1);
+      expect(result.settlementStatus.activeStaffNames).toContain('Nguyen Van A');
+      expect(result.settlementStatus.unsettledReasons.length).toBeGreaterThan(0);
     });
   });
 

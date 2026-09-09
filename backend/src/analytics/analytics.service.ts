@@ -7,6 +7,7 @@ import { Ingredient, IngredientDocument } from '../ingredients/schemas/ingredien
 import { Attendance, AttendanceDocument } from '../attendance/schemas/attendance.schema.js';
 import { Expense, ExpenseDocument } from '../expenses/schemas/expense.schema.js';
 import { IngredientUsage, IngredientUsageDocument } from '../ingredients/schemas/ingredient-usage.schema.js';
+import { Table, TableDocument } from '../tables/schemas/table.schema.js';
 
 @Injectable()
 export class AnalyticsService {
@@ -17,6 +18,7 @@ export class AnalyticsService {
     @InjectModel(Attendance.name) private readonly attendanceModel: Model<AttendanceDocument>,
     @Optional() @InjectModel(Expense.name) private readonly expenseModel?: Model<ExpenseDocument>,
     @Optional() @InjectModel(IngredientUsage.name) private readonly ingredientUsageModel?: Model<IngredientUsageDocument>,
+    @Optional() @InjectModel(Table.name) private readonly tableModel?: Model<TableDocument>,
   ) {}
 
   /**
@@ -161,6 +163,65 @@ export class AnalyticsService {
       dailyBreakdown = await this.getMonthlyDailyBreakdown(startOfPeriod, endOfPeriod);
     }
 
+    // ⚡ Kiểm tra điều kiện quyết toán ngày (Settlement Status):
+    // Chỉ quyết toán khi mọi nhân viên đã Check-out VÀ mọi đơn hàng đã thanh toán xong
+    let isSettled = true;
+    let activeShiftsCount = 0;
+    let activeStaffNames: string[] = [];
+    let unpaidOrdersCount = 0;
+    let unpaidOrdersAmount = 0;
+    let servingTablesCount = 0;
+    const unsettledReasons: string[] = [];
+
+    if (periodType === 'day') {
+      // 1. Kiểm tra các ca chưa check-out trong ngày
+      const openShifts = dayAttendances.filter((att: any) => !att.checkOut);
+      activeShiftsCount = openShifts.length;
+      activeStaffNames = openShifts
+        .map((att: any) => att.userId?.name || att.userId?.username || 'Nhân viên')
+        .filter(Boolean);
+
+      if (activeShiftsCount > 0) {
+        unsettledReasons.push(`Còn ${activeShiftsCount} ca nhân viên chưa Check-out (${activeStaffNames.join(', ')})`);
+      }
+
+      // 2. Kiểm tra các đơn hàng chưa thanh toán trong ngày
+      const unpaidOrders = typeof this.orderModel.find === 'function'
+        ? await this.orderModel.find({
+            createdAt: { $gte: startOfPeriod, $lte: endOfPeriod },
+            status: { $nin: ['paid', 'cancelled'] },
+          }).lean().exec()
+        : [];
+      
+      if (Array.isArray(unpaidOrders) && unpaidOrders.length > 0) {
+        unpaidOrdersCount = unpaidOrders.length;
+        unpaidOrdersAmount = unpaidOrders.reduce((sum: number, o: any) => sum + (o.totalAmount || 0), 0);
+        unsettledReasons.push(`Còn ${unpaidOrdersCount} đơn hàng chưa hoàn tất thanh toán`);
+      }
+
+      // 3. Kiểm tra các bàn đang phục vụ khách (nếu là hôm nay)
+      const isToday = now >= startOfPeriod && now <= endOfPeriod;
+      if (isToday && this.tableModel && typeof this.tableModel.countDocuments === 'function') {
+        servingTablesCount = await this.tableModel.countDocuments({ status: 'serving' }).exec();
+        if (servingTablesCount > 0) {
+          unsettledReasons.push(`Còn ${servingTablesCount} bàn đang trong trạng thái phục vụ khách`);
+        }
+      }
+
+      isSettled = unsettledReasons.length === 0;
+    }
+
+    const settlementStatus = {
+      isSettled,
+      activeShiftsCount,
+      activeStaffNames,
+      unpaidOrdersCount,
+      unpaidOrdersAmount,
+      servingTablesCount,
+      unsettledReasons,
+      statusText: isSettled ? 'Đã quyết toán toàn bộ' : 'Chưa quyết toán (Đang trong ngày / Chưa chốt ca)',
+    };
+
     return {
       // Chỉ số kỳ được chọn
       periodType,
@@ -171,6 +232,12 @@ export class AnalyticsService {
       periodIngredientCost,
       periodExpenseCost,
       periodNetProfit,
+
+      // Quyết toán tài chính
+      isSettled,
+      settlementStatus,
+      settledNetProfit: isSettled ? periodNetProfit : null,
+      provisionalNetProfit: periodNetProfit,
 
       // Danh sách chi tiết trong ngày (Theo ngày)
       dayOrders,
@@ -602,7 +669,7 @@ export class AnalyticsService {
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    // 1. Lấy dữ liệu 30 ngày qua
+    // 1. Lấy dữ liệu 30 ngày qua (🚀 Kèm projections tối ưu hóa băng thông & memory)
     const [recentOrders, ingredients, recentUsages, topFoods] = await Promise.all([
       this.orderModel
         .find({
@@ -611,10 +678,21 @@ export class AnalyticsService {
             { createdAt: { $gte: thirtyDaysAgo } },
           ],
         })
+        .select('totalAmount paidAt createdAt')
         .lean()
         .exec(),
-      this.ingredientModel.find().lean().exec(),
-      this.ingredientUsageModel ? this.ingredientUsageModel.find({ date: { $gte: thirtyDaysAgo } }).lean().exec() : [],
+      this.ingredientModel
+        .find()
+        .select('name category currentQuantity unit minThreshold unitPrice')
+        .lean()
+        .exec(),
+      this.ingredientUsageModel
+        ? this.ingredientUsageModel
+            .find({ date: { $gte: thirtyDaysAgo } })
+            .select('ingredientName quantity date')
+            .lean()
+            .exec()
+        : [],
       this.getTopFoods(5),
     ]);
 

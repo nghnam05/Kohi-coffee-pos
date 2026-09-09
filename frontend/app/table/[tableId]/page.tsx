@@ -7,25 +7,30 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { io, Socket } from 'socket.io-client';
 import { playAlertPing } from '../../utils/sound';
 import { toast } from 'react-hot-toast';
-import { translateText } from '@/utils/translateService';
-
 import { LeftSidebar } from '@/components/table/LeftSidebar';
 import { Header } from '@/components/table/Header';
 import { CatalogHeader } from '@/components/table/CatalogHeader';
 import { FoodCard } from '@/components/table/FoodCard';
 import { CartSidebar } from '@/components/table/CartSidebar';
 import { FoodDetailModal } from '@/components/table/FoodDetailModal';
-import { OrderHistoryModal } from '@/components/table/OrderHistoryModal';
-import { TransferTableModal } from '@/components/table/TransferTableModal';
-import { OrderSuccessModal } from '@/components/table/OrderSuccessModal';
 import { NamePromptModal } from '@/components/table/NamePromptModal';
-import { CustomerNotificationModal, NotificationItem } from '@/components/table/CustomerNotificationModal';
-import { LeaveTableModal } from '@/components/table/LeaveTableModal';
-import { BankPayModal } from '@/components/table/BankPayModal';
+import type { NotificationItem } from '@/components/table/CustomerNotificationModal';
+import { checkCurrentStoreClosingStatus, CurrentClosingCheck } from '@/utils/storeHours';
 import dynamic from 'next/dynamic';
 
-const AiChatWidget = dynamic(() => import('@/components/table/AiChatWidget').then(m => m.AiChatWidget), { ssr: false });
+import { translateText } from '@/utils/translateService';
+import { formatTableName } from '@/utils/format';
+
+// Code-splitting: Lazy load heavy interactive modals only when triggered by user
+const OrderHistoryModal = dynamic(() => import('@/components/table/OrderHistoryModal').then(m => m.OrderHistoryModal), { ssr: false });
+const TransferTableModal = dynamic(() => import('@/components/table/TransferTableModal').then(m => m.TransferTableModal), { ssr: false });
+const OrderSuccessModal = dynamic(() => import('@/components/table/OrderSuccessModal').then(m => m.OrderSuccessModal), { ssr: false });
+const CustomerNotificationModal = dynamic(() => import('@/components/table/CustomerNotificationModal').then(m => m.CustomerNotificationModal), { ssr: false });
+const LeaveTableModal = dynamic(() => import('@/components/table/LeaveTableModal').then(m => m.LeaveTableModal), { ssr: false });
+const BankPayModal = dynamic(() => import('@/components/table/BankPayModal').then(m => m.BankPayModal), { ssr: false });
+const TableClosingAlertModal = dynamic(() => import('@/components/table/TableClosingAlertModal').then(m => m.TableClosingAlertModal), { ssr: false });
 const TableQRModal = dynamic(() => import('@/components/table/TableQRModal').then(m => m.TableQRModal), { ssr: false });
+const AiChatWidget = dynamic(() => import('@/components/table/AiChatWidget').then(m => m.AiChatWidget), { ssr: false });
 const VoiceOrderModal = dynamic(() => import('@/components/table/VoiceOrderModal').then(m => m.VoiceOrderModal), { ssr: false });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -345,14 +350,64 @@ export default function TableMenuPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const [foods, setFoods] = useState<Food[]>([]);
-  const [dbCategories, setDbCategories] = useState<string[]>([]);
-  const [table, setTable] = useState<Table | null>(null);
+  // ── SWR Instant Cache for Menu & Table (0ms latency on refresh) ───────────────
+  const [foods, setFoods] = useState<Food[]>(() => {
+    if (typeof window !== 'undefined' && tableId) {
+      try {
+        const cached = sessionStorage.getItem(`kohi_menu_cache_${tableId}`);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed.foods) && parsed.foods.length > 0) return parsed.foods;
+        }
+      } catch {}
+    }
+    return [];
+  });
+
+  const [table, setTable] = useState<Table | null>(() => {
+    if (typeof window !== 'undefined' && tableId) {
+      try {
+        const cached = sessionStorage.getItem(`kohi_menu_cache_${tableId}`);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed.table && parsed.table._id) return parsed.table;
+        }
+      } catch {}
+    }
+    return null;
+  });
+
+  const [dbCategories, setDbCategories] = useState<string[]>(() => {
+    if (typeof window !== 'undefined' && tableId) {
+      try {
+        const cached = sessionStorage.getItem(`kohi_menu_cache_${tableId}`);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed.categories) && parsed.categories.length > 0) return parsed.categories;
+        }
+      } catch {}
+    }
+    return [];
+  });
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [tableMembers, setTableMembers] = useState<{ socketId?: string; deviceId: string; name: string }[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('');
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    if (typeof window !== 'undefined' && tableId) {
+      try {
+        const cached = sessionStorage.getItem(`kohi_menu_cache_${tableId}`);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed.foods) && parsed.foods.length > 0 && parsed.table) {
+            return false; // Instant 0ms perceived load time on page refresh!
+          }
+        }
+      } catch {}
+    }
+    return true;
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -383,7 +438,6 @@ export default function TableMenuPage() {
     setIsBankPayModalOpen(true);
   }, []);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
-  const [isNoHistoryModalOpen, setIsNoHistoryModalOpen] = useState(false);
   const [isOrderHistoryModalOpen, setIsOrderHistoryModalOpen] = useState(false);
   const [tablesList, setTablesList] = useState<any[]>([]);
   const [selectedTransferTableId, setSelectedTransferTableId] = useState<string>('');
@@ -426,6 +480,22 @@ export default function TableMenuPage() {
   const handleClearAllNotifications = useCallback(() => {
     setNotificationsList([]);
   }, []);
+
+  // Realtime Store Closing Alert State (< 30 mins before closing or when closed)
+  const [closingStatus, setClosingStatus] = useState<CurrentClosingCheck | null>(null);
+  const [isClosingModalOpen, setIsClosingModalOpen] = useState(false);
+  const closingAlertDismissedRef = useRef<{ phase: 'near' | 'closed' | null; dismissedAt: number }>({
+    phase: null,
+    dismissedAt: 0,
+  });
+
+  const handleCloseClosingAlertModal = useCallback(() => {
+    closingAlertDismissedRef.current = {
+      phase: closingStatus?.isClosed ? 'closed' : 'near',
+      dismissedAt: Date.now(),
+    };
+    setIsClosingModalOpen(false);
+  }, [closingStatus]);
 
   // Coupon
   const [couponInput, setCouponInput] = useState('');
@@ -748,6 +818,76 @@ export default function TableMenuPage() {
     }
   }, [kitchenNotification]);
 
+  // Realtime Store Closing Watcher (< 30 minutes before closing or when closed)
+  useEffect(() => {
+    const checkClosing = () => {
+      // Chỉ cảnh báo nếu khách chưa rời bàn
+      if (isLeavingTable) return;
+
+      const status = checkCurrentStoreClosingStatus();
+      setClosingStatus(status);
+
+      // 1. Quán đã đóng cửa (>= 22:00)
+      if (status.isClosed) {
+        if (closingAlertDismissedRef.current.phase !== 'closed') {
+          setIsClosingModalOpen(true);
+          setNotificationsList((prev) => {
+            if (prev.some((n) => n.id.startsWith('store_closed_'))) return prev;
+            return [
+              {
+                id: `store_closed_${Date.now()}`,
+                title: lang === 'en' ? 'Store is now closed (22:00)' : lang === 'zh' ? '本店已到打烊时间 (22:00)' : 'Quán đã đến giờ đóng cửa (22:00)',
+                message: lang === 'en'
+                  ? 'Thank you for visiting! Please complete your payment and prepare to depart.'
+                  : lang === 'zh'
+                  ? '感谢您的莅临！请完成结账并做好离店准备。'
+                  : 'Cảm ơn quý khách đã ghé thăm! Quý khách vui lòng hoàn tất thanh toán và chuẩn bị rời bàn.',
+                timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+                type: 'system',
+                read: false,
+              },
+              ...prev,
+            ];
+          });
+        }
+        return;
+      }
+
+      // 2. Quán sắp đóng cửa (< 30 phút, từ 21:30 đến 21:59)
+      if (status.isNearClosing) {
+        if (closingAlertDismissedRef.current.phase !== 'near') {
+          setIsClosingModalOpen(true);
+          setNotificationsList((prev) => {
+            if (prev.some((n) => n.id.startsWith('store_closing_near_'))) return prev;
+            return [
+              {
+                id: `store_closing_near_${Date.now()}`,
+                title: lang === 'en'
+                  ? `Store closing soon (${status.minutesUntilClosing} mins left)`
+                  : lang === 'zh'
+                  ? `本店即将打烊（约剩余 ${status.minutesUntilClosing} 分钟）`
+                  : `Quán sắp đóng cửa (còn khoảng ${status.minutesUntilClosing} phút)`,
+                message: lang === 'en'
+                  ? `Kohi Coffee closes at ${status.closingTimeStr}. Our bar and kitchen will soon stop taking new orders. Please finish your orders and pay before closing.`
+                  : lang === 'zh'
+                  ? `Kohi Coffee 将于 ${status.closingTimeStr} 打烊。水吧与厨房即将停止接收新订单，请留意点单与结账时间。`
+                  : `Kohi Coffee sẽ đóng cửa lúc ${status.closingTimeStr}. Quầy chuẩn bị ngưng nhận order mới, quý khách vui lòng lưu ý gọi thêm món & thanh toán trước giờ đóng cửa nhé.`,
+                timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+                type: 'system',
+                read: false,
+              },
+              ...prev,
+            ];
+          });
+        }
+      }
+    };
+
+    checkClosing();
+    const interval = setInterval(checkClosing, 30000);
+    return () => clearInterval(interval);
+  }, [isLeavingTable, lang]);
+
   useEffect(() => {
     if (tableId) {
       let devId = localStorage.getItem('kohi_device_id');
@@ -774,7 +914,7 @@ export default function TableMenuPage() {
       return;
     }
     setKitchenNotification(null);
-    setIsLeaveTableModalOpen(true);
+    executeLeaveTable();
   };
 
   const executeLeaveTable = async () => {
@@ -825,17 +965,22 @@ export default function TableMenuPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        setIsLoading(true);
+        // Only set full loading state if we do not already have cached items
+        if (foods.length === 0) {
+          setIsLoading(true);
+        }
         const [foodsRes, tableRes, categoriesRes] = await Promise.all([
           fetch(`${API_BASE}/foods`).catch(() => null),
           fetch(`${API_BASE}/tables/${tableId}`).catch(() => null),
           fetch(`${API_BASE}/categories`).catch(() => null),
         ]);
 
+        let freshCategories: string[] = [];
         if (categoriesRes && categoriesRes.ok) {
           const catData = await categoriesRes.json();
           if (Array.isArray(catData)) {
-            setDbCategories(catData.map((c: any) => c.name || c.categoryName || c).filter(Boolean));
+            freshCategories = catData.map((c: any) => c.name || c.categoryName || c).filter(Boolean);
+            setDbCategories(freshCategories);
           }
         }
 
@@ -860,8 +1005,25 @@ export default function TableMenuPage() {
         const availableFoods = foodsData.filter((f) => f.isAvailable);
         setFoods(availableFoods);
         setTable(tableData);
+
+        // Update sessionStorage SWR cache
+        if (typeof window !== 'undefined' && tableId) {
+          try {
+            sessionStorage.setItem(
+              `kohi_menu_cache_${tableId}`,
+              JSON.stringify({
+                foods: availableFoods,
+                table: tableData,
+                categories: freshCategories.length > 0 ? freshCategories : dbCategories,
+                cachedAt: Date.now(),
+              })
+            );
+          } catch {}
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : t.fetchError);
+        if (foods.length === 0) {
+          setError(err instanceof Error ? err.message : t.fetchError);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -1823,7 +1985,7 @@ export default function TableMenuPage() {
                     : 'flex flex-col gap-3 pb-12'
                 }
               >
-                {filteredFoods.map((food) => {
+                {filteredFoods.map((food, index) => {
                   const cartItem = myCartMap.get(food._id);
                   const quantity = cartItem?.quantity ?? 0;
 
@@ -1837,6 +1999,7 @@ export default function TableMenuPage() {
                       formatPrice={formatPrice}
                       translateCategory={translateCategory}
                       lang={lang}
+                      index={index}
                       onSelectFood={(f, q, note) => {
                         setSelectedFood(f);
                         setModalQuantity(q);
@@ -1889,96 +2052,94 @@ export default function TableMenuPage() {
           customerName={customerName}
           hasPendingOrder={activeOrders.some((o) => o.status === 'pending')}
         />
-
-
-
-        {/* Modals */}
-        <FoodDetailModal
-          selectedFood={selectedFood}
-          setSelectedFood={setSelectedFood}
-          isLightboxOpen={isLightboxOpen}
-          setIsLightboxOpen={setIsLightboxOpen}
-          selectedSize={selectedSize}
-          setSelectedSize={setSelectedSize}
-          selectedAddons={selectedAddons}
-          setSelectedAddons={setSelectedAddons}
-          modalQuantity={modalQuantity}
-          setModalQuantity={setModalQuantity}
-          modalNote={modalNote}
-          setModalNote={setModalNote}
-          handleAddFromModal={handleAddFromModal}
-          foodReviews={foodReviews}
-          isLoadingReviews={isLoadingReviews}
-          fetchFoodReviews={fetchFoodReviews}
-          isModalAiOpen={isModalAiOpen}
-          setIsModalAiOpen={setIsModalAiOpen}
-          modalAiMessages={modalAiMessages}
-          modalAiInput={modalAiInput}
-          setModalAiInput={setModalAiInput}
-          isModalAiThinking={isModalAiThinking}
-          handleSendModalAiMessage={handleSendModalAiMessage}
-          SIZE_MULTIPLIERS={SIZE_MULTIPLIERS}
-          ADDON_PRICES={ADDON_PRICES}
-          ADDON_ICONS={ADDON_ICONS}
-          formatPrice={formatPrice}
-          translateCategory={translateCategory}
-          lang={lang}
-        />
-
-        <OrderHistoryModal
-          isOrderHistoryModalOpen={isOrderHistoryModalOpen}
-          setIsOrderHistoryModalOpen={setIsOrderHistoryModalOpen}
-          table={table}
-          activeOrders={activeOrders}
-          getOrderStatusInfo={getOrderStatusInfo}
-          formatPrice={formatPrice}
-          lang={lang}
-          tableId={tableId}
-          router={router}
-          onOpenBankPayModal={(order) => {
-            setIsOrderHistoryModalOpen(false);
-            handleOpenBankPayModal(order);
-          }}
-        />
-
-        <TransferTableModal
-          isTransferModalOpen={isTransferModalOpen}
-          setIsTransferModalOpen={setIsTransferModalOpen}
-          tablesList={tablesList}
-          tableId={tableId}
-          selectedTransferTableId={selectedTransferTableId}
-          setSelectedTransferTableId={setSelectedTransferTableId}
-          handleTransferTable={handleTransferTable}
-          isTransferring={isTransferring}
-          lang={lang}
-        />
-
-        <OrderSuccessModal
-          isOrderSuccessModalOpen={isOrderSuccessModalOpen}
-          setIsOrderSuccessModalOpen={setIsOrderSuccessModalOpen}
-          latestCreatedOrder={latestCreatedOrder}
-          tableId={tableId}
-          router={router}
-          lang={lang}
-          onOpenBankPayModal={(order) => {
-            setIsOrderSuccessModalOpen(false);
-            handleOpenBankPayModal(order);
-          }}
-        />
-
-        <AiChatWidget
-          totalQuantity={totalQuantity}
-          isAiChatOpen={isAiChatOpen}
-          setIsAiChatOpen={setIsAiChatOpen}
-          aiMessages={aiMessages}
-          isAiThinking={isAiThinking}
-          aiInput={aiInput}
-          setAiInput={setAiInput}
-          handleSendAiMessage={handleSendAiMessage}
-          onAddToCart={handleDirectAddToCart}
-          lang={lang}
-        />
       </div>
+
+      {/* Modals & Overlays (Top-level Stacking Context) */}
+      <FoodDetailModal
+        selectedFood={selectedFood}
+        setSelectedFood={setSelectedFood}
+        isLightboxOpen={isLightboxOpen}
+        setIsLightboxOpen={setIsLightboxOpen}
+        selectedSize={selectedSize}
+        setSelectedSize={setSelectedSize}
+        selectedAddons={selectedAddons}
+        setSelectedAddons={setSelectedAddons}
+        modalQuantity={modalQuantity}
+        setModalQuantity={setModalQuantity}
+        modalNote={modalNote}
+        setModalNote={setModalNote}
+        handleAddFromModal={handleAddFromModal}
+        foodReviews={foodReviews}
+        isLoadingReviews={isLoadingReviews}
+        fetchFoodReviews={fetchFoodReviews}
+        isModalAiOpen={isModalAiOpen}
+        setIsModalAiOpen={setIsModalAiOpen}
+        modalAiMessages={modalAiMessages}
+        modalAiInput={modalAiInput}
+        setModalAiInput={setModalAiInput}
+        isModalAiThinking={isModalAiThinking}
+        handleSendModalAiMessage={handleSendModalAiMessage}
+        SIZE_MULTIPLIERS={SIZE_MULTIPLIERS}
+        ADDON_PRICES={ADDON_PRICES}
+        ADDON_ICONS={ADDON_ICONS}
+        formatPrice={formatPrice}
+        translateCategory={translateCategory}
+        lang={lang}
+      />
+
+      <OrderHistoryModal
+        isOrderHistoryModalOpen={isOrderHistoryModalOpen}
+        setIsOrderHistoryModalOpen={setIsOrderHistoryModalOpen}
+        table={table}
+        activeOrders={activeOrders}
+        getOrderStatusInfo={getOrderStatusInfo}
+        formatPrice={formatPrice}
+        lang={lang}
+        tableId={tableId}
+        router={router}
+        onOpenBankPayModal={(order) => {
+          setIsOrderHistoryModalOpen(false);
+          handleOpenBankPayModal(order);
+        }}
+      />
+
+      <TransferTableModal
+        isTransferModalOpen={isTransferModalOpen}
+        setIsTransferModalOpen={setIsTransferModalOpen}
+        tablesList={tablesList}
+        tableId={tableId}
+        selectedTransferTableId={selectedTransferTableId}
+        setSelectedTransferTableId={setSelectedTransferTableId}
+        handleTransferTable={handleTransferTable}
+        isTransferring={isTransferring}
+        lang={lang}
+      />
+
+      <OrderSuccessModal
+        isOrderSuccessModalOpen={isOrderSuccessModalOpen}
+        setIsOrderSuccessModalOpen={setIsOrderSuccessModalOpen}
+        latestCreatedOrder={latestCreatedOrder}
+        tableId={tableId}
+        router={router}
+        lang={lang}
+        onOpenBankPayModal={(order) => {
+          setIsOrderSuccessModalOpen(false);
+          handleOpenBankPayModal(order);
+        }}
+      />
+
+      <AiChatWidget
+        totalQuantity={totalQuantity}
+        isAiChatOpen={isAiChatOpen}
+        setIsAiChatOpen={setIsAiChatOpen}
+        aiMessages={aiMessages}
+        isAiThinking={isAiThinking}
+        aiInput={aiInput}
+        setAiInput={setAiInput}
+        handleSendAiMessage={handleSendAiMessage}
+        onAddToCart={handleDirectAddToCart}
+        lang={lang}
+      />
 
       <NamePromptModal
         mounted={mounted}
@@ -2007,6 +2168,26 @@ export default function TableMenuPage() {
         lang={lang}
         onNotificationClick={(item) => {
           setIsNotificationModalOpen(false);
+          setNotificationsList((prev) =>
+            prev.map((n) => (n.id === item.id ? { ...n, read: true } : n))
+          );
+
+          const urlParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+          if (table?.tableName) {
+            urlParams.set('tableName', table.tableName);
+          }
+          const finalQuery = urlParams.toString() ? `?${urlParams.toString()}` : '';
+
+          if (item.id === 'welcome_1' || (item.type === 'system' && !item.orderId)) {
+            router.push(`/table/${tableId}/welcome${finalQuery}`);
+            return;
+          }
+
+          if (item.id === 'promo_1' || item.type === 'promo') {
+            router.push(`/table/${tableId}/promotions${finalQuery}`);
+            return;
+          }
+
           if (item.orderId || item.type === 'order') {
             setIsOrderHistoryModalOpen(true);
           }
@@ -2017,7 +2198,7 @@ export default function TableMenuPage() {
         isOpen={isLeaveTableModalOpen}
         onClose={() => setIsLeaveTableModalOpen(false)}
         onConfirm={executeLeaveTable}
-        tableName={table?.tableName ? (lang === 'vi' ? `Bàn ${table.tableName}` : `Table ${table.tableName}`) : 'Bàn'}
+        tableName={formatTableName(table?.tableName, lang)}
         lang={lang}
         isLeaving={isLeavingTable}
       />
@@ -2081,6 +2262,27 @@ export default function TableMenuPage() {
         onClose={() => setIsVoiceOrderOpen(false)}
         onAddItemsToCart={handleVoiceAddItemsToCart}
         onViewFoodDetail={handleViewVoiceItemDetail}
+        lang={lang}
+      />
+
+      {/* Realtime Table Closing Alert Modal (< 30 phút hoặc khi quán đóng cửa mà chưa rời bàn) */}
+      <TableClosingAlertModal
+        isOpen={isClosingModalOpen}
+        onClose={handleCloseClosingAlertModal}
+        onOpenPayment={() => {
+          setIsClosingModalOpen(false);
+          if (activeOrders.length > 0) {
+            setIsOrderHistoryModalOpen(true);
+          } else if (cart.length > 0) {
+            setIsCartOpen(true);
+          } else {
+            handleCallStaff();
+          }
+        }}
+        isClosed={closingStatus?.isClosed ?? false}
+        minutesUntilClosing={closingStatus?.minutesUntilClosing ?? 0}
+        closingTimeStr={closingStatus?.closingTimeStr ?? '22:00'}
+        tableName={table?.tableName}
         lang={lang}
       />
     </>

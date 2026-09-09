@@ -8,6 +8,7 @@ import { Ingredient, IngredientSchema } from '../ingredients/schemas/ingredient.
 import { IngredientUsage, IngredientUsageSchema } from '../ingredients/schemas/ingredient-usage.schema.js';
 import { Attendance, AttendanceSchema } from '../attendance/schemas/attendance.schema.js';
 import { Expense, ExpenseSchema } from '../expenses/schemas/expense.schema.js';
+import { Table, TableSchema } from '../tables/schemas/table.schema.js';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { Expense, ExpenseSchema } from '../expenses/schemas/expense.schema.js';
       { name: IngredientUsage.name, schema: IngredientUsageSchema },
       { name: Attendance.name, schema: AttendanceSchema },
       { name: Expense.name, schema: ExpenseSchema },
+      { name: Table.name, schema: TableSchema },
     ]),
   ],
   controllers: [AnalyticsController],

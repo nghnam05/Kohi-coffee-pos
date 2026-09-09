@@ -46,9 +46,16 @@ export class OrdersService implements OnModuleInit {
 
     let totalAmount = 0;
 
-    // Tính toán lại tổng tiền từ DB (để chống gian lận giá từ frontend)
+    // 🚀 Tối ưu hóa truy vấn DB: Gom nhóm kiểm tra món ăn thành 1 truy vấn duy nhất (Eliminate N+1)
+    const foodIds = [...new Set(createOrderDto.items.map((item) => item.foodId))];
+    const foods = await this.foodsService.findManyByIds(foodIds);
+    const foodMap = new Map(foods.map((f: any) => [f._id.toString(), f]));
+
     for (const item of createOrderDto.items) {
-      const food = await this.foodsService.findOne(item.foodId);
+      const food = foodMap.get(item.foodId.toString());
+      if (!food) {
+        throw new NotFoundException(`Không tìm thấy món ăn với ID: ${item.foodId}`);
+      }
       totalAmount += food.price * item.quantity;
     }
 

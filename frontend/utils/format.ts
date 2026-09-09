@@ -7,6 +7,11 @@ export type Lang = 'vi' | 'en' | 'zh';
 export const formatTableName = (rawName?: string | null, lang: Lang = 'vi'): string => {
   if (!rawName) return lang === 'en' ? 'Table' : lang === 'zh' ? '桌号' : 'Bàn';
   
+  // If rawName is a 24-character hexadecimal string (MongoDB ObjectId), do not treat digits as table number
+  if (/^[a-f0-9]{24}$/i.test(rawName.trim())) {
+    return lang === 'en' ? 'Table' : lang === 'zh' ? '桌号' : 'Bàn';
+  }
+
   const numMatch = rawName.match(/\d+/);
   const num = numMatch ? numMatch[0] : '';
 

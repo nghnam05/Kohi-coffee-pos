@@ -38,3 +38,10 @@ export class Table {
 }
 
 export const TableSchema = SchemaFactory.createForClass(Table);
+
+// 🚀 Performance Optimization Indexes:
+// 1. Instant QR token lookup when customer scans table QR
+TableSchema.index({ qrToken: 1 }, { sparse: true });
+
+// 2. Fast status filtering (e.g. serving vs empty tables)
+TableSchema.index({ status: 1 });

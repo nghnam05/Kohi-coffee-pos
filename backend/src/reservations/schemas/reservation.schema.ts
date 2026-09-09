@@ -40,3 +40,13 @@ export class Reservation {
 }
 
 export const ReservationSchema = SchemaFactory.createForClass(Reservation);
+
+// 🚀 Performance Optimization Indexes:
+// 1. Booking schedule and active slot availability queries
+ReservationSchema.index({ reservationTime: 1, status: 1, isDeleted: 1 });
+
+// 2. Table conflict detection
+ReservationSchema.index({ tableId: 1, reservationTime: 1, status: 1 });
+
+// 3. Customer reservation lookup by phone
+ReservationSchema.index({ customerPhone: 1, status: 1 });

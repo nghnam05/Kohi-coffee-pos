@@ -1,45 +1,33 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Be_Vietnam_Pro, Manrope, Playfair_Display, Pinyon_Script, Cormorant_Garamond } from "next/font/google";
+import { Inter, Manrope, Outfit } from "next/font/google";
 import "./globals.css";
+import { Providers } from "./providers";
+import { cn } from "@/lib/utils";
 
 const inter = Inter({
   subsets: ["latin", "vietnamese"],
+  weight: ["400", "800"],
   variable: "--font-inter",
-  display: "swap",
-});
-
-const beVietnamPro = Be_Vietnam_Pro({
-  subsets: ["latin", "vietnamese"],
-  variable: "--font-be-vietnam",
-  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
 const manrope = Manrope({
   subsets: ["latin", "vietnamese"],
+  weight: ["400", "600", "700", "800"],
   variable: "--font-manrope",
-  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
-const pinyonScript = Pinyon_Script({
-  weight: "400",
+const outfit = Outfit({
   subsets: ["latin"],
-  variable: "--font-pinyon",
-  display: "swap",
-});
-
-const cormorantGaramond = Cormorant_Garamond({
-  weight: ["600", "700"],
-  style: ["italic"],
-  subsets: ["latin"],
-  variable: "--font-cormorant",
+  weight: ["700", "800", "900"],
+  variable: "--font-outfit",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Kohi Coffee & Pastry - Order QR & Booking",
-  description: "QR Order & Online Reservation System for Kohi Coffee & Specialty Drinks",
+  title: "KOHI Coffee & Pastry - Order QR & Booking",
+  description: "QR Order & Online Reservation System for KOHI Coffee & Specialty Drinks",
 };
 
 export const viewport: Viewport = {
@@ -53,11 +41,6 @@ export const viewport: Viewport = {
   ],
 };
 
-import { Providers } from "./providers";
-import { cn } from "@/lib/utils";
-
-const playfairDisplayHeading = Playfair_Display({ subsets: ['latin'], variable: '--font-heading' });
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -69,11 +52,9 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn(
         "font-sans",
-        manrope.variable,
         inter.variable,
-        playfairDisplayHeading.variable,
-        pinyonScript.variable,
-        cormorantGaramond.variable
+        manrope.variable,
+        outfit.variable
       )}
     >
       <head>
@@ -83,11 +64,10 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
         />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-        <meta name="theme-color" content="#0B0F17" />
+        <meta name="theme-color" content="#090D16" />
       </head>
       <body
-        className={`${manrope.variable} ${inter.variable} ${beVietnamPro.variable} ${pinyonScript.variable} ${cormorantGaramond.variable} font-sans antialiased bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-white min-h-screen transition-colors duration-200`}
+        className={`${inter.variable} ${manrope.variable} ${outfit.variable} font-sans antialiased bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-white min-h-screen transition-colors duration-200`}
       >
         <Providers>
           {children}

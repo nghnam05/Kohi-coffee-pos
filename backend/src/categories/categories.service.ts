@@ -7,10 +7,18 @@ import { UpdateCategoryDto } from './dto/update-category.dto.js';
 
 @Injectable()
 export class CategoriesService {
+  // 🚀 In-memory cache for ultra-fast category reads (< 1ms)
+  private cache: { data: any[]; expiresAt: number } | null = null;
+  private readonly CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
   constructor(
     @InjectModel(Category.name)
     private readonly categoryModel: Model<CategoryDocument>,
   ) {}
+
+  private clearCache() {
+    this.cache = null;
+  }
 
   async create(dto: CreateCategoryDto): Promise<CategoryDocument> {
     const existing = await this.categoryModel.findOne({ name: dto.name }).exec();
@@ -18,11 +26,22 @@ export class CategoriesService {
       throw new ConflictException('Danh mục này đã tồn tại.');
     }
     const created = new this.categoryModel(dto);
-    return created.save();
+    const saved = await created.save();
+    this.clearCache();
+    return saved;
   }
 
-  async findAll(): Promise<CategoryDocument[]> {
-    let categories = await this.categoryModel.find({ isActive: true }).sort({ order: 1, createdAt: 1 }).exec();
+  async findAll(): Promise<any[]> {
+    if (this.cache && Date.now() < this.cache.expiresAt) {
+      return this.cache.data;
+    }
+
+    let categories = await this.categoryModel
+      .find({ isActive: true })
+      .sort({ order: 1, createdAt: 1 })
+      .lean()
+      .exec();
+
     if (categories.length === 0) {
       // Auto seed default categories if database is empty
       const defaults = [
@@ -33,13 +52,23 @@ export class CategoriesService {
         { name: 'Đồ Ăn Nhẹ', icon: 'restaurant', order: 5 },
       ];
       await this.categoryModel.insertMany(defaults);
-      categories = await this.categoryModel.find({ isActive: true }).sort({ order: 1, createdAt: 1 }).exec();
+      categories = await this.categoryModel
+        .find({ isActive: true })
+        .sort({ order: 1, createdAt: 1 })
+        .lean()
+        .exec();
     }
+
+    this.cache = {
+      data: categories,
+      expiresAt: Date.now() + this.CACHE_TTL_MS,
+    };
+
     return categories;
   }
 
-  async findOne(id: string): Promise<CategoryDocument> {
-    const category = await this.categoryModel.findById(id).exec();
+  async findOne(id: string): Promise<any> {
+    const category = await this.categoryModel.findById(id).lean().exec();
     if (!category) {
       throw new NotFoundException('Không tìm thấy danh mục.');
     }
@@ -57,6 +86,7 @@ export class CategoriesService {
     if (!updated) {
       throw new NotFoundException('Không tìm thấy danh mục để cập nhật.');
     }
+    this.clearCache();
     return updated;
   }
 
@@ -65,6 +95,7 @@ export class CategoriesService {
     if (!deleted) {
       throw new NotFoundException('Không tìm thấy danh mục để xóa.');
     }
+    this.clearCache();
     return { message: 'Đã xóa danh mục thành công.' };
   }
 }

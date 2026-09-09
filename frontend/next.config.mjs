@@ -21,11 +21,10 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: [
-      'framer-motion',
       'lucide-react',
-      'html5-qrcode',
       'react-hot-toast',
-      'recharts',
+      'socket.io-client',
+      'chart.js',
     ],
   },
   eslint: {

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Html5Qrcode } from 'html5-qrcode';
 import { playScanBeep, playWelcomeChime } from './utils/sound';
 import { ThemeToggleSwitch } from '@/components/table/ThemeToggleSwitch';
 import { LanguageToggleSwitch, Lang } from '@/components/table/LanguageToggleSwitch';
@@ -14,6 +13,8 @@ import { formatTableName, formatTableLocation, formatTableFloor } from '@/utils/
 import { toast } from 'react-hot-toast';
 import { useTranslation } from '@/context/LanguageContext';
 import { io } from 'socket.io-client';
+import { BookingClosingAlertModal } from '@/components/booking/BookingClosingAlertModal';
+import { checkReservationClosingWarning, ReservationClosingCheck } from '@/utils/storeHours';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
@@ -212,6 +213,10 @@ export default function Home() {
     tableName: string;
     code: string;
   } | null>(null);
+
+  // Closing Alert Warning Modal (< 30 minutes before closing)
+  const [closingAlertData, setClosingAlertData] = useState<ReservationClosingCheck | null>(null);
+  const [isClosingModalOpen, setIsClosingModalOpen] = useState(false);
 
   const handleAcknowledgeOneTimeCode = async () => {
     if (!oneTimeCodeData) return;
@@ -457,8 +462,8 @@ export default function Home() {
   };
 
   // Submit Table Reservation
-  const handleBookingSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleBookingSubmit = async (e?: React.FormEvent, skipClosingWarning = false) => {
+    if (e) e.preventDefault();
     setError('');
 
     if (!selectedTable) {
@@ -502,6 +507,37 @@ export default function Home() {
     const selectedDate = new Date(reservationTime);
     if (isNaN(selectedDate.getTime()) || selectedDate.getTime() < Date.now() - 5 * 60 * 1000) {
       setError(lang === 'en' ? 'Reservation time cannot be in the past.' : 'Thời gian đặt bàn không hợp lệ hoặc đã trôi qua trong quá khứ.');
+      return;
+    }
+
+    // ⚡ Kiểm tra khung giờ đóng cửa của quán (07:00 - 22:00)
+    const closingCheck = checkReservationClosingWarning(reservationTime);
+    if (closingCheck.isBeforeOpen) {
+      setError(
+        lang === 'en'
+          ? `Kohi Coffee opens at ${closingCheck.openingTimeStr}. Please choose a time after opening.`
+          : lang === 'zh'
+          ? `本店将于 ${closingCheck.openingTimeStr} 营业。请选择营业时间内的入座时间。`
+          : `Quán chỉ mở cửa từ ${closingCheck.openingTimeStr}. Vui lòng chọn thời gian nhận bàn sau giờ mở cửa.`
+      );
+      return;
+    }
+
+    if (closingCheck.isAfterClosing) {
+      setError(
+        lang === 'en'
+          ? `Kohi Coffee closes at ${closingCheck.closingTimeStr}. Please choose a time before closing.`
+          : lang === 'zh'
+          ? `本店将于 ${closingCheck.closingTimeStr} 打烊。请选择打烊前的入座时间。`
+          : `Quán đóng cửa vào lúc ${closingCheck.closingTimeStr}. Vui lòng chọn thời gian nhận bàn trước giờ đóng cửa.`
+      );
+      return;
+    }
+
+    // ⚡ Nếu đặt cách giờ đóng cửa < 30 phút mà khách chưa xác nhận -> Mở Pop-up cảnh báo
+    if (closingCheck.isNearClosing && !skipClosingWarning) {
+      setClosingAlertData(closingCheck);
+      setIsClosingModalOpen(true);
       return;
     }
 
@@ -1674,6 +1710,23 @@ export default function Home() {
             </div>
           )}
         </AnimatePresence>
+
+        {/* BOOKING CLOSING ALERT MODAL (< 30 PHÚT TRƯỚC GIỜ ĐÓNG CỬA) */}
+        {closingAlertData && (
+          <BookingClosingAlertModal
+            isOpen={isClosingModalOpen}
+            onClose={() => setIsClosingModalOpen(false)}
+            onConfirm={() => {
+              setIsClosingModalOpen(false);
+              handleBookingSubmit(undefined, true);
+            }}
+            reservationTimeStr={closingAlertData.reservationTimeStr}
+            closingTimeStr={closingAlertData.closingTimeStr}
+            minutesUntilClosing={closingAlertData.minutesUntilClosing}
+            isSubmitting={isSubmitting}
+            lang={lang}
+          />
+        )}
       </main>
 
       {/* Footer */}
