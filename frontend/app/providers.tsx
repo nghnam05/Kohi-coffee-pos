@@ -64,8 +64,9 @@ export function Providers({ children }: { children: ReactNode }) {
           gutter={10}
           containerStyle={{
             top: isMobile ? 74 : 24,
-            left: isMobile ? 16 : 'auto',
+            left: isMobile ? 16 : 24,
             right: isMobile ? 16 : 24,
+            bottom: isMobile ? 16 : 24,
             zIndex: 99999,
           }}
           toastOptions={{
@@ -76,12 +77,13 @@ export function Providers({ children }: { children: ReactNode }) {
               color: '#FFFFFF',
               border: '1px solid rgba(255, 255, 255, 0.15)',
               borderRadius: '9999px',
-              fontSize: '12.5px',
+              fontSize: '13px',
               fontWeight: '400',
-              padding: '9px 18px',
+              padding: '10px 20px',
               boxShadow: '0 16px 36px -6px rgba(0, 0, 0, 0.7), 0 0 16px rgba(56, 189, 248, 0.15)',
               letterSpacing: '-0.01em',
-              maxWidth: isMobile ? 'calc(100vw - 32px)' : '420px',
+              maxWidth: isMobile ? 'calc(100vw - 32px)' : '480px',
+              width: 'fit-content',
             },
             success: {
               iconTheme: {

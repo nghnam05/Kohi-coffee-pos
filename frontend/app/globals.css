@@ -702,11 +702,12 @@ html.dark select option {
   }
 }
 
-/* ── Toast Notification Layout (Mobile Safe Below Header) ───────────────────── */
+/* ── Toast Notification Layout ───────────────────────────────────────────── */
 div[data-rht-toaster] {
   top: 74px !important;
   left: 16px !important;
   right: 16px !important;
+  bottom: 16px !important;
   z-index: 99999 !important;
   pointer-events: none !important;
 }
@@ -714,7 +715,8 @@ div[data-rht-toaster] {
 @media (min-width: 1024px) {
   div[data-rht-toaster] {
     top: 24px !important;
+    left: 24px !important;
     right: 24px !important;
-    left: auto !important;
+    bottom: 24px !important;
   }
 }
