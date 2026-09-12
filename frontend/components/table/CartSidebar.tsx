@@ -13,6 +13,9 @@ interface Food {
   image: string;
   category: string;
   isAvailable: boolean;
+  rating?: number;
+  totalReviews?: number;
+  soldCount?: number;
 }
 
 interface Table {
@@ -352,7 +355,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             className={`flex-1 h-[44px] px-2 text-xs font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 transition-all font-sans cursor-pointer ${
               paymentMethod === 'cash'
                 ? 'bg-[#38BDF8] text-slate-950 shadow-md shadow-sky-500/20 border-2 border-sky-400'
-                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 border-2 border-slate-300 dark:border-slate-650 text-slate-800 dark:text-slate-200 hover:border-sky-400 shadow-xs'
+                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-sky-400 shadow-xs'
             }`}
           >
             <span className="material-symbols-outlined text-base">payments</span>
@@ -366,7 +369,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             className={`flex-1 h-[44px] px-2 text-xs font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 transition-all font-sans cursor-pointer ${
               paymentMethod === 'bank_transfer' || paymentMethod === 'momo'
                 ? 'bg-[#38BDF8] text-slate-950 shadow-md shadow-sky-500/20 border-2 border-sky-400'
-                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 border-2 border-slate-300 dark:border-slate-650 text-slate-800 dark:text-slate-200 hover:border-sky-400 shadow-xs'
+                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-sky-400 shadow-xs'
             }`}
           >
             <span className="material-symbols-outlined text-base">qr_code_2</span>

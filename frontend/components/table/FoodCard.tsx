@@ -12,6 +12,9 @@ interface Food {
   image: string;
   category: string;
   isAvailable: boolean;
+  rating?: number;
+  totalReviews?: number;
+  soldCount?: number;
 }
 
 type Lang = 'vi' | 'en' | 'zh';
@@ -109,6 +112,28 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             >
               {food.name}
             </h3>
+
+            {/* Social Proof: Star Rating & Sold Count */}
+            <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 my-0.5 font-sans">
+              <span className="flex items-center gap-0.5 text-amber-500 dark:text-amber-400 font-extrabold">
+                <span className="material-symbols-outlined text-[13px] fill-current leading-none">star</span>
+                <span>{(food.rating || 5.0).toFixed(1)}</span>
+              </span>
+              {food.totalReviews !== undefined && food.totalReviews > 0 ? (
+                <span className="text-slate-400 dark:text-slate-500 text-[10.5px]">
+                  ({food.totalReviews})
+                </span>
+              ) : null}
+              <span className="text-slate-300 dark:text-slate-600 leading-none">•</span>
+              <span className="font-medium text-slate-600 dark:text-slate-300 text-[11px]">
+                {lang === 'en'
+                  ? `${food.soldCount || 0} sold`
+                  : lang === 'zh'
+                  ? `已售 ${food.soldCount || 0}`
+                  : `Đã bán ${food.soldCount || 0}`}
+              </span>
+            </div>
+
             <p className="text-[11.5px] sm:text-xs font-normal leading-normal text-slate-400 dark:text-slate-400 line-clamp-1 break-words font-sans mt-0.5">
               {food.description || (lang === 'en' ? 'Signature handcrafted flavor' : 'Hương vị đặc trưng chuẩn Kohi')}
             </p>
@@ -191,6 +216,27 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             >
               {food.name}
             </h3>
+
+            {/* Social Proof: Star Rating & Sold Count */}
+            <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 mb-1.5 font-sans flex-wrap">
+              <span className="flex items-center gap-0.5 text-amber-500 dark:text-amber-400 font-extrabold">
+                <span className="material-symbols-outlined text-[13px] fill-current leading-none">star</span>
+                <span>{(food.rating || 5.0).toFixed(1)}</span>
+              </span>
+              {food.totalReviews !== undefined && food.totalReviews > 0 ? (
+                <span className="text-slate-400 dark:text-slate-500 text-[10.5px]">
+                  ({food.totalReviews})
+                </span>
+              ) : null}
+              <span className="text-slate-300 dark:text-slate-600 leading-none">•</span>
+              <span className="font-medium text-slate-600 dark:text-slate-300 text-[11px]">
+                {lang === 'en'
+                  ? `${food.soldCount || 0} sold`
+                  : lang === 'zh'
+                  ? `已售 ${food.soldCount || 0}`
+                  : `Đã bán ${food.soldCount || 0}`}
+              </span>
+            </div>
 
             <p className="text-[11.5px] sm:text-xs font-normal leading-normal text-slate-400 dark:text-slate-400 line-clamp-1 break-words font-sans">
               {food.description || (lang === 'en' ? 'Signature handcrafted flavor' : 'Hương vị đặc trưng chuẩn Kohi')}

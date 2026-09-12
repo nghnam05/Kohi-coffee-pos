@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { AnimatePresence, motion } from 'framer-motion';
 import { io, Socket } from 'socket.io-client';
@@ -45,6 +46,9 @@ interface Food {
   image: string;
   category: string;
   isAvailable: boolean;
+  rating?: number;
+  totalReviews?: number;
+  soldCount?: number;
 }
 
 interface Table {
@@ -580,10 +584,21 @@ export default function TableMenuPage() {
 
   useEffect(() => {
     if (!tableId || !mounted) return;
-    const savedName = localStorage.getItem(`chika_name_${tableId}`);
-    const isDismissed = localStorage.getItem(`chika_name_dismissed_${tableId}`) === 'true';
-    if (savedName && savedName.trim()) {
-      setCustomerName(savedName.trim());
+    const savedName = (
+      localStorage.getItem(`chika_name_${tableId}`) ||
+      localStorage.getItem('kohi_customer_name') ||
+      customerName ||
+      ''
+    ).trim();
+    const isDismissed =
+      localStorage.getItem(`chika_name_dismissed_${tableId}`) === 'true' ||
+      localStorage.getItem('kohi_name_dismissed') === 'true';
+
+    if (savedName) {
+      setCustomerName(savedName);
+      setNameInput(savedName);
+      localStorage.setItem(`chika_name_${tableId}`, savedName);
+      localStorage.setItem('kohi_customer_name', savedName);
       setIsNamePromptOpen(false);
     } else if (isDismissed) {
       setIsNamePromptOpen(false);
@@ -603,7 +618,9 @@ export default function TableMenuPage() {
     socketRef.current = io(SOCKET_BASE);
 
     const devId = typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest';
-    const savedName = typeof window !== 'undefined' ? (localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Khách').trim() : 'Khách';
+    const savedName = typeof window !== 'undefined'
+      ? (localStorage.getItem(`chika_name_${tableId}`) || localStorage.getItem('kohi_customer_name') || customerName || 'Khách').trim()
+      : 'Khách';
 
     socketRef.current.emit('joinTableRoom', {
       tableId,
@@ -649,10 +666,17 @@ export default function TableMenuPage() {
     });
 
     socketRef.current.on('tableTransferred', ({ fromTableId, toTableId }: { fromTableId: string; toTableId: string }) => {
-      if (fromTableId === tableId) {
-        const savedName = localStorage.getItem(`chika_name_${tableId}`);
-        if (savedName) {
-          localStorage.setItem(`chika_name_${toTableId}`, savedName);
+      const currentTableId = typeof tableId === 'string' ? tableId : (tableId as any)?._id;
+      if (fromTableId === currentTableId) {
+        const currentName = (
+          customerName ||
+          localStorage.getItem(`chika_name_${currentTableId}`) ||
+          localStorage.getItem('kohi_customer_name') ||
+          ''
+        ).trim();
+        if (currentName) {
+          localStorage.setItem(`chika_name_${toTableId}`, currentName);
+          localStorage.setItem('kohi_customer_name', currentName);
         }
         router.push(`/table/${toTableId}`);
       }
@@ -772,6 +796,16 @@ export default function TableMenuPage() {
     socketRef.current.on('tableTransferApproved', ({ fromTableId: evtFromId, toTableId: evtToId, toTableName: evtToName }: any) => {
       const currentTableId = typeof tableId === 'string' ? tableId : (tableId as any)?._id;
       if (evtFromId === currentTableId) {
+        const currentName = (
+          customerName ||
+          localStorage.getItem(`chika_name_${currentTableId}`) ||
+          localStorage.getItem('kohi_customer_name') ||
+          ''
+        ).trim();
+        if (currentName) {
+          localStorage.setItem(`chika_name_${evtToId}`, currentName);
+          localStorage.setItem('kohi_customer_name', currentName);
+        }
         try { playAlertPing(); } catch {}
         toast.success(`Yêu cầu chuyển sang ${evtToName || 'bàn mới'} đã được nhân viên duyệt! Đang chuyển sang bàn mới...`);
         setTimeout(() => {
@@ -953,6 +987,8 @@ export default function TableMenuPage() {
       }
       localStorage.removeItem(`chika_name_${tableId}`);
       localStorage.removeItem(`chika_name_dismissed_${tableId}`);
+      localStorage.removeItem('kohi_customer_name');
+      localStorage.removeItem('kohi_name_dismissed');
       router.push('/');
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Không thể rời bàn lúc này.', { icon: null });
@@ -1076,9 +1112,15 @@ export default function TableMenuPage() {
     if (!selectedTransferTableId || isTransferring) return;
     setIsTransferring(true);
     try {
-      const savedName = localStorage.getItem(`chika_name_${tableId}`);
-      if (savedName) {
-        localStorage.setItem(`chika_name_${selectedTransferTableId}`, savedName);
+      const currentName = (
+        customerName ||
+        localStorage.getItem(`chika_name_${tableId}`) ||
+        localStorage.getItem('kohi_customer_name') ||
+        ''
+      ).trim();
+      if (currentName) {
+        localStorage.setItem(`chika_name_${selectedTransferTableId}`, currentName);
+        localStorage.setItem('kohi_customer_name', currentName);
       }
 
       const res = await fetch(`${API_BASE}/orders/transfer-request`, {
@@ -1087,7 +1129,7 @@ export default function TableMenuPage() {
         body: JSON.stringify({
           fromTableId: tableId,
           toTableId: selectedTransferTableId,
-          customerName: customerName || savedName || 'Khách tại bàn',
+          customerName: customerName || currentName || 'Khách tại bàn',
         }),
       });
       const data = await res.json();
@@ -1245,6 +1287,7 @@ export default function TableMenuPage() {
 
   const handleAddFromModal = () => {
     if (!selectedFood) return;
+    const foodName = selectedFood.name;
     const devId = typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest';
     const cName = typeof window !== 'undefined' ? (localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Bạn').trim() : 'Bạn';
     const addonTotal = selectedAddons.reduce((sum, a) => sum + (ADDON_PRICES[a] ?? 0), 0);
@@ -1274,10 +1317,13 @@ export default function TableMenuPage() {
     setSelectedSize('M');
     setSelectedAddons([]);
     setModalNote('');
-    // Auto open cart bottom sheet on mobile so user transitions directly to order confirmation!
-    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
-      setIsCartOpen(true);
-    }
+    toast.success(
+      lang === 'en'
+        ? `Added "${foodName}" to cart!`
+        : lang === 'zh'
+        ? `已将 "${foodName}" 加入购物车！`
+        : `Đã thêm "${foodName}" vào giỏ hàng!`
+    );
   };
 
   const handleDirectAddToCart = useCallback((food: any) => {
@@ -1401,9 +1447,12 @@ export default function TableMenuPage() {
     setCustomerName(finalName);
     if (finalName) {
       localStorage.setItem(`chika_name_${tableId}`, finalName);
+      localStorage.setItem('kohi_customer_name', finalName);
       localStorage.removeItem(`chika_name_dismissed_${tableId}`);
+      localStorage.removeItem('kohi_name_dismissed');
     } else {
       localStorage.setItem(`chika_name_dismissed_${tableId}`, 'true');
+      localStorage.setItem('kohi_name_dismissed', 'true');
     }
     if (socketRef.current && tableId) {
       const devId = typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest';
@@ -1670,6 +1719,13 @@ export default function TableMenuPage() {
       .reduce((sum, item) => sum + item.quantity, 0);
   }, [cart, myDeviceId, customerName]);
 
+  const suggestedFoods = useMemo(() => {
+    if (!foods || foods.length === 0) return [];
+    return [...foods]
+      .sort((a, b) => ((b.soldCount || 0) + (b.rating || 0) * 50) - ((a.soldCount || 0) + (a.rating || 0) * 50))
+      .slice(0, 6);
+  }, [foods]);
+
   if (!mounted) return null;
 
   if (error && !isLoading) {
@@ -1691,6 +1747,21 @@ export default function TableMenuPage() {
       </div>
     );
   }
+
+  const isAnyOverlayActive = Boolean(
+    isCartOpen ||
+    selectedFood ||
+    isVoiceOrderOpen ||
+    isOrderHistoryModalOpen ||
+    isTransferModalOpen ||
+    isOrderSuccessModalOpen ||
+    isQRModalOpen ||
+    isNotificationModalOpen ||
+    isLeaveTableModalOpen ||
+    isBankPayModalOpen ||
+    isClosingModalOpen ||
+    isNamePromptOpen
+  );
 
   return (
     <>
@@ -1764,7 +1835,9 @@ export default function TableMenuPage() {
         unreadNotificationCount={unreadNotificationCount}
       />
 
-      <div className="fixed inset-0 md:static md:h-screen w-full max-w-full overflow-hidden flex flex-col md:flex-row bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-white font-sans antialiased selection:bg-[#3B82F6] selection:text-white transition-colors duration-200">
+      <div className={`fixed inset-0 md:static md:h-screen w-full max-w-full overflow-hidden flex flex-col md:flex-row bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-white font-sans antialiased selection:bg-[#3B82F6] selection:text-white transition-colors duration-200 ${
+        isCartOpen ? 'z-50' : ''
+      }`}>
         {/* Left Sidebar (Desktop/Tablet Column 1) */}
         <LeftSidebar
           isLoading={isLoading}
@@ -2012,35 +2085,82 @@ export default function TableMenuPage() {
               </div>
             )}
 
-            {/* Mobile Kohi AI Concierge Card (Matching Image 2) */}
-            {!isLoading && filteredFoods.length > 0 && (
-              <div className="md:hidden mt-2 mb-4">
-                <div className="rounded-2xl p-[1px] bg-gradient-to-r from-blue-500/35 via-sky-300/30 to-blue-500/20 shadow-xs">
-                  <div className="bg-white dark:bg-slate-900/90 rounded-[15px] p-3.5 border border-slate-200/80 dark:border-white/5 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-sky-400 flex items-center justify-center text-white shadow-md flex-shrink-0">
-                        <span className="material-symbols-outlined text-[19px] animate-pulse">auto_awesome</span>
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <h4 className="text-[13px] font-bold text-slate-900 dark:text-white leading-tight truncate">
-                            Kohi AI Concierge
-                          </h4>
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 animate-ping" />
-                        </div>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
-                          {lang === 'en' ? 'Smart Menu & Store Guide' : lang === 'zh' ? '智能点餐与门店助手' : 'Trợ lý gợi ý món & tư vấn quán'}
-                        </p>
-                      </div>
+            {/* Mobile "Có thể bạn sẽ thích" (Suggested For You) Section */}
+            {!isLoading && suggestedFoods.length > 0 && (
+              <div className="md:hidden mt-3 mb-5">
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-amber-500/15 text-amber-500 dark:text-amber-400 flex items-center justify-center border border-amber-500/25 shadow-2xs">
+                      <span className="material-symbols-outlined text-[17px]">auto_awesome</span>
                     </div>
-                    <button
-                      onClick={() => setIsAiChatOpen(true)}
-                      className="px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shrink-0 transition-all active:scale-95 flex items-center gap-1.5 shadow-xs cursor-pointer font-sans"
-                    >
-                      <span className="material-symbols-outlined text-sm">chat_bubble</span>
-                      <span>{lang === 'en' ? 'Ask AI' : lang === 'zh' ? '咨询AI' : 'Hỏi AI'}</span>
-                    </button>
+                    <div>
+                      <h3 className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight font-sans">
+                        {t.suggestedForYou || (lang === 'en' ? 'You Might Also Like' : lang === 'zh' ? '猜你喜欢' : 'Có thể bạn sẽ thích')}
+                      </h3>
+                      <p className="text-[10.5px] text-slate-400 dark:text-slate-500">
+                        {lang === 'en' ? 'Top picks loved by guests' : lang === 'zh' ? '顾客最喜爱的精选单品' : 'Món ngon bán chạy được yêu thích nhất'}
+                      </p>
+                    </div>
                   </div>
+                </div>
+
+                {/* Horizontal Scroll Cards Carousel */}
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory -mx-4 px-4">
+                  {suggestedFoods.map((sFood) => {
+                    const cartItem = myCartMap.get(sFood._id);
+                    const quantity = cartItem?.quantity ?? 0;
+                    return (
+                      <div
+                        key={`suggested_${sFood._id}`}
+                        onClick={() => {
+                          setSelectedFood(sFood);
+                          setModalQuantity(quantity > 0 ? quantity : 1);
+                          setModalNote(cartItem?.note || '');
+                        }}
+                        className="w-[145px] shrink-0 snap-start bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-white/10 rounded-2xl p-2.5 shadow-xs hover:shadow-md transition-all active:scale-[0.98] cursor-pointer flex flex-col justify-between"
+                      >
+                        <div>
+                          <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-950 mb-2">
+                            <Image
+                              src={sFood.image}
+                              alt={sFood.name}
+                              fill
+                              className="object-cover"
+                              sizes="145px"
+                            />
+                            <div className="absolute top-1.5 left-1.5 bg-black/65 backdrop-blur-xs text-amber-400 px-1.5 py-0.5 rounded-md text-[9.5px] font-bold flex items-center gap-0.5">
+                              <span className="material-symbols-outlined text-[11px] fill-current">star</span>
+                              <span>{(sFood.rating || 5.0).toFixed(1)}</span>
+                            </div>
+                          </div>
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate font-sans" title={sFood.name}>
+                            {sFood.name}
+                          </h4>
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+                            {lang === 'en' ? `${sFood.soldCount || 0} sold` : lang === 'zh' ? `已售 ${sFood.soldCount || 0}` : `Đã bán ${sFood.soldCount || 0}`}
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100 dark:border-white/5">
+                          <span className="text-xs font-extrabold text-[#2563EB] dark:text-sky-400 font-mono">
+                            {formatPrice(sFood.price, lang)}
+                          </span>
+                          <button
+                            type="button"
+                            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
+                              quantity > 0
+                                ? 'bg-sky-500/20 text-sky-600 dark:text-sky-400 border border-sky-500/30'
+                                : 'bg-[#2563EB] text-white shadow-2xs'
+                            }`}
+                            title={lang === 'en' ? 'Select' : lang === 'zh' ? '选择' : 'Chọn'}
+                          >
+                            <span className="material-symbols-outlined text-sm font-bold">
+                              {quantity > 0 ? 'check' : 'add'}
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -2173,6 +2293,7 @@ export default function TableMenuPage() {
         handleSendAiMessage={handleSendAiMessage}
         onAddToCart={handleDirectAddToCart}
         lang={lang}
+        isHidden={isAnyOverlayActive}
       />
 
       <NamePromptModal

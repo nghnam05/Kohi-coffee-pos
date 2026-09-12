@@ -177,4 +177,47 @@ describe('ReservationsService', () => {
       await expect(service.updateStatus('nonexistent', 'confirmed')).rejects.toThrow(NotFoundException);
     });
   });
+
+  describe('customerArrive', () => {
+    const mockConfirmedReservation = {
+      _id: 'res789',
+      tableId: '507f1f77bcf86cd799439011',
+      status: 'confirmed',
+      checkInCode: '1234',
+      save: jest.fn().mockImplementation(function (this: any) { return Promise.resolve({ ...this }); }),
+    };
+
+    it('should throw BadRequestException if PIN code is wrong or from an older reservation', async () => {
+      reservationModelMock.findById.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue({ ...mockConfirmedReservation }),
+      });
+
+      await expect(service.customerArrive('res789', '9999')).rejects.toThrow(
+        new BadRequestException('Mã nhận bàn không chính xác. Vui lòng kiểm tra lại!'),
+      );
+    });
+
+    it('should throw BadRequestException if reservation already arrived', async () => {
+      reservationModelMock.findById.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue({ ...mockConfirmedReservation, status: 'arrived' }),
+      });
+
+      await expect(service.customerArrive('res789', '1234')).rejects.toThrow(
+        new BadRequestException('Đơn đặt bàn này đã được nhận bàn trước đó rồi.'),
+      );
+    });
+
+    it('should succeed when correct PIN code is provided', async () => {
+      reservationModelMock.findById.mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue({ ...mockConfirmedReservation }),
+      });
+
+      const res = await service.customerArrive('res789', '1234');
+      expect(res.success).toBe(true);
+      expect(tablesService.update).toHaveBeenCalledWith('507f1f77bcf86cd799439011', { status: 'serving' });
+    });
+  });
 });

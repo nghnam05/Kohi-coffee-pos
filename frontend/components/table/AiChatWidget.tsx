@@ -28,6 +28,7 @@ interface AiChatWidgetProps {
   handleSendAiMessage: (overrideText?: string) => void;
   onAddToCart?: (food: any) => void;
   lang?: 'vi' | 'en' | 'zh';
+  isHidden?: boolean;
 }
 
 interface PromptCategory {
@@ -101,6 +102,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
   handleSendAiMessage,
   onAddToCart,
   lang = 'vi',
+  isHidden = false,
 }) => {
   const [isListeningVoice, setIsListeningVoice] = useState(false);
   const constraintsRef = useRef<HTMLDivElement>(null);
@@ -408,7 +410,9 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
       {/* ── DRAGGABLE FLOATING ACTION BUTTON (FAB) ───────────────────────── */}
       <div
         ref={constraintsRef}
-        className="fixed inset-0 pointer-events-none z-40 overflow-hidden p-3 md:p-6"
+        className={`fixed inset-0 pointer-events-none z-40 overflow-hidden p-3 md:p-6 ${
+          isAiChatOpen || isHidden ? 'hidden' : ''
+        }`}
       >
         <motion.button
           type="button"
@@ -420,12 +424,14 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
           whileTap={{ scale: 0.92 }}
           onClick={() => setIsAiChatOpen(!isAiChatOpen)}
           animate={{
-            scale: isAiChatOpen ? 0 : 1,
-            opacity: isAiChatOpen ? 0 : 1,
-            pointerEvents: isAiChatOpen ? 'none' : 'auto',
+            scale: isAiChatOpen || isHidden ? 0 : 1,
+            opacity: isAiChatOpen || isHidden ? 0 : 1,
+            pointerEvents: isAiChatOpen || isHidden ? 'none' : 'auto',
           }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="pointer-events-auto absolute right-3.5 bottom-[76px] md:right-6 md:bottom-8 w-11 h-11 md:w-12 md:h-12 rounded-full bg-[#090D16] hover:bg-slate-900 text-white shadow-[0_8px_25px_rgba(0,0,0,0.5),0_0_15px_rgba(56,189,248,0.25)] border-2 border-[#38BDF8] flex items-center justify-center cursor-grab active:cursor-grabbing backdrop-blur-md group touch-none select-none"
+          className={`pointer-events-auto absolute right-3.5 bottom-[76px] md:right-6 md:bottom-8 w-11 h-11 md:w-12 md:h-12 rounded-full bg-[#090D16] hover:bg-slate-900 text-white shadow-[0_8px_25px_rgba(0,0,0,0.5),0_0_15px_rgba(56,189,248,0.25)] border-2 border-[#38BDF8] flex items-center justify-center cursor-grab active:cursor-grabbing backdrop-blur-md group touch-none select-none ${
+            isAiChatOpen || isHidden ? 'invisible pointer-events-none' : ''
+          }`}
           title="Kohi AI Assistant (Kéo thả di chuyển)"
           aria-label="Kohi AI Assistant"
         >

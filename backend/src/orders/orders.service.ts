@@ -230,6 +230,16 @@ export class OrdersService implements OnModuleInit {
           console.error('[Payment Record Error]:', err);
         });
       }
+
+      // Tự động cộng dồn số lượng đã bán (soldCount) cho từng món trong đơn
+      if (this.foodsService && updatedOrder.items) {
+        for (const item of updatedOrder.items) {
+          const fId = (item.foodId as any)?._id || item.foodId;
+          if (fId) {
+            await this.foodsService.incrementSoldCount(fId.toString(), item.quantity || 1).catch(() => {});
+          }
+        }
+      }
       if (updatedOrder.tableId) {
         const tableIdStr = (updatedOrder.tableId as any)?._id
           ? (updatedOrder.tableId as any)._id.toString()

@@ -701,3 +701,20 @@ html.dark select option {
     color: #000000 !important;
   }
 }
+
+/* ── Toast Notification Layout (Mobile Safe Below Header) ───────────────────── */
+div[data-rht-toaster] {
+  top: 74px !important;
+  left: 16px !important;
+  right: 16px !important;
+  z-index: 99999 !important;
+  pointer-events: none !important;
+}
+
+@media (min-width: 1024px) {
+  div[data-rht-toaster] {
+    top: 24px !important;
+    right: 24px !important;
+    left: auto !important;
+  }
+}

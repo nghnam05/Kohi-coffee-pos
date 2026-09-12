@@ -124,10 +124,12 @@ export class ReservationsService implements OnModuleInit {
       throw new BadRequestException('Thời gian đặt bàn phải nằm trong khung giờ hoạt động của quán (07:00 - 22:00).');
     }
 
+    const checkInCode = Math.floor(1000 + Math.random() * 9000).toString();
     const reservation = new this.reservationModel({
       ...dto,
       customerPhone: cleanPhone,
       reservationTime: resTime,
+      checkInCode,
     });
     const saved = await reservation.save();
 
@@ -319,12 +321,14 @@ export class ReservationsService implements OnModuleInit {
       );
     }
 
-    // Nếu đơn có mã PIN 4 chữ số, yêu cầu khách hàng nhập đúng mã
-    if (resDoc.checkInCode) {
-      const inputCode = (checkInCode || '').trim();
-      if (!inputCode || inputCode !== resDoc.checkInCode.trim()) {
-        throw new BadRequestException('Mã nhận bàn không chính xác. Vui lòng kiểm tra lại!');
-      }
+    if (resDoc.status === 'arrived' || resDoc.status === 'completed') {
+      throw new BadRequestException('Đơn đặt bàn này đã được nhận bàn trước đó rồi.');
+    }
+
+    // Yêu cầu mã nhận bàn 4 chữ số phải trùng khớp chính xác
+    const inputCode = (checkInCode || '').trim();
+    if (!resDoc.checkInCode || !inputCode || inputCode !== resDoc.checkInCode.trim()) {
+      throw new BadRequestException('Mã nhận bàn không chính xác. Vui lòng kiểm tra lại!');
     }
 
     const currentTableIdStr = (resDoc.tableId as any)?._id

@@ -12,6 +12,9 @@ interface Food {
   image: string;
   category: string;
   isAvailable: boolean;
+  rating?: number;
+  totalReviews?: number;
+  soldCount?: number;
 }
 
 interface Review {
@@ -247,6 +250,30 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                             {selectedFood.description}
                           </p>
                         )}
+
+                        {/* Social Proof: Rating & Sold Count */}
+                        <div className="flex items-center gap-2 mt-2 text-xs text-slate-500 dark:text-slate-400 font-sans flex-wrap">
+                          <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 px-2 py-0.5 rounded-lg font-bold">
+                            <span className="material-symbols-outlined text-xs fill-current leading-none">star</span>
+                            <span>{(selectedFood.rating || 5.0).toFixed(1)}</span>
+                          </span>
+                          {selectedFood.totalReviews !== undefined && selectedFood.totalReviews > 0 ? (
+                            <span className="text-slate-400 dark:text-slate-500 text-[11px]">
+                              ({selectedFood.totalReviews} {lang === 'en' ? 'reviews' : lang === 'zh' ? '条评价' : 'đánh giá'})
+                            </span>
+                          ) : null}
+                          <span className="text-slate-300 dark:text-slate-700 leading-none">•</span>
+                          <span className="inline-flex items-center gap-1 bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/25 px-2 py-0.5 rounded-lg font-medium text-[11px]">
+                            <span className="material-symbols-outlined text-xs">local_fire_department</span>
+                            <span>
+                              {lang === 'en'
+                                ? `${selectedFood.soldCount || 0} sold`
+                                : lang === 'zh'
+                                ? `已售 ${selectedFood.soldCount || 0}`
+                                : `Đã bán ${selectedFood.soldCount || 0}`}
+                            </span>
+                          </span>
+                        </div>
                       </div>
                       <div className="text-xl sm:text-2xl font-bold text-[#0284c7] dark:text-[#38BDF8] tracking-tight shrink-0 text-right font-mono">
                         {formatPrice(currentUnitPrice, lang)}
