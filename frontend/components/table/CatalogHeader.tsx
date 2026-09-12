@@ -28,27 +28,39 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
 
   const getSubtitle = () => {
     if (lang === 'en') {
-      return customerName
-        ? `Hello, ${customerName} — Discover signature handcrafted coffee & fresh Kohi pastries.`
-        : 'Discover signature handcrafted coffee & fresh Kohi pastries.';
+      return customerName ? (
+        <>
+          Hello, <span className="font-bold text-slate-900 dark:text-white">{customerName}</span>! Discover Kohi&apos;s authentic taste.
+        </>
+      ) : (
+        "Discover Kohi's authentic handcrafted taste."
+      );
     }
     if (lang === 'zh') {
-      return customerName
-        ? `你好，${customerName} — 探索手作特调咖啡与 Kohi 精致烘焙点心。`
-        : '探索手作特调咖啡与 Kohi 精致烘焙点心。';
+      return customerName ? (
+        <>
+          你好，<span className="font-bold text-slate-900 dark:text-white">{customerName}</span>！探索 Kohi 特色风味。
+        </>
+      ) : (
+        '探索 Kohi 特色风味。'
+      );
     }
-    return customerName
-      ? `Xin chào, ${customerName} — Khám phá hương vị đặc trưng từ những hạt cà phê rang xay thủ công và bánh ngọt chuẩn Kohi.`
-      : 'Khám phá hương vị đặc trưng từ những hạt cà phê rang xay thủ công và bánh ngọt chuẩn Kohi.';
+    return customerName ? (
+      <>
+        Xin chào, <span className="font-bold text-slate-900 dark:text-white">{customerName}</span>! Khám phá hương vị Kohi.
+      </>
+    ) : (
+      'Khám phá hương vị Kohi.'
+    );
   };
 
   return (
-    <div className="px-4 md:px-6 py-2.5 md:py-4 flex justify-between items-center transition-all">
+    <div className="px-4 md:px-6 py-2 md:py-3.5 flex justify-between items-center transition-all">
       <div>
-        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-[32px] font-black text-slate-900 dark:text-white tracking-[-0.02em] leading-tight font-heading">
+        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-[32px] font-extrabold text-slate-900 dark:text-white tracking-[-0.02em] leading-tight font-heading">
           {t.welcome ?? 'Hôm nay chúng ta uống gì?'}
         </h2>
-        <p className="text-xs sm:text-[13.5px] md:text-[14px] font-medium text-slate-500 dark:text-slate-400 mt-1 leading-relaxed font-sans max-w-xl">
+        <p className="text-xs sm:text-[13px] md:text-[13.5px] font-normal text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed font-sans max-w-xl">
           {getSubtitle()}
         </p>
       </div>
@@ -59,11 +71,11 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
         {onOpenVoiceOrder && (
           <button
             onClick={onOpenVoiceOrder}
-            className="hidden md:flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-sky-500 dark:hover:text-[#38BDF8] hover:border-sky-500/50 transition-all shadow-xs active:scale-95 cursor-pointer font-sans group"
-            title="Gọi món bằng giọng nói (Kohi AI)"
+            className="hidden md:flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-sky-500 dark:hover:text-[#38BDF8] hover:border-sky-500/50 transition-all shadow-xs active:scale-95 cursor-pointer font-sans group"
+            title={lang === 'en' ? 'Order by voice with Kohi AI' : lang === 'zh' ? '使用 Kohi AI 语音快速点单' : 'Gọi món nhanh bằng giọng nói (Kohi AI)'}
           >
             <span className="material-symbols-outlined text-base text-[#38BDF8] group-hover:scale-110 transition-transform">mic</span>
-            <span>Gọi món bằng AI</span>
+            <span>{lang === 'en' ? 'Voice Order (AI)' : lang === 'zh' ? 'AI 语音点单' : 'Gọi món giọng nói (AI)'}</span>
           </button>
         )}
 
@@ -72,7 +84,7 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
         <button
           onClick={handleOpenOrderHistory}
 
-          className="hidden md:flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-500/50 transition-all shadow-xs active:scale-95 cursor-pointer font-sans"
+          className="hidden md:flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-500/50 transition-all shadow-xs active:scale-95 cursor-pointer font-sans"
           title={lang === 'en' ? 'View order history & status' : lang === 'zh' ? '查看点单记录与状态' : 'Xem lịch sử & trạng thái đơn hàng'}
         >
           <span className="material-symbols-outlined text-base text-blue-500 dark:text-blue-400">
@@ -80,7 +92,7 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
           </span>
           <span>{t.orderHistory || (lang === 'en' ? 'Order History & Status' : lang === 'zh' ? '点单记录与状态' : 'Lịch sử & Trạng thái đơn')}</span>
           {activeOrders.length > 0 ? (
-            <span className="bg-[#3B82F6] text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">
+            <span className="bg-[#3B82F6] text-white text-[10px] font-semibold px-2 py-0.5 rounded-full animate-pulse">
               {activeOrders.length}
             </span>
           ) : (

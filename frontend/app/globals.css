@@ -38,21 +38,32 @@
   }
 
   body {
-    font-family: var(--font-manrope), var(--font-body), 'Manrope', 'Inter', system-ui, sans-serif;
+    font-family: var(--font-inter), var(--font-body), 'Inter', system-ui, -apple-system, sans-serif;
     font-weight: 400;
     color: var(--text-primary);
     background: var(--bg-primary);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   h1,
   h2,
-  h3,
-  h4,
-  h5,
-  h6,
   .font-heading {
-    font-family: var(--font-manrope), var(--font-heading), 'Manrope', 'Inter', system-ui, sans-serif;
+    font-family: var(--font-inter), var(--font-heading), 'Inter', system-ui, -apple-system, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  h3,
+  h4 {
+    font-family: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  h5,
+  h6 {
+    font-family: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif;
+    font-weight: 500;
   }
 }
 
@@ -619,7 +630,7 @@ html.lenis body {
 select option {
   background-color: #ffffff !important;
   color: #0f172a !important;
-  font-weight: 700;
+  font-weight: 500;
   padding: 10px;
 }
 
@@ -627,7 +638,7 @@ select option {
 html.dark select option {
   background-color: #090D16 !important;
   color: #ffffff !important;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 /* ── Print Media Optimization ────────────────────────────────────────────────── */
@@ -690,3 +701,20 @@ html.dark select option {
     color: #000000 !important;
   }
 }
+
+/* ── Toast Notification Layout (Mobile Safe Below Header) ───────────────────── */
+div[data-rht-toaster] {
+  top: 74px !important;
+  left: 16px !important;
+  right: 16px !important;
+  z-index: 99999 !important;
+  pointer-events: none !important;
+}
+
+@media (min-width: 1024px) {
+  div[data-rht-toaster] {
+    top: 24px !important;
+    right: 24px !important;
+    left: auto !important;
+  }
+}

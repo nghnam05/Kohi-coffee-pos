@@ -74,7 +74,9 @@ describe('CategoriesModule', () => {
     it('should return list of categories', async () => {
       categoryModelMock.find.mockReturnValue({
         sort: jest.fn().mockReturnValue({
-          exec: jest.fn().mockResolvedValue([mockCategory]),
+          lean: jest.fn().mockReturnValue({
+            exec: jest.fn().mockResolvedValue([mockCategory]),
+          }),
         }),
       });
 
@@ -85,14 +87,22 @@ describe('CategoriesModule', () => {
 
   describe('findOne', () => {
     it('should return a category by id', async () => {
-      categoryModelMock.findById.mockReturnValue({ exec: jest.fn().mockResolvedValue(mockCategory) });
+      categoryModelMock.findById.mockReturnValue({
+        lean: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue(mockCategory),
+        }),
+      });
 
       const res = await service.findOne('cat123');
       expect(res).toEqual(mockCategory);
     });
 
     it('should throw NotFoundException if category not found', async () => {
-      categoryModelMock.findById.mockReturnValue({ exec: jest.fn().mockResolvedValue(null) });
+      categoryModelMock.findById.mockReturnValue({
+        lean: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue(null),
+        }),
+      });
 
       await expect(service.findOne('invalid')).rejects.toThrow(NotFoundException);
     });

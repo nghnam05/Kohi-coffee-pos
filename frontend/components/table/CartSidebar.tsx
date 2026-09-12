@@ -13,6 +13,9 @@ interface Food {
   image: string;
   category: string;
   isAvailable: boolean;
+  rating?: number;
+  totalReviews?: number;
+  soldCount?: number;
 }
 
 interface Table {
@@ -109,9 +112,14 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
       const effectivePrice = item.unitPrice ?? item.food.price;
       const isMine = currentDeviceId ? item.addedByDeviceId === currentDeviceId : true;
 
+      const storedName = typeof window !== 'undefined' ? localStorage.getItem('kohi_customer_name') : null;
+      const effectiveCustomerName = (customerName && customerName !== 'Khách' && customerName !== 'Bạn')
+        ? customerName
+        : (storedName || '');
+
       const badgeText = item.addedBy && item.addedBy !== 'Khách' && item.addedBy !== 'Bạn'
         ? item.addedBy
-        : (isMine ? (customerName || (lang === 'en' ? 'You' : lang === 'zh' ? '您' : 'Bạn')) : (lang === 'en' ? 'Group' : lang === 'zh' ? '同桌' : 'Cùng bàn'));
+        : (isMine ? (effectiveCustomerName || (lang === 'en' ? 'You' : lang === 'zh' ? '您' : 'Bạn')) : (lang === 'en' ? 'Companion' : lang === 'zh' ? '同桌' : 'Cùng bàn'));
 
       return (
         <div
@@ -121,26 +129,27 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
           <div className="flex justify-between items-start gap-2">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                <h4 className="text-xs font-semibold text-slate-900 dark:text-white truncate">
                   {item.food.name}
                 </h4>
                 {badgeText && (
-                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider font-mono ${
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider font-mono ${
                     isMine
                       ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30'
                       : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
                   }`}>
-                    {badgeText}
+                    <span className="material-symbols-outlined text-[12px]">{isMine ? 'person' : 'groups'}</span>
+                    <span>{badgeText}</span>
                   </span>
                 )}
               </div>
-              <span className="text-[13px] font-extrabold text-[#0284c7] dark:text-sky-400 block mt-0.5">
+              <span className="text-[13px] font-bold text-[#0284c7] dark:text-sky-400 block mt-0.5">
                 {formatPrice(effectivePrice, lang)}
               </span>
             </div>
             <button
               onClick={() => handleRemove(item.food._id)}
-              className="w-6 h-6 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 flex items-center justify-center transition-all cursor-pointer font-bold text-sm"
+              className="w-6 h-6 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 flex items-center justify-center transition-all cursor-pointer font-medium text-sm"
               title={lang === 'en' ? 'Remove item' : lang === 'zh' ? '删除' : 'Xóa món'}
             >
               ×
@@ -155,23 +164,23 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             <div className="flex items-center gap-2 bg-slate-200/80 dark:bg-slate-800/80 border border-slate-300/70 dark:border-white/10 rounded-full px-2 py-1 shadow-xs">
               <button
                 onClick={() => handleDecrease(item.food._id)}
-                className="w-6 h-6 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-300/80 dark:hover:bg-slate-700 transition-colors active:scale-95 cursor-pointer font-bold text-base leading-none"
+                className="w-6 h-6 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-300/80 dark:hover:bg-slate-700 transition-colors active:scale-95 cursor-pointer font-medium text-base leading-none"
                 title={lang === 'en' ? 'Decrease' : 'Giảm'}
               >
                 −
               </button>
-              <span className="text-xs font-black text-slate-900 dark:text-white min-w-5 text-center font-mono">
+              <span className="text-xs font-semibold text-slate-900 dark:text-white min-w-5 text-center font-mono">
                 {item.quantity}
               </span>
               <button
                 onClick={() => handleIncrease(item.food)}
-                className="w-6 h-6 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-300/80 dark:hover:bg-slate-700 transition-colors active:scale-95 cursor-pointer font-bold text-base leading-none"
+                className="w-6 h-6 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-300/80 dark:hover:bg-slate-700 transition-colors active:scale-95 cursor-pointer font-medium text-base leading-none"
                 title={lang === 'en' ? 'Increase' : 'Tăng'}
               >
                 +
               </button>
             </div>
-            <span className="text-xs font-black text-slate-900 dark:text-white font-mono">
+            <span className="text-xs font-semibold text-slate-900 dark:text-white font-mono">
               {formatPrice(effectivePrice * item.quantity, lang)}
             </span>
           </div>
@@ -182,11 +191,14 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
     return (
       <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 xl:px-5 py-3 space-y-3 font-sans scrollbar-thin">
         {cart.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-48 text-center gap-1.5">
-            <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+          <div className="flex flex-col items-center justify-center py-6 text-center gap-2">
+            <div className="w-12 h-12 rounded-2xl bg-sky-500/10 dark:bg-sky-500/20 text-sky-500 flex items-center justify-center">
+              <span className="material-symbols-outlined text-2xl">local_cafe</span>
+            </div>
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
               {t.emptyCart}
             </p>
-            <p className="text-xs text-slate-400 dark:text-slate-500 max-w-[220px]">
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-[220px] leading-relaxed">
               {lang === 'en' ? 'Select drinks from the menu to add to table cart.' : 'Chọn món từ thực đơn để thêm vào giỏ hàng chung của bàn.'}
             </p>
           </div>
@@ -195,9 +207,11 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             {/* Section 1: Món của tôi */}
             {myItems.length > 0 && (
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-extrabold text-sky-600 dark:text-sky-400">
-                  <span>
-                    {lang === 'en' ? 'Your Selection' : lang === 'zh' ? '您选择的商品' : 'Món bạn chọn'} ({myItems.reduce((acc, i) => acc + i.quantity, 0)})
+                <div className="flex items-center justify-between text-xs font-semibold text-sky-600 dark:text-sky-400">
+                  <span className="flex items-center gap-1">
+                    <span className="material-symbols-outlined text-sm">person</span>
+                    <span>{lang === 'en' ? 'Your Selection' : lang === 'zh' ? '您选择的商品' : 'Món bạn chọn'}</span>
+                    <span>({myItems.reduce((acc, i) => acc + i.quantity, 0)})</span>
                   </span>
                   <span className="text-[11px] font-mono text-slate-400">
                     {formatPrice(myItems.reduce((acc, i) => acc + (i.unitPrice ?? i.food.price) * i.quantity, 0), lang)}
@@ -210,9 +224,11 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             {/* Section 2: Món người khác chọn trong nhóm */}
             {othersItems.length > 0 && (
               <div className="space-y-2 pt-2.5 border-t border-slate-200 dark:border-white/10">
-                <div className="flex items-center justify-between text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
-                  <span>
-                    {lang === 'en' ? 'Table Members Selection' : lang === 'zh' ? '同桌成员选择' : 'Món thành viên cùng bàn'} ({othersItems.reduce((acc, i) => acc + i.quantity, 0)})
+                <div className="flex items-center justify-between text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                  <span className="flex items-center gap-1">
+                    <span className="material-symbols-outlined text-sm">groups</span>
+                    <span>{lang === 'en' ? 'Table Members Selection' : lang === 'zh' ? '同桌成员选择' : 'Món thành viên cùng bàn'}</span>
+                    <span>({othersItems.reduce((acc, i) => acc + i.quantity, 0)})</span>
                   </span>
                   <span className="text-[11px] font-mono text-slate-400">
                     {formatPrice(othersItems.reduce((acc, i) => acc + (i.unitPrice ?? i.food.price) * i.quantity, 0), lang)}
@@ -227,13 +243,16 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
         {/* Upsell Recommendation Section */}
         {cart.length <= 2 && foods.length > 0 && (
           <div className="pt-2 border-t border-slate-200 dark:border-white/10">
-            <p className="text-[10px] font-bold uppercase tracking-[0.04em] text-amber-500 dark:text-amber-400 mb-2 flex items-center justify-between">
-              <span>{t.suggestedForYou || (lang === 'en' ? 'You Might Also Like' : lang === 'zh' ? '猜你喜欢' : 'Gợi ý thêm')}</span>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.04em] text-amber-500 dark:text-amber-400 mb-2 flex items-center justify-between">
+              <span className="flex items-center gap-1">
+                <span className="material-symbols-outlined text-xs">recommend</span>
+                <span>{t.suggestedForYou || (lang === 'en' ? 'Recommended For You' : lang === 'zh' ? '猜你喜欢' : 'Gợi ý món nên thử')}</span>
+              </span>
             </p>
             <div className="space-y-2">
               {foods
                 .filter((f) => !cartMap.has(f._id))
-                .slice(0, 2)
+                .slice(0, cart.length === 0 ? 3 : 2)
                 .map((recomFood) => (
                   <div
                     key={recomFood._id}
@@ -244,17 +263,17 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                         <Image src={recomFood.image} alt={recomFood.name} fill className="object-cover" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                        <p className="text-xs font-medium text-slate-900 dark:text-white truncate">
                           {recomFood.name}
                         </p>
-                        <p className="text-[12px] font-extrabold text-[#0284c7] dark:text-sky-400">
+                        <p className="text-[12px] font-bold text-[#0284c7] dark:text-sky-400">
                           {formatPrice(recomFood.price, lang)}
                         </p>
                       </div>
                     </div>
                     <button
                       onClick={() => handleIncrease(recomFood)}
-                      className="px-2.5 py-1 bg-sky-500/15 dark:bg-sky-500/20 hover:bg-[#38BDF8] text-sky-600 dark:text-sky-400 hover:text-slate-950 dark:hover:text-slate-950 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 flex-shrink-0 active:scale-95 cursor-pointer"
+                      className="px-2.5 py-1 bg-sky-500/15 dark:bg-sky-500/20 hover:bg-[#38BDF8] text-sky-600 dark:text-sky-400 hover:text-slate-950 dark:hover:text-slate-950 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1 flex-shrink-0 active:scale-95 cursor-pointer shadow-2xs"
                     >
                       <span>+ {t.addItem || (lang === 'en' ? 'Add' : lang === 'zh' ? '添加' : 'Thêm')}</span>
                     </button>
@@ -267,22 +286,33 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
     );
   };
 
-  const renderCheckoutControls = () => (
-    <div className="flex-shrink-0 p-3.5 xl:p-5 bg-white/95 dark:bg-[#0B0F17]/95 border-t border-slate-200 dark:border-white/10 shadow-lg dark:shadow-2xl font-sans pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-      {cart.length === 0 && (
-        <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 text-center py-2 font-sans">
-          {lang === 'en' ? 'Add items to continue' : lang === 'zh' ? '添加商品以继续支付' : 'Thêm món để tiếp tục'}
-        </p>
-      )}
+  const renderCheckoutControls = () => {
+    if (cart.length === 0) {
+      return (
+        <div className="flex-shrink-0 p-3.5 bg-slate-50/80 dark:bg-[#0B0F17]/90 border-t border-slate-200 dark:border-white/10 font-sans pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="flex items-center gap-2.5 p-3 rounded-xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-xs text-left">
+            <span className="material-symbols-outlined text-2xl text-sky-500 shrink-0">shopping_bag</span>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                {lang === 'en' ? 'Table Cart is Empty' : lang === 'zh' ? '本桌购物车暂无商品' : 'Giỏ hàng bàn chưa có món'}
+              </p>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate">
+                {lang === 'en' ? 'Pick items from menu to start order' : lang === 'zh' ? '请在菜单中选择商品开始点单' : 'Chọn món bên cạnh để gửi đơn cả bàn'}
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
-      <div className={cart.length === 0 ? 'opacity-50 pointer-events-none select-none' : ''}>
+    return (
+      <div className="flex-shrink-0 p-3.5 xl:p-5 bg-white/95 dark:bg-[#0B0F17]/95 border-t border-slate-200 dark:border-white/10 shadow-lg dark:shadow-2xl font-sans pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         {/* Coupon Input Group */}
         <div className="flex gap-2">
           <div className="flex-1">
             <input
               type="text"
               value={couponInput}
-              disabled={cart.length === 0}
               onChange={(e) => {
                 setCouponInput(e.target.value.toUpperCase());
                 setCouponResult(null);
@@ -294,10 +324,10 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
           </div>
           <button
             onClick={handleValidateCoupon}
-            disabled={isValidatingCoupon || !couponInput.trim() || cart.length === 0}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all font-sans ${
-              couponInput.trim() && cart.length > 0
-                ? 'bg-sky-500 text-slate-950 font-black cursor-pointer shadow-md hover:bg-sky-400 active:scale-95'
+            disabled={isValidatingCoupon || !couponInput.trim()}
+            className={`px-4 py-2.5 rounded-xl text-xs font-semibold transition-all font-sans ${
+              couponInput.trim()
+                ? 'bg-sky-500 text-slate-950 font-semibold cursor-pointer shadow-md hover:bg-sky-400 active:scale-95'
                 : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
             }`}
           >
@@ -306,7 +336,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
         </div>
         {couponResult && (
           <p
-            className={`text-xs font-semibold mt-2 ${
+            className={`text-xs font-medium mt-2 ${
               couponResult.valid ? 'text-sky-500 dark:text-sky-400' : 'text-rose-500 dark:text-rose-400'
             }`}
           >
@@ -318,29 +348,35 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
 
         <div className="border-t border-slate-200 dark:border-white/10 my-3" />
 
-        {/* Payment Method Selector */}
+        {/* Payment Method Selector - High Contrast, Clear Interactive State */}
         <div className="flex gap-2">
           <button
             onClick={() => setPaymentMethod('cash')}
-            disabled={cart.length === 0}
-            className={`flex-1 h-[42px] text-xs font-black uppercase tracking-wider rounded-xl flex items-center justify-center transition-all font-sans cursor-pointer ${
+            className={`flex-1 h-[44px] px-2 text-xs font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 transition-all font-sans cursor-pointer ${
               paymentMethod === 'cash'
-                ? 'bg-[#38BDF8] text-slate-950 shadow-md'
-                : 'bg-slate-100 dark:bg-slate-900/70 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-sky-500/50 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-[#38BDF8] text-slate-950 shadow-md shadow-sky-500/20 border-2 border-sky-400'
+                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-sky-400 shadow-xs'
             }`}
           >
-            {t.cash || (lang === 'en' ? 'Cash' : lang === 'zh' ? '现金' : 'Tiền mặt')}
+            <span className="material-symbols-outlined text-base">payments</span>
+            <span>{t.cash || (lang === 'en' ? 'Cash' : lang === 'zh' ? '现金' : 'Tiền mặt')}</span>
+            {paymentMethod === 'cash' && (
+              <span className="material-symbols-outlined text-[15px] text-slate-950 font-bold">check_circle</span>
+            )}
           </button>
           <button
             onClick={() => setPaymentMethod('bank_transfer')}
-            disabled={cart.length === 0}
-            className={`flex-1 h-[42px] text-xs font-black uppercase tracking-wider rounded-xl flex items-center justify-center transition-all font-sans cursor-pointer ${
+            className={`flex-1 h-[44px] px-2 text-xs font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 transition-all font-sans cursor-pointer ${
               paymentMethod === 'bank_transfer' || paymentMethod === 'momo'
-                ? 'bg-[#38BDF8] text-slate-950 shadow-md'
-                : 'bg-slate-100 dark:bg-slate-900/70 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-sky-500/50 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-[#38BDF8] text-slate-950 shadow-md shadow-sky-500/20 border-2 border-sky-400'
+                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-sky-400 shadow-xs'
             }`}
           >
-            {t.bankTransfer || (lang === 'en' ? 'Bank QR' : lang === 'zh' ? '银行转账' : 'CK Ngân hàng')}
+            <span className="material-symbols-outlined text-base">qr_code_2</span>
+            <span>{t.bankTransfer || (lang === 'en' ? 'Bank QR' : lang === 'zh' ? '银行转账' : 'CK Ngân hàng')}</span>
+            {(paymentMethod === 'bank_transfer' || paymentMethod === 'momo') && (
+              <span className="material-symbols-outlined text-[15px] text-slate-950 font-bold">check_circle</span>
+            )}
           </button>
         </div>
 
@@ -348,21 +384,21 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
 
         {/* Summary Details */}
         <div className="space-y-2 mb-4">
-          <div className="flex justify-between text-[13.5px] font-medium text-slate-600 dark:text-slate-300 font-sans">
+          <div className="flex justify-between text-[13.5px] font-normal text-slate-600 dark:text-slate-300 font-sans">
             <span>{t.subtotal || (lang === 'en' ? 'Subtotal' : lang === 'zh' ? '小计' : 'Tạm tính')} ({totalQuantity} {lang === 'en' ? 'items' : lang === 'zh' ? '件' : 'món'})</span>
-            <span className="font-bold text-slate-900 dark:text-white font-mono">{formatPrice(totalAmount, lang)}</span>
+            <span className="font-semibold text-slate-900 dark:text-white font-mono">{formatPrice(totalAmount, lang)}</span>
           </div>
           {couponResult?.valid && couponResult.discountAmount > 0 && (
-            <div className="flex justify-between text-[13.5px] font-bold text-emerald-600 dark:text-emerald-400 font-sans">
+            <div className="flex justify-between text-[13.5px] font-semibold text-emerald-600 dark:text-emerald-400 font-sans">
               <span>{lang === 'en' ? 'Discount' : lang === 'zh' ? '优惠' : 'Khuyến mãi'}</span>
               <span className="font-mono">-{formatPrice(couponResult.discountAmount, lang)}</span>
             </div>
           )}
           <div className="flex justify-between items-baseline pt-1">
-            <span className="text-[15px] font-black text-slate-900 dark:text-white font-sans">
+            <span className="text-[15px] font-bold text-slate-900 dark:text-white font-sans">
               {t.total || (lang === 'en' ? 'Total' : lang === 'zh' ? '总计' : 'Tổng cộng')}
             </span>
-            <span className="text-[22px] font-black text-[#0284c7] dark:text-sky-400 tracking-tight font-sans font-mono">
+            <span className="text-[20px] font-bold text-[#0284c7] dark:text-sky-400 tracking-tight font-sans font-mono">
               {formatPrice(
                 Math.max(
                   0,
@@ -373,11 +409,10 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             </span>
           </div>
         </div>
-      </div>
 
-      {/* Pending Order Notice */}
+        {/* Pending Order Notice */}
       {hasPendingOrder && (
-        <div className="mt-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs font-bold flex items-center gap-2">
+        <div className="mt-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs font-medium flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping shrink-0" />
           <span>
             {lang === 'en'
@@ -393,7 +428,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
       <button
         onClick={handleSubmitOrder}
         disabled={cart.length === 0 || isSubmitting || hasPendingOrder}
-        className={`w-full h-[52px] mt-2 rounded-xl text-[14px] font-black uppercase tracking-[0.04em] flex items-center justify-center transition-all font-sans ${
+        className={`w-full h-[52px] mt-2 rounded-xl text-[14px] font-bold uppercase tracking-[0.04em] flex items-center justify-center transition-all font-sans ${
           cart.length === 0 || hasPendingOrder
             ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
             : 'bg-[#38BDF8] hover:bg-sky-400 text-slate-950 shadow-lg cursor-pointer active:scale-[0.99]'
@@ -409,6 +444,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
       </button>
     </div>
   );
+};
 
   return (
     <>
@@ -417,15 +453,17 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
         {/* Header */}
         <div className="px-4 xl:px-5 py-4 border-b border-slate-200 dark:border-white/10 flex justify-between items-center bg-white/90 dark:bg-[#0F172A]/90 font-sans">
           <div>
-            <h3 className="text-base font-black text-slate-900 dark:text-white leading-tight">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white leading-tight">
               {t.cartTitle}
             </h3>
-            <p className="text-[10px] font-extrabold text-sky-600 dark:text-sky-400 uppercase tracking-wider mt-0.5 font-mono">
-              {lang === 'en' ? 'GROUP TABLE CART' : lang === 'zh' ? '同桌共享购物车' : 'GIỎ HÀNG CHUNG CỦA BÀN'}
+            <p className="text-[10px] font-semibold text-sky-600 dark:text-sky-400 uppercase tracking-wider mt-0.5 font-mono flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>{lang === 'en' ? 'GROUP TABLE CART' : lang === 'zh' ? '同桌共享购物车' : 'GIỎ HÀNG CHUNG CỦA BÀN'}</span>
             </p>
           </div>
-          <div className="bg-sky-50 dark:bg-slate-900/80 border border-sky-500/30 px-3 py-1 rounded-full text-xs font-bold text-sky-600 dark:text-sky-400 font-mono">
-            {formatTableName(table?.tableName, lang)}
+          <div className="bg-sky-50 dark:bg-sky-500/10 border border-sky-500/30 px-3 py-1 rounded-full text-xs font-semibold text-sky-600 dark:text-sky-400 font-mono flex items-center gap-1">
+            <span className="material-symbols-outlined text-[15px]">table_bar</span>
+            <span>{formatTableName(table?.tableName, lang)}</span>
           </div>
         </div>
 
@@ -460,16 +498,16 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
               {/* Mobile Drawer Header */}
               <div className="px-5 py-2.5 border-b border-slate-200 dark:border-white/10 flex justify-between items-center bg-white dark:bg-[#0F172A] flex-shrink-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-black text-slate-900 dark:text-white">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
                     {t.cartTitle}
                   </h3>
-                  <span className="bg-[#38BDF8] text-slate-950 text-xs font-black px-2.5 py-0.5 rounded-full shadow-2xs font-mono">
+                  <span className="bg-[#38BDF8] text-slate-950 text-xs font-semibold px-2.5 py-0.5 rounded-full shadow-2xs font-mono">
                     {totalQuantity} {lang === 'en' ? 'items' : lang === 'zh' ? '件' : 'món'}
                   </span>
                 </div>
                 <button
                   onClick={() => setIsCartOpen && setIsCartOpen(false)}
-                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer font-bold text-lg leading-none"
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer font-medium text-lg leading-none"
                   title="Đóng giỏ hàng"
                 >
                   ×

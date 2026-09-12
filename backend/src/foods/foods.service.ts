@@ -63,6 +63,17 @@ export class FoodsService {
     return this.foodModel.find({ _id: { $in: ids } }).lean().exec();
   }
 
+  async incrementSoldCount(foodId: string, quantity: number = 1): Promise<void> {
+    try {
+      await this.foodModel.findByIdAndUpdate(foodId, {
+        $inc: { soldCount: quantity },
+      }).exec();
+      this.clearCache();
+    } catch (err) {
+      console.error(`[FoodsService] Failed to increment soldCount for food ${foodId}:`, err);
+    }
+  }
+
   async update(id: string, updateFoodDto: UpdateFoodDto): Promise<FoodDocument> {
     const updatedFood = await this.foodModel
       .findByIdAndUpdate(id, updateFoodDto, { new: true })

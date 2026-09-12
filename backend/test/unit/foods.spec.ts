@@ -19,9 +19,18 @@ describe('FoodsService', () => {
 
   beforeEach(async () => {
     foodModelMock = {
-      find: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue([mockFood]) }),
-      findById: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(mockFood) }),
-      findByIdAndUpdate: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(mockFood) }),
+      find: jest.fn().mockReturnValue({
+        lean: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue([mockFood]),
+      }),
+      findById: jest.fn().mockReturnValue({
+        lean: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockFood),
+      }),
+      findByIdAndUpdate: jest.fn().mockReturnValue({
+        lean: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockFood),
+      }),
       findByIdAndDelete: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(mockFood) }),
     };
 
@@ -79,7 +88,10 @@ describe('FoodsService', () => {
 
   describe('findOne', () => {
     it('should throw NotFoundException if food not found', async () => {
-      foodModelMock.findById.mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(null) });
+      foodModelMock.findById.mockReturnValueOnce({
+        lean: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(null),
+      });
       await expect(service.findOne('nonexistent')).rejects.toThrow(NotFoundException);
     });
 
@@ -112,6 +124,15 @@ describe('FoodsService', () => {
     it('should return success message with food name', async () => {
       const result = await service.remove('food001');
       expect(result.message).toContain('Kohi Den Da');
+    });
+  });
+
+  describe('incrementSoldCount', () => {
+    it('should call findByIdAndUpdate with $inc soldCount', async () => {
+      await service.incrementSoldCount('food001', 3);
+      expect(foodModelMock.findByIdAndUpdate).toHaveBeenCalledWith('food001', {
+        $inc: { soldCount: 3 },
+      });
     });
   });
 });

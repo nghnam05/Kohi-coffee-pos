@@ -33,4 +33,16 @@ export class CreateFoodDto {
   @IsBoolean()
   @IsOptional()
   isAvailable?: boolean;
+
+  @IsNumber()
+  @IsOptional()
+  rating?: number;
+
+  @IsNumber()
+  @IsOptional()
+  totalReviews?: number;
+
+  @IsNumber()
+  @IsOptional()
+  soldCount?: number;
 }

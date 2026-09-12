@@ -48,6 +48,29 @@ export class Food {
     default: [],
   })
   tasteTags: string[];
+
+  @Prop({
+    type: Number,
+    default: 5.0,
+    min: 1,
+    max: 5,
+  })
+  rating: number;
+
+  @Prop({
+    type: Number,
+    default: 0,
+    min: 0,
+  })
+  totalReviews: number;
+
+  @Prop({
+    type: Number,
+    default: 0,
+    min: 0,
+    index: true,
+  })
+  soldCount: number;
 }
 
 export const FoodSchema = SchemaFactory.createForClass(Food);
@@ -55,3 +78,4 @@ export const FoodSchema = SchemaFactory.createForClass(Food);
 // 🚀 Performance Optimization Indexes:
 // Fast menu filtering by availability and category
 FoodSchema.index({ isAvailable: 1, category: 1 });
+FoodSchema.index({ soldCount: -1 });

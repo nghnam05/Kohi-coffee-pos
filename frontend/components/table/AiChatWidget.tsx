@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -28,6 +28,7 @@ interface AiChatWidgetProps {
   handleSendAiMessage: (overrideText?: string) => void;
   onAddToCart?: (food: any) => void;
   lang?: 'vi' | 'en' | 'zh';
+  isHidden?: boolean;
 }
 
 interface PromptCategory {
@@ -101,8 +102,10 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
   handleSendAiMessage,
   onAddToCart,
   lang = 'vi',
+  isHidden = false,
 }) => {
   const [isListeningVoice, setIsListeningVoice] = useState(false);
+  const constraintsRef = useRef<HTMLDivElement>(null);
   const currentCategories = PROMPT_CATEGORIES[lang] || PROMPT_CATEGORIES.vi;
 
   const toggleSpeechInput = () => {
@@ -144,8 +147,8 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
       {/* Header */}
       <div className="px-4 py-3 sm:py-3.5 bg-slate-50 dark:bg-slate-900/80 border-b border-slate-200 dark:border-white/10 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-500/25 shadow-2xs">
-            <span className="material-symbols-outlined text-lg">smart_toy</span>
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#090D16] to-[#1E293B] text-[#38BDF8] flex items-center justify-center border border-[#38BDF8]/40 shadow-xs">
+            <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
           </div>
           <div>
             <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white leading-tight">
@@ -404,23 +407,42 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
         )}
       </AnimatePresence>
 
-      {/* ── FLOATING ACTION BUTTON (FAB) ─────────────────────────────────── */}
-      {/* Auto-hidden on tablet/desktop (md+) since LeftSidebar already has the full Kohi AI Box */}
-      <button
-        type="button"
-        onClick={() => setIsAiChatOpen(!isAiChatOpen)}
-        className={`md:hidden fixed right-4 bottom-5 z-30 w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 text-white shadow-xl shadow-blue-500/30 items-center justify-center transition-all duration-200 active:scale-90 border-2 border-white/25 cursor-pointer backdrop-blur-md ${
-          isAiChatOpen ? 'hidden' : 'flex'
+      {/* ── DRAGGABLE FLOATING ACTION BUTTON (FAB) ───────────────────────── */}
+      <div
+        ref={constraintsRef}
+        className={`fixed inset-0 pointer-events-none z-40 overflow-hidden p-3 md:p-6 ${
+          isAiChatOpen || isHidden ? 'hidden' : ''
         }`}
-        title="Kohi AI Assistant"
       >
-        <span
-          className="material-symbols-outlined text-[30px] leading-none select-none"
-          style={{ fontVariationSettings: "'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48" }}
+        <motion.button
+          type="button"
+          drag
+          dragConstraints={constraintsRef}
+          dragElastic={0.12}
+          dragMomentum={false}
+          whileDrag={{ scale: 1.08, cursor: 'grabbing' }}
+          whileTap={{ scale: 0.92 }}
+          onClick={() => setIsAiChatOpen(!isAiChatOpen)}
+          animate={{
+            scale: isAiChatOpen || isHidden ? 0 : 1,
+            opacity: isAiChatOpen || isHidden ? 0 : 1,
+            pointerEvents: isAiChatOpen || isHidden ? 'none' : 'auto',
+          }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          className={`pointer-events-auto absolute right-3.5 bottom-[76px] md:right-6 md:bottom-8 w-11 h-11 md:w-12 md:h-12 rounded-full bg-[#090D16] hover:bg-slate-900 text-white shadow-[0_8px_25px_rgba(0,0,0,0.5),0_0_15px_rgba(56,189,248,0.25)] border-2 border-[#38BDF8] flex items-center justify-center cursor-grab active:cursor-grabbing backdrop-blur-md group touch-none select-none ${
+            isAiChatOpen || isHidden ? 'invisible pointer-events-none' : ''
+          }`}
+          title="Kohi AI Assistant (Kéo thả di chuyển)"
+          aria-label="Kohi AI Assistant"
         >
-          {isAiChatOpen ? 'close' : 'smart_toy'}
-        </span>
-      </button>
+          <div className="relative flex items-center justify-center pointer-events-none">
+            <span className="material-symbols-outlined text-[22px] md:text-[24px] text-[#38BDF8] group-hover:scale-110 transition-transform select-none animate-pulse">
+              auto_awesome
+            </span>
+            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-[#090D16]" />
+          </div>
+        </motion.button>
+      </div>
     </>
   );
 };

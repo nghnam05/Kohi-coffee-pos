@@ -82,7 +82,7 @@ describe('OrdersService', () => {
         { provide: getModelToken(Food.name), useValue: {} },
         { provide: getModelToken(User.name), useValue: {} },
         { provide: OrdersGateway, useValue: gatewayMock },
-        { provide: FoodsService, useValue: { findOne: jest.fn().mockResolvedValue({ price: 45000 }), findAll: jest.fn().mockResolvedValue([]) } },
+        { provide: FoodsService, useValue: { findOne: jest.fn().mockResolvedValue({ price: 45000 }), findAll: jest.fn().mockResolvedValue([]), incrementSoldCount: jest.fn().mockResolvedValue(undefined) } },
         { provide: CouponsService, useValue: { validate: jest.fn(), incrementUsage: jest.fn() } },
         {
           provide: TablesService,

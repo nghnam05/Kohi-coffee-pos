@@ -61,7 +61,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
             {/* Header */}
             <div className="flex items-start justify-between pb-4 border-b border-slate-200 dark:border-white/10 shrink-0">
               <div>
-                <h3 className="text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white font-heading tracking-tight">
                   {lang === 'en' ? 'Order History' : lang === 'zh' ? '订单历史' : 'Lịch sử đơn hàng'}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2 font-medium">
@@ -210,7 +210,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                             <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-medium font-sans">
                               {lang === 'en' ? 'Subtotal:' : lang === 'zh' ? '小计:' : 'Tổng đợt:'}
                             </span>
-                            <span className="text-sm font-black text-[#0284c7] dark:text-sky-400 font-sans">
+                            <span className="text-sm font-bold text-[#0284c7] dark:text-sky-400 font-sans font-mono">
                               {formatPrice(order.totalAmount || 0, lang)}
                             </span>
                           </div>
@@ -249,7 +249,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                                       router.push(`/table/${tableId}/order-status/${order._id}`);
                                     }
                                   }}
-                                  className={`h-8 px-3.5 text-white text-xs font-extrabold rounded-xl transition-all active:scale-95 cursor-pointer shadow-sm inline-flex items-center font-sans ${
+                                  className={`h-8 px-3.5 text-white text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer shadow-sm inline-flex items-center font-sans ${
                                     order.paymentMethod === 'cash'
                                       ? 'bg-amber-600 hover:bg-amber-700'
                                       : 'bg-[#3B82F6] hover:bg-blue-600'
@@ -289,7 +289,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                 <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium font-sans">
                   {lang === 'en' ? 'Total Session Balance:' : lang === 'zh' ? '本桌累计:' : 'Tổng cộng cả buổi:'}
                 </span>
-                <span className="text-lg sm:text-xl font-black text-[#0284c7] dark:text-sky-400 tracking-tight font-sans">
+                <span className="text-lg sm:text-xl font-bold text-[#0284c7] dark:text-sky-400 tracking-tight font-sans font-mono">
                   {formatPrice(
                     activeOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0),
                     lang
@@ -322,7 +322,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                             router.push(`/table/${tableId}/order-status/${latestUnpaid._id}`);
                           }
                         }}
-                        className="h-10 px-5 bg-[#3B82F6] hover:bg-blue-600 text-white font-black rounded-xl text-xs tracking-wide transition-all shadow-md active:scale-95 cursor-pointer inline-flex items-center gap-1.5 font-sans"
+                        className="h-10 px-5 bg-[#3B82F6] hover:bg-blue-600 text-white font-bold rounded-xl text-xs tracking-wide transition-all shadow-md active:scale-95 cursor-pointer inline-flex items-center gap-1.5 font-sans"
                       >
                         <span className="material-symbols-outlined text-base">payments</span>
                         <span>{lang === 'en' ? 'Pay Now' : lang === 'zh' ? '立即支付' : 'Thanh toán'}</span>

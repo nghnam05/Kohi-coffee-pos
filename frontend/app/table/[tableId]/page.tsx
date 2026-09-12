@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { AnimatePresence, motion } from 'framer-motion';
 import { io, Socket } from 'socket.io-client';
@@ -45,6 +46,9 @@ interface Food {
   image: string;
   category: string;
   isAvailable: boolean;
+  rating?: number;
+  totalReviews?: number;
+  soldCount?: number;
 }
 
 interface Table {
@@ -96,7 +100,7 @@ const DICTIONARY = {
     welcome: 'Hôm nay chúng ta uống gì?',
     restaurant: 'Kohi Coffee & Pastry',
     table: 'Bàn số',
-    searchPlaceholder: 'Tìm kiếm cà phê, trà, bánh ngọt...',
+    searchPlaceholder: 'Tìm kiếm món ăn, cà phê, bánh ngọt...',
     addToCart: 'Thêm vào giỏ hàng',
     notePlaceholder: 'Ghi chú cho Barista (ví dụ: ít đường, 70% đá, không sữa...)',
     total: 'Tổng cộng',
@@ -580,10 +584,21 @@ export default function TableMenuPage() {
 
   useEffect(() => {
     if (!tableId || !mounted) return;
-    const savedName = localStorage.getItem(`chika_name_${tableId}`);
-    const isDismissed = localStorage.getItem(`chika_name_dismissed_${tableId}`) === 'true';
-    if (savedName && savedName.trim()) {
-      setCustomerName(savedName.trim());
+    const savedName = (
+      localStorage.getItem(`chika_name_${tableId}`) ||
+      localStorage.getItem('kohi_customer_name') ||
+      customerName ||
+      ''
+    ).trim();
+    const isDismissed =
+      localStorage.getItem(`chika_name_dismissed_${tableId}`) === 'true' ||
+      localStorage.getItem('kohi_name_dismissed') === 'true';
+
+    if (savedName) {
+      setCustomerName(savedName);
+      setNameInput(savedName);
+      localStorage.setItem(`chika_name_${tableId}`, savedName);
+      localStorage.setItem('kohi_customer_name', savedName);
       setIsNamePromptOpen(false);
     } else if (isDismissed) {
       setIsNamePromptOpen(false);
@@ -603,7 +618,9 @@ export default function TableMenuPage() {
     socketRef.current = io(SOCKET_BASE);
 
     const devId = typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest';
-    const savedName = typeof window !== 'undefined' ? (localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Khách').trim() : 'Khách';
+    const savedName = typeof window !== 'undefined'
+      ? (localStorage.getItem(`chika_name_${tableId}`) || localStorage.getItem('kohi_customer_name') || customerName || 'Khách').trim()
+      : 'Khách';
 
     socketRef.current.emit('joinTableRoom', {
       tableId,
@@ -649,10 +666,17 @@ export default function TableMenuPage() {
     });
 
     socketRef.current.on('tableTransferred', ({ fromTableId, toTableId }: { fromTableId: string; toTableId: string }) => {
-      if (fromTableId === tableId) {
-        const savedName = localStorage.getItem(`chika_name_${tableId}`);
-        if (savedName) {
-          localStorage.setItem(`chika_name_${toTableId}`, savedName);
+      const currentTableId = typeof tableId === 'string' ? tableId : (tableId as any)?._id;
+      if (fromTableId === currentTableId) {
+        const currentName = (
+          customerName ||
+          localStorage.getItem(`chika_name_${currentTableId}`) ||
+          localStorage.getItem('kohi_customer_name') ||
+          ''
+        ).trim();
+        if (currentName) {
+          localStorage.setItem(`chika_name_${toTableId}`, currentName);
+          localStorage.setItem('kohi_customer_name', currentName);
         }
         router.push(`/table/${toTableId}`);
       }
@@ -772,6 +796,16 @@ export default function TableMenuPage() {
     socketRef.current.on('tableTransferApproved', ({ fromTableId: evtFromId, toTableId: evtToId, toTableName: evtToName }: any) => {
       const currentTableId = typeof tableId === 'string' ? tableId : (tableId as any)?._id;
       if (evtFromId === currentTableId) {
+        const currentName = (
+          customerName ||
+          localStorage.getItem(`chika_name_${currentTableId}`) ||
+          localStorage.getItem('kohi_customer_name') ||
+          ''
+        ).trim();
+        if (currentName) {
+          localStorage.setItem(`chika_name_${evtToId}`, currentName);
+          localStorage.setItem('kohi_customer_name', currentName);
+        }
         try { playAlertPing(); } catch {}
         toast.success(`Yêu cầu chuyển sang ${evtToName || 'bàn mới'} đã được nhân viên duyệt! Đang chuyển sang bàn mới...`);
         setTimeout(() => {
@@ -953,6 +987,8 @@ export default function TableMenuPage() {
       }
       localStorage.removeItem(`chika_name_${tableId}`);
       localStorage.removeItem(`chika_name_dismissed_${tableId}`);
+      localStorage.removeItem('kohi_customer_name');
+      localStorage.removeItem('kohi_name_dismissed');
       router.push('/');
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Không thể rời bàn lúc này.', { icon: null });
@@ -1076,9 +1112,15 @@ export default function TableMenuPage() {
     if (!selectedTransferTableId || isTransferring) return;
     setIsTransferring(true);
     try {
-      const savedName = localStorage.getItem(`chika_name_${tableId}`);
-      if (savedName) {
-        localStorage.setItem(`chika_name_${selectedTransferTableId}`, savedName);
+      const currentName = (
+        customerName ||
+        localStorage.getItem(`chika_name_${tableId}`) ||
+        localStorage.getItem('kohi_customer_name') ||
+        ''
+      ).trim();
+      if (currentName) {
+        localStorage.setItem(`chika_name_${selectedTransferTableId}`, currentName);
+        localStorage.setItem('kohi_customer_name', currentName);
       }
 
       const res = await fetch(`${API_BASE}/orders/transfer-request`, {
@@ -1087,7 +1129,7 @@ export default function TableMenuPage() {
         body: JSON.stringify({
           fromTableId: tableId,
           toTableId: selectedTransferTableId,
-          customerName: customerName || savedName || 'Khách tại bàn',
+          customerName: customerName || currentName || 'Khách tại bàn',
         }),
       });
       const data = await res.json();
@@ -1245,6 +1287,7 @@ export default function TableMenuPage() {
 
   const handleAddFromModal = () => {
     if (!selectedFood) return;
+    const foodName = selectedFood.name;
     const devId = typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest';
     const cName = typeof window !== 'undefined' ? (localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Bạn').trim() : 'Bạn';
     const addonTotal = selectedAddons.reduce((sum, a) => sum + (ADDON_PRICES[a] ?? 0), 0);
@@ -1274,10 +1317,13 @@ export default function TableMenuPage() {
     setSelectedSize('M');
     setSelectedAddons([]);
     setModalNote('');
-    // Auto open cart bottom sheet on mobile so user transitions directly to order confirmation!
-    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
-      setIsCartOpen(true);
-    }
+    toast.success(
+      lang === 'en'
+        ? `Added "${foodName}" to cart!`
+        : lang === 'zh'
+        ? `已将 "${foodName}" 加入购物车！`
+        : `Đã thêm "${foodName}" vào giỏ hàng!`
+    );
   };
 
   const handleDirectAddToCart = useCallback((food: any) => {
@@ -1401,9 +1447,12 @@ export default function TableMenuPage() {
     setCustomerName(finalName);
     if (finalName) {
       localStorage.setItem(`chika_name_${tableId}`, finalName);
+      localStorage.setItem('kohi_customer_name', finalName);
       localStorage.removeItem(`chika_name_dismissed_${tableId}`);
+      localStorage.removeItem('kohi_name_dismissed');
     } else {
       localStorage.setItem(`chika_name_dismissed_${tableId}`, 'true');
+      localStorage.setItem('kohi_name_dismissed', 'true');
     }
     if (socketRef.current && tableId) {
       const devId = typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest';
@@ -1604,6 +1653,14 @@ export default function TableMenuPage() {
     return combined.filter(Boolean);
   }, [foods, dbCategories]);
 
+  const categoryCountMap = useMemo(() => {
+    const map = new Map<string, number>();
+    foods.forEach((f) => {
+      map.set(f.category, (map.get(f.category) || 0) + 1);
+    });
+    return map;
+  }, [foods]);
+
   // Background dynamic translation for custom/unmapped categories
   useEffect(() => {
     if (lang === 'vi' || categories.length === 0) return;
@@ -1662,6 +1719,13 @@ export default function TableMenuPage() {
       .reduce((sum, item) => sum + item.quantity, 0);
   }, [cart, myDeviceId, customerName]);
 
+  const suggestedFoods = useMemo(() => {
+    if (!foods || foods.length === 0) return [];
+    return [...foods]
+      .sort((a, b) => ((b.soldCount || 0) + (b.rating || 0) * 50) - ((a.soldCount || 0) + (a.rating || 0) * 50))
+      .slice(0, 6);
+  }, [foods]);
+
   if (!mounted) return null;
 
   if (error && !isLoading) {
@@ -1683,6 +1747,21 @@ export default function TableMenuPage() {
       </div>
     );
   }
+
+  const isAnyOverlayActive = Boolean(
+    isCartOpen ||
+    selectedFood ||
+    isVoiceOrderOpen ||
+    isOrderHistoryModalOpen ||
+    isTransferModalOpen ||
+    isOrderSuccessModalOpen ||
+    isQRModalOpen ||
+    isNotificationModalOpen ||
+    isLeaveTableModalOpen ||
+    isBankPayModalOpen ||
+    isClosingModalOpen ||
+    isNamePromptOpen
+  );
 
   return (
     <>
@@ -1756,7 +1835,9 @@ export default function TableMenuPage() {
         unreadNotificationCount={unreadNotificationCount}
       />
 
-      <div className="fixed inset-0 md:static md:h-screen w-full max-w-full overflow-hidden flex flex-col md:flex-row bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-white font-sans antialiased selection:bg-[#3B82F6] selection:text-white transition-colors duration-200">
+      <div className={`fixed inset-0 md:static md:h-screen w-full max-w-full overflow-hidden flex flex-col md:flex-row bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-white font-sans antialiased selection:bg-[#3B82F6] selection:text-white transition-colors duration-200 ${
+        isCartOpen ? 'z-50' : ''
+      }`}>
         {/* Left Sidebar (Desktop/Tablet Column 1) */}
         <LeftSidebar
           isLoading={isLoading}
@@ -1809,11 +1890,11 @@ export default function TableMenuPage() {
               onOpenVoiceOrder={() => setIsVoiceOrderOpen(true)}
             />
 
-            {/* Realtime Table Members Bar (Clean, Minimalist, Icon-free, Modern) */}
-            <div className="px-4 md:px-6 py-2 border-t border-slate-100 dark:border-white/5 flex items-center justify-between gap-2 flex-wrap text-xs bg-slate-50/70 dark:bg-[#0F172A]/50">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  {lang === 'en' ? 'Table Members' : lang === 'zh' ? '同桌成员' : 'Cùng bàn'} ({tableMembers.length > 0 ? tableMembers.length : 1}):
+            {/* Realtime Table Members Bar */}
+            <div className="px-4 md:px-6 py-2 border-t border-slate-100 dark:border-white/5 flex items-center justify-between gap-2 text-xs bg-slate-50/70 dark:bg-[#0F172A]/50">
+              <div className="flex items-center gap-2 flex-wrap min-w-0">
+                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0">
+                  {lang === 'en' ? 'Table Members' : lang === 'zh' ? '同桌成员' : 'CÙNG BÀN'} ({tableMembers.length > 0 ? tableMembers.length : 1}):
                 </span>
                 <div className="flex items-center gap-1.5 flex-wrap">
                   {tableMembers.length > 0 ? (
@@ -1828,14 +1909,15 @@ export default function TableMenuPage() {
                               setIsNamePromptOpen(true);
                             }
                           }}
-                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all ${
+                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all flex items-center gap-1.5 ${
                             isMe
                               ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 hover:bg-sky-500/25 cursor-pointer'
                               : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10'
                           }`}
                           title={isMe ? (lang === 'en' ? 'Click to change your name' : 'Bấm để đổi tên hiển thị') : undefined}
                         >
-                          {member.name || 'Khách'} {isMe && (lang === 'en' ? '(You)' : '(Bạn)')}
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                          <span>{member.name || 'Khách'} {isMe && (lang === 'en' ? '(You)' : '(Bạn)')}</span>
                         </button>
                       );
                     })
@@ -1845,9 +1927,10 @@ export default function TableMenuPage() {
                         setNameInput(customerName);
                         setIsNamePromptOpen(true);
                       }}
-                      className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 hover:bg-sky-500/25 cursor-pointer"
+                      className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 hover:bg-sky-500/25 cursor-pointer flex items-center gap-1.5"
                     >
-                      {customerName || (lang === 'en' ? 'You' : 'Bạn')} {lang === 'en' ? '(You)' : '(Bạn)'}
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                      <span>{customerName || (lang === 'en' ? 'You' : 'Bạn')} {lang === 'en' ? '(You)' : '(Bạn)'}</span>
                     </button>
                   )}
                 </div>
@@ -1865,35 +1948,8 @@ export default function TableMenuPage() {
               </div>
             </div>
 
-            {/* Mobile Category Horizontal Scroll Bar */}
-            <div className="px-4 flex md:hidden gap-2 overflow-x-auto pb-2.5 scrollbar-none flex-shrink-0">
-              <button
-                onClick={() => setActiveCategory('')}
-                className={`px-3.5 py-1.5 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 ${
-                  activeCategory === ''
-                    ? 'bg-[#3B82F6] text-white shadow-[0_4px_14px_rgba(59,130,246,0.35)]'
-                    : 'bg-white dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white shadow-xs'
-                }`}
-              >
-                {lang === 'en' ? 'All' : lang === 'zh' ? '全部' : 'Tất cả'}
-              </button>
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-3.5 py-1.5 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 ${
-                    activeCategory === cat
-                      ? 'bg-[#3B82F6] text-white shadow-[0_4px_14px_rgba(59,130,246,0.35)]'
-                      : 'bg-white dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white shadow-xs'
-                  }`}
-                >
-                  {translateCategory(cat)}
-                </button>
-              ))}
-            </div>
-
-            {/* Mobile Search Bar & View Mode Toggle Row */}
-            <div className="px-4 pb-2.5 flex items-center gap-2 md:hidden flex-shrink-0">
+            {/* Mobile Search Bar Row (Clean, Full-width, Integrated Voice & View Filter) */}
+            <div className="px-4 pt-2.5 pb-2 flex items-center gap-2 md:hidden flex-shrink-0">
               <div className="relative flex-1">
                 <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">
                   search
@@ -1903,46 +1959,64 @@ export default function TableMenuPage() {
                   placeholder={t.searchPlaceholder}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl py-2 pl-10 pr-3.5 text-xs font-normal text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 shadow-xs font-sans placeholder-slate-400 transition-colors"
+                  className="w-full bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl py-2 pl-10 pr-20 text-xs font-normal text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 shadow-xs font-sans placeholder-slate-400 placeholder:truncate transition-colors"
                 />
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setIsVoiceOrderOpen(true)}
+                    className="w-7 h-7 rounded-lg text-blue-600 dark:text-sky-400 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors flex items-center justify-center cursor-pointer active:scale-95"
+                    title="Gọi món giọng nói"
+                  >
+                    <span className="material-symbols-outlined text-[19px]">mic</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
+                    className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors flex items-center justify-center cursor-pointer active:scale-95"
+                    title={viewMode === 'list' ? 'Chế độ xem dạng lưới' : 'Chế độ xem danh sách'}
+                  >
+                    <span className="material-symbols-outlined text-[19px]">tune</span>
+                  </button>
+                </div>
               </div>
+            </div>
 
-              {/* Mobile Voice Order Button */}
+            {/* Mobile Category Horizontal Scroll Bar with Counts */}
+            <div className="px-4 flex md:hidden gap-2 overflow-x-auto pb-2.5 scrollbar-none flex-shrink-0">
               <button
-                onClick={() => setIsVoiceOrderOpen(true)}
-                className="px-3 py-2 rounded-xl bg-sky-500/15 border border-sky-400/40 text-[#38BDF8] hover:bg-[#38BDF8] hover:text-slate-950 transition-all shadow-xs flex items-center gap-1 shrink-0 text-xs font-extrabold active:scale-95"
-                title="Gọi món bằng giọng nói (Kohi AI)"
+                onClick={() => setActiveCategory('')}
+                className={`px-3.5 py-1.5 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 flex items-center ${
+                  activeCategory === ''
+                    ? 'bg-[#2563EB] text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)]'
+                    : 'bg-white dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white shadow-xs'
+                }`}
               >
-                <span className="material-symbols-outlined text-base">mic</span>
-                <span className="hidden sm:inline">AI Voice</span>
+                <span>{lang === 'en' ? 'All' : lang === 'zh' ? '全部' : 'Tất cả'}</span>
+                <span className={`ml-1 text-[11px] font-bold ${activeCategory === '' ? 'text-white/90' : 'text-slate-400 dark:text-slate-500'}`}>
+                  {foods.length}
+                </span>
               </button>
-
-
-              {/* Mobile View Mode Toggle (Grid/List) */}
-              <div className="bg-slate-100 dark:bg-slate-900/80 text-slate-700 dark:text-white rounded-xl p-1 border border-slate-200 dark:border-white/10 shadow-xs flex items-center shrink-0">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-1.5 rounded-lg transition-colors flex items-center justify-center cursor-pointer ${
-                    viewMode === 'grid'
-                      ? 'bg-[#3B82F6] text-white shadow-2xs font-bold'
-                      : 'text-slate-400 hover:text-slate-800 dark:hover:text-white'
-                  }`}
-                  title="Dạng lưới"
-                >
-                  <span className="material-symbols-outlined text-lg">grid_view</span>
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded-lg transition-colors flex items-center justify-center cursor-pointer ${
-                    viewMode === 'list'
-                      ? 'bg-[#3B82F6] text-white shadow-2xs font-bold'
-                      : 'text-slate-400 hover:text-slate-800 dark:hover:text-white'
-                  }`}
-                  title="Dạng danh sách"
-                >
-                  <span className="material-symbols-outlined text-lg">view_list</span>
-                </button>
-              </div>
+              {categories.map((cat) => {
+                const count = categoryCountMap.get(cat) || 0;
+                const isActive = activeCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`px-3.5 py-1.5 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 flex items-center ${
+                      isActive
+                        ? 'bg-[#2563EB] text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)]'
+                        : 'bg-white dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white shadow-xs'
+                    }`}
+                  >
+                    <span>{translateCategory(cat)}</span>
+                    <span className={`ml-1 text-[11px] font-bold ${isActive ? 'text-white/90' : 'text-slate-400 dark:text-slate-500'}`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -2008,6 +2082,86 @@ export default function TableMenuPage() {
                     />
                   );
                 })}
+              </div>
+            )}
+
+            {/* Mobile "Có thể bạn sẽ thích" (Suggested For You) Section */}
+            {!isLoading && suggestedFoods.length > 0 && (
+              <div className="md:hidden mt-3 mb-5">
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-amber-500/15 text-amber-500 dark:text-amber-400 flex items-center justify-center border border-amber-500/25 shadow-2xs">
+                      <span className="material-symbols-outlined text-[17px]">auto_awesome</span>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight font-sans">
+                        {t.suggestedForYou || (lang === 'en' ? 'You Might Also Like' : lang === 'zh' ? '猜你喜欢' : 'Có thể bạn sẽ thích')}
+                      </h3>
+                      <p className="text-[10.5px] text-slate-400 dark:text-slate-500">
+                        {lang === 'en' ? 'Top picks loved by guests' : lang === 'zh' ? '顾客最喜爱的精选单品' : 'Món ngon bán chạy được yêu thích nhất'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Horizontal Scroll Cards Carousel */}
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory -mx-4 px-4">
+                  {suggestedFoods.map((sFood) => {
+                    const cartItem = myCartMap.get(sFood._id);
+                    const quantity = cartItem?.quantity ?? 0;
+                    return (
+                      <div
+                        key={`suggested_${sFood._id}`}
+                        onClick={() => {
+                          setSelectedFood(sFood);
+                          setModalQuantity(quantity > 0 ? quantity : 1);
+                          setModalNote(cartItem?.note || '');
+                        }}
+                        className="w-[145px] shrink-0 snap-start bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-white/10 rounded-2xl p-2.5 shadow-xs hover:shadow-md transition-all active:scale-[0.98] cursor-pointer flex flex-col justify-between"
+                      >
+                        <div>
+                          <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-950 mb-2">
+                            <Image
+                              src={sFood.image}
+                              alt={sFood.name}
+                              fill
+                              className="object-cover"
+                              sizes="145px"
+                            />
+                            <div className="absolute top-1.5 left-1.5 bg-black/65 backdrop-blur-xs text-amber-400 px-1.5 py-0.5 rounded-md text-[9.5px] font-bold flex items-center gap-0.5">
+                              <span className="material-symbols-outlined text-[11px] fill-current">star</span>
+                              <span>{(sFood.rating || 5.0).toFixed(1)}</span>
+                            </div>
+                          </div>
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate font-sans" title={sFood.name}>
+                            {sFood.name}
+                          </h4>
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+                            {lang === 'en' ? `${sFood.soldCount || 0} sold` : lang === 'zh' ? `已售 ${sFood.soldCount || 0}` : `Đã bán ${sFood.soldCount || 0}`}
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100 dark:border-white/5">
+                          <span className="text-xs font-extrabold text-[#2563EB] dark:text-sky-400 font-mono">
+                            {formatPrice(sFood.price, lang)}
+                          </span>
+                          <button
+                            type="button"
+                            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
+                              quantity > 0
+                                ? 'bg-sky-500/20 text-sky-600 dark:text-sky-400 border border-sky-500/30'
+                                : 'bg-[#2563EB] text-white shadow-2xs'
+                            }`}
+                            title={lang === 'en' ? 'Select' : lang === 'zh' ? '选择' : 'Chọn'}
+                          >
+                            <span className="material-symbols-outlined text-sm font-bold">
+                              {quantity > 0 ? 'check' : 'add'}
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
@@ -2139,6 +2293,7 @@ export default function TableMenuPage() {
         handleSendAiMessage={handleSendAiMessage}
         onAddToCart={handleDirectAddToCart}
         lang={lang}
+        isHidden={isAnyOverlayActive}
       />
 
       <NamePromptModal
@@ -2220,37 +2375,56 @@ export default function TableMenuPage() {
           }}
         />
       )}
-      {/* Sticky Mobile Floating Cart Bar */}
+      {/* Sticky Mobile Floating Cart Bar (Matching Image 2) */}
       <AnimatePresence>
-        {cart.length > 0 && !isCartOpen && !selectedFood && (
+        {!isCartOpen && !selectedFood && (
           <motion.div
             initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-            className="fixed bottom-4 left-3 right-3 z-40 lg:hidden pointer-events-auto"
+            className="fixed bottom-3 left-3 right-3 z-40 lg:hidden pointer-events-auto"
           >
-            <div
-              onClick={() => setIsCartOpen(true)}
-              className="w-full bg-[#090D16]/95 dark:bg-[#0F172A]/95 text-white backdrop-blur-xl border border-sky-500/40 rounded-2xl p-3 sm:p-3.5 shadow-2xl flex items-center justify-between cursor-pointer active:scale-[0.99] transition-transform font-sans group hover:border-sky-400"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="px-3 py-1.5 rounded-xl bg-sky-500/20 border border-sky-400/40 text-sky-400 font-black text-xs shrink-0 font-mono">
-                  {totalQuantity} {lang === 'en' ? 'items' : lang === 'zh' ? '件' : 'món'}
+            <div className="w-full bg-white/95 dark:bg-slate-900/95 text-slate-900 dark:text-white backdrop-blur-md border border-slate-200/90 dark:border-white/10 rounded-2xl p-2.5 sm:p-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-between font-sans">
+              <div
+                onClick={() => setIsCartOpen(true)}
+                className="flex items-center gap-2.5 min-w-0 cursor-pointer flex-1 mr-2"
+              >
+                <div className="relative w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-white/5 text-slate-700 dark:text-slate-200">
+                  <span className="material-symbols-outlined text-2xl">local_mall</span>
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#2563EB] text-white text-[10px] font-bold flex items-center justify-center shadow-xs leading-none">
+                    {totalQuantity}
+                  </span>
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    {myTotalQuantity > 0 ? (lang === 'en' ? `You: ${myTotalQuantity} • Table` : `Bạn: ${myTotalQuantity} • Cả bàn`) : (lang === 'en' ? 'Table Cart' : 'Giỏ hàng cả bàn')}
+                  <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 leading-tight truncate">
+                    {lang === 'en' ? 'Table Cart' : lang === 'zh' ? '全桌购物车' : 'Giỏ hàng chung'}
                   </p>
-                  <p className="text-sm font-black text-white truncate font-mono">
+                  <p className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight mt-0.5 truncate font-sans">
                     {formatPrice(totalAmount, lang)}
                   </p>
                 </div>
               </div>
 
-              <div className="bg-[#38BDF8] hover:bg-sky-400 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs uppercase tracking-wider shrink-0 shadow-md">
-                {lang === 'en' ? 'Review & Order' : lang === 'zh' ? '查看并下单' : 'Xem & Gọi món'}
-              </div>
+              {cart.length > 0 ? (
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="px-3.5 sm:px-4 py-2.5 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white font-bold text-xs sm:text-[13px] flex items-center gap-1.5 shrink-0 shadow-md active:scale-95 transition-all cursor-pointer font-sans"
+                >
+                  <span className="material-symbols-outlined text-base">check_circle</span>
+                  <span>{lang === 'en' ? 'Submit table order' : lang === 'zh' ? '发送点单请求' : 'Gửi yêu cầu gọi món'}</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    setIsCartOpen(true);
+                  }}
+                  className="px-3.5 sm:px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold text-xs sm:text-[13px] flex items-center gap-1.5 shrink-0 border border-slate-200/60 dark:border-white/5 cursor-pointer font-sans"
+                >
+                  <span className="material-symbols-outlined text-base text-slate-400">check_circle</span>
+                  <span>{lang === 'en' ? 'Submit table order' : lang === 'zh' ? '发送点单请求' : 'Gửi yêu cầu gọi món'}</span>
+                </button>
+              )}
             </div>
           </motion.div>
         )}

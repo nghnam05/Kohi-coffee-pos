@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 
 const inter = Inter({
   subsets: ["latin", "vietnamese"],
-  weight: ["400", "800"],
   variable: "--font-inter",
   display: "swap",
 });

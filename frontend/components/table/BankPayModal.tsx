@@ -139,10 +139,10 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
           {/* Header */}
           <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-white/10 flex items-center justify-between bg-white dark:bg-[#0F172A]">
             <div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-[#0284c7] dark:text-sky-400 block font-mono">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#0284c7] dark:text-sky-400 block font-mono">
                 Chuyển khoản Ngân hàng (VietQR)
               </span>
-              <h3 className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white">
+              <h3 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white">
                 Thanh toán đơn hàng
               </h3>
             </div>
@@ -159,16 +159,16 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
             {/* Amount Banner */}
             <div className="p-3.5 bg-sky-500/15 border border-sky-500/30 rounded-xl flex items-center justify-between">
               <div>
-                <span className="text-[10.5px] font-extrabold text-slate-500 dark:text-slate-400 block uppercase">
+                <span className="text-[10.5px] font-medium text-slate-500 dark:text-slate-400 block uppercase">
                   {selectedItemIndexes && selectedItemIndexes.length > 0
                     ? `Thanh toán phần chọn (${selectedItemIndexes.length} món)`
                     : 'Tổng tiền thanh toán'}
                 </span>
-                <span className="text-xl sm:text-2xl font-black text-[#0284c7] dark:text-sky-400 font-mono">
+                <span className="text-xl sm:text-2xl font-bold text-[#0284c7] dark:text-sky-400 font-mono">
                   {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalAmount)}
                 </span>
               </div>
-              <span className="px-2.5 py-1 bg-[#38BDF8] text-slate-950 font-black text-xs rounded-xl shadow-xs font-mono">
+              <span className="px-2.5 py-1 bg-[#38BDF8] text-slate-950 font-semibold text-xs rounded-xl shadow-xs font-mono">
                 {tableName}
               </span>
             </div>
@@ -208,18 +208,18 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
             <div className="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-white/10 space-y-2.5 text-xs">
               <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">Ngân hàng</span>
-                <span className="font-extrabold text-slate-900 dark:text-white">{bankName}</span>
+                <span className="font-semibold text-slate-900 dark:text-white">{bankName}</span>
               </div>
 
               <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">Chủ tài khoản</span>
-                <span className="font-extrabold text-slate-900 dark:text-white uppercase">{accountName}</span>
+                <span className="font-semibold text-slate-900 dark:text-white uppercase">{accountName}</span>
               </div>
 
               <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">Số tài khoản</span>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-black text-slate-900 dark:text-white">{accountNo}</span>
+                  <span className="font-mono font-bold text-slate-900 dark:text-white">{accountNo}</span>
                   <button
                     onClick={() => handleCopy(accountNo, 'Số tài khoản')}
                     className="px-2 py-0.5 bg-slate-200 hover:bg-[#3B82F6] dark:bg-slate-800 dark:hover:bg-[#3B82F6] text-slate-700 hover:text-white dark:text-slate-300 font-bold rounded-lg text-[10px] transition-all cursor-pointer"
@@ -232,7 +232,7 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
               <div className="flex items-center justify-between pt-0.5">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">Nội dung CK</span>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-black text-[#0284c7] dark:text-sky-400 uppercase">
+                  <span className="font-mono font-bold text-[#0284c7] dark:text-sky-400 uppercase">
                     {transferMemo}
                   </span>
                   <button
