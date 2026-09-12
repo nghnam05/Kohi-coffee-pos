@@ -96,7 +96,7 @@ const DICTIONARY = {
     welcome: 'Hôm nay chúng ta uống gì?',
     restaurant: 'Kohi Coffee & Pastry',
     table: 'Bàn số',
-    searchPlaceholder: 'Tìm kiếm cà phê, trà, bánh ngọt...',
+    searchPlaceholder: 'Tìm kiếm món ăn, cà phê, bánh ngọt...',
     addToCart: 'Thêm vào giỏ hàng',
     notePlaceholder: 'Ghi chú cho Barista (ví dụ: ít đường, 70% đá, không sữa...)',
     total: 'Tổng cộng',
@@ -1604,6 +1604,14 @@ export default function TableMenuPage() {
     return combined.filter(Boolean);
   }, [foods, dbCategories]);
 
+  const categoryCountMap = useMemo(() => {
+    const map = new Map<string, number>();
+    foods.forEach((f) => {
+      map.set(f.category, (map.get(f.category) || 0) + 1);
+    });
+    return map;
+  }, [foods]);
+
   // Background dynamic translation for custom/unmapped categories
   useEffect(() => {
     if (lang === 'vi' || categories.length === 0) return;
@@ -1809,11 +1817,11 @@ export default function TableMenuPage() {
               onOpenVoiceOrder={() => setIsVoiceOrderOpen(true)}
             />
 
-            {/* Realtime Table Members Bar (Clean, Minimalist, Icon-free, Modern) */}
-            <div className="px-4 md:px-6 py-2 border-t border-slate-100 dark:border-white/5 flex items-center justify-between gap-2 flex-wrap text-xs bg-slate-50/70 dark:bg-[#0F172A]/50">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  {lang === 'en' ? 'Table Members' : lang === 'zh' ? '同桌成员' : 'Cùng bàn'} ({tableMembers.length > 0 ? tableMembers.length : 1}):
+            {/* Realtime Table Members Bar */}
+            <div className="px-4 md:px-6 py-2 border-t border-slate-100 dark:border-white/5 flex items-center justify-between gap-2 text-xs bg-slate-50/70 dark:bg-[#0F172A]/50">
+              <div className="flex items-center gap-2 flex-wrap min-w-0">
+                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0">
+                  {lang === 'en' ? 'Table Members' : lang === 'zh' ? '同桌成员' : 'CÙNG BÀN'} ({tableMembers.length > 0 ? tableMembers.length : 1}):
                 </span>
                 <div className="flex items-center gap-1.5 flex-wrap">
                   {tableMembers.length > 0 ? (
@@ -1828,14 +1836,15 @@ export default function TableMenuPage() {
                               setIsNamePromptOpen(true);
                             }
                           }}
-                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all ${
+                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all flex items-center gap-1.5 ${
                             isMe
                               ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 hover:bg-sky-500/25 cursor-pointer'
                               : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10'
                           }`}
                           title={isMe ? (lang === 'en' ? 'Click to change your name' : 'Bấm để đổi tên hiển thị') : undefined}
                         >
-                          {member.name || 'Khách'} {isMe && (lang === 'en' ? '(You)' : '(Bạn)')}
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                          <span>{member.name || 'Khách'} {isMe && (lang === 'en' ? '(You)' : '(Bạn)')}</span>
                         </button>
                       );
                     })
@@ -1845,9 +1854,10 @@ export default function TableMenuPage() {
                         setNameInput(customerName);
                         setIsNamePromptOpen(true);
                       }}
-                      className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 hover:bg-sky-500/25 cursor-pointer"
+                      className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 hover:bg-sky-500/25 cursor-pointer flex items-center gap-1.5"
                     >
-                      {customerName || (lang === 'en' ? 'You' : 'Bạn')} {lang === 'en' ? '(You)' : '(Bạn)'}
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                      <span>{customerName || (lang === 'en' ? 'You' : 'Bạn')} {lang === 'en' ? '(You)' : '(Bạn)'}</span>
                     </button>
                   )}
                 </div>
@@ -1865,35 +1875,8 @@ export default function TableMenuPage() {
               </div>
             </div>
 
-            {/* Mobile Category Horizontal Scroll Bar */}
-            <div className="px-4 flex md:hidden gap-2 overflow-x-auto pb-2.5 scrollbar-none flex-shrink-0">
-              <button
-                onClick={() => setActiveCategory('')}
-                className={`px-3.5 py-1.5 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 ${
-                  activeCategory === ''
-                    ? 'bg-[#3B82F6] text-white shadow-[0_4px_14px_rgba(59,130,246,0.35)]'
-                    : 'bg-white dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white shadow-xs'
-                }`}
-              >
-                {lang === 'en' ? 'All' : lang === 'zh' ? '全部' : 'Tất cả'}
-              </button>
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-3.5 py-1.5 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 ${
-                    activeCategory === cat
-                      ? 'bg-[#3B82F6] text-white shadow-[0_4px_14px_rgba(59,130,246,0.35)]'
-                      : 'bg-white dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white shadow-xs'
-                  }`}
-                >
-                  {translateCategory(cat)}
-                </button>
-              ))}
-            </div>
-
-            {/* Mobile Search Bar & View Mode Toggle Row */}
-            <div className="px-4 pb-2.5 flex items-center gap-2 md:hidden flex-shrink-0">
+            {/* Mobile Search Bar Row (Clean, Full-width, Integrated Voice & View Filter) */}
+            <div className="px-4 pt-2.5 pb-2 flex items-center gap-2 md:hidden flex-shrink-0">
               <div className="relative flex-1">
                 <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">
                   search
@@ -1903,46 +1886,64 @@ export default function TableMenuPage() {
                   placeholder={t.searchPlaceholder}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl py-2 pl-10 pr-3.5 text-xs font-normal text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 shadow-xs font-sans placeholder-slate-400 transition-colors"
+                  className="w-full bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl py-2 pl-10 pr-20 text-xs font-normal text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 shadow-xs font-sans placeholder-slate-400 placeholder:truncate transition-colors"
                 />
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setIsVoiceOrderOpen(true)}
+                    className="w-7 h-7 rounded-lg text-blue-600 dark:text-sky-400 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors flex items-center justify-center cursor-pointer active:scale-95"
+                    title="Gọi món giọng nói"
+                  >
+                    <span className="material-symbols-outlined text-[19px]">mic</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
+                    className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors flex items-center justify-center cursor-pointer active:scale-95"
+                    title={viewMode === 'list' ? 'Chế độ xem dạng lưới' : 'Chế độ xem danh sách'}
+                  >
+                    <span className="material-symbols-outlined text-[19px]">tune</span>
+                  </button>
+                </div>
               </div>
+            </div>
 
-              {/* Mobile Voice Order Button */}
+            {/* Mobile Category Horizontal Scroll Bar with Counts */}
+            <div className="px-4 flex md:hidden gap-2 overflow-x-auto pb-2.5 scrollbar-none flex-shrink-0">
               <button
-                onClick={() => setIsVoiceOrderOpen(true)}
-                className="px-3 py-2 rounded-xl bg-sky-500/15 border border-sky-400/40 text-[#38BDF8] hover:bg-[#38BDF8] hover:text-slate-950 transition-all shadow-xs flex items-center gap-1 shrink-0 text-xs font-extrabold active:scale-95"
-                title="Gọi món bằng giọng nói (Kohi AI)"
+                onClick={() => setActiveCategory('')}
+                className={`px-3.5 py-1.5 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 flex items-center ${
+                  activeCategory === ''
+                    ? 'bg-[#2563EB] text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)]'
+                    : 'bg-white dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white shadow-xs'
+                }`}
               >
-                <span className="material-symbols-outlined text-base">mic</span>
-                <span className="hidden sm:inline">AI Voice</span>
+                <span>{lang === 'en' ? 'All' : lang === 'zh' ? '全部' : 'Tất cả'}</span>
+                <span className={`ml-1 text-[11px] font-bold ${activeCategory === '' ? 'text-white/90' : 'text-slate-400 dark:text-slate-500'}`}>
+                  {foods.length}
+                </span>
               </button>
-
-
-              {/* Mobile View Mode Toggle (Grid/List) */}
-              <div className="bg-slate-100 dark:bg-slate-900/80 text-slate-700 dark:text-white rounded-xl p-1 border border-slate-200 dark:border-white/10 shadow-xs flex items-center shrink-0">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-1.5 rounded-lg transition-colors flex items-center justify-center cursor-pointer ${
-                    viewMode === 'grid'
-                      ? 'bg-[#3B82F6] text-white shadow-2xs font-bold'
-                      : 'text-slate-400 hover:text-slate-800 dark:hover:text-white'
-                  }`}
-                  title="Dạng lưới"
-                >
-                  <span className="material-symbols-outlined text-lg">grid_view</span>
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded-lg transition-colors flex items-center justify-center cursor-pointer ${
-                    viewMode === 'list'
-                      ? 'bg-[#3B82F6] text-white shadow-2xs font-bold'
-                      : 'text-slate-400 hover:text-slate-800 dark:hover:text-white'
-                  }`}
-                  title="Dạng danh sách"
-                >
-                  <span className="material-symbols-outlined text-lg">view_list</span>
-                </button>
-              </div>
+              {categories.map((cat) => {
+                const count = categoryCountMap.get(cat) || 0;
+                const isActive = activeCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`px-3.5 py-1.5 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 flex items-center ${
+                      isActive
+                        ? 'bg-[#2563EB] text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)]'
+                        : 'bg-white dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white shadow-xs'
+                    }`}
+                  >
+                    <span>{translateCategory(cat)}</span>
+                    <span className={`ml-1 text-[11px] font-bold ${isActive ? 'text-white/90' : 'text-slate-400 dark:text-slate-500'}`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -2008,6 +2009,39 @@ export default function TableMenuPage() {
                     />
                   );
                 })}
+              </div>
+            )}
+
+            {/* Mobile Kohi AI Concierge Card (Matching Image 2) */}
+            {!isLoading && filteredFoods.length > 0 && (
+              <div className="md:hidden mt-2 mb-4">
+                <div className="rounded-2xl p-[1px] bg-gradient-to-r from-blue-500/35 via-sky-300/30 to-blue-500/20 shadow-xs">
+                  <div className="bg-white dark:bg-slate-900/90 rounded-[15px] p-3.5 border border-slate-200/80 dark:border-white/5 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-sky-400 flex items-center justify-center text-white shadow-md flex-shrink-0">
+                        <span className="material-symbols-outlined text-[19px] animate-pulse">auto_awesome</span>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="text-[13px] font-bold text-slate-900 dark:text-white leading-tight truncate">
+                            Kohi AI Concierge
+                          </h4>
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 animate-ping" />
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                          {lang === 'en' ? 'Smart Menu & Store Guide' : lang === 'zh' ? '智能点餐与门店助手' : 'Trợ lý gợi ý món & tư vấn quán'}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setIsAiChatOpen(true)}
+                      className="px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shrink-0 transition-all active:scale-95 flex items-center gap-1.5 shadow-xs cursor-pointer font-sans"
+                    >
+                      <span className="material-symbols-outlined text-sm">chat_bubble</span>
+                      <span>{lang === 'en' ? 'Ask AI' : lang === 'zh' ? '咨询AI' : 'Hỏi AI'}</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -2220,37 +2254,56 @@ export default function TableMenuPage() {
           }}
         />
       )}
-      {/* Sticky Mobile Floating Cart Bar */}
+      {/* Sticky Mobile Floating Cart Bar (Matching Image 2) */}
       <AnimatePresence>
-        {cart.length > 0 && !isCartOpen && !selectedFood && (
+        {!isCartOpen && !selectedFood && (
           <motion.div
             initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-            className="fixed bottom-4 left-3 right-3 z-40 lg:hidden pointer-events-auto"
+            className="fixed bottom-3 left-3 right-3 z-40 lg:hidden pointer-events-auto"
           >
-            <div
-              onClick={() => setIsCartOpen(true)}
-              className="w-full bg-[#090D16]/95 dark:bg-[#0F172A]/95 text-white backdrop-blur-xl border border-sky-500/40 rounded-2xl p-3 sm:p-3.5 shadow-2xl flex items-center justify-between cursor-pointer active:scale-[0.99] transition-transform font-sans group hover:border-sky-400"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="px-3 py-1.5 rounded-xl bg-sky-500/20 border border-sky-400/40 text-sky-400 font-black text-xs shrink-0 font-mono">
-                  {totalQuantity} {lang === 'en' ? 'items' : lang === 'zh' ? '件' : 'món'}
+            <div className="w-full bg-white/95 dark:bg-slate-900/95 text-slate-900 dark:text-white backdrop-blur-md border border-slate-200/90 dark:border-white/10 rounded-2xl p-2.5 sm:p-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-between font-sans">
+              <div
+                onClick={() => setIsCartOpen(true)}
+                className="flex items-center gap-2.5 min-w-0 cursor-pointer flex-1 mr-2"
+              >
+                <div className="relative w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-white/5 text-slate-700 dark:text-slate-200">
+                  <span className="material-symbols-outlined text-2xl">local_mall</span>
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#2563EB] text-white text-[10px] font-bold flex items-center justify-center shadow-xs leading-none">
+                    {totalQuantity}
+                  </span>
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    {myTotalQuantity > 0 ? (lang === 'en' ? `You: ${myTotalQuantity} • Table` : `Bạn: ${myTotalQuantity} • Cả bàn`) : (lang === 'en' ? 'Table Cart' : 'Giỏ hàng cả bàn')}
+                  <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 leading-tight truncate">
+                    {lang === 'en' ? 'Table Cart' : lang === 'zh' ? '全桌购物车' : 'Giỏ hàng chung'}
                   </p>
-                  <p className="text-sm font-black text-white truncate font-mono">
+                  <p className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight mt-0.5 truncate font-sans">
                     {formatPrice(totalAmount, lang)}
                   </p>
                 </div>
               </div>
 
-              <div className="bg-[#38BDF8] hover:bg-sky-400 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs uppercase tracking-wider shrink-0 shadow-md">
-                {lang === 'en' ? 'Review & Order' : lang === 'zh' ? '查看并下单' : 'Xem & Gọi món'}
-              </div>
+              {cart.length > 0 ? (
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="px-3.5 sm:px-4 py-2.5 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white font-bold text-xs sm:text-[13px] flex items-center gap-1.5 shrink-0 shadow-md active:scale-95 transition-all cursor-pointer font-sans"
+                >
+                  <span className="material-symbols-outlined text-base">check_circle</span>
+                  <span>{lang === 'en' ? 'Submit table order' : lang === 'zh' ? '发送点单请求' : 'Gửi yêu cầu gọi món'}</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    setIsCartOpen(true);
+                  }}
+                  className="px-3.5 sm:px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold text-xs sm:text-[13px] flex items-center gap-1.5 shrink-0 border border-slate-200/60 dark:border-white/5 cursor-pointer font-sans"
+                >
+                  <span className="material-symbols-outlined text-base text-slate-400">check_circle</span>
+                  <span>{lang === 'en' ? 'Submit table order' : lang === 'zh' ? '发送点单请求' : 'Gửi yêu cầu gọi món'}</span>
+                </button>
+              )}
             </div>
           </motion.div>
         )}

@@ -1,174 +1,203 @@
 /* ──────────────────────────────────────────────────────────
-   INTER-LINK DIGITAL — Design Tokens
-   Font: Inter
-   Theme: Inter-Link Digital Light Mode System
+   KOHI COFFEE — Design System Tokens (2026 Ultra-Modern)
+   Font: Inter (font-weight: 400 & 800)
+   Palette: Skyblue (#38BDF8), Deep Black (#090D16), Pure White (#FFFFFF)
    ────────────────────────────────────────────────────────── */
 
-/* ── Font variables ─────────────────────────────────────── */
+/* ── Font Variables (Pure Inter Standard) ────────────────── */
 :root {
-  --font-body: var(--font-manrope), 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-heading: var(--font-manrope), 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: var(--font-inter), 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: var(--font-inter), 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* ── Light Mode (Inter-Link Digital Design System) ───────── */
+/* ── Light Mode (2026 Crisp Porcelain & Skyblue System) ──── */
 :root {
-  /* Backgrounds & Canvas (Inter-Link Palette) */
-  --bg-primary:                  #f9f9ff;
-  --bg-surface:                  #f9f9ff;
-  --bg-surface-dim:              #d7dae4;
-  --bg-surface-bright:           #f9f9ff;
-  --bg-container-lowest:         #ffffff; /* Card background */
-  --bg-container-low:            #f1f3fe;
-  --bg-container:                #ebedf8;
-  --bg-container-high:           #e6e8f2;
-  --bg-container-highest:        #e0e2ec;
+  /* Backgrounds & Canvas */
+  --bg-primary:                  #F8FAFC; /* Slate 50 - Ultra-clean modern light canvas */
+  --bg-surface:                  #FFFFFF; /* Pure White surface */
+  --bg-surface-dim:              #E2E8F0;
+  --bg-surface-bright:           #FFFFFF;
+  --bg-container-lowest:         #FFFFFF;
+  --bg-container-low:            #F1F5F9;
+  --bg-container:                #E2E8F0;
+  --bg-container-high:           #CBD5E1;
+  --bg-container-highest:        #94A3B8;
 
-  --bg-card:                     #ffffff;
-  --bg-card-inner:               #f1f3fe;
-  --bg-subtle:                   #ebedf8;
-  --bg-muted:                    #e0e2ec;
+  --bg-card:                     #FFFFFF;
+  --bg-card-inner:               #F1F5F9;
+  --bg-subtle:                   #F8FAFC;
+  --bg-muted:                    #E2E8F0;
 
   /* Borders & Outlines */
-  --border-color:                #c1c6d6; /* outline-variant */
-  --border-strong:               #717785; /* outline */
-  --border-focus:                #005bbd; /* surface-tint */
+  --border-color:                #E2E8F0; /* Subtle light border */
+  --border-strong:               #CBD5E1; /* Accessible contrast border */
+  --border-focus:                #38BDF8; /* Skyblue focus indicator */
 
   /* Typography */
-  --text-primary:                #181c23; /* on-surface */
-  --text-secondary:              #333842; /* high contrast on-surface-variant */
-  --text-tertiary:               #525866; /* WCAG AA compliant 6.8:1 contrast */
-  --text-quaternary:             #717785;
+  --text-primary:                #090D16; /* Deep Black - Maximum contrast 16:1 */
+  --text-secondary:              #334155; /* Slate 700 - Highly legible */
+  --text-tertiary:               #64748B; /* Slate 500 - WCAG AAA compliant */
+  --text-quaternary:             #94A3B8;
 
-  /* Brand Palette (Primary Vibrant Blue) */
-  --brand-primary:               #0059b9;
-  --brand-primary-hover:         #004591;
-  --brand-primary-fg:            #ffffff;
-  --brand-primary-container:     #0071e7;
-  --brand-on-primary-container:  #fefcff;
-  --brand-primary-muted:         rgba(0, 89, 185, 0.1);
+  /* Brand Palette (Skyblue & Cobalt Blue) */
+  --brand-primary:               #0284C7; /* Skyblue Deep for light background */
+  --brand-primary-hover:         #0369A1;
+  --brand-primary-fg:            #FFFFFF;
+  --brand-primary-container:     #38BDF8;
+  --brand-on-primary-container:  #090D16;
+  --brand-primary-muted:         rgba(56, 189, 248, 0.12);
 
-  /* Secondary Palette (Blue-Grey) */
-  --brand-secondary:             #445e8f;
-  --brand-secondary-container:   #acc7fe;
-  --brand-on-secondary-container:#385282;
+  /* Secondary Palette */
+  --brand-secondary:             #475569;
+  --brand-secondary-container:   #E2E8F0;
+  --brand-on-secondary-container:#090D16;
 
-  /* Tertiary Palette (Burnt Orange Accent) */
-  --accent:                      #9b4000;
-  --accent-container:            #c35200;
-  --accent-on-container:         #fffbff;
+  /* Accent & Warnings */
+  --accent:                      #D97706; /* Amber 600 */
+  --accent-container:            #FEF3C7;
+  --accent-on-container:         #78350F;
 
   /* Price Color */
-  --price-color:                 #0059b9;
+  --price-color:                 #0284C7;
 
   /* Status / Semantic */
-  --color-success:               #16a34a;
-  --color-success-bg:            #e6f4ea;
-  --color-warning:               #9b4000;
-  --color-warning-bg:            #ffdbcb;
-  --color-danger:                #ba1a1a;
-  --color-danger-bg:             #ffdad6;
-  --color-danger-text:           #93000a;
-  --color-info:                  #0059b9;
-  --color-info-bg:               #f1f3fe;
+  --color-success:               #16A34A;
+  --color-success-bg:            #DCFCE7;
+  --color-warning:               #D97706;
+  --color-warning-bg:            #FEF3C7;
+  --color-danger:                #E11D48;
+  --color-danger-bg:             #FFE4E6;
+  --color-danger-text:           #9F1239;
+  --color-info:                  #0284C7;
+  --color-info-bg:               #E0F2FE;
 
   /* CTA button disabled state */
-  --btn-disabled-bg:             #e0e2ec;
-  --btn-disabled-text:           #717785;
+  --btn-disabled-bg:             #E2E8F0;
+  --btn-disabled-text:           #94A3B8;
 
   /* Payment buttons */
-  --payment-inactive-bg:         #ffffff;
-  --payment-inactive-border:     #c1c6d6;
-  --payment-inactive-text:       #414754;
+  --payment-inactive-bg:         #FFFFFF;
+  --payment-inactive-border:     #E2E8F0;
+  --payment-inactive-text:       #334155;
 
-  /* Radii (Soft Shape Language) */
-  --radius-sm:                   0.375rem; /* 6px */
-  --radius-DEFAULT:              0.5rem;   /* 8px */
-  --radius-md:                   0.75rem;  /* 12px */
+  /* Radii */
+  --radius-sm:                   0.5rem;   /* 8px */
+  --radius-DEFAULT:              0.75rem;  /* 12px */
+  --radius-md:                   0.875rem; /* 14px */
   --radius-lg:                   1rem;     /* 16px */
-  --radius-xl:                   1.25rem;  /* 20px */
+  --radius-xl:                   1.5rem;   /* 24px */
   --radius-full:                 9999px;
 
-  /* Shadows (Subtle Tonal Depth) */
-  --shadow-xs:                   0 1px 2px 0 rgba(24, 28, 35, 0.04);
-  --shadow-card:                 0 1px 3px 0 rgba(24, 28, 35, 0.05), 0 1px 2px -1px rgba(24, 28, 35, 0.05);
-  --shadow-card-hover:           0 6px 20px -4px rgba(0, 89, 185, 0.12);
-  --shadow-sidebar:              1px 0 0 #e0e2ec;
+  /* Shadows (Tonal depth) */
+  --shadow-xs:                   0 1px 2px 0 rgba(9, 13, 22, 0.04);
+  --shadow-card:                 0 4px 16px -2px rgba(9, 13, 22, 0.06), 0 2px 4px -2px rgba(9, 13, 22, 0.04);
+  --shadow-card-hover:           0 12px 32px -4px rgba(2, 132, 199, 0.14);
+  --shadow-sidebar:              1px 0 0 #E2E8F0;
 }
 
-/* ── Dark Mode (Bento Grid Deep Slate / Navy System) ───────── */
+/* ── Dark Mode (2026 Deep OLED Void & Electric Skyblue) ──── */
 [data-theme="dark"],
 .dark {
-  /* Backgrounds (Deep Navy / Slate) */
-  --bg-primary:        #0B0F17; /* Deep midnight navy background */
-  --bg-surface:        #0F172A; /* Surface slate */
-  --bg-card:           rgba(15, 23, 42, 0.65); /* Glassmorphic card fill */
-  --bg-card-inner:     rgba(30, 41, 59, 0.55); /* Inner input / subtle containers */
+  /* Backgrounds & Canvas */
+  --bg-primary:                  #090D16; /* Pure Deep OLED Black */
+  --bg-surface:                  #0F172A; /* Surface slate */
+  --bg-surface-dim:              #0B0F17;
+  --bg-surface-bright:           #131929;
+  --bg-container-lowest:         #090D16;
+  --bg-container-low:            #0D121F;
+  --bg-container:                #131929; /* Card & Panel container */
+  --bg-container-high:           #1A2234;
+  --bg-container-highest:        #242E45;
 
-  /* Glassmorphic Borders & Outlines */
-  --border-color:      rgba(255, 255, 255, 0.08); /* Thin translucent border */
-  --border-strong:     rgba(255, 255, 255, 0.16); /* High contrast border */
-  --border-focus:      #3B82F6; /* Vibrant Electric Blue focus border */
+  --bg-card:                     #131929; /* Deep Slate Glass Card */
+  --bg-card-inner:               #1A2234; /* Inner container */
+  --bg-subtle:                   #0D121F;
+  --bg-muted:                    #1E293B;
 
-  /* Text Hierarchy */
-  --text-primary:      #FFFFFF; /* High-contrast pure white headings */
-  --text-secondary:    #CBD5E1; /* Secondary readable text */
-  --text-tertiary:     #94A3B8; /* Muted slate 75% opacity text */
+  /* Borders & Outlines */
+  --border-color:                rgba(255, 255, 255, 0.08); /* 2026 Translucent micro-border */
+  --border-strong:               rgba(255, 255, 255, 0.16);
+  --border-focus:                #38BDF8; /* Electric Skyblue focus ring */
 
-  /* Brand Colors (Vibrant Electric Blue) */
-  --brand-primary:       #3B82F6; /* Vibrant Electric Blue */
-  --brand-primary-hover: #2563EB; /* Deep electric hover */
-  --brand-primary-fg:    #FFFFFF; /* Pure white text for high contrast */
-  --brand-primary-muted: rgba(59, 130, 246, 0.16); /* Electric blue glow tint */
+  /* Typography */
+  --text-primary:                #FFFFFF; /* Pure White - Maximum contrast 18:1 */
+  --text-secondary:              #CBD5E1; /* Slate 300 */
+  --text-tertiary:               #94A3B8; /* Slate 400 - WCAG AAA compliant */
+  --text-quaternary:             #64748B;
 
-  /* Price — Vibrant Electric Blue / Neon Sky */
-  --price-color:       #38BDF8;
+  /* Brand Palette (Skyblue Accent) */
+  --brand-primary:               #38BDF8; /* Skyblue 400 */
+  --brand-primary-hover:         #0284C7;
+  --brand-primary-fg:            #090D16; /* Deep Black on Skyblue button */
+  --brand-primary-container:     rgba(56, 189, 248, 0.15);
+  --brand-on-primary-container:  #38BDF8;
+  --brand-primary-muted:         rgba(56, 189, 248, 0.15);
 
-  /* Accent / Warnings / Highlights */
-  --accent:            #F59E0B; /* Warm Amber */
-  --accent-container:  rgba(245, 158, 11, 0.15);
+  /* Secondary Palette */
+  --brand-secondary:             #94A3B8;
+  --brand-secondary-container:   #1E293B;
+  --brand-on-secondary-container:#FFFFFF;
 
-  /* Semantic Status */
-  --color-success:     #10B981; /* Muted Emerald */
-  --color-success-bg:  rgba(16, 185, 129, 0.15);
-  --color-warning:     #F59E0B; /* Warm Amber */
-  --color-warning-bg:  rgba(245, 158, 11, 0.15);
-  --color-danger:      #EF4444;
-  --color-danger-bg:   rgba(239, 68, 68, 0.15);
-  --color-info:        #3B82F6;
+  /* Accent & Warnings */
+  --accent:                      #F59E0B; /* Amber 500 */
+  --accent-container:            rgba(245, 158, 11, 0.15);
+  --accent-on-container:         #FDE68A;
+
+  /* Price Color */
+  --price-color:                 #38BDF8;
+
+  /* Status / Semantic */
+  --color-success:               #34D399; /* Emerald 400 */
+  --color-success-bg:            rgba(52, 211, 153, 0.12);
+  --color-warning:               #FBBF24; /* Amber 400 */
+  --color-warning-bg:            rgba(251, 191, 36, 0.12);
+  --color-danger:                #FB7185; /* Rose 400 */
+  --color-danger-bg:             rgba(251, 113, 133, 0.12);
+  --color-danger-text:           #FDA4AF;
+  --color-info:                  #38BDF8;
+  --color-info-bg:               rgba(56, 189, 248, 0.12);
 
   /* CTA button disabled state */
-  --btn-disabled-bg:   rgba(30, 41, 59, 0.6);
-  --btn-disabled-text: #64748B;
+  --btn-disabled-bg:             rgba(30, 41, 59, 0.5);
+  --btn-disabled-text:           #64748B;
 
-  /* Payment buttons in dark */
-  --payment-inactive-bg:     rgba(30, 41, 59, 0.5);
-  --payment-inactive-border: rgba(255, 255, 255, 0.08);
-  --payment-inactive-text:   #94A3B8;
-
-  /* Upsell card */
-  --upsell-card-bg:    rgba(30, 41, 59, 0.6);
-  --upsell-card-border: rgba(255, 255, 255, 0.08);
-  --upsell-card-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  /* Payment buttons */
+  --payment-inactive-bg:         #131929;
+  --payment-inactive-border:     rgba(255, 255, 255, 0.08);
+  --payment-inactive-text:       #94A3B8;
 
   /* Shadows (Glassmorphic glow depth) */
-  --shadow-card:       0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 2px 6px -1px rgba(0, 0, 0, 0.4);
-  --shadow-card-hover: 0 12px 28px -4px rgba(59, 130, 246, 0.25), 0 0 16px rgba(59, 130, 246, 0.15);
-  --shadow-sidebar:    1px 0 0 rgba(255, 255, 255, 0.08);
+  --shadow-xs:                   0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-card:                 0 8px 24px -4px rgba(0, 0, 0, 0.5), 0 2px 6px -1px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover:           0 16px 36px -6px rgba(56, 189, 248, 0.2), 0 0 16px rgba(56, 189, 248, 0.1);
+  --shadow-sidebar:              1px 0 0 rgba(255, 255, 255, 0.08);
 }
 
-/* ── Base element styles ───────────────────────────────── */
+/* ── Base Element Styles ───────────────────────────────── */
 html, body {
   font-family: var(--font-body);
   color: var(--text-primary);
   background: var(--bg-primary);
 }
 
-/* Heading — Manrope */
-h1, h2, h3, h4, h5, h6 {
+h1, h2 {
   font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.025em;
 }
 
-/* ── Shared card component ─────────────────────────────── */
+h3, h4 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+h5, h6 {
+  font-family: var(--font-body);
+  font-weight: 500;
+}
+
+/* ── 2026 Shared Card Component ────────────────────────── */
 .kohi-card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -187,10 +216,10 @@ h1, h2, h3, h4, h5, h6 {
   border-color: var(--brand-primary);
 }
 
-/* ── Button system ─────────────────────────────────────── */
+/* ── 2026 Modern Button System ─────────────────────────── */
 .kohi-btn-primary {
   background-color: var(--brand-primary);
-  color: #FFFFFF !important;
+  color: var(--brand-primary-fg) !important;
   border-radius: var(--radius-md);
   font-family: var(--font-body);
   font-weight: 600;
@@ -202,24 +231,16 @@ h1, h2, h3, h4, h5, h6 {
 
 .kohi-btn-primary:hover {
   background-color: var(--brand-primary-hover);
+  box-shadow: 0 8px 20px -4px rgba(56, 189, 248, 0.35);
 }
 
-.kohi-btn-accent {
-  background-color: var(--accent);
-  color: #FFFFFF !important;
-  border-radius: var(--radius-md);
-  font-family: var(--font-body);
-  font-weight: 600;
-  transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1), transform 150ms ease;
+.kohi-btn-primary:active {
+  transform: scale(0.98);
 }
 
-.kohi-btn-accent:hover {
-  opacity: 0.9;
-}
-
-/* ── Smooth theme transitions ──────────────────────────── */
+/* ── Smooth Theme Transitions ──────────────────────────── */
 body, main, aside, header, nav, article, button, input, textarea, select {
   transition-property: background-color, border-color, color, box-shadow;
-  transition-duration: 220ms;
+  transition-duration: 200ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }

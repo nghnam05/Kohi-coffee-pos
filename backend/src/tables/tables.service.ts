@@ -133,6 +133,16 @@ export class TablesService {
       throw new NotFoundException(`Không tìm thấy bàn với ID: ${id}`);
     }
 
+    if (updateTableDto.status === 'empty') {
+      try {
+        const tableObjId = isValidObjectId(id) ? new Types.ObjectId(id) : id;
+        await this.reservationModel
+          .updateMany({ tableId: tableObjId, status: 'arrived' }, { status: 'completed' })
+          .exec()
+          .catch(() => {});
+      } catch (err) {}
+    }
+
     if (this.ordersGateway && updatedTable) {
       this.ordersGateway.emitTableUpdate(id, updatedTable.status);
       if (updateTableDto.status === 'empty' && this.ordersGateway.server) {

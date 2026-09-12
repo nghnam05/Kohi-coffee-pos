@@ -20,7 +20,7 @@ export class Reservation {
   @Prop({ type: Date, required: true, index: true })
   reservationTime: Date;
 
-  @Prop({ type: String, enum: ['pending', 'confirmed', 'arrived', 'cancelled'], default: 'pending', index: true })
+  @Prop({ type: String, enum: ['pending', 'confirmed', 'arrived', 'completed', 'cancelled'], default: 'pending', index: true })
   status: string;
 
   @Prop({ type: String, default: '', trim: true })

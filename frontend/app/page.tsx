@@ -6,12 +6,10 @@ import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
 import { playScanBeep, playWelcomeChime } from './utils/sound';
-import { ThemeToggleSwitch } from '@/components/table/ThemeToggleSwitch';
-import { LanguageToggleSwitch, Lang } from '@/components/table/LanguageToggleSwitch';
 import { BrandLogo } from '@/components/table/BrandLogo';
 import { formatTableName, formatTableLocation, formatTableFloor } from '@/utils/format';
 import { toast } from 'react-hot-toast';
-import { useTranslation } from '@/context/LanguageContext';
+import { useTranslation, Lang } from '@/context/LanguageContext';
 import { io } from 'socket.io-client';
 import { BookingClosingAlertModal } from '@/components/booking/BookingClosingAlertModal';
 import { checkReservationClosingWarning, ReservationClosingCheck } from '@/utils/storeHours';
@@ -619,21 +617,86 @@ export default function Home() {
         <div className="flex justify-between items-center w-full px-3 sm:px-6 md:px-12 py-2 sm:py-3 max-w-7xl mx-auto gap-2">
           <BrandLogo onClick={() => router.push('/')} />
 
-          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-            <LanguageToggleSwitch
-              lang={lang as Lang}
-              setLang={(l) => {
-                setLang(l as any);
-                localStorage.setItem('pho-beyond-lang', l);
-              }}
-            />
-            <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
+          <div className="flex items-center gap-2 sm:gap-3.5 shrink-0">
+            {/* Language Selector Pill */}
+            <div className="inline-flex items-center px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border border-slate-200 dark:border-slate-700/80 text-[11px] sm:text-xs font-semibold bg-white dark:bg-slate-800/90 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setLang('vi')}
+                className={`transition-colors cursor-pointer ${
+                  lang === 'vi'
+                    ? 'text-blue-600 dark:text-blue-400 font-bold'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                VI
+              </button>
+              <span className="mx-1 sm:mx-1.5 text-slate-300 dark:text-slate-600 font-normal">|</span>
+              <button
+                type="button"
+                onClick={() => setLang('en')}
+                className={`transition-colors cursor-pointer ${
+                  lang === 'en'
+                    ? 'text-blue-600 dark:text-blue-400 font-bold'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                EN
+              </button>
+              <span className="mx-1 sm:mx-1.5 text-slate-300 dark:text-slate-600 font-normal">|</span>
+              <button
+                type="button"
+                onClick={() => setLang('zh')}
+                className={`transition-colors cursor-pointer ${
+                  lang === 'zh'
+                    ? 'text-blue-600 dark:text-blue-400 font-bold'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                ZH
+              </button>
+            </div>
+
+            {/* Light / Dark Mode Toggle Capsule */}
             <button
+              type="button"
+              aria-label="Toggle Theme"
+              onClick={() => setTheme(isDark ? 'light' : 'dark')}
+              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 border border-slate-200 dark:border-slate-700/80 rounded-full bg-white dark:bg-slate-800/90 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors shadow-2xs cursor-pointer"
+            >
+              <svg
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${
+                  !isDark ? 'text-amber-500' : 'text-slate-400 dark:text-slate-500'
+                }`}
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  clipRule="evenodd"
+                  d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                  fillRule="evenodd"
+                />
+              </svg>
+              <span className="text-slate-300 dark:text-slate-600 font-normal">|</span>
+              <svg
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${
+                  isDark ? 'text-amber-400 dark:text-amber-300' : 'text-slate-400'
+                }`}
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+              </svg>
+            </button>
+
+            {/* Staff Login Button */}
+            <button
+              type="button"
               onClick={() => router.push('/login')}
-              className="bg-[#3B82F6] hover:bg-blue-600 text-white transition-colors duration-200 px-3 sm:px-4 h-[32px] sm:h-[36px] rounded-xl text-[11px] sm:text-xs font-bold shadow-xs whitespace-nowrap cursor-pointer active:scale-95 flex items-center shrink-0"
+              className="inline-flex items-center justify-center px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all duration-150 cursor-pointer active:scale-95 whitespace-nowrap shrink-0"
             >
               <span className="sm:hidden">Đăng nhập</span>
-              <span className="hidden sm:inline">{t.btnLogin}</span>
+              <span className="hidden sm:inline">{t.btnLogin || 'Đăng nhập Nhân viên'}</span>
             </button>
           </div>
         </div>
@@ -644,304 +707,246 @@ export default function Home() {
         {/* Main Container */}
         <main className="flex-grow pt-4 sm:pt-8 pb-12 px-3.5 sm:px-6 md:px-12 w-full max-w-7xl mx-auto">
           {/* Hero Section */}
-          <section className="text-center mb-4 sm:mb-8">
-            <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-blue-500/10 text-[#3B82F6] dark:text-[#38BDF8] text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 sm:mb-3 border border-blue-500/20">
-              {t.heroBadge}
+          <section className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
+            <div className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider mb-3 sm:mb-4 border border-blue-100 dark:border-blue-800/50 shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-blue-400 animate-pulse" />
+              <span>{t.heroBadge}</span>
             </div>
-            <h2 className="text-xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white mb-1.5 sm:mb-2 tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2 sm:mb-3">
               {t.heroTitle}
-            </h2>
-            <p className="text-xs sm:text-sm lg:text-base text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed px-2">
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 text-sm sm:text-base leading-relaxed">
               {t.heroSubtitle}
             </p>
           </section>
 
           {/* Tab Navigation: Đặt Bàn vs Tra Cứu */}
-          <nav className="flex justify-center border-b border-slate-200 dark:border-white/10 mb-4 sm:mb-8">
-            <button
-              onClick={() => {
-                setActiveTab('reserve');
-                setError('');
-              }}
-              className={`px-4 sm:px-8 py-2 sm:py-3.5 text-xs sm:text-sm font-bold transition-all border-b-2 cursor-pointer ${
-                activeTab === 'reserve'
-                  ? 'text-[#3B82F6] dark:text-[#38BDF8] border-[#3B82F6] dark:border-[#38BDF8] translate-y-[1px]'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 border-transparent'
-              }`}
-            >
-              <span>{t.btnBookTab}</span>
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab('lookup');
-                setError('');
-              }}
-              className={`px-4 sm:px-8 py-2 sm:py-3.5 text-xs sm:text-sm font-bold transition-all border-b-2 cursor-pointer ${
-                activeTab === 'lookup'
-                  ? 'text-[#3B82F6] dark:text-[#38BDF8] border-[#3B82F6] dark:border-[#38BDF8] translate-y-[1px]'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 border-transparent'
-              }`}
-            >
-              <span>{t.btnLookupTab}</span>
-            </button>
-          </nav>
+          <div className="flex justify-center border-b border-slate-200 dark:border-slate-800 mb-8">
+            <nav aria-label="Tabs" className="flex space-x-8 sm:space-x-12 -mb-px">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('reserve');
+                  setError('');
+                }}
+                className={`py-3 px-2 text-sm font-bold inline-flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+                  activeTab === 'reserve'
+                    ? 'border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 translate-y-[1px]'
+                    : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+              >
+                <span className="material-symbols-outlined text-base">calendar_month</span>
+                <span>{t.btnBookTab}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('lookup');
+                  setError('');
+                }}
+                className={`py-3 px-2 text-sm font-semibold inline-flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+                  activeTab === 'lookup'
+                    ? 'border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 translate-y-[1px]'
+                    : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+              >
+                <span className="material-symbols-outlined text-base">search</span>
+                <span>{t.btnLookupTab}</span>
+              </button>
+            </nav>
+          </div>
 
           {/* TAB 1: TABLE RESERVATION MAIN GRID */}
           {activeTab === 'reserve' && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               {/* LEFT COLUMN: Sơ Đồ Chọn Bàn (7 Cols) */}
-              <div className="lg:col-span-7 bg-white dark:bg-[#0F172A]/70 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 lg:p-6 shadow-xs border border-slate-200/90 dark:border-white/10 backdrop-blur-xl">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5 sm:gap-3 mb-3 pb-3 border-b border-slate-200 dark:border-white/10">
+              <section className="lg:col-span-7 bg-white dark:bg-[#141D2E]/90 rounded-2xl p-6 sm:p-7 border border-slate-200/80 dark:border-slate-800 shadow-sm dark:shadow-xl backdrop-blur-sm" data-purpose="table-selection">
+                {/* Header & Filter Toolbar */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100 dark:border-slate-800">
                   <div>
-                    <h3 className="text-base sm:text-xl font-bold text-slate-900 dark:text-white mb-0.5">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                       {t.selectTableLabel}
-                    </h3>
-                    <p className="text-[11px] sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                    </h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                       {t.selectTableSub}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto justify-between sm:justify-end">
-                    {/* Desktop Pill Filter */}
-                    <div className="hidden sm:flex items-center p-0.5 sm:p-1 bg-slate-100 dark:bg-slate-900 border border-transparent dark:border-white/10 rounded-xl text-[10.5px] sm:text-[11px] font-bold">
+                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                    {/* Filter Segmented Control */}
+                    <div className="inline-flex rounded-lg p-1 bg-slate-100/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-xs font-semibold">
                       <button
+                        type="button"
                         onClick={() => {
                           setTableFilter('all');
                           setTablePage(1);
                         }}
-                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                        className={`px-3 py-1.5 rounded-md transition-all cursor-pointer font-bold ${
                           tableFilter === 'all'
-                            ? 'bg-white dark:bg-[#1E293B] text-[#3B82F6] dark:text-[#38BDF8] shadow-xs'
-                            : 'text-slate-500 dark:text-slate-400'
+                            ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-xs'
+                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                         }`}
                       >
                         {t.filterAll}
                       </button>
                       <button
+                        type="button"
                         onClick={() => {
                           setTableFilter('available');
                           setTablePage(1);
                         }}
-                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                        className={`px-3 py-1.5 rounded-md transition-all cursor-pointer font-bold ${
                           tableFilter === 'available'
-                            ? 'bg-white dark:bg-[#1E293B] text-[#3B82F6] dark:text-[#38BDF8] shadow-xs'
-                            : 'text-slate-500 dark:text-slate-400'
+                            ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-xs'
+                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                         }`}
                       >
                         {t.filterAvailable}
                       </button>
                     </div>
 
-                    {/* Mobile Dropdown Filter */}
-                    <div ref={tableFilterRef} className="sm:hidden relative inline-block">
-                      <button
-                        type="button"
-                        onClick={() => setIsTableFilterOpen(!isTableFilterOpen)}
-                        className={`h-8 px-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-700/90 border transition-all cursor-pointer shadow-xs active:scale-95 flex items-center gap-1 font-sans text-xs font-bold ${
-                          isTableFilterOpen
-                            ? 'border-sky-500 ring-2 ring-sky-500/20 bg-white dark:bg-slate-800 text-[#0284c7] dark:text-[#38BDF8]'
-                            : 'border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200'
-                        }`}
-                        aria-expanded={isTableFilterOpen}
-                        aria-haspopup="listbox"
-                        aria-label="Lọc danh sách bàn"
-                      >
-                        <span className="text-[#0284c7] dark:text-[#38BDF8] tracking-tight">
-                          {tableFilter === 'all' ? t.filterAll : t.filterAvailable}
-                        </span>
-                        <span
-                          className={`material-symbols-outlined text-[15px] text-slate-400 dark:text-slate-400 transition-transform duration-200 leading-none ${
-                            isTableFilterOpen ? 'rotate-180 text-[#0284c7] dark:text-[#38BDF8]' : ''
-                          }`}
-                        >
-                          expand_more
-                        </span>
-                      </button>
-
-                      <AnimatePresence>
-                        {isTableFilterOpen && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -4, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -4, scale: 0.95 }}
-                            transition={{ duration: 0.15, ease: 'easeOut' }}
-                            className="absolute left-0 top-full mt-1.5 min-w-[145px] z-50 p-1.5 bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-xl border border-slate-200/90 dark:border-white/15 rounded-2xl shadow-xl shadow-black/10 dark:shadow-black/60 space-y-1 font-sans"
-                            role="listbox"
-                          >
-                            <button
-                              type="button"
-                              role="option"
-                              aria-selected={tableFilter === 'all'}
-                              onClick={() => {
-                                setTableFilter('all');
-                                setTablePage(1);
-                                setIsTableFilterOpen(false);
-                              }}
-                              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all cursor-pointer text-left ${
-                                tableFilter === 'all'
-                                  ? 'bg-sky-50 dark:bg-sky-500/15 text-[#0284c7] dark:text-[#38BDF8] font-black'
-                                  : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70 font-semibold'
-                              }`}
-                            >
-                              <span>{t.filterAll}</span>
-                              {tableFilter === 'all' && (
-                                <span className="material-symbols-outlined text-[16px] text-[#0284c7] dark:text-[#38BDF8] leading-none">
-                                  check
-                                </span>
-                              )}
-                            </button>
-                            <button
-                              type="button"
-                              role="option"
-                              aria-selected={tableFilter === 'available'}
-                              onClick={() => {
-                                setTableFilter('available');
-                                setTablePage(1);
-                                setIsTableFilterOpen(false);
-                              }}
-                              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all cursor-pointer text-left ${
-                                tableFilter === 'available'
-                                  ? 'bg-sky-50 dark:bg-sky-500/15 text-[#0284c7] dark:text-[#38BDF8] font-black'
-                                  : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70 font-semibold'
-                              }`}
-                            >
-                              <span>{t.filterAvailable}</span>
-                              {tableFilter === 'available' && (
-                                <span className="material-symbols-outlined text-[16px] text-[#0284c7] dark:text-[#38BDF8] leading-none">
-                                  check
-                                </span>
-                              )}
-                            </button>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
+                    {/* Refresh Button */}
                     <button
+                      type="button"
                       onClick={fetchTables}
-                      className="px-2.5 sm:px-3 py-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-[11px] sm:text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer min-h-[32px] sm:min-h-[36px]"
+                      className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                     >
-                      {t.refreshMap}
+                      <span className="material-symbols-outlined text-xs">sync</span>
+                      <span>{t.refreshMap}</span>
                     </button>
                   </div>
                 </div>
 
-                {/* Status Legend Row */}
-                <div className="flex items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-4 text-[11px] sm:text-xs font-semibold text-slate-600 dark:text-slate-400">
-                  <div className="flex items-center gap-3 sm:gap-6">
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      <span>{t.tableStatusEmpty}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-amber-500" />
-                      <span>{t.tableStatusReserved}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-slate-400" />
-                      <span>{t.tableStatusServing}</span>
-                    </div>
+                {/* Status Badges Legend */}
+                <div className="flex flex-wrap items-center gap-5 sm:gap-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-100 dark:border-slate-800/80 mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20" />
+                    <span>{t.tableStatusEmpty}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 ring-4 ring-amber-500/20" />
+                    <span>{t.tableStatusReserved}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-slate-400 dark:bg-slate-500 ring-4 ring-slate-500/20" />
+                    <span>{t.tableStatusServing}</span>
                   </div>
                 </div>
 
-              {/* Table Map Grid (No Scroll, Paginated) */}
-              <div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+                {/* Table Grid (4 columns x 3 rows = 12 items) */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 my-2">
                   {paginatedTables.length === 0 ? (
-                  <div className="col-span-full text-center py-10 text-xs text-slate-400 dark:text-slate-500 font-medium">
-                    {tables.length === 0
-                      ? (lang === 'en' ? 'Loading table map...' : 'Đang tải danh sách bàn...')
-                      : (lang === 'en' ? 'No available tables found.' : 'Không có bàn trống nào.')}
-                  </div>
-                ) : (
-                  paginatedTables.map((tbl) => {
-                    const isSelected = selectedTable?._id === tbl._id;
-                    const isBookable = tbl.status !== 'reserved' && tbl.status !== 'serving';
-                    let statusDot = 'bg-emerald-500';
-                    let statusText = t.tableStatusEmpty;
-                    let statusColorClass = 'text-emerald-600 dark:text-emerald-400';
+                    <div className="col-span-full text-center py-10 text-xs text-slate-400 dark:text-slate-500 font-medium">
+                      {tables.length === 0
+                        ? (lang === 'en' ? 'Loading table map...' : 'Đang tải danh sách bàn...')
+                        : (lang === 'en' ? 'No available tables found.' : 'Không có bàn trống nào.')}
+                    </div>
+                  ) : (
+                    paginatedTables.map((tbl) => {
+                      const isSelected = selectedTable?._id === tbl._id;
+                      const isBookable = tbl.status !== 'reserved' && tbl.status !== 'serving';
+                      let statusDot = 'bg-emerald-500';
+                      let statusText = t.tableStatusEmpty;
+                      let statusColorClass = 'text-emerald-600 dark:text-emerald-400';
 
-                    if (tbl.status === 'serving') {
-                      statusDot = 'bg-slate-400';
-                      statusText = t.tableStatusServing;
-                      statusColorClass = 'text-slate-400';
-                    } else if (tbl.status === 'reserved') {
-                      statusDot = 'bg-amber-500';
-                      statusText = t.tableStatusReserved;
-                      statusColorClass = 'text-amber-600 dark:text-amber-400';
-                    }
+                      if (tbl.status === 'serving') {
+                        statusDot = 'bg-slate-400 dark:bg-slate-500';
+                        statusText = t.tableStatusServing;
+                        statusColorClass = 'text-slate-400 dark:text-slate-500';
+                      } else if (tbl.status === 'reserved') {
+                        statusDot = 'bg-amber-500';
+                        statusText = t.tableStatusReserved;
+                        statusColorClass = 'text-amber-600 dark:text-amber-400';
+                      }
 
-                    const formattedName = formatTableName(tbl.tableName, lang);
-                    const formattedFloor = formatTableFloor(lang);
+                      const formattedName = formatTableName(tbl.tableName, lang);
+                      const formattedFloor = formatTableFloor(lang);
 
-                    if (isSelected && isBookable) {
+                      if (isSelected && isBookable) {
+                        return (
+                          <div
+                            key={tbl._id}
+                            onClick={() => {
+                              setSelectedTable(tbl);
+                              setError('');
+                            }}
+                            className="relative bg-blue-50/70 dark:bg-blue-950/40 border-2 border-blue-500 dark:border-blue-500 rounded-xl p-3.5 flex flex-col justify-between min-h-[92px] cursor-pointer shadow-xs ring-2 ring-blue-500/20 transition-all"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400" />
+                              <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                                {statusText}
+                              </span>
+                            </div>
+                            <div className="text-center my-1">
+                              <div className="font-extrabold text-sm text-blue-600 dark:text-blue-400">
+                                {formattedName}
+                              </div>
+                              <div className="text-[11px] font-medium text-blue-500 dark:text-blue-400/80">
+                                {formattedFloor}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      if (!isBookable) {
+                        return (
+                          <div
+                            key={tbl._id}
+                            className="relative bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-xl p-3.5 flex flex-col justify-between min-h-[92px] cursor-not-allowed opacity-75 select-none text-left"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className={`w-2 h-2 rounded-full ${statusDot}`} />
+                              <span className={`text-[10px] font-medium ${statusColorClass}`}>
+                                {statusText}
+                              </span>
+                            </div>
+                            <div className="text-center my-1">
+                              <div className="font-bold text-sm text-slate-600 dark:text-slate-400">
+                                {formattedName}
+                              </div>
+                              <div className="text-[11px] text-slate-400 dark:text-slate-500">
+                                {formattedFloor}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+
                       return (
-                        <div
+                        <button
                           key={tbl._id}
+                          type="button"
                           onClick={() => {
                             setSelectedTable(tbl);
                             setError('');
                           }}
-                          className="relative bg-white dark:bg-slate-900 border-2 border-[#3B82F6] dark:border-[#38BDF8] rounded-xl sm:rounded-2xl p-2.5 sm:p-3 cursor-pointer shadow-md shadow-blue-500/10 transition-all group overflow-hidden min-h-[76px] sm:min-h-[82px] flex flex-col justify-between"
+                          className="relative bg-white dark:bg-[#141D2E] border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 rounded-xl p-3.5 flex flex-col justify-between min-h-[92px] cursor-pointer transition-colors shadow-2xs text-left group"
                         >
-                          <div className="absolute inset-0 bg-[#3B82F6]/10 pointer-events-none" />
-                          <div className="flex justify-between items-center mb-1.5 relative z-10">
-                            <span className={`w-2 h-2 rounded-full ${statusDot}`} />
-                            <span className="text-[10px] sm:text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                          <div className="flex items-center justify-between">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                            <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
                               {statusText}
                             </span>
                           </div>
-                          <div className="text-center mb-0.5 relative z-10">
-                            <span className="text-xs sm:text-sm font-black text-[#3B82F6] dark:text-[#38BDF8]">
+                          <div className="text-center my-1">
+                            <div className="font-bold text-sm text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                               {formattedName}
-                            </span>
+                            </div>
+                            <div className="text-[11px] text-slate-400 dark:text-slate-500">
+                              {formattedFloor}
+                            </div>
                           </div>
-                          <div className="text-center text-[10px] text-slate-500 dark:text-slate-400 font-medium relative z-10 truncate">
-                            {formattedFloor}
-                          </div>
-                        </div>
+                        </button>
                       );
-                    }
-
-                    return (
-                      <button
-                        key={tbl._id}
-                        type="button"
-                        disabled={!isBookable}
-                        onClick={() => {
-                          if (isBookable) {
-                            setSelectedTable(tbl);
-                            setError('');
-                          }
-                        }}
-                        className={`relative rounded-xl sm:rounded-2xl p-2.5 sm:p-3 text-left transition-all group overflow-hidden border min-h-[76px] sm:min-h-[82px] flex flex-col justify-between ${
-                          isBookable
-                            ? 'bg-slate-50/80 dark:bg-slate-900/60 border-slate-200 dark:border-white/10 cursor-pointer hover:border-slate-300 dark:hover:border-white/20 hover:shadow-xs'
-                            : 'bg-slate-100/50 dark:bg-slate-900/30 border-slate-200/50 dark:border-white/5 opacity-60 cursor-not-allowed'
-                        }`}
-                      >
-                        <div className="flex justify-between items-center mb-1.5">
-                          <span className={`w-2 h-2 rounded-full ${statusDot}`} />
-                          <span className={`text-[10px] sm:text-[11px] font-medium ${isBookable ? 'text-slate-500 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors' : statusColorClass}`}>
-                            {statusText}
-                          </span>
-                        </div>
-                        <div className="text-center mb-0.5">
-                          <span className={`text-xs sm:text-sm font-black ${isBookable ? 'text-slate-800 dark:text-slate-200 group-hover:text-[#3B82F6] dark:group-hover:text-[#38BDF8] transition-colors' : 'text-slate-400 dark:text-slate-500'}`}>
-                            {formattedName}
-                          </span>
-                        </div>
-                        <div className="text-center text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">
-                          {formattedFloor}
-                        </div>
-                      </button>
-                    );
-                  })
-                )}
+                    })
+                  )}
                 </div>
 
                 {/* Table Pagination Controls */}
                 {totalTablePages > 1 && (
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-3 mt-3 border-t border-slate-200/80 dark:border-white/10 select-none">
-                    <div className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400">
+                  <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-3 sm:gap-4 pt-5 mt-4 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 select-none text-center sm:text-left">
+                    <div className="text-center sm:text-left">
                       {lang === 'en' ? (
                         <>Showing <strong className="text-slate-800 dark:text-slate-200">{(currentPage - 1) * TABLES_PER_PAGE + 1} - {Math.min(currentPage * TABLES_PER_PAGE, filteredTables.length)}</strong> of <strong className="text-slate-800 dark:text-slate-200">{filteredTables.length}</strong> tables</>
                       ) : lang === 'zh' ? (
@@ -951,20 +956,18 @@ export default function Home() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-1 sm:gap-1.5">
+                    <div className="inline-flex items-center justify-center gap-1.5">
                       <button
                         type="button"
                         disabled={currentPage === 1}
                         onClick={() => setTablePage(p => Math.max(1, p - 1))}
-                        className={`h-8 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-0.5 cursor-pointer active:scale-95 ${
+                        className={`px-3 py-1.5 rounded-lg border transition-all text-xs font-semibold ${
                           currentPage === 1
-                            ? 'opacity-35 cursor-not-allowed text-slate-400 bg-slate-100 dark:bg-slate-800/40'
-                            : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-2xs'
+                            ? 'border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-600 bg-slate-50 dark:bg-slate-900/50 cursor-not-allowed'
+                            : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer'
                         }`}
-                        aria-label="Trang trước"
                       >
-                        <span className="material-symbols-outlined text-sm">chevron_left</span>
-                        <span className="text-[11px] sm:text-xs">{lang === 'en' ? 'Prev' : lang === 'zh' ? '上页' : 'Trước'}</span>
+                        &lt; {lang === 'en' ? 'Prev' : lang === 'zh' ? '上页' : 'Trước'}
                       </button>
 
                       {Array.from({ length: totalTablePages }, (_, i) => i + 1).map((pageNum) => (
@@ -972,10 +975,10 @@ export default function Home() {
                           key={pageNum}
                           type="button"
                           onClick={() => setTablePage(pageNum)}
-                          className={`w-8 h-8 rounded-xl text-xs font-black transition-all cursor-pointer active:scale-95 flex items-center justify-center ${
+                          className={`w-8 h-8 rounded-lg text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${
                             pageNum === currentPage
-                              ? 'bg-[#3B82F6] dark:bg-[#38BDF8] text-white dark:text-[#090D16] shadow-sm shadow-blue-500/20 dark:shadow-[#38BDF8]/20 ring-2 ring-[#3B82F6]/30 dark:ring-[#38BDF8]/30'
-                              : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
+                              ? 'bg-blue-600 text-white shadow-xs'
+                              : 'border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                           }`}
                         >
                           {pageNum}
@@ -986,44 +989,211 @@ export default function Home() {
                         type="button"
                         disabled={currentPage === totalTablePages}
                         onClick={() => setTablePage(p => Math.min(totalTablePages, p + 1))}
-                        className={`h-8 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-0.5 cursor-pointer active:scale-95 ${
+                        className={`px-3 py-1.5 rounded-lg border transition-all text-xs font-semibold ${
                           currentPage === totalTablePages
-                            ? 'opacity-35 cursor-not-allowed text-slate-400 bg-slate-100 dark:bg-slate-800/40'
-                            : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-2xs'
+                            ? 'border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-600 bg-slate-50 dark:bg-slate-900/50 cursor-not-allowed'
+                            : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer'
                         }`}
-                        aria-label="Trang sau"
                       >
-                        <span className="text-[11px] sm:text-xs">{lang === 'en' ? 'Next' : lang === 'zh' ? '下页' : 'Sau'}</span>
-                        <span className="material-symbols-outlined text-sm">chevron_right</span>
+                        {lang === 'en' ? 'Next' : lang === 'zh' ? '下页' : 'Sau'} &gt;
                       </button>
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
+              </section>
 
-            {/* RIGHT COLUMN: Form Nhập Thông Tin Đặt Bàn (5 Cols) */}
-            <div className="lg:col-span-5 bg-white dark:bg-[#0F172A]/70 rounded-2xl p-5 sm:p-6 lg:p-7 shadow-xs border border-slate-200/90 dark:border-white/10 backdrop-blur-xl h-fit lg:sticky lg:top-24 space-y-5">
-              <div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-1">
-                  {t.bookingFormTitle}
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
-                  {t.bookingFormSub}
-                </p>
-              </div>
-
-              {/* Selected Table Banner */}
-              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 flex justify-between items-center">
-                <div>
-                  <p className="text-[10.5px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
-                    {t.selectedTableLabel}
-                  </p>
-                  <p className="text-base sm:text-lg font-extrabold text-[#3B82F6] dark:text-[#38BDF8] leading-none">
-                    {selectedTable ? formatTableName(selectedTable.tableName, lang) : t.noTableSelected}
+              {/* RIGHT COLUMN: Form Nhập Thông Tin Đặt Bàn (5 Cols) */}
+              <section className="lg:col-span-5 bg-white dark:bg-[#141D2E]/90 rounded-2xl p-6 sm:p-7 border border-slate-200/80 dark:border-slate-800 shadow-sm dark:shadow-xl backdrop-blur-sm h-fit lg:sticky lg:top-24 space-y-5" data-purpose="reservation-form">
+                <div className="pb-5 border-b border-slate-100 dark:border-slate-800">
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                    {t.bookingFormTitle}
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    {t.bookingFormSub}
                   </p>
                 </div>
-                <span className="w-3 h-3 rounded-full bg-[#3B82F6] dark:bg-[#38BDF8] shadow-xs shrink-0 animate-pulse" />
+
+                {/* Selected Table Banner */}
+                <div className="bg-blue-50/70 dark:bg-blue-950/50 border border-blue-100 dark:border-blue-800/60 rounded-xl p-4 flex items-center justify-between">
+                  <div>
+                    <span className="block text-[11px] font-bold text-blue-600 dark:text-blue-400 tracking-wider uppercase">
+                      {t.selectedTableLabel}
+                    </span>
+                    <span className="text-xl font-extrabold text-blue-700 dark:text-blue-300 mt-0.5 block">
+                      {selectedTable ? formatTableName(selectedTable.tableName, lang) : t.noTableSelected}
+                    </span>
+                  </div>
+                  <div className="w-3.5 h-3.5 rounded-full bg-blue-600 dark:bg-blue-400 ring-4 ring-blue-100 dark:ring-blue-900/50" />
+                </div>
+
+                {error && (
+                  <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold text-center">
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleBookingSubmit} className="space-y-4">
+                  {/* Full Name */}
+                  <div>
+                    <label htmlFor="customer-name" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                      {t.customerNameLabel}
+                    </label>
+                    <input
+                      id="customer-name"
+                      name="customerName"
+                      type="text"
+                      required
+                      placeholder={t.customerNamePlaceholder}
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/60 text-sm focus:bg-white dark:focus:bg-[#0F172A] focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors py-2.5 px-3.5 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-100 font-medium outline-none"
+                    />
+                  </div>
+
+                  {/* Phone Number */}
+                  <div>
+                    <label htmlFor="customer-phone" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                      {t.customerPhoneLabel}
+                    </label>
+                    <input
+                      id="customer-phone"
+                      name="customerPhone"
+                      type="tel"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      required
+                      placeholder={t.customerPhonePlaceholder}
+                      value={customerPhone}
+                      onChange={(e) => {
+                        const onlyDigits = e.target.value.replace(/\D/g, '');
+                        if (onlyDigits.length <= 11) {
+                          setCustomerPhone(onlyDigits);
+                          if (error) setError('');
+                        }
+                      }}
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/60 text-sm focus:bg-white dark:focus:bg-[#0F172A] focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors py-2.5 px-3.5 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-100 font-medium outline-none"
+                    />
+                  </div>
+
+                  {/* Reservation Time & Guest Count Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5">
+                    <div className="sm:col-span-7">
+                      <label htmlFor="reservation-time" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        {t.reservationTimeLabel}
+                      </label>
+                      <div className="relative">
+                        <input
+                          id="reservation-time"
+                          name="reservationTime"
+                          type="datetime-local"
+                          required
+                          value={reservationTime}
+                          onChange={(e) => setReservationTime(e.target.value)}
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/60 text-sm focus:bg-white dark:focus:bg-[#0F172A] focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors py-2.5 pl-3.5 pr-10 text-slate-800 dark:text-slate-100 font-medium outline-none"
+                        />
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                          <span className="material-symbols-outlined text-base">calendar_today</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="sm:col-span-5">
+                      <label htmlFor="guest-count" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        {t.guestCountLabel}
+                      </label>
+                      <input
+                        id="guest-count"
+                        name="guestCount"
+                        type="number"
+                        min={1}
+                        max={50}
+                        required
+                        value={guestCount}
+                        onChange={(e) => setGuestCount(Number(e.target.value))}
+                        className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/60 text-sm focus:bg-white dark:focus:bg-[#0F172A] focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors py-2.5 px-3.5 text-slate-800 dark:text-slate-100 font-medium text-center sm:text-left outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Quick Time Selection Pills */}
+                  <div>
+                    <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-2">
+                      {t.quickTimePresets}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPresetTime(1)}
+                        className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+                      >
+                        {t.presetIn1h}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPresetTime(2)}
+                        className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+                      >
+                        {t.presetIn2h}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSpecificTimePreset(19, false)}
+                        className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+                      >
+                        {t.presetTonight}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSpecificTimePreset(12, true)}
+                        className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+                      >
+                        {t.presetTomorrowNoon}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Special Requests / Notes */}
+                  <div>
+                    <label htmlFor="special-notes" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                      {t.noteLabel}
+                    </label>
+                    <textarea
+                      id="special-notes"
+                      name="specialNotes"
+                      rows={3}
+                      placeholder={t.notePlaceholder}
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/60 text-sm focus:bg-white dark:focus:bg-[#0F172A] focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors p-3 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-100 resize-none outline-none"
+                    />
+                  </div>
+
+                  {/* Submit CTA Button */}
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || !selectedTable}
+                      className="w-full py-3.5 px-6 rounded-xl text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 font-bold text-sm tracking-wide shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 min-h-[44px]"
+                    >
+                      <span>{isSubmitting ? t.btnSubmitting : t.btnSubmitBooking}</span>
+                      <span className="material-symbols-outlined text-base">arrow_forward</span>
+                    </button>
+                  </div>
+                </form>
+              </section>
+            </div>
+          )}
+
+          {/* TAB 2: LOOKUP & CUSTOMER CANCEL RESERVATIONS */}
+          {activeTab === 'lookup' && (
+            <div className="max-w-xl mx-auto bg-white dark:bg-[#141D2E]/90 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-sm dark:shadow-xl backdrop-blur-sm transition-all font-sans">
+              <div className="text-center space-y-1.5">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+                  {t.lookupTitle}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                  {t.lookupSubtitle}
+                </p>
               </div>
 
               {error && (
@@ -1032,188 +1202,32 @@ export default function Home() {
                 </div>
               )}
 
-              <form onSubmit={handleBookingSubmit} className="space-y-4">
-                {/* Full Name */}
-                <div>
-                  <label htmlFor="customer-name-input" className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    {t.customerNameLabel}
-                  </label>
-                  <input
-                    id="customer-name-input"
-                    type="text"
-                    required
-                    placeholder={t.customerNamePlaceholder}
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all"
-                  />
-                </div>
-
-                {/* Phone Number */}
-                <div>
-                  <label htmlFor="customer-phone-input" className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    {t.customerPhoneLabel}
-                  </label>
-                  <input
-                    id="customer-phone-input"
-                    type="tel"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    required
-                    placeholder={t.customerPhonePlaceholder}
-                    value={customerPhone}
-                    onChange={(e) => {
-                      const onlyDigits = e.target.value.replace(/\D/g, '');
-                      if (onlyDigits.length <= 11) {
-                        setCustomerPhone(onlyDigits);
-                        if (error) setError('');
-                      }
-                    }}
-                    className="w-full bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all"
-                  />
-                </div>
-
-                {/* Reservation Time & Guest Count Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="reservation-time-input" className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                      {t.reservationTimeLabel}
-                    </label>
-                    <input
-                      id="reservation-time-input"
-                      type="datetime-local"
-                      required
-                      value={reservationTime}
-                      onChange={(e) => setReservationTime(e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3B82F6] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="guest-count-input" className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                      {t.guestCountLabel}
-                    </label>
-                    <input
-                      id="guest-count-input"
-                      type="number"
-                      min={1}
-                      max={50}
-                      required
-                      value={guestCount}
-                      onChange={(e) => setGuestCount(Number(e.target.value))}
-                      className="w-full bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3B82F6] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* Quick Time Options */}
-                <div className="space-y-1.5 pt-1">
-                  <span className="text-[11px] text-slate-400 dark:text-slate-500 font-bold block">
-                    {t.quickTimePresets}
-                  </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setPresetTime(1)}
-                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-[#3B82F6] hover:text-white dark:hover:bg-[#3B82F6] dark:hover:text-white transition-all cursor-pointer"
-                    >
-                      {t.presetIn1h}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPresetTime(2)}
-                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-[#3B82F6] hover:text-white dark:hover:bg-[#3B82F6] dark:hover:text-white transition-all cursor-pointer"
-                    >
-                      {t.presetIn2h}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSpecificTimePreset(19, false)}
-                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-[#3B82F6] hover:text-white dark:hover:bg-[#3B82F6] dark:hover:text-white transition-all cursor-pointer"
-                    >
-                      {t.presetTonight}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSpecificTimePreset(12, true)}
-                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-[#3B82F6] hover:text-white dark:hover:bg-[#3B82F6] dark:hover:text-white transition-all cursor-pointer"
-                    >
-                      {t.presetTomorrowNoon}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Special Requests / Notes */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    {t.noteLabel}
-                  </label>
-                  <textarea
-                    rows={3}
-                    placeholder={t.notePlaceholder}
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl p-3 sm:p-4 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6] dark:focus:ring-[#38BDF8] focus:border-transparent transition-all resize-none"
-                  />
-                </div>
-
-                {/* Submit Button */}
+              <form onSubmit={handleLookupSubmit} className="flex flex-col sm:flex-row gap-3">
+                <input
+                  id="lookup-phone-input"
+                  aria-label={t.lookupPhonePlaceholder}
+                  type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder={t.lookupPhonePlaceholder}
+                  value={lookupPhone}
+                  onChange={(e) => {
+                    const onlyDigits = e.target.value.replace(/\D/g, '');
+                    if (onlyDigits.length <= 11) {
+                      setLookupPhone(onlyDigits);
+                      if (error) setError('');
+                    }
+                  }}
+                  className="flex-1 bg-slate-50/50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl px-4 py-3 text-xs sm:text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors"
+                />
                 <button
                   type="submit"
-                  disabled={isSubmitting || !selectedTable}
-                  className="w-full bg-[#3B82F6] hover:bg-blue-600 text-white text-xs sm:text-sm font-extrabold py-3.5 sm:py-4 rounded-xl shadow-md hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-200 uppercase tracking-wider cursor-pointer active:scale-[0.98] disabled:opacity-50 mt-2 min-h-[44px]"
+                  disabled={isSearchingLookup}
+                  className="h-11 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs sm:text-sm uppercase tracking-wider transition-all shadow-md active:scale-95 flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-50 min-h-[44px]"
                 >
-                  <span>{isSubmitting ? t.btnSubmitting : t.btnSubmitBooking}</span>
+                  <span>{isSearchingLookup ? t.btnSearching : t.btnSearchNow}</span>
                 </button>
               </form>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 2: LOOKUP & CUSTOMER CANCEL RESERVATIONS */}
-        {activeTab === 'lookup' && (
-          <div className="max-w-xl mx-auto bg-white dark:bg-[#0F172A]/70 border border-slate-200/90 dark:border-white/10 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs backdrop-blur-xl transition-all font-sans">
-            <div className="text-center space-y-1.5">
-              <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-                {t.lookupTitle}
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
-                {t.lookupSubtitle}
-              </p>
-            </div>
-
-            {error && (
-              <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold text-center">
-                <span>{error}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleLookupSubmit} className="flex flex-col sm:flex-row gap-3">
-              <input
-                id="lookup-phone-input"
-                aria-label={t.lookupPhonePlaceholder}
-                type="tel"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder={t.lookupPhonePlaceholder}
-                value={lookupPhone}
-                onChange={(e) => {
-                  const onlyDigits = e.target.value.replace(/\D/g, '');
-                  if (onlyDigits.length <= 11) {
-                    setLookupPhone(onlyDigits);
-                    if (error) setError('');
-                  }
-                }}
-                className="flex-1 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#3B82F6] dark:focus:ring-[#38BDF8]"
-              />
-              <button
-                type="submit"
-                disabled={isSearchingLookup}
-                className="h-11 px-6 bg-[#3B82F6] hover:bg-blue-600 text-white font-bold rounded-xl text-xs sm:text-sm uppercase tracking-wider transition-all shadow-md active:scale-95 flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-50 min-h-[44px]"
-              >
-                <span>{isSearchingLookup ? t.btnSearching : t.btnSearchNow}</span>
-              </button>
-            </form>
 
             {hasSearchedLookup && (
               <div className="space-y-4 pt-2">
@@ -1236,8 +1250,17 @@ export default function Home() {
                         statusBadge = 'bg-sky-500/10 text-[#0284c7] dark:text-[#38BDF8] border-sky-500/30';
                         statusLabel = lang === 'en' ? 'Confirmed' : 'Đã duyệt thành công';
                       } else if (res.status === 'arrived') {
-                        statusBadge = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
-                        statusLabel = lang === 'en' ? 'Arrived' : 'Khách đã đến';
+                        // Nếu bàn đang phục vụ -> Đang trong phiên; nếu bàn đã trống -> Đã kết thúc phiên
+                        if (res.tableId?.status === 'serving' || !res.tableId?.status) {
+                          statusBadge = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
+                          statusLabel = lang === 'en' ? 'Arrived / In Service' : 'Khách đã đến';
+                        } else {
+                          statusBadge = 'bg-slate-500/10 text-slate-500 dark:text-slate-400 border-slate-500/20';
+                          statusLabel = lang === 'en' ? 'Completed Session' : 'Đã hoàn tất phiên';
+                        }
+                      } else if (res.status === 'completed') {
+                        statusBadge = 'bg-slate-500/10 text-slate-500 dark:text-slate-400 border-slate-500/20';
+                        statusLabel = lang === 'en' ? 'Completed Session' : 'Đã hoàn tất phiên';
                       } else if (res.status === 'cancelled') {
                         statusBadge = 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20';
                         statusLabel = lang === 'en' ? 'Cancelled' : 'Đã hủy';
@@ -1245,58 +1268,59 @@ export default function Home() {
 
                       const isPending = res.status === 'pending';
                       const isConfirmed = res.status === 'confirmed';
-                      const isArrived = res.status === 'arrived';
+                      const isCompleted = res.status === 'completed' || (res.status === 'arrived' && res.tableId?.status === 'empty');
+                      // Chỉ cho phép vào bàn khi đơn đang phục vụ thực tế và bàn chưa bị dọn sạch
+                      const canEnterTable = res.status === 'arrived' && res.tableId?.status === 'serving';
                       const targetTableId = res.tableId?._id || res.tableId;
                       const tableNameStr = formatTableName(res.tableId?.tableName, lang);
 
                       return (
                         <div
                           key={res._id}
-                          className="bg-slate-50/90 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 p-4 sm:p-5 rounded-xl space-y-3 shadow-xs"
+                          className="bg-slate-50/90 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 p-4 sm:p-5 rounded-2xl space-y-3 shadow-xs hover:border-[#38BDF8]/30 transition-all"
                         >
                           <div className="flex justify-between items-start">
                             <div>
-                              <h4 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
+                              <h4 className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base">
                                 {res.customerName}
                               </h4>
-                              <p className="text-xs text-[#3B82F6] dark:text-[#38BDF8] font-bold mt-0.5">
+                              <p className="text-xs text-[#0284c7] dark:text-[#38BDF8] font-extrabold mt-0.5">
                                 {res.customerPhone}
                               </p>
                             </div>
-                            <span className={`px-3 py-1 rounded-full text-[10.5px] font-bold border ${statusBadge}`}>
+                            <span className={`px-3 py-1 rounded-full text-[11px] font-extrabold border ${statusBadge}`}>
                               {statusLabel}
                             </span>
                           </div>
 
                           <div className="py-2.5 border-t border-b border-slate-200/80 dark:border-white/10 space-y-1.5 text-xs sm:text-sm">
                             <div className="flex justify-between">
-                              <span className="text-slate-500 dark:text-slate-400 font-medium">
+                              <span className="text-slate-500 dark:text-slate-400 font-normal">
                                 {lang === 'en' ? 'Selected Table:' : lang === 'zh' ? '预订桌位：' : 'Bàn chọn:'}
                               </span>
-                              <span className="font-bold text-slate-900 dark:text-white">{tableNameStr}</span>
+                              <span className="font-extrabold text-slate-900 dark:text-white">{tableNameStr}</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-slate-500 dark:text-slate-400 font-medium">
+                              <span className="text-slate-500 dark:text-slate-400 font-normal">
                                 {lang === 'en' ? 'Reservation Time:' : lang === 'zh' ? '入座时间：' : 'Thời gian nhận bàn:'}
                               </span>
-                              <span className="font-bold text-slate-900 dark:text-white">
+                              <span className="font-extrabold text-slate-900 dark:text-white">
                                 {new Date(res.reservationTime).toLocaleString(lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'vi-VN')}
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-slate-500 dark:text-slate-400 font-medium">
+                              <span className="text-slate-500 dark:text-slate-400 font-normal">
                                 {lang === 'en' ? 'Guest Count:' : lang === 'zh' ? '顾客人数：' : 'Số lượng khách:'}
                               </span>
-                              <span className="font-bold text-slate-900 dark:text-white">
+                              <span className="font-extrabold text-slate-900 dark:text-white">
                                 {res.guestCount} {lang === 'en' ? 'guests' : lang === 'zh' ? '人' : 'người'}
                               </span>
                             </div>
 
                             {isConfirmed && (
                               <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-white/10 text-xs flex justify-between items-center">
-                                <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                                  <span className="material-symbols-outlined text-sm text-[#0284c7] dark:text-[#38BDF8]">verified_user</span>
-                                  <span>Mã nhận bàn:</span>
+                                <span className="font-extrabold text-slate-700 dark:text-slate-300">
+                                  Mã nhận bàn:
                                 </span>
                                 <span className="font-mono font-extrabold tracking-widest text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-[#090D16] px-2.5 py-1 rounded-md border border-slate-300 dark:border-slate-700">
                                   •••• (Bảo mật - chỉ cấp 1 lần)
@@ -1305,32 +1329,37 @@ export default function Home() {
                             )}
 
                             {res.note && (
-                              <div className="pt-1 text-xs text-amber-600 dark:text-amber-400 italic">
+                              <div className="pt-1 text-xs text-amber-600 dark:text-amber-400 italic font-normal">
                                 {lang === 'en' ? 'Note: ' : lang === 'zh' ? '备注：' : 'Ghi chú: '}{res.note}
                               </div>
                             )}
                           </div>
 
-                          {isArrived && targetTableId && (
+                          {canEnterTable && targetTableId && (
                             <button
                               type="button"
                               onClick={() => router.push(`/table/${targetTableId}`)}
-                              className="w-full h-11 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] hover:text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center min-h-[44px]"
+                              className="w-full h-11 bg-[#38BDF8] hover:bg-[#0284c7] focus-visible:ring-2 focus-visible:ring-[#38BDF8] focus-visible:outline-none focus-visible:ring-offset-2 text-[#090D16] hover:text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer flex items-center justify-center min-h-[44px]"
                             >
                               {lang === 'en' ? `GO TO TABLE ORDER (${tableNameStr})` : lang === 'zh' ? `进入桌位点餐 (${tableNameStr})` : `VÀO BÀN GỌI MÓN (${tableNameStr})`}
                             </button>
                           )}
 
+                          {isCompleted && (
+                            <div className="p-3 rounded-xl bg-slate-100/90 dark:bg-slate-800/50 border border-slate-200/60 dark:border-white/5 text-xs text-slate-500 dark:text-slate-400 text-center font-normal leading-relaxed">
+                              {lang === 'en' ? 'This reservation session has ended. Thank you for visiting KOHI Coffee!' : 'Phiên đặt bàn này đã kết thúc. Cảm ơn quý khách đã ghé thăm KOHI Coffee!'}
+                            </div>
+                          )}
+
                           {isPending && (
                             <div className="space-y-2">
-                              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
-                                <span className="material-symbols-outlined text-base shrink-0 mt-0.5 animate-pulse">hourglass_empty</span>
-                                <span>Đơn đặt bàn đang chờ nhân viên phục vụ duyệt. Quý khách vui lòng chờ trong giây lát.</span>
+                              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 font-normal leading-relaxed">
+                                Đơn đặt bàn đang chờ nhân viên phục vụ duyệt. Quý khách vui lòng chờ trong giây lát.
                               </div>
                               <button
                                 type="button"
                                 onClick={() => handleCustomerCancelReservation(res._id)}
-                                className="w-full h-10 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-500 border border-rose-500/20 text-xs font-bold rounded-xl transition-all flex items-center justify-center cursor-pointer active:scale-95 min-h-[44px]"
+                                className="w-full h-10 bg-rose-500/10 hover:bg-rose-500 hover:text-white focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:outline-none text-rose-500 border border-rose-500/20 text-xs font-extrabold rounded-xl transition-all flex items-center justify-center cursor-pointer active:scale-[0.98] min-h-[44px]"
                               >
                                 {lang === 'en' ? 'CANCEL THIS RESERVATION' : lang === 'zh' ? '取消此预订' : 'HỦY ĐƠN ĐẶT BÀN NÀY'}
                               </button>
@@ -1346,15 +1375,14 @@ export default function Home() {
                                   setPinInput('');
                                   setPinError('');
                                 }}
-                                className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 min-h-[44px]"
+                                className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer flex items-center justify-center min-h-[44px]"
                               >
-                                <span className="material-symbols-outlined text-base">key</span>
                                 <span>{lang === 'en' ? `I HAVE ARRIVED - ENTER PIN (${tableNameStr})` : `TÔI ĐÃ ĐẾN - NHẬP MÃ VÀO BÀN (${tableNameStr})`}</span>
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleCustomerCancelReservation(res._id)}
-                                className="w-full h-10 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-500 border border-rose-500/20 text-xs font-bold rounded-xl transition-all flex items-center justify-center cursor-pointer active:scale-95 min-h-[44px]"
+                                className="w-full h-10 bg-rose-500/10 hover:bg-rose-500 hover:text-white focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:outline-none text-rose-500 border border-rose-500/20 text-xs font-extrabold rounded-xl transition-all flex items-center justify-center cursor-pointer active:scale-[0.98] min-h-[44px]"
                               >
                                 {lang === 'en' ? 'CANCEL THIS RESERVATION' : lang === 'zh' ? '取消此预订' : 'HỦY ĐƠN ĐẶT BÀN NÀY'}
                               </button>
@@ -1402,8 +1430,7 @@ export default function Home() {
 
                 {bookingSuccess.checkInCode ? (
                   <div className="p-4 rounded-2xl bg-sky-500/10 border border-[#38BDF8]/40 flex flex-col items-center justify-center gap-1.5 text-center shadow-xs">
-                    <span className="text-xs font-black text-[#0284c7] dark:text-[#38BDF8] flex items-center gap-1">
-                      <span className="material-symbols-outlined text-sm">pin</span>
+                    <span className="text-xs font-extrabold text-[#0284c7] dark:text-[#38BDF8] tracking-wider uppercase">
                       MÃ NHẬN BÀN CỦA BẠN
                     </span>
                     <span className="font-black text-3xl tracking-[0.3em] text-[#090D16] dark:text-white bg-white dark:bg-[#090D16] px-5 py-1.5 rounded-xl border border-[#38BDF8]/40 shadow-xs">
@@ -1414,13 +1441,12 @@ export default function Home() {
                     </span>
                   </div>
                 ) : (
-                  <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5 text-left">
-                    <span className="material-symbols-outlined text-amber-500 text-xl shrink-0 mt-0.5 animate-pulse">hourglass_top</span>
+                  <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-left">
                     <div>
                       <div className="text-xs font-extrabold text-amber-700 dark:text-amber-400">
                         Đang chờ nhân viên phục vụ phê duyệt
                       </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed font-normal">
                         Hệ thống sẽ tự động cấp mã nhận bàn 4 chữ số ngay khi nhân viên duyệt đơn của quý khách.
                       </div>
                     </div>
@@ -1585,23 +1611,20 @@ export default function Home() {
                 className="relative w-full max-w-md rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 p-6 space-y-5 shadow-2xl z-10 font-sans"
               >
                 <div className="space-y-1 text-left">
-                  <div className="w-11 h-11 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-2">
-                    <span className="material-symbols-outlined text-2xl">event_busy</span>
-                  </div>
                   <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight font-heading">
                     Bàn Hiện Đang Có Khách Ngồi
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-normal">
                     Bàn <strong>{formatTableName(occupiedData.currentTable?.tableName, lang)}</strong> hiện đang phục vụ khách trước giờ hẹn của bạn.
                   </p>
                 </div>
 
                 <div className="space-y-2 text-left">
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <span className="text-xs font-extrabold text-slate-700 dark:text-slate-300">
                     Gợi ý bàn trống sẵn sàng đón bạn ngay:
                   </span>
                   {occupiedData.suggestedTables.length === 0 ? (
-                    <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-900 text-xs text-center text-slate-500">
+                    <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-900 text-xs text-center text-slate-500 font-normal">
                       Hiện các bàn khác đều đang bận. Bạn vui lòng chờ đến giờ hẹn để nhận bàn cũ nhé!
                     </div>
                   ) : (
@@ -1618,19 +1641,18 @@ export default function Home() {
                               tbl._id,
                             )
                           }
-                          className="w-full p-3 rounded-xl border border-[#38BDF8]/40 hover:border-[#38BDF8] bg-sky-500/5 hover:bg-sky-500/15 text-left transition-all flex justify-between items-center group cursor-pointer"
+                          className="w-full p-3 rounded-xl border border-[#38BDF8]/40 hover:border-[#38BDF8] bg-sky-500/5 hover:bg-sky-500/15 text-left transition-all flex justify-between items-center group cursor-pointer focus-visible:ring-2 focus-visible:ring-[#38BDF8] focus-visible:outline-none"
                         >
                           <div>
                             <div className="font-extrabold text-slate-900 dark:text-white text-xs group-hover:text-[#0284c7] dark:group-hover:text-[#38BDF8]">
                               {formatTableName(tbl.tableName, lang)}
                             </div>
-                            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
                               Sức chứa: {tbl.capacity || 2} khách
                             </div>
                           </div>
-                          <span className="px-2.5 py-1 bg-[#38BDF8] text-[#090D16] text-[11px] font-extrabold rounded-lg flex items-center gap-1 shadow-xs group-hover:bg-[#0284c7] group-hover:text-white transition-colors">
-                            <span>Đổi sang bàn này</span>
-                            <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                          <span className="px-2.5 py-1 bg-[#38BDF8] text-[#090D16] text-[11px] font-extrabold rounded-lg shadow-xs group-hover:bg-[#0284c7] group-hover:text-white transition-colors">
+                            Đổi sang bàn này
                           </span>
                         </button>
                       ))}

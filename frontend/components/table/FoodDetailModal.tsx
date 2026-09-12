@@ -191,7 +191,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
 
                 {/* Top Left Category Badge */}
                 <div className="absolute top-3 left-3 z-20">
-                  <span className="inline-flex items-center gap-1.5 bg-slate-950/80 text-amber-300 border border-amber-500/40 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-md backdrop-blur-md">
+                  <span className="inline-flex items-center gap-1.5 bg-slate-950/80 text-amber-300 border border-amber-500/40 text-[10px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full shadow-md backdrop-blur-md">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0 shadow-[0_0_6px_#f59e0b]" />
                     {translateCategory ? translateCategory(selectedFood.category) : selectedFood.category}
                   </span>
@@ -239,7 +239,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                   <div className="pr-0 md:pr-8">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
-                        <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">
+                        <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white leading-tight">
                           {selectedFood.name}
                         </h3>
                         {selectedFood.description && (
@@ -248,7 +248,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                           </p>
                         )}
                       </div>
-                      <div className="text-xl sm:text-2xl font-black text-[#0284c7] dark:text-[#38BDF8] tracking-tight shrink-0 text-right">
+                      <div className="text-xl sm:text-2xl font-bold text-[#0284c7] dark:text-[#38BDF8] tracking-tight shrink-0 text-right font-mono">
                         {formatPrice(currentUnitPrice, lang)}
                       </div>
                     </div>
@@ -288,7 +288,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                   {/* Size Selector - Visual Cards with Dynamic Prices */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         {lang === 'en' ? 'Size Options' : lang === 'zh' ? '规格 / 尺寸' : 'Kích cỡ / Size'}
                       </label>
                       <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400">
@@ -323,13 +323,13 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                                 : 'border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/60 hover:border-slate-300 dark:hover:border-white/20'
                             }`}
                           >
-                            <span className={`text-xs font-black ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>
+                            <span className={`text-xs font-semibold ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>
                               Size {sz}
                             </span>
                             <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
                               {sizeSub}
                             </span>
-                            <span className={`text-[11px] font-black mt-1 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                            <span className={`text-[11px] font-bold mt-1 font-mono ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'}`}>
                               {formatPrice(sizeUnitPrice, lang)}
                             </span>
                           </button>
@@ -342,7 +342,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                   {isMilkTea && (
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                           {lang === 'en' ? 'Toppings / Add-ons' : lang === 'zh' ? '配料 / 加料' : 'Topping / Món kèm'}
                         </label>
                         <span className="text-[10px] text-slate-400">
@@ -375,7 +375,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                                 </span>
                                 <span className="truncate">{addonName}</span>
                               </div>
-                              <span className="font-extrabold text-[11px] shrink-0">
+                              <span className="font-bold text-[11px] shrink-0 font-mono">
                                 +{formatPrice(ADDON_PRICES[addonName] ?? 0, lang)}
                               </span>
                             </button>
@@ -388,10 +388,10 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                   {/* Special Instructions & 1-Tap Quick Chips */}
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        {lang === 'en' ? 'Special Instructions' : lang === 'zh' ? '备注要求' : 'Ghi chú cho quán'}
+                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        {lang === 'en' ? 'Special Instructions' : lang === 'zh' ? '口味备注' : 'Ghi chú cho Barista'}
                       </label>
-                      <span className="text-[10px] font-semibold text-slate-400">
+                      <span className="text-[10px] font-medium text-slate-400">
                         {modalNote.length}/200
                       </span>
                     </div>
@@ -405,7 +405,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                             key={note}
                             type="button"
                             onClick={() => handleToggleQuickNote(note)}
-                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all active:scale-95 cursor-pointer ${
+                            className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-all active:scale-95 cursor-pointer ${
                               isSelected
                                 ? 'bg-blue-500 text-white border-blue-500 shadow-2xs'
                                 : 'bg-slate-100 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:border-blue-400/50'
@@ -444,7 +444,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                     })()}
                   {foodReviews.length > 0 && (
                     <div className="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-white/10">
-                      <p className="text-[10px] font-black uppercase tracking-wider text-blue-500 dark:text-blue-400 mb-1 flex items-center gap-1">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-500 dark:text-blue-400 mb-1 flex items-center gap-1">
                         <span className="material-symbols-outlined text-xs">star</span>
                         {lang === 'en' ? 'Featured Review' : lang === 'zh' ? '精选评价' : 'Đánh giá nổi bật'}
                       </p>
@@ -467,7 +467,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                     >
                       <span className="material-symbols-outlined text-base">remove</span>
                     </button>
-                    <span className="text-base font-black text-slate-900 dark:text-white w-7 text-center select-none">
+                    <span className="text-base font-bold text-slate-900 dark:text-white w-7 text-center select-none font-mono">
                       {modalQuantity}
                     </span>
                     <button
@@ -484,12 +484,12 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                   <button
                     type="button"
                     onClick={handleAddFromModal}
-                    className="flex-1 py-3.5 px-4 sm:px-5 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-blue-500/25 active:scale-[0.98] transition-all flex items-center justify-between cursor-pointer"
+                    className="flex-1 py-3.5 px-4 sm:px-5 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 text-white font-bold text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-blue-500/25 active:scale-[0.98] transition-all flex items-center justify-between cursor-pointer"
                   >
                     <span className="truncate mr-2">
                       {lang === 'en' ? 'ADD TO CART' : lang === 'zh' ? '加入购物车' : 'THÊM VÀO GIỎ'}
                     </span>
-                    <span className="font-black bg-white/20 px-2.5 py-1 rounded-xl text-xs sm:text-sm whitespace-nowrap">
+                    <span className="font-bold bg-white/20 px-2.5 py-1 rounded-xl text-xs sm:text-sm whitespace-nowrap font-mono">
                       {formatPrice(currentTotalPrice, lang)}
                     </span>
                   </button>

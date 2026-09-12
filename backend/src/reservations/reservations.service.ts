@@ -155,16 +155,23 @@ export class ReservationsService implements OnModuleInit {
       .lean()
       .exec();
 
-    // Mã nhận bàn chỉ hiển thị 1 lần: Nếu đã xem rồi (isCodeViewed === true), ẩn mã khi tra cứu
-    return list.map((item: any) => {
-      if (item.isCodeViewed) {
-        return {
-          ...item,
-          checkInCode: null,
-        };
-      }
-      return item;
-    });
+    // Đối soát và chuẩn hóa: Nếu đơn đang 'arrived' nhưng bàn đã 'empty' hoặc không còn, tự động cập nhật sang 'completed'
+    const updatedList = await Promise.all(
+      list.map(async (item: any) => {
+        const tableStatus = item.tableId?.status;
+        if (item.status === 'arrived' && (tableStatus === 'empty' || !item.tableId)) {
+          await this.reservationModel.findByIdAndUpdate(item._id, { status: 'completed' }).exec().catch(() => {});
+          item.status = 'completed';
+        }
+        // Mã nhận bàn chỉ hiển thị 1 lần: Nếu đã xem rồi (isCodeViewed === true), ẩn mã khi tra cứu
+        if (item.isCodeViewed) {
+          item.checkInCode = null;
+        }
+        return item;
+      })
+    );
+
+    return updatedList;
   }
 
   async markCodeViewed(id: string): Promise<{ success: boolean; message: string }> {

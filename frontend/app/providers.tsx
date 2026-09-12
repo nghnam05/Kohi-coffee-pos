@@ -55,14 +55,29 @@ export function Providers({ children }: { children: ReactNode }) {
           toastOptions={{
             icon: null,
             style: {
-              background: '#131929',
-              color: '#F1F5F9',
-              border: '1px solid #1e293b',
-              borderRadius: '12px',
+              background: 'rgba(19, 25, 41, 0.94)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              color: '#FFFFFF',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              borderRadius: '16px',
               fontSize: '13px',
-              fontWeight: '700',
-              padding: '10px 16px',
-              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.4)',
+              fontWeight: '800',
+              padding: '12px 20px',
+              boxShadow: '0 20px 40px -12px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.15)',
+              letterSpacing: '-0.01em',
+            },
+            success: {
+              style: {
+                border: '1px solid rgba(52, 211, 153, 0.5)',
+                boxShadow: '0 20px 40px -12px rgba(0, 0, 0, 0.6), 0 0 24px rgba(52, 211, 153, 0.2)',
+              },
+            },
+            error: {
+              style: {
+                border: '1px solid rgba(251, 113, 133, 0.5)',
+                boxShadow: '0 20px 40px -12px rgba(0, 0, 0, 0.6), 0 0 24px rgba(251, 113, 133, 0.2)',
+              },
             },
             duration: 3500,
           }}

@@ -77,7 +77,7 @@ export const LanguageToggleSwitch: React.FC<LanguageToggleSwitchProps> = ({
           aria-haspopup="listbox"
           aria-label="Chọn ngôn ngữ"
         >
-          <span className="text-[11px] font-black text-[#0284c7] dark:text-[#38BDF8] tracking-tight">
+          <span className="text-[11px] font-semibold text-[#0284c7] dark:text-[#38BDF8] tracking-tight">
             {currentItem.label}
           </span>
           <span
@@ -117,13 +117,13 @@ export const LanguageToggleSwitch: React.FC<LanguageToggleSwitchProps> = ({
                     }}
                     className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all cursor-pointer text-left ${
                       isActive
-                        ? 'bg-sky-50 dark:bg-sky-500/15 text-[#0284c7] dark:text-[#38BDF8] font-black'
-                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70 font-semibold'
+                        ? 'bg-sky-50 dark:bg-sky-500/15 text-[#0284c7] dark:text-[#38BDF8] font-semibold'
+                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70 font-medium'
                     }`}
                   >
                     <div className="flex items-center gap-2">
                       <span
-                        className={`text-[10px] font-black px-1.5 py-0.5 rounded-md border ${
+                        className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md border ${
                           isActive
                             ? 'bg-sky-500/20 text-[#0284c7] dark:text-[#38BDF8] border-sky-500/30'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200/50 dark:border-white/5'
@@ -161,10 +161,10 @@ export const LanguageToggleSwitch: React.FC<LanguageToggleSwitchProps> = ({
               role="radio"
               aria-checked={isActive}
               onClick={() => setLang(item.code)}
-              className={`relative flex items-center justify-center px-2 h-7 rounded-lg text-[11px] font-black transition-all duration-200 cursor-pointer font-sans ${
+              className={`relative flex items-center justify-center px-2 h-7 rounded-lg text-[11px] font-semibold transition-all duration-200 cursor-pointer font-sans ${
                 isActive
                   ? 'text-[#0284c7] dark:text-[#38BDF8]'
-                  : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200'
+                  : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 font-medium'
               }`}
               title={item.title}
             >
@@ -172,7 +172,7 @@ export const LanguageToggleSwitch: React.FC<LanguageToggleSwitchProps> = ({
                 <motion.div
                   layoutId={`activeLangPill-${uniqueId}`}
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                  className="absolute inset-0 bg-white dark:bg-slate-900 rounded-lg shadow-xs border border-slate-200/80 dark:border-white/10"
+                  className="absolute inset-0 bg-white dark:bg-slate-700/95 rounded-lg shadow-sm border border-slate-200/90 dark:border-sky-400/40"
                 />
               )}
               <span className="relative z-10 tracking-tight">{item.label}</span>

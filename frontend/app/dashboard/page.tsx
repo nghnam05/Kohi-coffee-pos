@@ -510,14 +510,21 @@ export default function DashboardPage() {
       id: message,
       icon: null,
       style: {
-        background: type === 'error' ? '#881337' : type === 'info' ? '#0369a1' : '#065f46',
+        background: type === 'error' ? 'rgba(76, 5, 25, 0.95)' : type === 'info' ? 'rgba(12, 74, 110, 0.95)' : 'rgba(6, 78, 59, 0.95)',
         color: '#FFFFFF',
-        border: type === 'error' ? '1px solid #f43f5e' : type === 'info' ? '1px solid #38bdf8' : '1px solid #34d399',
-        borderRadius: '12px',
+        border: type === 'error' ? '1px solid rgba(251, 113, 133, 0.6)' : type === 'info' ? '1px solid rgba(56, 189, 248, 0.6)' : '1px solid rgba(52, 211, 153, 0.6)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        borderRadius: '16px',
         fontSize: '13px',
-        fontWeight: '700',
-        padding: '10px 16px',
-        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.4)',
+        fontWeight: '800',
+        padding: '12px 20px',
+        boxShadow: type === 'error'
+          ? '0 20px 40px -12px rgba(0, 0, 0, 0.6), 0 0 24px rgba(251, 113, 133, 0.25)'
+          : type === 'info'
+          ? '0 20px 40px -12px rgba(0, 0, 0, 0.6), 0 0 24px rgba(56, 189, 248, 0.25)'
+          : '0 20px 40px -12px rgba(0, 0, 0, 0.6), 0 0 24px rgba(52, 211, 153, 0.25)',
+        letterSpacing: '-0.01em',
       },
       duration: 3500,
     });
@@ -4482,19 +4489,19 @@ export default function DashboardPage() {
                 const getOrderStatusBadge = (status: string) => {
                   switch (status) {
                     case 'pending':
-                      return <span className="px-2.5 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-lg text-[10px] font-black uppercase">Chờ Phục Vụ</span>;
+                      return <span className="px-2.5 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-lg text-[10px] font-semibold uppercase tracking-wider">Chờ Phục Vụ</span>;
                     case 'confirmed':
-                      return <span className="px-2.5 py-1 bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30 rounded-lg text-[10px] font-black uppercase">Chờ Pha Chế</span>;
+                      return <span className="px-2.5 py-1 bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30 rounded-lg text-[10px] font-semibold uppercase tracking-wider">Chờ Pha Chế</span>;
                     case 'cooking':
-                      return <span className="px-2.5 py-1 bg-sky-500/20 text-sky-500 border border-sky-500/40 rounded-lg text-[10px] font-black uppercase">Đang Pha Chế</span>;
+                      return <span className="px-2.5 py-1 bg-sky-500/20 text-sky-500 border border-sky-500/40 rounded-lg text-[10px] font-semibold uppercase tracking-wider">Đang Pha Chế</span>;
                     case 'ready':
-                      return <span className="px-2.5 py-1 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded-lg text-[10px] font-black uppercase">Chờ Ra Món</span>;
+                      return <span className="px-2.5 py-1 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded-lg text-[10px] font-semibold uppercase tracking-wider">Chờ Ra Món</span>;
                     case 'completed':
-                      return <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-500 border border-emerald-500/40 rounded-lg text-[10px] font-black uppercase">Đã Ra Món</span>;
+                      return <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-500 border border-emerald-500/40 rounded-lg text-[10px] font-semibold uppercase tracking-wider">Đã Ra Món</span>;
                     case 'paid':
-                      return <span className="px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-black uppercase">Đã Thanh Toán</span>;
+                      return <span className="px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-semibold uppercase tracking-wider">Đã Thanh Toán</span>;
                     default:
-                      return <span className="px-2.5 py-1 bg-slate-200 text-slate-700 rounded-lg text-[10px] font-black uppercase">Đang Xử Lý</span>;
+                      return <span className="px-2.5 py-1 bg-slate-200 text-slate-700 rounded-lg text-[10px] font-semibold uppercase tracking-wider">Đang Xử Lý</span>;
                   }
                 };
 
@@ -4628,19 +4635,19 @@ export default function DashboardPage() {
                   const getOrderStatusBadge = (status: string) => {
                     switch (status) {
                       case 'pending':
-                        return <span className="px-2.5 py-0.5 bg-amber-500/15 text-amber-600 dark:text-amber-400 rounded-full text-[10px] font-black uppercase">Chờ duyệt</span>;
+                        return <span className="px-2.5 py-0.5 bg-amber-500/15 text-amber-600 dark:text-amber-400 rounded-full text-[10px] font-semibold uppercase tracking-wider">Chờ duyệt</span>;
                       case 'confirmed':
-                        return <span className="px-2.5 py-0.5 bg-sky-500/15 text-sky-600 dark:text-[#38BDF8] rounded-full text-[10px] font-black uppercase">Chờ pha chế</span>;
+                        return <span className="px-2.5 py-0.5 bg-sky-500/15 text-sky-600 dark:text-[#38BDF8] rounded-full text-[10px] font-semibold uppercase tracking-wider">Chờ pha chế</span>;
                       case 'cooking':
-                        return <span className="px-2.5 py-0.5 bg-sky-500/20 text-[#38BDF8] rounded-full text-[10px] font-black uppercase">Đang pha chế</span>;
+                        return <span className="px-2.5 py-0.5 bg-sky-500/20 text-[#38BDF8] rounded-full text-[10px] font-semibold uppercase tracking-wider">Đang pha chế</span>;
                       case 'ready':
-                        return <span className="px-2.5 py-0.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-black uppercase">Chờ ra món</span>;
+                        return <span className="px-2.5 py-0.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-semibold uppercase tracking-wider">Chờ ra món</span>;
                       case 'completed':
-                        return <span className="px-2.5 py-0.5 bg-amber-500/15 text-amber-700 dark:text-amber-300 rounded-full text-[10px] font-black uppercase">Chờ thanh toán</span>;
+                        return <span className="px-2.5 py-0.5 bg-amber-500/15 text-amber-700 dark:text-amber-300 rounded-full text-[10px] font-semibold uppercase tracking-wider">Chờ thanh toán</span>;
                       case 'paid':
-                        return <span className="px-2.5 py-0.5 bg-emerald-600/20 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-black uppercase">Đã thanh toán</span>;
+                        return <span className="px-2.5 py-0.5 bg-emerald-600/20 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-semibold uppercase tracking-wider">Đã thanh toán</span>;
                       default:
-                        return <span className="px-2.5 py-0.5 bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full text-[10px] font-black uppercase">Đang xử lý</span>;
+                        return <span className="px-2.5 py-0.5 bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full text-[10px] font-semibold uppercase tracking-wider">Đang xử lý</span>;
                     }
                   };
 
