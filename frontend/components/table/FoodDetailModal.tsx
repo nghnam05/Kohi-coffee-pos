@@ -141,7 +141,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
       {/* ── MODAL: Food Detail ────────────────────────────────────────────── */}
       <AnimatePresence>
         {selectedFood && (
-          <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-6 overflow-hidden font-sans">
+          <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-6 pt-12 sm:pt-14 md:pt-6 overflow-hidden font-sans">
             {/* Backdrop overlay */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -160,7 +160,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 40, scale: 0.98 }}
               transition={{ type: 'spring', damping: 25, stiffness: 280 }}
-              className="relative w-full max-w-3xl xl:max-w-[820px] bg-white dark:bg-[#0F172A] border-t md:border border-slate-200 dark:border-white/10 rounded-t-[28px] md:rounded-3xl shadow-2xl z-10 overflow-hidden flex flex-col md:flex-row max-h-[92vh] md:max-h-[85vh]"
+              className="relative w-full max-w-3xl xl:max-w-[820px] bg-white dark:bg-[#0F172A] border-t md:border border-slate-200 dark:border-white/10 rounded-t-[28px] md:rounded-3xl shadow-2xl z-10 overflow-hidden flex flex-col md:flex-row max-h-[85dvh] sm:max-h-[88dvh] md:max-h-[85vh]"
             >
               {/* Mobile Drag Indicator Handle */}
               <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mt-2.5 mb-1 md:hidden shrink-0 opacity-70" />
@@ -168,7 +168,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
               {/* Left Image Section - Compact Floating Hero with Full Uncropped Image */}
               <div
                 onClick={() => setIsLightboxOpen(true)}
-                className="w-full md:w-[42%] h-60 sm:h-72 md:h-auto md:min-h-[440px] bg-slate-900/90 relative flex-shrink-0 cursor-pointer group flex items-center justify-center overflow-hidden"
+                className="w-full md:w-[42%] h-52 sm:h-64 md:h-auto md:min-h-[440px] bg-slate-900/90 relative flex-shrink-0 cursor-pointer group flex items-center justify-center overflow-hidden"
               >
                 {/* Layer 1: Blurred Atmosphere Background */}
                 <Image

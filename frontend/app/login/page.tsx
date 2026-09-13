@@ -147,7 +147,7 @@ export default function LoginPage() {
   const isDark = resolvedTheme === 'dark';
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans relative overflow-hidden selection:bg-[#3B82F6] selection:text-white">
+    <div className="min-h-screen flex flex-col justify-between bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans relative overflow-y-auto overflow-x-hidden selection:bg-[#3B82F6] selection:text-white">
       {/* Ambient background glow effects */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-blue-500/10 via-blue-500/5 to-transparent blur-3xl pointer-events-none" />
 

@@ -702,10 +702,10 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Scrollable Body: Pure Content Scroll */}
-      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain w-full flex flex-col justify-between scrollbar-thin" style={{ WebkitOverflowScrolling: 'touch' }}>
+      {/* Scrollable Container (Natural Block Flow: NO flex justify-between, so footer sits only at the bottom) */}
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain w-full scrollbar-thin" style={{ WebkitOverflowScrolling: 'touch' }}>
         {/* Main Container */}
-        <main className="flex-grow pt-4 sm:pt-8 pb-12 px-3.5 sm:px-6 md:px-12 w-full max-w-7xl mx-auto">
+        <main className="pt-4 sm:pt-8 pb-12 px-3 sm:px-6 md:px-12 w-full max-w-7xl mx-auto overflow-x-hidden">
           {/* Hero Section */}
           <section className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
             <div className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider mb-3 sm:mb-4 border border-blue-100 dark:border-blue-800/50 shadow-sm">
@@ -758,9 +758,9 @@ export default function Home() {
 
           {/* TAB 1: TABLE RESERVATION MAIN GRID */}
           {activeTab === 'reserve' && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start w-full min-w-0">
               {/* LEFT COLUMN: Sơ Đồ Chọn Bàn (7 Cols) */}
-              <section className="lg:col-span-7 bg-white dark:bg-[#141D2E]/90 rounded-2xl p-6 sm:p-7 border border-slate-200/80 dark:border-slate-800 shadow-sm dark:shadow-xl backdrop-blur-sm" data-purpose="table-selection">
+              <section className="lg:col-span-7 bg-white dark:bg-[#141D2E]/90 rounded-2xl p-4 sm:p-7 border border-slate-200/80 dark:border-slate-800 shadow-sm dark:shadow-xl backdrop-blur-sm w-full min-w-0 max-w-full box-border" data-purpose="table-selection">
                 {/* Header & Filter Toolbar */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100 dark:border-slate-800">
                   <div>
@@ -1003,7 +1003,7 @@ export default function Home() {
               </section>
 
               {/* RIGHT COLUMN: Form Nhập Thông Tin Đặt Bàn (5 Cols) */}
-              <section className="lg:col-span-5 bg-white dark:bg-[#141D2E]/90 rounded-2xl p-6 sm:p-7 border border-slate-200/80 dark:border-slate-800 shadow-sm dark:shadow-xl backdrop-blur-sm h-fit lg:sticky lg:top-24 space-y-5" data-purpose="reservation-form">
+              <section className="lg:col-span-5 bg-white dark:bg-[#141D2E]/90 rounded-2xl p-4 sm:p-7 border border-slate-200/80 dark:border-slate-800 shadow-sm dark:shadow-xl backdrop-blur-sm h-fit lg:sticky lg:top-24 space-y-5 w-full min-w-0 max-w-full box-border" data-purpose="reservation-form">
                 <div className="pb-5 border-b border-slate-100 dark:border-slate-800">
                   <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                     {t.bookingFormTitle}
@@ -1014,7 +1014,7 @@ export default function Home() {
                 </div>
 
                 {/* Selected Table Banner */}
-                <div className="bg-blue-50/70 dark:bg-blue-950/50 border border-blue-100 dark:border-blue-800/60 rounded-xl p-4 flex items-center justify-between">
+                <div className="bg-blue-50/70 dark:bg-blue-950/50 border border-blue-100 dark:border-blue-800/60 rounded-xl p-3.5 sm:p-4 flex items-center justify-between w-full min-w-0">
                   <div>
                     <span className="block text-[11px] font-bold text-blue-600 dark:text-blue-400 tracking-wider uppercase">
                       {t.selectedTableLabel}
@@ -1076,12 +1076,12 @@ export default function Home() {
                   </div>
 
                   {/* Reservation Time & Guest Count Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5">
-                    <div className="sm:col-span-7">
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5 w-full min-w-0">
+                    <div className="sm:col-span-7 w-full min-w-0">
                       <label htmlFor="reservation-time" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                         {t.reservationTimeLabel}
                       </label>
-                      <div className="relative">
+                      <div className="relative w-full min-w-0">
                         <input
                           id="reservation-time"
                           name="reservationTime"
@@ -1089,7 +1089,7 @@ export default function Home() {
                           required
                           value={reservationTime}
                           onChange={(e) => setReservationTime(e.target.value)}
-                          className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/60 text-sm focus:bg-white dark:focus:bg-[#0F172A] focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors py-2.5 pl-3.5 pr-10 text-slate-800 dark:text-slate-100 font-medium outline-none"
+                          className="w-full min-w-0 max-w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/60 text-xs sm:text-sm focus:bg-white dark:focus:bg-[#0F172A] focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors py-2.5 pl-3 sm:pl-3.5 pr-9 sm:pr-10 text-slate-800 dark:text-slate-100 font-medium outline-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full"
                         />
                         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                           <span className="material-symbols-outlined text-base">calendar_today</span>
@@ -1097,7 +1097,7 @@ export default function Home() {
                       </div>
                     </div>
 
-                    <div className="sm:col-span-5">
+                    <div className="sm:col-span-5 w-full min-w-0">
                       <label htmlFor="guest-count" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                         {t.guestCountLabel}
                       </label>
@@ -1401,13 +1401,13 @@ export default function Home() {
         {/* BOOKING SUCCESS MODAL POPUP */}
         <AnimatePresence>
           {bookingSuccess && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 select-none overflow-y-auto">
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setBookingSuccess(null)}
-                className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
+                className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm"
               />
 
               <motion.div
@@ -1415,7 +1415,7 @@ export default function Home() {
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.95, opacity: 0, y: 15 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                className="relative w-full max-w-md rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 p-6 sm:p-8 text-center space-y-5 shadow-2xl z-10 font-sans"
+                className="relative w-full max-w-md rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 p-6 sm:p-8 text-center space-y-5 shadow-2xl z-10 font-sans my-auto max-h-[92vh] flex flex-col overflow-y-auto scrollbar-thin"
               >
                 <div className="space-y-1.5">
                   <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
@@ -1512,20 +1512,20 @@ export default function Home() {
         {/* 4-DIGIT PIN ENTRY MODAL */}
         <AnimatePresence>
           {pinModalRes && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 select-none overflow-y-auto">
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setPinModalRes(null)}
-                className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
+                className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm"
               />
               <motion.div
                 initial={{ scale: 0.95, opacity: 0, y: 15 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.95, opacity: 0, y: 15 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 p-6 text-center space-y-5 shadow-2xl z-10 font-sans"
+                className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 p-6 text-center space-y-5 shadow-2xl z-10 font-sans my-auto max-h-[92vh] flex flex-col overflow-y-auto scrollbar-thin"
               >
                 <div className="space-y-1">
                   <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight font-heading">
@@ -1595,20 +1595,20 @@ export default function Home() {
         {/* TABLE OCCUPIED SUGGESTION MODAL */}
         <AnimatePresence>
           {occupiedData && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 select-none overflow-y-auto">
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setOccupiedData(null)}
-                className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
+                className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm"
               />
               <motion.div
                 initial={{ scale: 0.95, opacity: 0, y: 15 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.95, opacity: 0, y: 15 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                className="relative w-full max-w-md rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 p-6 space-y-5 shadow-2xl z-10 font-sans"
+                className="relative w-full max-w-md rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 p-6 space-y-5 shadow-2xl z-10 font-sans my-auto max-h-[92vh] flex flex-col overflow-y-auto scrollbar-thin"
               >
                 <div className="space-y-1 text-left">
                   <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight font-heading">
@@ -1677,19 +1677,19 @@ export default function Home() {
         {/* ONE-TIME CHECK-IN CODE MODAL (HIỂN THỊ 1 LẦN DUY NHẤT KHI PHỤC VỤ XÁC NHẬN) */}
         <AnimatePresence>
           {oneTimeCodeData && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 select-none overflow-y-auto">
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-slate-950/75 backdrop-blur-md"
+                className="fixed inset-0 bg-slate-950/75 backdrop-blur-md"
               />
               <motion.div
                 initial={{ scale: 0.95, opacity: 0, y: 15 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.95, opacity: 0, y: 15 }}
                 transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-                className="relative w-full max-w-sm rounded-3xl bg-white dark:bg-[#0F172A] border border-slate-200/80 dark:border-white/10 p-6 sm:p-7 text-center space-y-6 shadow-2xl z-10 font-sans"
+                className="relative w-full max-w-sm rounded-3xl bg-white dark:bg-[#0F172A] border border-slate-200/80 dark:border-white/10 p-6 sm:p-7 text-center space-y-6 shadow-2xl z-10 font-sans my-auto max-h-[92vh] flex flex-col overflow-y-auto scrollbar-thin"
               >
                 {/* Header */}
                 <div className="space-y-1">
@@ -1752,19 +1752,24 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-[#0B0F17] border-t border-slate-200 dark:border-white/10 mt-auto w-full">
-        <div className="flex flex-col md:flex-row justify-between items-center w-full px-4 md:px-12 py-5 max-w-7xl mx-auto gap-4">
-          <p className="text-xs text-slate-500 dark:text-slate-400 text-center md:text-left font-medium">
-            © {new Date().getFullYear()} Kohi Coffee & Pastry. Smart Online Reservation & QR Solution.
-          </p>
-          <div className="flex gap-6">
-            <Link href="/privacy" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#3B82F6] dark:hover:text-[#38BDF8] underline transition-colors">
+      <footer className="bg-white/90 dark:bg-[#090D16]/95 border-t border-slate-200/80 dark:border-white/10 mt-auto w-full backdrop-blur-md">
+        <div className="flex flex-col md:flex-row justify-between items-center w-full px-4 md:px-12 py-4 sm:py-5 max-w-7xl mx-auto gap-3 sm:gap-4">
+          <div className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 text-center md:text-left leading-relaxed">
+            <span className="font-semibold text-slate-700 dark:text-slate-300">© {new Date().getFullYear()} Kohi Coffee & Pastry.</span>{' '}
+            <span className="text-slate-500 dark:text-slate-400 block sm:inline mt-0.5 sm:mt-0">
+              Smart Online Reservation & QR Solution.
+            </span>
+          </div>
+          <div className="flex items-center justify-center flex-wrap gap-x-3.5 sm:gap-x-5 gap-y-1 text-[11px] sm:text-xs font-medium">
+            <Link href="/privacy" className="text-slate-500 dark:text-slate-400 hover:text-[#38BDF8] dark:hover:text-[#38BDF8] transition-colors">
               {lang === 'en' ? 'Privacy Policy' : lang === 'zh' ? '隐私政策' : 'Chính sách bảo mật'}
             </Link>
-            <Link href="/terms" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#3B82F6] dark:hover:text-[#38BDF8] underline transition-colors">
+            <span className="text-slate-300 dark:text-slate-700 select-none text-[10px]">·</span>
+            <Link href="/terms" className="text-slate-500 dark:text-slate-400 hover:text-[#38BDF8] dark:hover:text-[#38BDF8] transition-colors">
               {lang === 'en' ? 'Terms of Service' : lang === 'zh' ? '服务条款' : 'Điều khoản dịch vụ'}
             </Link>
-            <Link href="/contact" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#3B82F6] dark:hover:text-[#38BDF8] underline transition-colors">
+            <span className="text-slate-300 dark:text-slate-700 select-none text-[10px]">·</span>
+            <Link href="/contact" className="text-slate-500 dark:text-slate-400 hover:text-[#38BDF8] dark:hover:text-[#38BDF8] transition-colors">
               {lang === 'en' ? 'Contact Us' : lang === 'zh' ? '联系我们' : 'Liên hệ chúng tôi'}
             </Link>
           </div>

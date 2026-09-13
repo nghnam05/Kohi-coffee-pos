@@ -279,19 +279,24 @@ export default function TermsPage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-[#0F141F] border-t border-slate-200 dark:border-slate-800 mt-auto w-full">
-        <div className="flex flex-col md:flex-row justify-between items-center w-full px-4 md:px-12 py-5 max-w-7xl mx-auto gap-4">
-          <p className="text-xs text-slate-500 dark:text-slate-400 text-center md:text-left font-medium">
-            © {new Date().getFullYear()} Kohi Coffee & Pastry. Smart Online Reservation & QR Solution.
-          </p>
-          <div className="flex gap-6">
-            <Link href="/privacy" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#0284c7] dark:hover:text-[#38BDF8] underline transition-colors">
+      <footer className="bg-white/90 dark:bg-[#090D16]/95 border-t border-slate-200/80 dark:border-white/10 mt-auto w-full backdrop-blur-md">
+        <div className="flex flex-col md:flex-row justify-between items-center w-full px-4 md:px-12 py-4 sm:py-5 max-w-7xl mx-auto gap-3 sm:gap-4">
+          <div className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 text-center md:text-left leading-relaxed">
+            <span className="font-semibold text-slate-700 dark:text-slate-300">© {new Date().getFullYear()} Kohi Coffee & Pastry.</span>{' '}
+            <span className="text-slate-500 dark:text-slate-400 block sm:inline mt-0.5 sm:mt-0">
+              Smart Online Reservation & QR Solution.
+            </span>
+          </div>
+          <div className="flex items-center justify-center flex-wrap gap-x-3.5 sm:gap-x-5 gap-y-1 text-[11px] sm:text-xs font-medium">
+            <Link href="/privacy" className="text-slate-500 dark:text-slate-400 hover:text-[#38BDF8] dark:hover:text-[#38BDF8] transition-colors">
               {lang === 'en' ? 'Privacy Policy' : lang === 'zh' ? '隐私政策' : 'Chính sách bảo mật'}
             </Link>
-            <Link href="/terms" className="text-xs font-bold text-[#0284c7] dark:text-[#38BDF8] underline transition-colors">
+            <span className="text-slate-300 dark:text-slate-700 select-none text-[10px]">·</span>
+            <Link href="/terms" className="font-semibold text-[#0284c7] dark:text-[#38BDF8] transition-colors">
               {lang === 'en' ? 'Terms of Service' : lang === 'zh' ? '服务条款' : 'Điều khoản dịch vụ'}
             </Link>
-            <Link href="/contact" className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#0284c7] dark:hover:text-[#38BDF8] underline transition-colors">
+            <span className="text-slate-300 dark:text-slate-700 select-none text-[10px]">·</span>
+            <Link href="/contact" className="text-slate-500 dark:text-slate-400 hover:text-[#38BDF8] dark:hover:text-[#38BDF8] transition-colors">
               {lang === 'en' ? 'Contact Us' : lang === 'zh' ? '联系我们' : 'Liên hệ chúng tôi'}
             </Link>
           </div>
