@@ -9,6 +9,7 @@ import { IngredientUsage, IngredientUsageSchema } from '../ingredients/schemas/i
 import { Attendance, AttendanceSchema } from '../attendance/schemas/attendance.schema.js';
 import { Expense, ExpenseSchema } from '../expenses/schemas/expense.schema.js';
 import { Table, TableSchema } from '../tables/schemas/table.schema.js';
+import { Food, FoodSchema } from '../foods/schemas/food.schema.js';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { Table, TableSchema } from '../tables/schemas/table.schema.js';
       { name: Attendance.name, schema: AttendanceSchema },
       { name: Expense.name, schema: ExpenseSchema },
       { name: Table.name, schema: TableSchema },
+      { name: Food.name, schema: FoodSchema },
     ]),
   ],
   controllers: [AnalyticsController],

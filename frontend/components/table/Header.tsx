@@ -23,6 +23,8 @@ interface HeaderProps {
   isCallingStaff: boolean;
   setIsTransferModalOpen: (open: boolean) => void;
   handleLeaveTable?: () => void;
+  isLeaveDisabled?: boolean;
+  leaveDisabledReason?: string;
   isDark: boolean;
   setTheme: (theme: string) => void;
   lang: Lang;
@@ -34,6 +36,8 @@ interface HeaderProps {
   totalQuantity?: number;
   onOpenNotifications?: () => void;
   unreadNotificationCount?: number;
+  customerName?: string;
+  onOpenNamePrompt?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -45,6 +49,8 @@ export const Header: React.FC<HeaderProps> = ({
   isCallingStaff,
   setIsTransferModalOpen,
   handleLeaveTable,
+  isLeaveDisabled = false,
+  leaveDisabledReason,
   isDark,
   setTheme,
   lang,
@@ -56,6 +62,8 @@ export const Header: React.FC<HeaderProps> = ({
   totalQuantity = 0,
   onOpenNotifications,
   unreadNotificationCount = 0,
+  customerName,
+  onOpenNamePrompt,
 }) => {
   const [isFloatingPopupOpen, setIsFloatingPopupOpen] = useState(false);
 
@@ -72,7 +80,28 @@ export const Header: React.FC<HeaderProps> = ({
       {/* ── Mobile Top App Bar ──────────────────────────────────────────────── */}
       <header className="fixed top-0 left-0 right-0 z-40 h-16 px-4 bg-white/90 dark:bg-[#0B0F17]/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 flex justify-between items-center md:hidden shadow-xs transition-colors">
         <BrandLogo />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Mobile Name Button */}
+          {onOpenNamePrompt && (
+            <button
+              type="button"
+              onClick={onOpenNamePrompt}
+              className={`h-9 px-2.5 rounded-xl border flex items-center gap-1 text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-xs ${
+                customerName
+                  ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30 hover:bg-sky-500/20'
+                  : 'bg-sky-500 text-white border-sky-400 hover:bg-sky-600 shadow-sky-500/20'
+              }`}
+              title={customerName ? (lang === 'en' ? 'Click to change your name' : 'Bấm để đổi tên hiển thị') : (lang === 'en' ? 'Click to enter your name' : 'Bấm để nhập tên của bạn')}
+            >
+              <span className="material-symbols-outlined text-[16px]">
+                {customerName ? 'badge' : 'person_add'}
+              </span>
+              <span className="max-w-[75px] sm:max-w-[100px] truncate">
+                {customerName || (lang === 'en' ? 'Name' : 'Nhập tên')}
+              </span>
+            </button>
+          )}
+
           {/* Notification Button */}
           <button
             type="button"
@@ -172,6 +201,31 @@ export const Header: React.FC<HeaderProps> = ({
                     <span className="material-symbols-outlined text-lg">close</span>
                   </button>
                 </div>
+              </div>
+
+              {/* Customer Name Profile in Mobile Sheet */}
+              <div className="bg-sky-500/10 dark:bg-sky-500/15 border border-sky-500/30 rounded-2xl p-3.5 flex items-center justify-between shadow-xs">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] uppercase tracking-wider font-extrabold text-slate-500 dark:text-slate-400">
+                    {lang === 'en' ? 'CUSTOMER NAME' : lang === 'zh' ? '顾客姓名' : 'TÊN CỦA BẠN'}
+                  </p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white truncate mt-0.5">
+                    {customerName || (lang === 'en' ? 'Guest (Not set)' : lang === 'zh' ? '未设置（访客）' : 'Chưa đặt tên')}
+                  </p>
+                </div>
+                {onOpenNamePrompt && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closePopup();
+                      onOpenNamePrompt();
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold transition-all active:scale-95 shadow-xs cursor-pointer flex items-center gap-1 shrink-0 ml-2"
+                  >
+                    <span className="material-symbols-outlined text-sm">edit</span>
+                    <span>{customerName ? (lang === 'en' ? 'Edit' : 'Đổi tên') : (lang === 'en' ? 'Enter' : 'Nhập tên')}</span>
+                  </button>
+                )}
               </div>
 
               {/* 1. Primary Actions (Modern Inset Grouped List - Clean Typography & Badges) */}
@@ -303,16 +357,30 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
 
                 {handleLeaveTable && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      closePopup();
-                      handleLeaveTable();
-                    }}
-                    className="px-3.5 py-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-xs font-bold text-rose-600 dark:text-rose-400 transition-all cursor-pointer border border-rose-500/30 text-center truncate shadow-2xs active:scale-95"
-                  >
-                    {lang === 'en' ? 'Leave Table' : lang === 'zh' ? '离开桌位' : 'Rời bàn'}
-                  </button>
+                  <div className="flex flex-col gap-1">
+                    <button
+                      type="button"
+                      disabled={isLeaveDisabled}
+                      onClick={() => {
+                        if (isLeaveDisabled) return;
+                        closePopup();
+                        handleLeaveTable();
+                      }}
+                      className={`px-3.5 py-3 rounded-xl text-xs font-bold transition-all text-center truncate shadow-2xs ${
+                        isLeaveDisabled
+                          ? 'bg-slate-100/60 dark:bg-slate-800/30 border border-slate-200/50 dark:border-white/5 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60'
+                          : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 cursor-pointer border border-rose-500/30 active:scale-95'
+                      }`}
+                      title={isLeaveDisabled ? (leaveDisabledReason || 'Đơn hàng đã được duyệt và đang chờ làm, không thể rời bàn.') : undefined}
+                    >
+                      {lang === 'en' ? 'Leave Table' : lang === 'zh' ? '离开桌位' : 'Rời bàn'}
+                    </button>
+                    {isLeaveDisabled && (
+                      <span className="text-[10px] text-amber-500/90 dark:text-amber-400 font-medium text-center">
+                        {leaveDisabledReason || 'Đơn đã duyệt & đang làm'}
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
 

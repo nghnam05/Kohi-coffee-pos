@@ -70,11 +70,19 @@ export class PaymentsService implements OnModuleInit {
     return payment.save();
   }
 
-  async findAll(query?: string, paymentMethod?: string): Promise<PaymentDocument[]> {
+  async findAll(query?: string, paymentMethod?: string, date?: string): Promise<PaymentDocument[]> {
     const filter: any = { isDeleted: { $ne: true } };
 
     if (paymentMethod && paymentMethod !== 'all') {
       filter.paymentMethod = paymentMethod;
+    }
+
+    if (date && date.trim()) {
+      const cleanDate = date.trim();
+      // Chuyển đổi YYYY-MM-DD sang khoảng thời gian 00:00:00 -> 23:59:59.999 giờ Việt Nam (UTC+7)
+      const startOfDay = new Date(`${cleanDate}T00:00:00+07:00`);
+      const endOfDay = new Date(`${cleanDate}T23:59:59.999+07:00`);
+      filter.paidAt = { $gte: startOfDay, $lte: endOfDay };
     }
 
     if (query && query.trim()) {

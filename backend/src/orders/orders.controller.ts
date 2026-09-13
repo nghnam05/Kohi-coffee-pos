@@ -134,6 +134,11 @@ export class OrdersController {
     return this.ordersService.updateStatus(id, { status: 'paid' });
   }
 
+  @Patch(':id/cancel')
+  async cancelOrder(@Param('id') id: string): Promise<OrderDocument> {
+    return this.ordersService.cancelOrder(id);
+  }
+
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin', 'waiter', 'barista', 'staff', 'user', 'manager', 'cashier')
   @Delete('bulk')

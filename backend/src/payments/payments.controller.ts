@@ -5,13 +5,14 @@ import { PaymentsService } from './payments.service.js';
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
-  // GET /api/v1/payments?query=HD-100001&paymentMethod=momo
+  // GET /api/v1/payments?query=HD-100001&paymentMethod=momo&date=2026-09-13
   @Get()
   findAll(
     @Query('query') query?: string,
     @Query('paymentMethod') paymentMethod?: string,
+    @Query('date') date?: string,
   ) {
-    return this.paymentsService.findAll(query, paymentMethod);
+    return this.paymentsService.findAll(query, paymentMethod, date);
   }
 
   // GET /api/v1/payments/code/:code

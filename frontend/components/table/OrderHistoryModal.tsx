@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'react-hot-toast';
+import { formatTableName } from '@/utils/format';
 import { FoodReviewModal } from './FoodReviewModal';
 
 interface Table {
@@ -36,6 +38,91 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
   onOpenBankPayModal,
 }) => {
   const [reviewingOrder, setReviewingOrder] = useState<any | null>(null);
+  const [selectedCashOrder, setSelectedCashOrder] = useState<any | null>(null);
+  const [isCallingCashStaff, setIsCallingCashStaff] = useState(false);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+
+  const handleCancelOrder = async (order: any) => {
+    if (!order?._id || cancellingOrderId) return;
+    const confirmMsg =
+      lang === 'en'
+        ? 'Are you sure you want to cancel this order?'
+        : lang === 'zh'
+        ? '您确定要取消此订单吗？'
+        : 'Bạn có chắc chắn muốn hủy đơn hàng này không?';
+    if (!window.confirm(confirmMsg)) return;
+
+    setCancellingOrderId(order._id);
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+      const res = await fetch(`${API_BASE}/orders/${order._id}/cancel`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || 'Không thể hủy đơn hàng.');
+      }
+
+      toast.success(
+        lang === 'en'
+          ? 'Order cancelled successfully!'
+          : lang === 'zh'
+          ? '订单已成功取消！'
+          : 'Đã hủy đơn hàng thành công!'
+      );
+      if (selectedCashOrder?._id === order._id) {
+        setSelectedCashOrder(null);
+      }
+    } catch (err: any) {
+      toast.error(err.message || (lang === 'en' ? 'Error cancelling order' : 'Lỗi khi hủy đơn hàng.'));
+    } finally {
+      setCancellingOrderId(null);
+    }
+  };
+
+  const handleNotifyStaffCash = async (order: any) => {
+    if (isCallingCashStaff) return;
+    setIsCallingCashStaff(true);
+    try {
+      const devId = typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest';
+      const cName = order?.customerName || 'Khách';
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
+      const res = await fetch(`${API_BASE}/staff-calls`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tableId,
+          tableName: table?.tableName || 'Bàn',
+          customerName: cName,
+          deviceId: devId,
+          type: 'bill',
+          message: `Khách yêu cầu thanh toán tiền mặt (${formatPrice(order.totalAmount || 0, lang)})`,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to notify');
+      }
+
+      toast.success(
+        lang === 'en'
+          ? 'Staff notified! A waiter will come to collect cash.'
+          : 'Đã báo nhân viên! Phục vụ sẽ đến bàn nhận tiền mặt ngay.'
+      );
+      setSelectedCashOrder(null);
+    } catch {
+      toast.error(
+        lang === 'en'
+          ? 'Unable to notify staff. Please call waiter directly.'
+          : 'Không thể gửi yêu cầu lúc này. Vui lòng gọi trực tiếp nhân viên.'
+      );
+    } finally {
+      setIsCallingCashStaff(false);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -231,9 +318,21 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                             {/* Pay Button or Pending Status (if unpaid) */}
                             {!isPaid && (
                               order.status === 'pending' ? (
-                                <span className="h-8 px-3 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold inline-flex items-center font-sans border border-amber-500/20">
-                                  {lang === 'en' ? 'Pending Approval' : lang === 'zh' ? '等待确认' : 'Chờ phục vụ duyệt'}
-                                </span>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="h-8 px-3 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold inline-flex items-center font-sans border border-amber-500/20">
+                                    {lang === 'en' ? 'Pending Approval' : lang === 'zh' ? '等待确认' : 'Chờ phục vụ duyệt'}
+                                  </span>
+                                  <button
+                                    id={`btn-cancel-order-${order._id}`}
+                                    onClick={() => handleCancelOrder(order)}
+                                    disabled={cancellingOrderId === order._id}
+                                    className="h-8 px-2.5 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer inline-flex items-center gap-1 font-sans border border-rose-500/20 disabled:opacity-50"
+                                    title={lang === 'en' ? 'Cancel this order' : 'Hủy đơn hàng này'}
+                                  >
+                                    <span className="material-symbols-outlined text-[15px]">close</span>
+                                    <span>{cancellingOrderId === order._id ? (lang === 'en' ? 'Cancelling...' : 'Đang hủy...') : (lang === 'en' ? 'Cancel' : lang === 'zh' ? '取消' : 'Hủy')}</span>
+                                  </button>
+                                </div>
                               ) : (
                                 <button
                                   onClick={() => {
@@ -244,17 +343,19 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                                         router.push(`/table/${tableId}/order-status/${order._id}`);
                                       }
                                     } else {
-                                      // Cash payment: navigate to tracking page to view cash instructions
-                                      setIsOrderHistoryModalOpen(false);
-                                      router.push(`/table/${tableId}/order-status/${order._id}`);
+                                      // Cash payment: open cash guidance modal
+                                      setSelectedCashOrder(order);
                                     }
                                   }}
-                                  className={`h-8 px-3.5 text-white text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer shadow-sm inline-flex items-center font-sans ${
+                                  className={`h-8 px-3.5 text-white text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer shadow-sm inline-flex items-center gap-1 font-sans ${
                                     order.paymentMethod === 'cash'
                                       ? 'bg-amber-600 hover:bg-amber-700'
                                       : 'bg-[#3B82F6] hover:bg-blue-600'
                                   }`}
                                 >
+                                  <span className="material-symbols-outlined text-[15px]">
+                                    {order.paymentMethod === 'cash' ? 'payments' : 'qr_code_2'}
+                                  </span>
                                   <span>
                                     {order.paymentMethod === 'cash'
                                       ? (lang === 'en' ? 'Pay Cash' : lang === 'zh' ? '现金支付' : 'Tiền mặt')
@@ -313,19 +414,33 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
 
                   if (unpaidOrders.length > 0) {
                     const latestUnpaid = unpaidOrders[0];
+                    const isCash = latestUnpaid.paymentMethod === 'cash';
+
                     return (
                       <button
                         onClick={() => {
-                          if (onOpenBankPayModal) {
-                            onOpenBankPayModal(latestUnpaid);
+                          if (isCash) {
+                            setSelectedCashOrder(latestUnpaid);
                           } else {
-                            router.push(`/table/${tableId}/order-status/${latestUnpaid._id}`);
+                            if (onOpenBankPayModal) {
+                              onOpenBankPayModal(latestUnpaid);
+                            } else {
+                              router.push(`/table/${tableId}/order-status/${latestUnpaid._id}`);
+                            }
                           }
                         }}
-                        className="h-10 px-5 bg-[#3B82F6] hover:bg-blue-600 text-white font-bold rounded-xl text-xs tracking-wide transition-all shadow-md active:scale-95 cursor-pointer inline-flex items-center gap-1.5 font-sans"
+                        className={`h-10 px-5 text-white font-bold rounded-xl text-xs tracking-wide transition-all shadow-md active:scale-95 cursor-pointer inline-flex items-center gap-1.5 font-sans ${
+                          isCash ? 'bg-amber-600 hover:bg-amber-700' : 'bg-[#3B82F6] hover:bg-blue-600'
+                        }`}
                       >
-                        <span className="material-symbols-outlined text-base">payments</span>
-                        <span>{lang === 'en' ? 'Pay Now' : lang === 'zh' ? '立即支付' : 'Thanh toán'}</span>
+                        <span className="material-symbols-outlined text-base">
+                          {isCash ? 'payments' : 'qr_code_2'}
+                        </span>
+                        <span>
+                          {isCash
+                            ? (lang === 'en' ? 'Pay Cash' : lang === 'zh' ? '现金支付' : 'Thanh toán Tiền mặt')
+                            : (lang === 'en' ? 'Pay QR' : lang === 'zh' ? '扫码支付' : 'Thanh toán VietQR')}
+                        </span>
                       </button>
                     );
                   }
@@ -344,6 +459,139 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
           </motion.div>
         </div>
       )}
+
+      {/* Cash Payment Guidance & Confirmation Dialog */}
+      <AnimatePresence>
+        {selectedCashOrder && (
+          <div className="fixed inset-0 z-60 flex items-center justify-center p-4 sm:p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedCashOrder(null)}
+              className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+              className="relative w-full max-w-md bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 rounded-2xl p-6 shadow-2xl z-10 font-sans text-left space-y-4"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-xl">payments</span>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                      {lang === 'en' ? 'Cash Payment' : lang === 'zh' ? '现金支付' : 'Thanh toán Tiền mặt'}
+                    </h4>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      #{selectedCashOrder._id ? selectedCashOrder._id.slice(-6).toUpperCase() : ''} • {formatTableName(table?.tableName, lang)}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedCashOrder(null)}
+                  className="w-8 h-8 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center text-lg cursor-pointer"
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Amount Box */}
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 flex items-center justify-between">
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                  {lang === 'en' ? 'Amount to pay:' : 'Tổng tiền cần thanh toán:'}
+                </span>
+                <span className="text-lg font-bold text-[#0284c7] dark:text-sky-400 font-mono">
+                  {formatPrice(selectedCashOrder.totalAmount || 0, lang)}
+                </span>
+              </div>
+
+              {/* Status & Instructions */}
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300 space-y-1">
+                <p className="font-semibold flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-base">info</span>
+                  <span>
+                    {selectedCashOrder.status === 'pending'
+                      ? (lang === 'en' ? 'Order is pending approval' : 'Đơn hàng đang chờ duyệt')
+                      : (lang === 'en' ? 'Please pay with cash' : 'Thanh toán tiền mặt')}
+                  </span>
+                </p>
+                <p className="text-[11.5px] leading-relaxed text-slate-600 dark:text-slate-300">
+                  {selectedCashOrder.status === 'pending'
+                    ? (lang === 'en'
+                        ? 'Your order is being reviewed by staff. You can pay cash at table once served or at the cashier counter.'
+                        : 'Đơn hàng đang chờ phục vụ duyệt. Nhân viên sẽ mang món ra bàn và quý khách có thể thanh toán tiền mặt trực tiếp hoặc tại quầy thu ngân.')
+                    : (lang === 'en'
+                        ? 'Please pay cash to staff at your table or at the cashier counter.'
+                        : 'Quý khách vui lòng thanh toán trực tiếp tại quầy thu ngân hoặc bấm gọi nhân viên để thanh toán tiền mặt tại bàn.')}
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="space-y-2 pt-1">
+                {selectedCashOrder.status === 'pending' && (
+                  <button
+                    onClick={() => handleCancelOrder(selectedCashOrder)}
+                    disabled={cancellingOrderId === selectedCashOrder._id}
+                    className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 border border-rose-500/20 disabled:opacity-50"
+                  >
+                    <span className="material-symbols-outlined text-base">close</span>
+                    <span>
+                      {cancellingOrderId === selectedCashOrder._id
+                        ? (lang === 'en' ? 'Cancelling...' : 'Đang hủy đơn...')
+                        : (lang === 'en' ? 'Cancel this order' : 'Hủy đơn hàng này')}
+                    </span>
+                  </button>
+                )}
+
+                <button
+                  onClick={() => handleNotifyStaffCash(selectedCashOrder)}
+                  disabled={isCallingCashStaff}
+                  className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+                >
+                  <span className="material-symbols-outlined text-base">notifications_active</span>
+                  <span>
+                    {isCallingCashStaff
+                      ? (lang === 'en' ? 'Sending...' : 'Đang gửi...')
+                      : (lang === 'en' ? 'Call staff to collect cash' : 'Báo nhân viên thu tiền mặt tại bàn')}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    const orderToPay = selectedCashOrder;
+                    setSelectedCashOrder(null);
+                    if (onOpenBankPayModal) {
+                      onOpenBankPayModal(orderToPay);
+                    }
+                  }}
+                  className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 border border-slate-200 dark:border-white/10"
+                >
+                  <span className="material-symbols-outlined text-base">qr_code_2</span>
+                  <span>{lang === 'en' ? 'Switch to VietQR bank transfer' : 'Đổi sang Chuyển khoản VietQR'}</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    const orderId = selectedCashOrder._id;
+                    setSelectedCashOrder(null);
+                    setIsOrderHistoryModalOpen(false);
+                    router.push(`/table/${tableId}/order-status/${orderId}`);
+                  }}
+                  className="w-full py-2 text-center text-xs font-semibold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
+                >
+                  {lang === 'en' ? 'View order details & status' : 'Xem chi tiết đơn hàng & tiến độ'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Food Review Modal */}
       <FoodReviewModal
