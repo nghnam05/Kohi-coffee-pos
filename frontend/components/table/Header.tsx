@@ -81,26 +81,7 @@ export const Header: React.FC<HeaderProps> = ({
       <header className="fixed top-0 left-0 right-0 z-40 h-16 px-4 bg-white/90 dark:bg-[#0B0F17]/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 flex justify-between items-center md:hidden shadow-xs transition-colors">
         <BrandLogo />
         <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Mobile Name Button */}
-          {onOpenNamePrompt && (
-            <button
-              type="button"
-              onClick={onOpenNamePrompt}
-              className={`h-9 px-2.5 rounded-xl border flex items-center gap-1 text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-xs ${
-                customerName
-                  ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30 hover:bg-sky-500/20'
-                  : 'bg-sky-500 text-white border-sky-400 hover:bg-sky-600 shadow-sky-500/20'
-              }`}
-              title={customerName ? (lang === 'en' ? 'Click to change your name' : 'Bấm để đổi tên hiển thị') : (lang === 'en' ? 'Click to enter your name' : 'Bấm để nhập tên của bạn')}
-            >
-              <span className="material-symbols-outlined text-[16px]">
-                {customerName ? 'badge' : 'person_add'}
-              </span>
-              <span className="max-w-[75px] sm:max-w-[100px] truncate">
-                {customerName || (lang === 'en' ? 'Name' : 'Nhập tên')}
-              </span>
-            </button>
-          )}
+
 
           {/* Notification Button */}
           <button

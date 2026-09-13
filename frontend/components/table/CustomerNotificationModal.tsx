@@ -106,7 +106,7 @@ export const CustomerNotificationModal: React.FC<CustomerNotificationModalProps>
                 <button
                   onClick={onMarkAllAsRead}
                   disabled={unreadCount === 0}
-                  className="text-[#0284c7] dark:text-[#38BDF8] hover:underline font-bold disabled:opacity-40 disabled:no-underline cursor-pointer"
+                  className="text-[#0284c7] dark:text-[#38BDF8] font-bold disabled:opacity-40 hover:opacity-80 transition-opacity cursor-pointer"
                 >
                   {lang === 'en' ? 'Mark all as read' : lang === 'zh' ? '全部标为已读' : 'Đánh dấu đã đọc tất cả'}
                 </button>

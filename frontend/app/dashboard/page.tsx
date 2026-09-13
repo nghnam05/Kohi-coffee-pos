@@ -2534,7 +2534,7 @@ export default function DashboardPage() {
         setOrders((prev) =>
           prev.map((o) => {
             const oTableId = (o.tableId as any)?._id || o.tableId;
-            return oTableId === editingTable._id && o.status !== 'paid'
+            return String(oTableId) === String(editingTable._id) && o.status !== 'paid'
               ? { ...o, status: 'cancelled' }
               : o;
           })
@@ -10701,19 +10701,19 @@ export default function DashboardPage() {
       {/* 5. Active Invoice Details Printable Modal */}
       <AnimatePresence>
         {activeInvoice && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setActiveInvoice(null)}
-              className="absolute inset-0 bg-black/75 backdrop-blur-xs print:hidden"
+              className="fixed inset-0 bg-black/75 backdrop-blur-xs print:hidden"
             />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative z-10 w-full max-w-md bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] text-slate-900 dark:text-white rounded-3xl p-6 shadow-2xl space-y-4 font-mono printable-modal"
+              className="relative z-10 w-full max-w-md bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] text-slate-900 dark:text-white rounded-3xl p-6 shadow-2xl space-y-4 font-mono printable-modal my-auto max-h-[92vh] flex flex-col overflow-y-auto scrollbar-thin"
             >
               {/* Header */}
               <div className="text-center border-b border-slate-200 dark:border-[#1e293b] pb-3 space-y-1">
@@ -11057,19 +11057,19 @@ export default function DashboardPage() {
       {/* 7. Create/Edit Coupon Modal */}
       <AnimatePresence>
         {isCouponModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsCouponModalOpen(false)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-xs"
+              className="fixed inset-0 bg-black/80 backdrop-blur-xs"
             />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative z-10 w-full max-w-md bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4"
+              className="relative z-10 w-full max-w-md bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[92vh] flex flex-col overflow-y-auto scrollbar-thin"
             >
               <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-[#1e293b]">
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading">
@@ -11205,19 +11205,19 @@ export default function DashboardPage() {
       {/* 5.5 Printable Payment Invoice Receipt Modal */}
       <AnimatePresence>
         {selectedInvoiceModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedInvoiceModal(null)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-xs"
+              className="fixed inset-0 bg-black/80 backdrop-blur-xs"
             />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative z-10 w-full max-w-lg bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-6 shadow-2xl space-y-5 printable-modal"
+              className="relative z-10 w-full max-w-lg bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-6 shadow-2xl space-y-5 printable-modal my-auto max-h-[92vh] flex flex-col overflow-y-auto scrollbar-thin"
             >
               <div className="text-center border-b border-slate-200 dark:border-[#1e293b] pb-4 space-y-1">
                 <h2 className="text-xl font-black tracking-wide text-slate-900 dark:text-white uppercase">Hóa Đơn Thanh Toán</h2>

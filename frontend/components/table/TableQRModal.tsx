@@ -49,7 +49,7 @@ export const TableQRModal: React.FC<TableQRModalProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 overflow-y-auto"
           onClick={onClose}
         >
           <motion.div
@@ -57,7 +57,7 @@ export const TableQRModal: React.FC<TableQRModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: 20 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full max-w-sm bg-white dark:bg-[#0F172A] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden relative"
+            className="w-full max-w-sm bg-white dark:bg-[#0F172A] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden relative my-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Top Accent Gradient */}
