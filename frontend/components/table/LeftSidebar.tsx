@@ -37,6 +37,8 @@ interface LeftSidebarProps {
   setAiInput: (input: string) => void;
   onOpenQRModal?: () => void;
   handleLeaveTable?: () => void;
+  isLeaveDisabled?: boolean;
+  leaveDisabledReason?: string;
 }
 
 const getCategoryIcon = (cat: string) => {
@@ -72,6 +74,8 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   setAiInput,
   onOpenQRModal,
   handleLeaveTable,
+  isLeaveDisabled = false,
+  leaveDisabledReason,
 }) => {
   return (
     <aside
@@ -278,13 +282,29 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
 
         {/* Button: Rời bàn - Gentle Neutral Ghost Button with subtle Rose Hover (Issue L1) */}
         {handleLeaveTable && (
-          <button
-            onClick={handleLeaveTable}
-            className="w-full px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-rose-500/10 dark:bg-slate-800/50 dark:hover:bg-rose-500/15 border border-slate-200/90 hover:border-rose-500/30 dark:border-white/10 dark:hover:border-rose-500/30 text-xs font-medium text-slate-600 hover:text-rose-500 dark:text-slate-300 dark:hover:text-rose-400 transition-all flex items-center justify-center gap-1.5 font-sans cursor-pointer active:scale-95 shadow-2xs group"
-          >
-            <span className="material-symbols-outlined text-[16px] text-slate-400 group-hover:text-rose-500 dark:group-hover:text-rose-400 transition-colors">logout</span>
-            <span>{lang === 'en' ? 'Leave Table' : lang === 'zh' ? '离开餐桌' : 'Rời bàn / Thoát'}</span>
-          </button>
+          <div className="w-full space-y-1">
+            <button
+              onClick={isLeaveDisabled ? undefined : handleLeaveTable}
+              disabled={isLeaveDisabled}
+              title={isLeaveDisabled ? (leaveDisabledReason || 'Đơn hàng đã duyệt và đang chờ làm, không thể rời bàn.') : undefined}
+              className={`w-full px-3.5 py-2 rounded-xl border text-xs font-medium transition-all flex items-center justify-center gap-1.5 font-sans shadow-2xs group ${
+                isLeaveDisabled
+                  ? 'bg-slate-100/60 dark:bg-slate-800/30 border-slate-200/50 dark:border-white/5 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60'
+                  : 'bg-slate-100 hover:bg-rose-500/10 dark:bg-slate-800/50 dark:hover:bg-rose-500/15 border-slate-200/90 hover:border-rose-500/30 dark:border-white/10 dark:hover:border-rose-500/30 text-slate-600 hover:text-rose-500 dark:text-slate-300 dark:hover:text-rose-400 cursor-pointer active:scale-95'
+              }`}
+            >
+              <span className={`material-symbols-outlined text-[16px] ${isLeaveDisabled ? 'text-slate-400 dark:text-slate-600' : 'text-slate-400 group-hover:text-rose-500 dark:group-hover:text-rose-400 transition-colors'}`}>
+                logout
+              </span>
+              <span>{lang === 'en' ? 'Leave Table' : lang === 'zh' ? '离开餐桌' : 'Rời bàn / Thoát'}</span>
+            </button>
+            {isLeaveDisabled && (
+              <div className="flex items-center justify-center gap-1 text-[10.5px] text-amber-500/90 dark:text-amber-400 font-semibold px-1 text-center leading-tight">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                <span className="truncate">{leaveDisabledReason || 'Đơn đã duyệt & đang làm'}</span>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </aside>

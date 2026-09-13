@@ -79,7 +79,6 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
           </button>
         )}
 
-
         {/* Desktop Order History Button */}
         <button
           onClick={handleOpenOrderHistory}

@@ -140,6 +140,22 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  emitForceLeaveTable(tableId: string, message?: string): void {
+    if (this.server) {
+      const payload = {
+        tableId: tableId.toString(),
+        message: message || 'Bàn đã được nhân viên cập nhật trạng thái hoặc giải phóng. Cảm ơn quý khách!',
+      };
+      this.server.to(`table_${tableId}`).emit('forceLeaveTable', payload);
+      this.server.emit('forceLeaveTable', payload);
+      this.server.emit('tableCleared', payload);
+
+      // Xóa giỏ hàng chung và danh sách thành viên của bàn này trong socket gateway
+      this.sharedCarts.delete(tableId.toString());
+      this.tableMembers.delete(tableId.toString());
+    }
+  }
+
   emitGuestJoined(data: { tableId: string; tableName: string }): void {
     if (this.server) {
       this.server.emit('guestJoined', data);

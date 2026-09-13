@@ -37,6 +37,29 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasNotified, setHasNotified] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+
+  const handleCancelOrder = async () => {
+    if (isCancelling || !orderId) return;
+    if (!window.confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')) return;
+    setIsCancelling(true);
+    try {
+      const res = await fetch(`${apiBase}/orders/${orderId}/cancel`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || 'Không thể hủy đơn hàng.');
+      }
+      toast.success('Đã hủy đơn hàng thành công!');
+      onClose();
+    } catch (err: any) {
+      toast.error(err.message || 'Lỗi khi hủy đơn hàng.');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   // Bank Info (Default MB Bank, customizable via ENV)
   const bankId = process.env.NEXT_PUBLIC_BANK_ID || 'MB';
@@ -286,6 +309,18 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
                 'Xác nhận Đã chuyển khoản'
               )}
             </button>
+
+            {/* Cancel Pending Order Button */}
+            {orderStatus === 'pending' && (
+              <button
+                onClick={handleCancelOrder}
+                disabled={isCancelling}
+                className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 font-extrabold rounded-xl text-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 border border-rose-500/20 disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-base">close</span>
+                <span>{isCancelling ? 'Đang hủy đơn...' : 'Hủy đơn hàng này'}</span>
+              </button>
+            )}
           </div>
         </motion.div>
       </div>

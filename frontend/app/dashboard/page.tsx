@@ -595,7 +595,21 @@ export default function DashboardPage() {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   });
+
+  // Refs to guarantee newest date/month/mode values across asynchronous socket callbacks & parallel calls
+  const analyticsSelectedDateRef = useRef(analyticsSelectedDate);
+  const analyticsSelectedMonthRef = useRef(analyticsSelectedMonth);
+  const analyticsPeriodModeRef = useRef(analyticsPeriodMode);
+  analyticsSelectedDateRef.current = analyticsSelectedDate;
+  analyticsSelectedMonthRef.current = analyticsSelectedMonth;
+  analyticsPeriodModeRef.current = analyticsPeriodMode;
+
+  const [isAnalyticsLoading, setIsAnalyticsLoading] = useState<boolean>(false);
+  const analyticsReqSeqRef = useRef<number>(0);
+
   const [analyticsDayLedgerTab, setAnalyticsDayLedgerTab] = useState<'orders' | 'attendances' | 'expenses' | 'ingredients'>('orders');
+  const [ledgerPage, setLedgerPage] = useState(1);
+  const LEDGER_PAGE_SIZE = 10;
   const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
   const [expenseForm, setExpenseForm] = useState({
     title: '',
@@ -611,6 +625,11 @@ export default function DashboardPage() {
   const [salaryConfigs, setSalaryConfigs] = useState<Record<string, any>>({});
   const [staffHourlyRates, setStaffHourlyRates] = useState<Record<string, number>>({});
   const [payrollViewMode, setPayrollViewMode] = useState<'weekly' | 'daily' | 'hourly'>('weekly');
+
+  // Attendance filter & pagination states
+  const [attendanceSearchName, setAttendanceSearchName] = useState('');
+  const [attendanceFilterDate, setAttendanceFilterDate] = useState('');
+  const [attendancePage, setAttendancePage] = useState(1);
 
   // Salary slip & disbursement modal state
   const [isDisbursementModalOpen, setIsDisbursementModalOpen] = useState(false);
@@ -927,13 +946,21 @@ export default function DashboardPage() {
   const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
   const [paymentSearchQuery, setPaymentSearchQuery] = useState('');
   const [paymentMethodFilter, setPaymentMethodFilter] = useState('all');
+  const [paymentDateFilter, setPaymentDateFilter] = useState('');
   const [selectedInvoiceModal, setSelectedInvoiceModal] = useState<any | null>(null);
+  const [confirmClearTableModal, setConfirmClearTableModal] = useState<{
+    tableId: string;
+    tableName: string;
+    orders: any[];
+  } | null>(null);
+  const [isClearingTable, setIsClearingTable] = useState(false);
 
-  const fetchPaymentHistory = useCallback(async (queryStr?: string, methodStr?: string) => {
+  const fetchPaymentHistory = useCallback(async (queryStr?: string, methodStr?: string, dateStr?: string) => {
     try {
       const params = new URLSearchParams();
       if (queryStr && queryStr.trim()) params.append('query', queryStr.trim());
       if (methodStr && methodStr !== 'all') params.append('paymentMethod', methodStr);
+      if (dateStr && dateStr.trim()) params.append('date', dateStr.trim());
       const res = await fetch(`${API_BASE}/payments?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
@@ -945,8 +972,8 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    fetchPaymentHistory(paymentSearchQuery, paymentMethodFilter);
-  }, [paymentSearchQuery, paymentMethodFilter, fetchPaymentHistory]);
+    fetchPaymentHistory(paymentSearchQuery, paymentMethodFilter, paymentDateFilter);
+  }, [paymentSearchQuery, paymentMethodFilter, paymentDateFilter, fetchPaymentHistory]);
 
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -975,6 +1002,8 @@ export default function DashboardPage() {
         // Default tab upon login: Admin -> analytics (Thống kê), Staff -> attendance (Chấm công)
         if (u.role === 'admin') {
           setActiveTab('analytics');
+          fetchAnalytics(storedToken);
+          fetchReviews(storedToken);
         } else {
           setActiveTab('attendance');
         }
@@ -987,6 +1016,18 @@ export default function DashboardPage() {
     }
   }, [router]);
 
+  // Auto-fetch analytics whenever switching to analytics tab
+  useEffect(() => {
+    if (activeTab === 'analytics') {
+      const tok = token || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
+      if (tok) {
+        fetchAnalytics(tok, analyticsSelectedDate, analyticsSelectedMonth, analyticsPeriodMode);
+        fetchReviews(tok);
+        fetchAttendance(tok, 'admin');
+      }
+    }
+  }, [activeTab, token, analyticsSelectedDate, analyticsSelectedMonth, analyticsPeriodMode]);
+
   // Fetch all data & Initialize Socket.io
   useEffect(() => {
     if (!token) return;
@@ -998,14 +1039,16 @@ export default function DashboardPage() {
     fetchTables(token);
 
     fetchUsers(token);
-    if (user?.role === 'admin') {
-      fetchAnalytics(token);
+    const storedUser = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}') : null;
+    const isAdmin = user?.role === 'admin' || storedUser?.role === 'admin';
+    if (isAdmin) {
+      fetchAnalytics(token, analyticsSelectedDate, analyticsSelectedMonth, analyticsPeriodMode);
       fetchReviews(token);
       fetchPayrolls(token);
       fetchSalaryConfigs(token);
       fetchCoupons(token);
     }
-    fetchAttendance(token, user?.role || 'admin');
+    fetchAttendance(token, user?.role || storedUser?.role || 'admin');
     fetchReservations(token);
     fetchShiftSwaps(token);
 
@@ -1454,21 +1497,44 @@ export default function DashboardPage() {
     targetMode?: 'day' | 'month',
   ) => {
     try {
-      const activeMode = targetMode || analyticsPeriodMode;
+      const activeMode = targetMode || analyticsPeriodModeRef.current || analyticsPeriodMode;
       let summaryUrl = `${API_BASE}/analytics/summary`;
+      const queryParams = new URLSearchParams();
+      queryParams.set('_t', String(Date.now()));
+
       if (activeMode === 'month') {
-        const m = targetMonth || analyticsSelectedMonth;
-        summaryUrl += `?month=${m}`;
+        const m = targetMonth || analyticsSelectedMonthRef.current || analyticsSelectedMonth;
+        queryParams.set('month', m);
       } else {
-        const d = targetDate || analyticsSelectedDate;
-        summaryUrl += `?date=${d}`;
+        const d = targetDate || analyticsSelectedDateRef.current || analyticsSelectedDate;
+        queryParams.set('date', d);
       }
+      summaryUrl += `?${queryParams.toString()}`;
 
       const [sumRes, topRes, revRes] = await Promise.all([
-        fetch(summaryUrl, { headers: { Authorization: `Bearer ${tok}` } }),
-        fetch(`${API_BASE}/analytics/top-foods`, { headers: { Authorization: `Bearer ${tok}` } }),
-        fetch(`${API_BASE}/analytics/revenue`, { headers: { Authorization: `Bearer ${tok}` } }),
+        fetch(summaryUrl, {
+          headers: { Authorization: `Bearer ${tok}`, 'Cache-Control': 'no-cache, no-store' },
+          cache: 'no-store',
+        }),
+        fetch(`${API_BASE}/analytics/top-foods?_t=${Date.now()}`, {
+          headers: { Authorization: `Bearer ${tok}`, 'Cache-Control': 'no-cache, no-store' },
+          cache: 'no-store',
+        }),
+        fetch(`${API_BASE}/analytics/revenue?_t=${Date.now()}`, {
+          headers: { Authorization: `Bearer ${tok}`, 'Cache-Control': 'no-cache, no-store' },
+          cache: 'no-store',
+        }),
       ]);
+      if (sumRes.status === 401 || topRes.status === 401 || revRes.status === 401) {
+        showToast('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'error');
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+        router.push('/login');
+        return;
+      }
+
       if (sumRes.ok) setAnalyticsSummary(await sumRes.json());
       if (topRes.ok) setTopFoods(await topRes.json());
       if (revRes.ok) setRevenueHistory(await revRes.json());
@@ -2464,23 +2530,92 @@ export default function DashboardPage() {
 
       showToast(t.toastSaveSuccess, 'success');
       setIsTableModalOpen(false);
-      fetchTables(token);
+      if (editingTable && tableForm.status === 'empty') {
+        setOrders((prev) =>
+          prev.map((o) => {
+            const oTableId = (o.tableId as any)?._id || o.tableId;
+            return oTableId === editingTable._id && o.status !== 'paid'
+              ? { ...o, status: 'cancelled' }
+              : o;
+          })
+        );
+      }
+      await Promise.all([fetchTables(token), fetchOrders(token)]);
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Có lỗi xảy ra.', 'error');
+    }
+  };
+
+  // Custom Confirmation Handler for Clearing Table to Empty
+  const handleConfirmClearTable = async () => {
+    if (!confirmClearTableModal || !token) return;
+    const { tableId, tableName } = confirmClearTableModal;
+    setIsClearingTable(true);
+    try {
+      // 1. Optimistic UI update immediately
+      setTables((prev) =>
+        prev.map((t) => (t._id === tableId ? { ...t, status: 'empty' } : t))
+      );
+      setOrders((prev) =>
+        prev.map((o) => {
+          const oTableId = (o.tableId as any)?._id || o.tableId;
+          return String(oTableId) === String(tableId) && o.status !== 'paid'
+            ? { ...o, status: 'cancelled' }
+            : o;
+        })
+      );
+
+      // 2. Call backend PUT /tables/:id with status 'empty'
+      const res = await fetch(`${API_BASE}/tables/${tableId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: 'empty' }),
+      });
+      if (!res.ok) throw new Error('Không thể cập nhật trạng thái bàn.');
+
+      showToast(`Đã chuyển ${tableName} về trạng thái Trống và giải phóng bàn thành công!`, 'success');
+      setConfirmClearTableModal(null);
+
+      // 3. Re-sync with server
+      await Promise.all([fetchTables(token), fetchOrders(token)]);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Có lỗi xảy ra khi dọn bàn.', 'error');
+      if (token) {
+        fetchTables(token);
+        fetchOrders(token);
+      }
+    } finally {
+      setIsClearingTable(false);
     }
   };
 
   // Quick Table Status Toggle Handler
   const handleQuickTableStatusUpdate = async (tableId: string, newStatus: 'empty' | 'serving' | 'reserved') => {
     if (!token) return;
-    const tableOrders = orders.filter(
-      (o) => (o.tableId?._id === tableId || (o.tableId as any) === tableId) && o.status !== 'paid' && o.status !== 'cancelled'
-    );
+    const currentTable = tables.find((t) => t._id === tableId);
+    const tableOrders = orders.filter((o) => {
+      const oTableId = (o.tableId as any)?._id || o.tableId;
+      return String(oTableId) === String(tableId) && o.status !== 'paid' && o.status !== 'cancelled';
+    });
+
+    // If setting to empty and table still has active/unpaid orders, open the custom styled confirmation modal
     if (newStatus === 'empty' && tableOrders.length > 0) {
-      if (!confirm(`Bàn này hiện có ${tableOrders.length} đơn hàng chưa hoàn tất / thanh toán. Bạn có chắc chắn muốn chuyển trạng thái bàn về Trống không?`)) {
-        return;
-      }
+      setConfirmClearTableModal({
+        tableId,
+        tableName: currentTable?.tableName || `Bàn số ${tableId.slice(-4)}`,
+        orders: tableOrders,
+      });
+      return;
     }
+
+    // Optimistic UI update for instant feedback
+    setTables((prev) =>
+      prev.map((t) => (t._id === tableId ? { ...t, status: newStatus } : t))
+    );
+
     try {
       const res = await fetch(`${API_BASE}/tables/${tableId}`, {
         method: 'PUT',
@@ -2492,10 +2627,13 @@ export default function DashboardPage() {
       });
       if (!res.ok) throw new Error('Không thể cập nhật trạng thái bàn.');
       showToast('Cập nhật trạng thái bàn thành công!', 'success');
-      fetchTables(token);
-      fetchOrders(token);
+      await Promise.all([fetchTables(token), fetchOrders(token)]);
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Có lỗi xảy ra.', 'error');
+      if (token) {
+        fetchTables(token);
+        fetchOrders(token);
+      }
     }
   };
 
@@ -3960,6 +4098,30 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            {/* Global Refresh Data Button */}
+            <button
+              onClick={() => {
+                const tok = token || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
+                if (tok) {
+                  fetchOrders(tok);
+                  fetchTables(tok);
+                  fetchFoods(tok);
+                  fetchAttendance(tok, user?.role);
+                  if (user?.role === 'admin') {
+                    fetchAnalytics(tok, analyticsSelectedDate, analyticsSelectedMonth, analyticsPeriodMode);
+                    fetchReviews(tok);
+                    fetchPayrolls(tok);
+                  }
+                  showToast('Đã làm mới dữ liệu hệ thống thành công!', 'success');
+                }
+              }}
+              className="flex items-center gap-1.5 h-10 px-3.5 rounded-xl bg-slate-100 dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-extrabold text-xs cursor-pointer active:scale-95 transition-all shrink-0 shadow-xs"
+              title="Làm mới dữ liệu từ Database"
+            >
+              <span className="material-symbols-outlined text-lg text-[#0059b9] dark:text-[#38BDF8]">refresh</span>
+              <span className="hidden sm:inline">Làm mới</span>
+            </button>
+
             {/* Header Notification Bell Icon Button (Desktop Only - Mobile has top bar bell) */}
             <button
               onClick={() => setIsRealtimeDrawerOpen(!isRealtimeDrawerOpen)}
@@ -4312,20 +4474,132 @@ export default function DashboardPage() {
             {/* Search & Filter for Paid / All History */}
             {(orderStatusFilter === 'paid' || orderStatusFilter === 'all') && (
               <div className="space-y-3 mb-4">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 rounded-2xl shadow-xs">
+                <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 rounded-2xl shadow-xs">
+                  {/* Search Input */}
                   <div className="relative flex-1">
                     <input
                       type="text"
                       placeholder="Tìm bằng Mã HD, Tên bàn hoặc Khách..."
                       value={paymentSearchQuery}
                       onChange={(e) => setPaymentSearchQuery(e.target.value)}
-                      className="w-full pl-4 pr-9 py-2 bg-white dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#38BDF8]"
+                      className="w-full pl-4 pr-9 py-2.5 bg-white dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#38BDF8]"
                     />
                     {paymentSearchQuery && (
-                      <button onClick={() => setPaymentSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer text-xs font-black">X</button>
+                      <button onClick={() => setPaymentSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer text-xs font-black">✕</button>
                     )}
                   </div>
+
+                  {/* Date Filter Controls */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Quick Preset Buttons */}
+                    <div className="flex items-center gap-1 bg-slate-100 dark:bg-[#090D16] p-1 rounded-xl border border-slate-200 dark:border-[#1e293b]">
+                      <button
+                        type="button"
+                        onClick={() => setPaymentDateFilter('')}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          !paymentDateFilter
+                            ? 'bg-white dark:bg-[#1e293b] text-[#0059b9] dark:text-[#38BDF8] shadow-xs'
+                            : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                        }`}
+                      >
+                        Tất cả ngày
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const today = new Date();
+                          const y = today.getFullYear();
+                          const m = String(today.getMonth() + 1).padStart(2, '0');
+                          const d = String(today.getDate()).padStart(2, '0');
+                          setPaymentDateFilter(`${y}-${m}-${d}`);
+                        }}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          paymentDateFilter === (() => {
+                            const today = new Date();
+                            const y = today.getFullYear();
+                            const m = String(today.getMonth() + 1).padStart(2, '0');
+                            const d = String(today.getDate()).padStart(2, '0');
+                            return `${y}-${m}-${d}`;
+                          })()
+                            ? 'bg-white dark:bg-[#1e293b] text-[#0059b9] dark:text-[#38BDF8] shadow-xs'
+                            : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                        }`}
+                      >
+                        Hôm nay
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const yesterday = new Date();
+                          yesterday.setDate(yesterday.getDate() - 1);
+                          const y = yesterday.getFullYear();
+                          const m = String(yesterday.getMonth() + 1).padStart(2, '0');
+                          const d = String(yesterday.getDate()).padStart(2, '0');
+                          setPaymentDateFilter(`${y}-${m}-${d}`);
+                        }}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          paymentDateFilter === (() => {
+                            const yesterday = new Date();
+                            yesterday.setDate(yesterday.getDate() - 1);
+                            const y = yesterday.getFullYear();
+                            const m = String(yesterday.getMonth() + 1).padStart(2, '0');
+                            const d = String(yesterday.getDate()).padStart(2, '0');
+                            return `${y}-${m}-${d}`;
+                          })()
+                            ? 'bg-white dark:bg-[#1e293b] text-[#0059b9] dark:text-[#38BDF8] shadow-xs'
+                            : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                        }`}
+                      >
+                        Hôm qua
+                      </button>
+                    </div>
+
+                    {/* Date Picker Input */}
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="date"
+                        value={paymentDateFilter}
+                        onChange={(e) => setPaymentDateFilter(e.target.value)}
+                        className="px-3 py-2 bg-slate-100 dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#38BDF8] cursor-pointer"
+                      />
+                      {paymentDateFilter && (
+                        <button
+                          type="button"
+                          onClick={() => setPaymentDateFilter('')}
+                          title="Bỏ lọc ngày"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer text-xs"
+                        >
+                          <span className="material-symbols-outlined text-base">close</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
+
+                {/* Filter Summary Pill if date is active */}
+                {paymentDateFilter && (
+                  <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-xs text-[#38BDF8] font-bold">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="material-symbols-outlined text-base">calendar_month</span>
+                      <span>
+                        Đang xem ngày: <strong className="font-mono text-white text-xs">{paymentDateFilter.split('-').reverse().join('/')}</strong>
+                      </span>
+                      <span className="text-slate-400 dark:text-slate-600">•</span>
+                      <span>{paymentHistory.length} hóa đơn</span>
+                      <span className="text-slate-400 dark:text-slate-600">•</span>
+                      <span className="text-emerald-500 dark:text-emerald-400">
+                        Doanh thu: {paymentHistory.reduce((s, p) => s + (p.totalAmount || 0), 0).toLocaleString('vi-VN')}đ
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentDateFilter('')}
+                      className="px-2.5 py-1 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 text-[#38BDF8] text-[11px] font-extrabold cursor-pointer transition-colors"
+                    >
+                      Bỏ lọc ngày
+                    </button>
+                  </div>
+                )}
 
                 {/* Bulk Selection & Batch Delete Toolbar for Invoices in Paid Tab */}
                 {orderStatusFilter === 'paid' && (paymentHistory.length > 0 || selectedPaymentIds.length > 0) && (
@@ -4378,9 +4652,11 @@ export default function DashboardPage() {
               paymentHistory.length === 0 ? (
                 <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-12 text-center text-slate-400">
                   <p className="text-sm font-bold text-slate-900 dark:text-white">
-                    {paymentSearchQuery ? `Không tìm thấy hóa đơn mã "${paymentSearchQuery}"` : 'Chưa có hóa đơn thanh toán nào'}
+                    {paymentSearchQuery || paymentDateFilter ? `Không tìm thấy hóa đơn phù hợp với bộ lọc` : 'Chưa có hóa đơn thanh toán nào'}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Thử đổi từ khóa hoặc tìm kiếm bằng Mã Hóa Đơn HD-XXXXXX</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    {paymentDateFilter ? `Không có hóa đơn phát sinh trong ngày ${paymentDateFilter.split('-').reverse().join('/')}` : 'Thử đổi từ khóa hoặc tìm kiếm bằng Mã Hóa Đơn HD-XXXXXX'}
+                  </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -4412,9 +4688,14 @@ export default function DashboardPage() {
                                 {payment.invoiceCode}
                               </span>
                             </div>
-                            <span className="text-[11px] font-bold text-slate-400">
-                              {new Date(payment.paidAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                            </span>
+                            <div className="text-right">
+                              <span className="text-[11px] font-bold text-slate-400 block font-mono">
+                                {new Date(payment.paidAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                              <span className="text-[9.5px] font-mono text-slate-500 block">
+                                {new Date(payment.paidAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
+                              </span>
+                            </div>
                           </div>
 
                           <div>
@@ -7101,6 +7382,7 @@ export default function DashboardPage() {
                         const now = new Date();
                         const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
                         setAnalyticsSelectedDate(todayStr);
+                        setLedgerPage(1);
                         if (token) fetchAnalytics(token, todayStr, undefined, 'day');
                       }}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
@@ -7116,6 +7398,7 @@ export default function DashboardPage() {
                         const yest = new Date(Date.now() - 86400000);
                         const yestStr = `${yest.getFullYear()}-${String(yest.getMonth() + 1).padStart(2, '0')}-${String(yest.getDate()).padStart(2, '0')}`;
                         setAnalyticsSelectedDate(yestStr);
+                        setLedgerPage(1);
                         if (token) fetchAnalytics(token, yestStr, undefined, 'day');
                       }}
                       className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#1e293b] hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
@@ -7129,6 +7412,7 @@ export default function DashboardPage() {
                         const val = e.target.value;
                         if (val) {
                           setAnalyticsSelectedDate(val);
+                          setLedgerPage(1);
                           if (token) fetchAnalytics(token, val, undefined, 'day');
                         }
                       }}
@@ -7478,7 +7762,7 @@ export default function DashboardPage() {
                     {/* Day Ledger Tabs — Horizontal Scroll on Mobile */}
                     <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none w-full sm:w-auto p-1 bg-slate-100 dark:bg-[#0B0F17] rounded-xl border border-slate-200/60 dark:border-[#1e293b]">
                       <button
-                        onClick={() => setAnalyticsDayLedgerTab('orders')}
+                        onClick={() => { setAnalyticsDayLedgerTab('orders'); setLedgerPage(1); }}
                         className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${
                           analyticsDayLedgerTab === 'orders'
                             ? 'bg-white dark:bg-[#1e293b] text-emerald-600 dark:text-emerald-400 shadow-xs'
@@ -7489,7 +7773,7 @@ export default function DashboardPage() {
                       </button>
 
                       <button
-                        onClick={() => setAnalyticsDayLedgerTab('attendances')}
+                        onClick={() => { setAnalyticsDayLedgerTab('attendances'); setLedgerPage(1); }}
                         className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${
                           analyticsDayLedgerTab === 'attendances'
                             ? 'bg-white dark:bg-[#1e293b] text-amber-600 dark:text-amber-400 shadow-xs'
@@ -7500,7 +7784,7 @@ export default function DashboardPage() {
                       </button>
 
                       <button
-                        onClick={() => setAnalyticsDayLedgerTab('expenses')}
+                        onClick={() => { setAnalyticsDayLedgerTab('expenses'); setLedgerPage(1); }}
                         className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${
                           analyticsDayLedgerTab === 'expenses'
                             ? 'bg-white dark:bg-[#1e293b] text-purple-600 dark:text-purple-400 shadow-xs'
@@ -7511,7 +7795,7 @@ export default function DashboardPage() {
                       </button>
 
                       <button
-                        onClick={() => setAnalyticsDayLedgerTab('ingredients')}
+                        onClick={() => { setAnalyticsDayLedgerTab('ingredients'); setLedgerPage(1); }}
                         className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${
                           analyticsDayLedgerTab === 'ingredients'
                             ? 'bg-white dark:bg-[#1e293b] text-[#0284c7] dark:text-[#38BDF8] shadow-xs'
@@ -7523,261 +7807,349 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* Tab 1: Orders (Thu) */}
-                  {analyticsDayLedgerTab === 'orders' && (
-                    <div className="overflow-x-auto">
-                      {(!analyticsSummary?.dayOrders || analyticsSummary.dayOrders.length === 0) ? (
-                        <div className="py-12 text-center text-slate-400 text-xs">
-                          <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">receipt</span>
-                          Không có đơn hàng nào đã thanh toán trong ngày này.
-                        </div>
-                      ) : (
-                        <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
-                          <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
-                            <tr>
-                              <th className="p-3">Mã đơn</th>
-                              <th className="p-3">Thời gian</th>
-                              <th className="p-3">Bàn / Hình thức</th>
-                              <th className="p-3">Món gọi</th>
-                              <th className="p-3">Thanh toán</th>
-                              <th className="p-3 text-right">Số tiền</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
-                            {analyticsSummary.dayOrders.map((ord: any, idx: number) => {
-                              const paidDate = ord.paidAt ? new Date(ord.paidAt) : (ord.createdAt ? new Date(ord.createdAt) : null);
-                              const timeStr = paidDate ? `${String(paidDate.getHours()).padStart(2, '0')}:${String(paidDate.getMinutes()).padStart(2, '0')}` : '--:--';
-                              return (
-                                <tr key={ord._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
-                                  <td className="p-3 font-mono font-bold text-slate-900 dark:text-white">
-                                    #{String(ord._id).slice(-5).toUpperCase()}
-                                  </td>
-                                  <td className="p-3 text-slate-500 font-medium">{timeStr}</td>
-                                  <td className="p-3 font-bold text-slate-800 dark:text-slate-200">
-                                    {ord.isTakeaway ? (
-                                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                                        Mang về
-                                      </span>
-                                    ) : (
-                                      <span>Bàn {ord.tableId?.tableNumber || ord.tableNumber || 'Tại chỗ'}</span>
-                                    )}
-                                  </td>
-                                  <td className="p-3 text-slate-600 dark:text-slate-300 max-w-xs truncate">
-                                    {ord.items?.length ? `${ord.items.length} món (${ord.items.map((i: any) => `${i.foodId?.name || 'Món'} x${i.quantity || 1}`).join(', ')})` : 'Chi tiết đơn'}
-                                  </td>
-                                  <td className="p-3">
-                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase">
-                                      {ord.paymentMethod === 'bank' || ord.paymentMethod === 'bank_transfer' ? 'Chuyển khoản' : (ord.paymentMethod === 'momo' ? 'MoMo' : 'Tiền mặt')}
-                                    </span>
-                                  </td>
-                                  <td className="p-3 text-right font-black text-emerald-600 dark:text-emerald-400">
-                                    {formatPrice(ord.totalAmount || 0)}
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      )}
-                    </div>
-                  )}
+                  {(() => {
+                    const currentLedgerList = 
+                      analyticsDayLedgerTab === 'orders' ? (analyticsSummary?.dayOrders || []) :
+                      analyticsDayLedgerTab === 'attendances' ? (analyticsSummary?.dayAttendances || []) :
+                      analyticsDayLedgerTab === 'expenses' ? (analyticsSummary?.dayExpenses || []) :
+                      (analyticsSummary?.dayIngredientUsages || []);
 
-                  {/* Tab 2: Attendances (Chi lương ca làm) */}
-                  {analyticsDayLedgerTab === 'attendances' && (
-                    <div className="overflow-x-auto">
-                      {(!analyticsSummary?.dayAttendances || analyticsSummary.dayAttendances.length === 0) ? (
-                        <div className="py-12 text-center text-slate-400 text-xs">
-                          <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">badge</span>
-                          Không có ca làm việc nào được ghi nhận trong ngày này.
-                        </div>
-                      ) : (
-                        <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
-                          <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
-                            <tr>
-                              <th className="p-3">Nhân viên</th>
-                              <th className="p-3">Ca làm</th>
-                              <th className="p-3">Check-in</th>
-                              <th className="p-3">Check-out</th>
-                              <th className="p-3 text-center">Tổng giờ</th>
-                              <th className="p-3 text-right">Chi phí lương tính toán</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
-                            {analyticsSummary.dayAttendances.map((att: any, idx: number) => {
-                              const inTime = att.checkIn ? new Date(att.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--';
-                              const outTime = att.checkOut ? new Date(att.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (att.checkIn ? 'Đang làm' : '--:--');
-                              const hours = att.totalHours || (att.checkIn && att.checkOut ? Math.max(0, (new Date(att.checkOut).getTime() - new Date(att.checkIn).getTime()) / 3600000) : 0);
-                              const estPay = Math.round(hours * 25000);
-                              return (
-                                <tr key={att._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
-                                  <td className="p-3 font-bold text-slate-900 dark:text-white">
-                                    {att.userId?.name || att.userId?.username || 'Nhân viên'}
-                                    <span className="block text-[10px] text-slate-400 font-normal">
-                                      {att.userId?.role === 'barista' ? 'Pha chế' : (att.userId?.role === 'admin' ? 'Quản trị' : 'Phục vụ')}
-                                    </span>
-                                  </td>
-                                  <td className="p-3">
-                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 capitalize">
-                                      Ca {att.shift === 'morning' ? 'Sáng' : (att.shift === 'afternoon' ? 'Chiều' : (att.shift === 'evening' ? 'Tối' : att.shift))}
-                                    </span>
-                                  </td>
-                                  <td className="p-3 font-medium text-slate-600 dark:text-slate-300">{inTime}</td>
-                                  <td className="p-3 font-medium text-slate-600 dark:text-slate-300">{outTime}</td>
-                                  <td className="p-3 text-center font-bold text-[#0284c7] dark:text-[#38BDF8]">
-                                    {hours > 0 ? `${hours.toFixed(1)}h` : '--'}
-                                  </td>
-                                  <td className="p-3 text-right font-black text-amber-600 dark:text-amber-400">
-                                    {formatPrice(estPay)}
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      )}
-                    </div>
-                  )}
+                    const totalLedgerItems = currentLedgerList.length;
+                    const totalLedgerPages = Math.max(1, Math.ceil(totalLedgerItems / LEDGER_PAGE_SIZE));
+                    const safePage = Math.min(Math.max(1, ledgerPage), totalLedgerPages);
+                    const startIndex = (safePage - 1) * LEDGER_PAGE_SIZE;
+                    const paginatedList = currentLedgerList.slice(startIndex, startIndex + LEDGER_PAGE_SIZE);
 
-                  {/* Tab 3: Incidental Expenses (Chi tiền phát sinh) */}
-                  {analyticsDayLedgerTab === 'expenses' && (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-500 font-medium">
-                          Các khoản chi phát sinh ngoài kho trong ngày: mua đá, sửa chữa, phụ phí...
-                        </span>
-                        <button
-                          onClick={() => {
-                            setExpenseForm({
-                              title: '',
-                              amount: '',
-                              category: 'Vật tư & Tiện ích',
-                              note: '',
-                              date: analyticsSelectedDate,
-                            });
-                            setIsAddExpenseModalOpen(true);
-                          }}
-                          className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
-                        >
-                          <span>+ Thêm Khoản Chi</span>
-                        </button>
-                      </div>
+                    const tabLabel =
+                      analyticsDayLedgerTab === 'orders' ? 'đơn hàng' :
+                      analyticsDayLedgerTab === 'attendances' ? 'ca làm' :
+                      analyticsDayLedgerTab === 'expenses' ? 'khoản chi' :
+                      'lần tiêu hao';
 
-                      <div className="overflow-x-auto">
-                        {(!analyticsSummary?.dayExpenses || analyticsSummary.dayExpenses.length === 0) ? (
-                          <div className="py-12 text-center text-slate-400 text-xs">
-                            <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">receipt_long</span>
-                            Chưa có khoản chi phát sinh nào trong ngày này.
-                          </div>
-                        ) : (
-                          <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
-                            <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
-                              <tr>
-                                <th className="p-3">Khoản chi</th>
-                                <th className="p-3">Danh mục</th>
-                                <th className="p-3">Ghi chú</th>
-                                <th className="p-3">Người ghi nhận</th>
-                                <th className="p-3 text-right">Số tiền</th>
-                                <th className="p-3 text-center">Hành động</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
-                              {analyticsSummary.dayExpenses.map((exp: any, idx: number) => (
-                                <tr key={exp._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
-                                  <td className="p-3 font-bold text-slate-900 dark:text-white">
-                                    {exp.title}
-                                  </td>
-                                  <td className="p-3">
-                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                                      {exp.category || 'Vật tư & Tiện ích'}
-                                    </span>
-                                  </td>
-                                  <td className="p-3 text-slate-500 dark:text-slate-400">{exp.note || '--'}</td>
-                                  <td className="p-3 text-slate-600 dark:text-slate-300">{exp.createdBy || 'Admin'}</td>
-                                  <td className="p-3 text-right font-black text-purple-600 dark:text-purple-400">
-                                    {formatPrice(exp.amount || 0)}
-                                  </td>
-                                  <td className="p-3 text-center">
-                                    <button
-                                      onClick={() => handleDeleteExpense(exp._id)}
-                                      className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
-                                      title="Xóa khoản chi này"
-                                    >
-                                      <span className="material-symbols-outlined text-base">delete</span>
-                                    </button>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Tab 4: Ingredient Usages (Chi tiêu hao nguyên liệu trong ngày) */}
-                  {analyticsDayLedgerTab === 'ingredients' && (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-500 font-medium">
-                          Ghi nhận tự động mỗi khi giảm số lượng nguyên liệu trong kho (pha chế, xuất dùng).
-                        </span>
-                        <span className="text-xs font-bold text-[#0284c7] dark:text-[#38BDF8]">
-                          Tổng tiêu hao: {formatPrice(analyticsSummary?.periodIngredientCost || 0)}
-                        </span>
-                      </div>
-
-                      <div className="overflow-x-auto">
-                        {(!analyticsSummary?.dayIngredientUsages || analyticsSummary.dayIngredientUsages.length === 0) ? (
-                          <div className="py-12 text-center text-slate-400 text-xs">
-                            <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">inventory_2</span>
-                            Chưa có ghi nhận tiêu hao nguyên liệu nào trong ngày này.
-                          </div>
-                        ) : (
-                          <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
-                            <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
-                              <tr>
-                                <th className="p-3">Nguyên liệu</th>
-                                <th className="p-3">Lượng giảm</th>
-                                <th className="p-3">Đơn giá</th>
-                                <th className="p-3">Thời gian</th>
-                                <th className="p-3">Người cập nhật</th>
-                                <th className="p-3 text-right">Thành tiền tiêu hao</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
-                              {analyticsSummary.dayIngredientUsages.map((usage: any, idx: number) => {
-                                const uDate = usage.date ? new Date(usage.date) : (usage.createdAt ? new Date(usage.createdAt) : null);
-                                const timeStr = uDate ? `${String(uDate.getHours()).padStart(2, '0')}:${String(uDate.getMinutes()).padStart(2, '0')}` : '--:--';
-                                return (
-                                  <tr key={usage._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
-                                    <td className="p-3 font-bold text-slate-900 dark:text-white">
-                                      {usage.ingredientName || 'Nguyên liệu'}
-                                      {usage.note && (
-                                        <span className="block text-[10px] text-slate-400 font-normal">
-                                          {usage.note}
-                                        </span>
-                                      )}
-                                    </td>
-                                    <td className="p-3 font-bold text-rose-500">
-                                      -{usage.quantity} {usage.unit || ''}
-                                    </td>
-                                    <td className="p-3 text-slate-500 font-medium">
-                                      {formatPrice(usage.unitPrice || 0)} / {usage.unit || 'đv'}
-                                    </td>
-                                    <td className="p-3 text-slate-500 font-medium">{timeStr}</td>
-                                    <td className="p-3 text-slate-600 dark:text-slate-300">{usage.updatedBy || 'Pha chế'}</td>
-                                    <td className="p-3 text-right font-black text-[#0284c7] dark:text-[#38BDF8]">
-                                      {formatPrice(usage.totalCost || 0)}
-                                    </td>
+                    return (
+                      <>
+                        {/* Tab 1: Orders (Thu) */}
+                        {analyticsDayLedgerTab === 'orders' && (
+                          <div className="overflow-x-auto">
+                            {(!currentLedgerList || currentLedgerList.length === 0) ? (
+                              <div className="py-12 text-center text-slate-400 text-xs">
+                                <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">receipt</span>
+                                Không có đơn hàng nào đã thanh toán trong ngày này.
+                              </div>
+                            ) : (
+                              <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
+                                <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
+                                  <tr>
+                                    <th className="p-3">Mã đơn</th>
+                                    <th className="p-3">Thời gian</th>
+                                    <th className="p-3">Bàn / Hình thức</th>
+                                    <th className="p-3">Món gọi</th>
+                                    <th className="p-3">Thanh toán</th>
+                                    <th className="p-3 text-right">Số tiền</th>
                                   </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
+                                </thead>
+                                <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
+                                  {paginatedList.map((ord: any, idx: number) => {
+                                    const paidDate = ord.paidAt ? new Date(ord.paidAt) : (ord.createdAt ? new Date(ord.createdAt) : null);
+                                    const timeStr = paidDate ? `${String(paidDate.getHours()).padStart(2, '0')}:${String(paidDate.getMinutes()).padStart(2, '0')}` : '--:--';
+                                    return (
+                                      <tr key={ord._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
+                                        <td className="p-3 font-mono font-bold text-slate-900 dark:text-white">
+                                          #{String(ord._id).slice(-5).toUpperCase()}
+                                        </td>
+                                        <td className="p-3 text-slate-500 font-medium">{timeStr}</td>
+                                        <td className="p-3 font-bold text-slate-800 dark:text-slate-200">
+                                          {ord.isTakeaway ? (
+                                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                                              Mang về
+                                            </span>
+                                          ) : (
+                                            <span>Bàn {ord.tableId?.tableNumber || ord.tableNumber || 'Tại chỗ'}</span>
+                                          )}
+                                        </td>
+                                        <td className="p-3 text-slate-600 dark:text-slate-300 max-w-xs truncate">
+                                          {ord.items?.length ? `${ord.items.length} món (${ord.items.map((i: any) => `${i.foodId?.name || 'Món'} x${i.quantity || 1}`).join(', ')})` : 'Chi tiết đơn'}
+                                        </td>
+                                        <td className="p-3">
+                                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase">
+                                            {ord.paymentMethod === 'bank' || ord.paymentMethod === 'bank_transfer' ? 'Chuyển khoản' : (ord.paymentMethod === 'momo' ? 'MoMo' : 'Tiền mặt')}
+                                          </span>
+                                        </td>
+                                        <td className="p-3 text-right font-black text-emerald-600 dark:text-emerald-400">
+                                          {formatPrice(ord.totalAmount || 0)}
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            )}
+                          </div>
                         )}
-                      </div>
-                    </div>
-                  )}
+
+                        {/* Tab 2: Attendances (Chi lương ca làm) */}
+                        {analyticsDayLedgerTab === 'attendances' && (
+                          <div className="overflow-x-auto">
+                            {(!currentLedgerList || currentLedgerList.length === 0) ? (
+                              <div className="py-12 text-center text-slate-400 text-xs">
+                                <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">badge</span>
+                                Không có ca làm việc nào được ghi nhận trong ngày này.
+                              </div>
+                            ) : (
+                              <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
+                                <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
+                                  <tr>
+                                    <th className="p-3">Nhân viên</th>
+                                    <th className="p-3">Ca làm</th>
+                                    <th className="p-3">Check-in</th>
+                                    <th className="p-3">Check-out</th>
+                                    <th className="p-3 text-center">Tổng giờ</th>
+                                    <th className="p-3 text-right">Chi phí lương tính toán</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
+                                  {paginatedList.map((att: any, idx: number) => {
+                                    const inTime = att.checkIn ? new Date(att.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--';
+                                    const outTime = att.checkOut ? new Date(att.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (att.checkIn ? 'Đang làm' : '--:--');
+                                    const hours = att.totalHours || (att.checkIn && att.checkOut ? Math.max(0, (new Date(att.checkOut).getTime() - new Date(att.checkIn).getTime()) / 3600000) : 0);
+                                    const estPay = Math.round(hours * 25000);
+                                    return (
+                                      <tr key={att._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
+                                        <td className="p-3 font-bold text-slate-900 dark:text-white">
+                                          {att.userId?.name || att.userId?.username || 'Nhân viên'}
+                                          <span className="block text-[10px] text-slate-400 font-normal">
+                                            {att.userId?.role === 'barista' ? 'Pha chế' : (att.userId?.role === 'admin' ? 'Quản trị' : 'Phục vụ')}
+                                          </span>
+                                        </td>
+                                        <td className="p-3">
+                                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 capitalize">
+                                            Ca {att.shift === 'morning' ? 'Sáng' : (att.shift === 'afternoon' ? 'Chiều' : (att.shift === 'evening' ? 'Tối' : att.shift))}
+                                          </span>
+                                        </td>
+                                        <td className="p-3 font-medium text-slate-600 dark:text-slate-300">{inTime}</td>
+                                        <td className="p-3 font-medium text-slate-600 dark:text-slate-300">{outTime}</td>
+                                        <td className="p-3 text-center font-bold text-[#0284c7] dark:text-[#38BDF8]">
+                                          {hours > 0 ? `${hours.toFixed(1)}h` : '--'}
+                                        </td>
+                                        <td className="p-3 text-right font-black text-amber-600 dark:text-amber-400">
+                                          {formatPrice(estPay)}
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Tab 3: Incidental Expenses (Chi tiền phát sinh) */}
+                        {analyticsDayLedgerTab === 'expenses' && (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-slate-500 font-medium">
+                                Các khoản chi phát sinh ngoài kho trong ngày: mua đá, sửa chữa, phụ phí...
+                              </span>
+                              <button
+                                onClick={() => {
+                                  setExpenseForm({
+                                    title: '',
+                                    amount: '',
+                                    category: 'Vật tư & Tiện ích',
+                                    note: '',
+                                    date: analyticsSelectedDate,
+                                  });
+                                  setIsAddExpenseModalOpen(true);
+                                }}
+                                className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
+                              >
+                                <span>+ Thêm Khoản Chi</span>
+                              </button>
+                            </div>
+
+                            <div className="overflow-x-auto">
+                              {(!currentLedgerList || currentLedgerList.length === 0) ? (
+                                <div className="py-12 text-center text-slate-400 text-xs">
+                                  <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">receipt_long</span>
+                                  Chưa có khoản chi phát sinh nào trong ngày này.
+                                </div>
+                              ) : (
+                                <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
+                                  <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
+                                    <tr>
+                                      <th className="p-3">Khoản chi</th>
+                                      <th className="p-3">Danh mục</th>
+                                      <th className="p-3">Ghi chú</th>
+                                      <th className="p-3">Người ghi nhận</th>
+                                      <th className="p-3 text-right">Số tiền</th>
+                                      <th className="p-3 text-center">Hành động</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
+                                    {paginatedList.map((exp: any, idx: number) => (
+                                      <tr key={exp._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
+                                        <td className="p-3 font-bold text-slate-900 dark:text-white">
+                                          {exp.title}
+                                        </td>
+                                        <td className="p-3">
+                                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                                            {exp.category || 'Vật tư & Tiện ích'}
+                                          </span>
+                                        </td>
+                                        <td className="p-3 text-slate-500 dark:text-slate-400">{exp.note || '--'}</td>
+                                        <td className="p-3 text-slate-600 dark:text-slate-300">{exp.createdBy || 'Admin'}</td>
+                                        <td className="p-3 text-right font-black text-purple-600 dark:text-purple-400">
+                                          {formatPrice(exp.amount || 0)}
+                                        </td>
+                                        <td className="p-3 text-center">
+                                          <button
+                                            onClick={() => handleDeleteExpense(exp._id)}
+                                            className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+                                            title="Xóa khoản chi này"
+                                          >
+                                            <span className="material-symbols-outlined text-base">delete</span>
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Tab 4: Ingredient Usages (Chi tiêu hao nguyên liệu trong ngày) */}
+                        {analyticsDayLedgerTab === 'ingredients' && (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-slate-500 font-medium">
+                                Ghi nhận tự động mỗi khi giảm số lượng nguyên liệu trong kho (pha chế, xuất dùng).
+                              </span>
+                              <span className="text-xs font-bold text-[#0284c7] dark:text-[#38BDF8]">
+                                Tổng tiêu hao: {formatPrice(analyticsSummary?.periodIngredientCost || 0)}
+                              </span>
+                            </div>
+
+                            <div className="overflow-x-auto">
+                              {(!currentLedgerList || currentLedgerList.length === 0) ? (
+                                <div className="py-12 text-center text-slate-400 text-xs">
+                                  <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">inventory_2</span>
+                                  Chưa có ghi nhận tiêu hao nguyên liệu nào trong ngày này.
+                                </div>
+                              ) : (
+                                <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
+                                  <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
+                                    <tr>
+                                      <th className="p-3">Nguyên liệu</th>
+                                      <th className="p-3">Lượng giảm</th>
+                                      <th className="p-3">Đơn giá</th>
+                                      <th className="p-3">Thời gian</th>
+                                      <th className="p-3">Người cập nhật</th>
+                                      <th className="p-3 text-right">Thành tiền tiêu hao</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
+                                    {paginatedList.map((usage: any, idx: number) => {
+                                      const uDate = usage.date ? new Date(usage.date) : (usage.createdAt ? new Date(usage.createdAt) : null);
+                                      const timeStr = uDate ? `${String(uDate.getHours()).padStart(2, '0')}:${String(uDate.getMinutes()).padStart(2, '0')}` : '--:--';
+                                      return (
+                                        <tr key={usage._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
+                                          <td className="p-3 font-bold text-slate-900 dark:text-white">
+                                            {usage.ingredientName || 'Nguyên liệu'}
+                                            {usage.note && (
+                                              <span className="block text-[10px] text-slate-400 font-normal">
+                                                {usage.note}
+                                              </span>
+                                            )}
+                                          </td>
+                                          <td className="p-3 font-bold text-rose-500">
+                                            -{usage.quantity} {usage.unit || ''}
+                                          </td>
+                                          <td className="p-3 text-slate-500 font-medium">
+                                            {formatPrice(usage.unitPrice || 0)} / {usage.unit || 'đv'}
+                                          </td>
+                                          <td className="p-3 text-slate-500 font-medium">{timeStr}</td>
+                                          <td className="p-3 text-slate-600 dark:text-slate-300">{usage.updatedBy || 'Pha chế'}</td>
+                                          <td className="p-3 text-right font-black text-[#0284c7] dark:text-[#38BDF8]">
+                                            {formatPrice(usage.totalCost || 0)}
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Pagination Controls */}
+                        {totalLedgerItems > 0 && (
+                          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-200/70 dark:border-[#1e293b]">
+                            <div className="text-xs text-slate-500 dark:text-slate-400">
+                              Hiển thị <span className="font-extrabold text-slate-900 dark:text-white">{startIndex + 1}</span> - <span className="font-extrabold text-slate-900 dark:text-white">{Math.min(startIndex + LEDGER_PAGE_SIZE, totalLedgerItems)}</span> trong tổng số <span className="font-extrabold text-slate-900 dark:text-white">{totalLedgerItems}</span> {tabLabel}
+                            </div>
+
+                            {totalLedgerPages > 1 && (
+                              <div className="flex items-center gap-1.5 select-none">
+                                <button
+                                  onClick={() => setLedgerPage(Math.max(1, safePage - 1))}
+                                  disabled={safePage === 1}
+                                  className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200 dark:border-[#1e293b] bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1e293b] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-xs font-bold transition-all flex items-center gap-1"
+                                  title="Trang trước"
+                                >
+                                  <span className="material-symbols-outlined text-sm">chevron_left</span>
+                                  <span className="hidden sm:inline">Trước</span>
+                                </button>
+
+                                <div className="flex items-center gap-1">
+                                  {Array.from({ length: totalLedgerPages }, (_, i) => i + 1).map((pageNum) => {
+                                    const isEdge = pageNum === 1 || pageNum === totalLedgerPages;
+                                    const isNearby = Math.abs(pageNum - safePage) <= 1;
+
+                                    if (isEdge || isNearby) {
+                                      const isActive = pageNum === safePage;
+                                      return (
+                                        <button
+                                          key={pageNum}
+                                          onClick={() => setLedgerPage(pageNum)}
+                                          className={`min-w-[32px] h-8 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                                            isActive
+                                              ? 'bg-[#38BDF8] text-[#090D16] shadow-md shadow-[#38BDF8]/20 scale-105'
+                                              : 'border border-slate-200 dark:border-[#1e293b] bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1e293b]'
+                                          }`}
+                                        >
+                                          {pageNum}
+                                        </button>
+                                      );
+                                    } else if (pageNum === safePage - 2 || pageNum === safePage + 2) {
+                                      return (
+                                        <span key={pageNum} className="px-1 text-slate-400 text-xs font-bold">
+                                          ...
+                                        </span>
+                                      );
+                                    }
+                                    return null;
+                                  })}
+                                </div>
+
+                                <button
+                                  onClick={() => setLedgerPage(Math.min(totalLedgerPages, safePage + 1))}
+                                  disabled={safePage === totalLedgerPages}
+                                  className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200 dark:border-[#1e293b] bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1e293b] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-xs font-bold transition-all flex items-center gap-1"
+                                  title="Trang sau"
+                                >
+                                  <span className="hidden sm:inline">Sau</span>
+                                  <span className="material-symbols-outlined text-sm">chevron_right</span>
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               ) : (
                 /* ── MONTHLY BREAKDOWN TABLE ───────────────────────────── */
@@ -7846,6 +8218,7 @@ export default function DashboardPage() {
                                   onClick={() => {
                                     setAnalyticsSelectedDate(row.date);
                                     setAnalyticsPeriodMode('day');
+                                    setLedgerPage(1);
                                     if (token) fetchAnalytics(token, row.date, undefined, 'day');
                                   }}
                                   className="px-2.5 py-1 text-[11px] font-bold bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] rounded-lg hover:bg-[#0284c7] hover:text-white transition-all cursor-pointer"
@@ -9540,6 +9913,154 @@ export default function DashboardPage() {
                     <span>In QR Code</span>
                   </button>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 2.6 Confirm Clear Table Modal - Modern Minimalist */}
+      <AnimatePresence>
+        {confirmClearTableModal && (
+          <div className="fixed inset-0 z-50 overflow-y-auto p-4 flex items-center justify-center min-h-full">
+            {/* Minimalist deep backdrop blur */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => !isClearingTable && setConfirmClearTableModal(null)}
+              className="fixed inset-0 bg-black/75 backdrop-blur-md transition-opacity"
+            />
+
+            {/* Modal Dialog Card */}
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 8 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 8 }}
+              transition={{ type: 'spring', damping: 26, stiffness: 360 }}
+              className="relative z-10 w-full max-w-[420px] bg-[#0C111D] text-white border border-white/10 rounded-2xl p-5 sm:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.6)] space-y-4 my-auto overflow-hidden"
+            >
+              {/* Top Accent Glow (Subtle minimalist ambient light) */}
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-16 bg-rose-500/15 blur-2xl pointer-events-none rounded-full" />
+
+              {/* Header */}
+              <div className="flex items-start justify-between gap-3 relative">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center shrink-0 shadow-inner">
+                    <span className="material-symbols-outlined text-xl">cleaning_services</span>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-extrabold text-white tracking-tight font-heading truncate">
+                        Dọn bàn & về Trống
+                      </h3>
+                      <span className="px-2 py-0.5 rounded-md text-[10.5px] font-bold bg-[#38BDF8]/10 text-[#38BDF8] border border-[#38BDF8]/20 shrink-0 font-mono">
+                        {confirmClearTableModal.tableName}
+                      </span>
+                    </div>
+                    <p className="text-[12px] text-slate-400 mt-0.5 leading-snug">
+                      Đang có <strong className="text-white font-bold">{confirmClearTableModal.orders.length} đơn chưa thanh toán</strong>
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={isClearingTable}
+                  onClick={() => setConfirmClearTableModal(null)}
+                  className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/5 transition-colors cursor-pointer disabled:opacity-40 shrink-0"
+                >
+                  <span className="material-symbols-outlined text-lg">close</span>
+                </button>
+              </div>
+
+              {/* Minimalist Notice */}
+              <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 text-[12px] text-slate-300 flex items-start gap-2.5 leading-relaxed">
+                <span className="material-symbols-outlined text-rose-400 text-base shrink-0 mt-0.5">info</span>
+                <span>
+                  Hệ thống sẽ <span className="text-rose-400 font-semibold">tự động hủy</span> các đơn chưa hoàn tất, xóa phiên của khách và đưa bàn về trạng thái trống.
+                </span>
+              </div>
+
+              {/* Orders List */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 px-0.5">
+                  <span>Đơn hàng tại bàn</span>
+                  <span className="text-slate-500 font-mono">{confirmClearTableModal.orders.length} đơn</span>
+                </div>
+
+                <div className="space-y-1.5 max-h-44 overflow-y-auto pr-0.5 scrollbar-thin">
+                  {confirmClearTableModal.orders.map((ord: any) => {
+                    const statusText =
+                      ord.status === 'cooking'
+                        ? 'Đang làm'
+                        : ord.status === 'ready'
+                        ? 'Đã xong'
+                        : ord.status === 'completed'
+                        ? 'Chờ thanh toán'
+                        : ord.status === 'confirmed'
+                        ? 'Đã duyệt'
+                        : 'Chờ duyệt';
+
+                    return (
+                      <div
+                        key={ord._id}
+                        className="p-2.5 bg-white/[0.02] hover:bg-white/[0.04] border border-white/5 rounded-xl flex items-center justify-between gap-3 text-xs transition-colors"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-white text-[11px]">
+                              #{ord._id?.slice(-6).toUpperCase()}
+                            </span>
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-white/5 text-slate-300 border border-white/10">
+                              {statusText}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+                            {ord.customerName ? ord.customerName : 'Khách tại bàn'} • {ord.items?.length || 0} món
+                          </p>
+                        </div>
+
+                        <div className="text-right shrink-0">
+                          <span className="font-bold text-white text-xs block font-mono">
+                            {(ord.totalAmount || 0).toLocaleString('vi-VN')}đ
+                          </span>
+                          <span className="text-[10px] text-rose-400/90 font-medium">Chưa thanh toán</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Actions Footer */}
+              <div className="pt-2 flex items-center justify-end gap-2.5 border-t border-white/5">
+                <button
+                  type="button"
+                  disabled={isClearingTable}
+                  onClick={() => setConfirmClearTableModal(null)}
+                  className="py-2 px-3.5 text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all cursor-pointer disabled:opacity-40"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  type="button"
+                  disabled={isClearingTable}
+                  onClick={handleConfirmClearTable}
+                  className="py-2 px-4 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
+                >
+                  {isClearingTable ? (
+                    <>
+                      <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Đang dọn bàn...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-[16px]">done</span>
+                      <span>Xác nhận về Trống</span>
+                    </>
+                  )}
+                </button>
               </div>
             </motion.div>
           </div>

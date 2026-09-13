@@ -59,7 +59,7 @@ export class OrdersService implements OnModuleInit {
       totalAmount += food.price * item.quantity;
     }
 
-    // Áp dụng mã giảm giá nếu có
+    // Áp dụng mã giảm giá nếu có HOẶC tự động tặng & áp dụng mã 10% khi đơn >= 300.000đ
     let discountAmount = 0;
     let couponCode: string | null = null;
     if (createOrderDto.couponCode) {
@@ -69,6 +69,10 @@ export class OrdersService implements OnModuleInit {
       }
       discountAmount = couponResult.discountAmount;
       couponCode = createOrderDto.couponCode.toUpperCase();
+    } else if (totalAmount >= 300000) {
+      // Tự động tặng voucher 10% và áp dụng luôn vào hóa đơn khi gọi đơn >= 300k
+      discountAmount = Math.round((totalAmount * 10) / 100);
+      couponCode = 'KOHI10';
     }
 
     const finalAmount = Math.max(0, totalAmount - discountAmount);
@@ -80,13 +84,14 @@ export class OrdersService implements OnModuleInit {
       totalAmount: finalAmount,
       discountAmount,
       couponCode,
+      rewardedVoucherCode: couponCode || (createOrderDto as any).rewardedVoucherCode,
     });
 
     const savedOrder = await newOrder.save();
 
     // Tăng usedCount sau khi order được lưu thành công
     if (couponCode) {
-      await this.couponsService.incrementUsage(couponCode);
+      await this.couponsService.incrementUsage(couponCode).catch(() => {});
     }
 
     // Cập nhật trạng thái bàn ăn sang 'serving' (có khách) nếu đang empty
@@ -272,6 +277,18 @@ export class OrdersService implements OnModuleInit {
     }
 
     return updatedOrder;
+  }
+
+  async cancelOrder(id: string): Promise<OrderDocument> {
+    const order = await this.orderModel.findById(id);
+    if (!order) {
+      throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${id}`);
+    }
+    if (order.status !== 'pending') {
+      throw new BadRequestException('Chỉ có thể hủy đơn hàng khi đang chờ phục vụ duyệt.');
+    }
+
+    return this.updateStatus(id, { status: 'cancelled' });
   }
 
   private pendingTransferRequests = new Map<string, {

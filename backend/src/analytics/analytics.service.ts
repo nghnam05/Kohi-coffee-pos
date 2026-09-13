@@ -8,6 +8,7 @@ import { Attendance, AttendanceDocument } from '../attendance/schemas/attendance
 import { Expense, ExpenseDocument } from '../expenses/schemas/expense.schema.js';
 import { IngredientUsage, IngredientUsageDocument } from '../ingredients/schemas/ingredient-usage.schema.js';
 import { Table, TableDocument } from '../tables/schemas/table.schema.js';
+import { Food, FoodDocument } from '../foods/schemas/food.schema.js';
 
 @Injectable()
 export class AnalyticsService {
@@ -19,7 +20,42 @@ export class AnalyticsService {
     @Optional() @InjectModel(Expense.name) private readonly expenseModel?: Model<ExpenseDocument>,
     @Optional() @InjectModel(IngredientUsage.name) private readonly ingredientUsageModel?: Model<IngredientUsageDocument>,
     @Optional() @InjectModel(Table.name) private readonly tableModel?: Model<TableDocument>,
+    @Optional() @InjectModel(Food.name) private readonly foodModel?: Model<FoodDocument>,
   ) {}
+
+  private baselineCache: { timestamp: number; data: any } | null = null;
+  private foodCache: { timestamp: number; map: Map<string, any> } | null = null;
+  private tableCache: { timestamp: number; map: Map<string, any> } | null = null;
+
+  private async getFoodMap(): Promise<Map<string, any>> {
+    if (this.foodCache && Date.now() - this.foodCache.timestamp < 60000) {
+      return this.foodCache.map;
+    }
+    const map = new Map<string, any>();
+    if (this.foodModel) {
+      const list = await this.foodModel.find({}, 'name price image').lean().exec();
+      for (const f of list) {
+        map.set(String(f._id), f);
+      }
+    }
+    this.foodCache = { timestamp: Date.now(), map };
+    return map;
+  }
+
+  private async getTableMap(): Promise<Map<string, any>> {
+    if (this.tableCache && Date.now() - this.tableCache.timestamp < 60000) {
+      return this.tableCache.map;
+    }
+    const map = new Map<string, any>();
+    if (this.tableModel) {
+      const list = await this.tableModel.find({}, 'tableName tableNumber').lean().exec();
+      for (const t of list) {
+        map.set(String(t._id), t);
+      }
+    }
+    this.tableCache = { timestamp: Date.now(), map };
+    return map;
+  }
 
   /**
    * Tổng quan tài chính: Thu (Doanh thu), Chi (Lương, Nguyên liệu, Tiền phát sinh), Lợi nhuận ròng.
@@ -31,35 +67,101 @@ export class AnalyticsService {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
     const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
     const startOfWeek = new Date(todayStart);
-    startOfWeek.setDate(todayStart.getDate() - todayStart.getDay());
+    startOfWeek.setDate(todayStart.getDate() - 6); // 7 ngày gần nhất
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
 
-    // Baseline metrics (Today, Week, Month) để luôn tương thích ngược và phục vụ hiển thị
-    const [
+    // Baseline metrics (Today, Week, Month) với in-memory cache 20 giây để tối ưu tốc độ phản hồi khi chuyển ngày
+    let baselineData: any;
+    const nowTime = Date.now();
+    if (this.baselineCache && (nowTime - this.baselineCache.timestamp) < 20000) {
+      baselineData = this.baselineCache.data;
+    } else {
+      const [
+        todayGross,
+        weekGross,
+        monthGross,
+        totalOrders,
+        todaySalary,
+        weekSalary,
+        monthSalary,
+        totalInventoryValue,
+        todayExpenseCost,
+        todayIngredientUsageCost,
+        weekExpenseCost,
+        weekIngredientUsageCost,
+        monthExpenseCost,
+        monthIngredientUsageCost,
+      ] = await Promise.all([
+        this.sumRevenue(todayStart, now),
+        this.sumRevenue(startOfWeek, now),
+        this.sumRevenue(startOfMonth, now),
+        this.orderModel.countDocuments({ $or: [{ status: 'paid' }, { paymentStatus: 'paid' }] }),
+        this.calculateSalaryCostForRange(todayStart, now),
+        this.calculateSalaryCostForRange(startOfWeek, now),
+        this.calculateSalaryCostForRange(startOfMonth, now),
+        this.calculateTodayInventoryValue(),
+        this.sumExpenses(todayStart, todayEnd),
+        this.sumIngredientUsages(todayStart, todayEnd),
+        this.sumExpenses(startOfWeek, now),
+        this.sumIngredientUsages(startOfWeek, now),
+        this.sumExpenses(startOfMonth, now),
+        this.sumIngredientUsages(startOfMonth, now),
+      ]);
+
+      const estimatedCOGS = Math.round(todayGross * 0.3);
+      const effectiveCOGS = totalInventoryValue > 0 && totalInventoryValue < estimatedCOGS ? totalInventoryValue : estimatedCOGS;
+      const todayEffectiveCOGS = todayIngredientUsageCost > 0 ? todayIngredientUsageCost : effectiveCOGS;
+      const todayNetProfit = Math.max(0, todayGross - todaySalary - todayEffectiveCOGS - todayExpenseCost);
+      const weekNetProfit = Math.max(0, weekGross - weekSalary - weekIngredientUsageCost - weekExpenseCost);
+      const monthNetProfit = Math.max(0, monthGross - monthSalary - monthIngredientUsageCost - monthExpenseCost);
+
+      baselineData = {
+        todayGross,
+        weekGross,
+        monthGross,
+        totalOrders,
+        todaySalary,
+        weekSalary,
+        monthSalary,
+        totalInventoryValue,
+        todayExpenseCost,
+        todayIngredientUsageCost,
+        weekExpenseCost,
+        weekIngredientUsageCost,
+        monthExpenseCost,
+        monthIngredientUsageCost,
+        estimatedCOGS,
+        effectiveCOGS,
+        todayEffectiveCOGS,
+        todayNetProfit,
+        weekNetProfit,
+        monthNetProfit,
+      };
+      this.baselineCache = { timestamp: nowTime, data: baselineData };
+    }
+
+    const {
       todayGross,
       weekGross,
       monthGross,
       totalOrders,
       todaySalary,
+      weekSalary,
+      monthSalary,
       totalInventoryValue,
       todayExpenseCost,
       todayIngredientUsageCost,
-    ] = await Promise.all([
-      this.sumRevenue(todayStart, now),
-      this.sumRevenue(startOfWeek, now),
-      this.sumRevenue(startOfMonth, now),
-      this.orderModel.countDocuments({ $or: [{ status: 'paid' }, { paymentStatus: 'paid' }] }),
-      this.calculateSalaryCostForRange(todayStart, now),
-      this.calculateTodayInventoryValue(),
-      this.sumExpenses(todayStart, todayEnd),
-      this.sumIngredientUsages(todayStart, todayEnd),
-    ]);
-
-    const estimatedCOGS = Math.round(todayGross * 0.3);
-    const effectiveCOGS = totalInventoryValue > 0 && totalInventoryValue < estimatedCOGS ? totalInventoryValue : estimatedCOGS;
-    // Nếu có tiêu hao nguyên liệu thực tế (> 0) thì dùng số tiền tiêu hao thực tế, nếu không dùng effectiveCOGS cho baseline/tests
-    const todayEffectiveCOGS = todayIngredientUsageCost > 0 ? todayIngredientUsageCost : effectiveCOGS;
-    const todayNetProfit = Math.max(0, todayGross - todaySalary - todayEffectiveCOGS - todayExpenseCost);
+      weekExpenseCost,
+      weekIngredientUsageCost,
+      monthExpenseCost,
+      monthIngredientUsageCost,
+      estimatedCOGS,
+      effectiveCOGS,
+      todayEffectiveCOGS,
+      todayNetProfit,
+      weekNetProfit,
+      monthNetProfit,
+    } = baselineData;
 
     // Xác định kỳ thống kê được chọn: Ngày hay Tháng
     let periodType: 'day' | 'month' = 'day';
@@ -100,7 +202,7 @@ export class AnalyticsService {
     let dayIngredientUsages: any[] = [];
 
     if (periodType === 'day') {
-      const orderQuery = typeof this.orderModel.find === 'function'
+      const orderPromise = typeof this.orderModel.find === 'function'
         ? this.orderModel.find({
             $and: [
               { $or: [{ status: 'paid' }, { paymentStatus: 'paid' }] },
@@ -112,12 +214,9 @@ export class AnalyticsService {
               },
             ],
           })
-        : null;
-
-      const orderPromise = orderQuery
-        ? (typeof orderQuery.populate === 'function'
-            ? orderQuery.populate('tableId', 'tableNumber').sort({ paidAt: -1, createdAt: -1 }).lean().exec()
-            : (typeof orderQuery.exec === 'function' ? orderQuery.exec() : Promise.resolve([])))
+          .sort({ paidAt: -1, createdAt: -1 })
+          .lean()
+          .exec()
         : Promise.resolve([]);
 
       const attQuery = typeof this.attendanceModel.find === 'function'
@@ -150,8 +249,32 @@ export class AnalyticsService {
             : (typeof ingQuery.exec === 'function' ? ingQuery.exec() : Promise.resolve([])))
         : Promise.resolve([]);
 
-      const [resOrders, resAtts, resExps, resIngs] = await Promise.all([orderPromise, attPromise, expPromise, ingPromise]);
-      dayOrders = Array.isArray(resOrders) ? resOrders : [];
+      const [resOrders, resAtts, resExps, resIngs, foodMap, tableMap] = await Promise.all([
+        orderPromise,
+        attPromise,
+        expPromise,
+        ingPromise,
+        this.getFoodMap(),
+        this.getTableMap(),
+      ]);
+
+      const rawOrders = Array.isArray(resOrders) ? resOrders : [];
+      for (const o of rawOrders) {
+        if (o.tableId) {
+          const t = tableMap.get(String(o.tableId));
+          if (t) o.tableId = t;
+        }
+        if (o.items && Array.isArray(o.items)) {
+          for (const it of o.items) {
+            if (it.foodId) {
+              const f = foodMap.get(String(it.foodId));
+              if (f) it.foodId = f;
+            }
+          }
+        }
+      }
+
+      dayOrders = rawOrders;
       dayAttendances = Array.isArray(resAtts) ? resAtts : [];
       dayExpenses = Array.isArray(resExps) ? resExps : [];
       dayIngredientUsages = Array.isArray(resIngs) ? resIngs : [];
@@ -253,6 +376,8 @@ export class AnalyticsService {
       weekGross,
       monthGross,
       todaySalary,
+      weekSalary,
+      monthSalary,
       todayIngredientCost: totalInventoryValue,
       todayIngredientUsageCost,
       totalInventoryValue,
@@ -260,8 +385,8 @@ export class AnalyticsService {
       todayExpenseCost,
       todayNetProfit,
       today: todayNetProfit,
-      week: Math.max(0, weekGross - todaySalary * 7),
-      month: Math.max(0, monthGross - todaySalary * 30),
+      week: weekNetProfit,
+      month: monthNetProfit,
       totalOrders,
     };
   }
@@ -549,19 +674,8 @@ export class AnalyticsService {
       {
         $lookup: {
           from: 'foods',
-          let: { rawFoodId: '$items.foodId' },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $or: [
-                    { $eq: ['$_id', '$$rawFoodId'] },
-                    { $eq: [{ $toString: '$_id' }, { $toString: '$$rawFoodId' }] },
-                  ],
-                },
-              },
-            },
-          ],
+          localField: 'items.foodId',
+          foreignField: '_id',
           as: 'foodDoc',
         },
       },

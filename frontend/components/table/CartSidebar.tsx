@@ -101,65 +101,117 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
   hasPendingOrder = false,
 }) => {
   const renderCartItems = () => {
+    const storedName = typeof window !== 'undefined' ? localStorage.getItem('kohi_customer_name') : null;
+    const effectiveCustomerName = (customerName && customerName !== 'Khách' && customerName !== 'Bạn')
+      ? customerName
+      : (storedName || '');
+
+    interface CartGroup {
+      id: string;
+      callerName: string;
+      isMine: boolean;
+      items: CartItem[];
+      totalQuantity: number;
+      totalAmount: number;
+    }
+
+    const groups: CartGroup[] = [];
+
+    // Group 1: My items (Gom toàn bộ món của bạn vào 1 nhóm)
     const myItems = cart.filter((item) =>
       currentDeviceId ? item.addedByDeviceId === currentDeviceId : true
     );
+    if (myItems.length > 0) {
+      const myCallerName = (effectiveCustomerName || (lang === 'en' ? 'You' : lang === 'zh' ? '您' : 'Bạn')).trim();
+      groups.push({
+        id: 'me',
+        callerName: myCallerName,
+        isMine: true,
+        items: myItems,
+        totalQuantity: myItems.reduce((acc, i) => acc + i.quantity, 0),
+        totalAmount: myItems.reduce((acc, i) => acc + (i.unitPrice ?? i.food.price) * i.quantity, 0),
+      });
+    }
+
+    // Group 2: Others items grouped by caller (Gom các món của từng người khác vào nhóm riêng)
     const othersItems = cart.filter((item) =>
       currentDeviceId ? item.addedByDeviceId !== currentDeviceId : false
     );
+    if (othersItems.length > 0) {
+      const othersMap = new Map<string, CartItem[]>();
+      for (const item of othersItems) {
+        const key = item.addedByDeviceId || item.addedBy || 'other';
+        if (!othersMap.has(key)) {
+          othersMap.set(key, []);
+        }
+        othersMap.get(key)!.push(item);
+      }
+
+      othersMap.forEach((items, key) => {
+        const firstItem = items[0];
+        const rawName = firstItem.addedBy && firstItem.addedBy !== 'Khách' && firstItem.addedBy !== 'Bạn'
+          ? firstItem.addedBy
+          : (lang === 'en' ? 'Companion' : lang === 'zh' ? '同桌' : 'Cùng bàn');
+        groups.push({
+          id: key,
+          callerName: rawName,
+          isMine: false,
+          items,
+          totalQuantity: items.reduce((acc, i) => acc + i.quantity, 0),
+          totalAmount: items.reduce((acc, i) => acc + (i.unitPrice ?? i.food.price) * i.quantity, 0),
+        });
+      });
+    }
 
     const renderSingleItem = (item: CartItem) => {
       const effectivePrice = item.unitPrice ?? item.food.price;
-      const isMine = currentDeviceId ? item.addedByDeviceId === currentDeviceId : true;
-
-      const storedName = typeof window !== 'undefined' ? localStorage.getItem('kohi_customer_name') : null;
-      const effectiveCustomerName = (customerName && customerName !== 'Khách' && customerName !== 'Bạn')
-        ? customerName
-        : (storedName || '');
-
-      const badgeText = item.addedBy && item.addedBy !== 'Khách' && item.addedBy !== 'Bạn'
-        ? item.addedBy
-        : (isMine ? (effectiveCustomerName || (lang === 'en' ? 'You' : lang === 'zh' ? '您' : 'Bạn')) : (lang === 'en' ? 'Companion' : lang === 'zh' ? '同桌' : 'Cùng bàn'));
 
       return (
         <div
           key={`${item.food._id}_${item.addedByDeviceId || 'local'}`}
           className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 shadow-xs transition-colors"
         >
-          <div className="flex justify-between items-start gap-2">
+          <div className="flex items-start gap-3">
+            {/* Food Thumbnail Image */}
+            <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-950 relative flex-shrink-0 border border-slate-200/60 dark:border-white/10 flex items-center justify-center">
+              {item.food.image ? (
+                <Image
+                  src={item.food.image}
+                  alt={item.food.name}
+                  fill
+                  sizes="48px"
+                  className="object-cover"
+                />
+              ) : (
+                <span className="material-symbols-outlined text-slate-400 text-lg">local_cafe</span>
+              )}
+            </div>
+
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 flex-wrap">
+              <div className="flex justify-between items-start gap-1">
                 <h4 className="text-xs font-semibold text-slate-900 dark:text-white truncate">
                   {item.food.name}
                 </h4>
-                {badgeText && (
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider font-mono ${
-                    isMine
-                      ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30'
-                      : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
-                  }`}>
-                    <span className="material-symbols-outlined text-[12px]">{isMine ? 'person' : 'groups'}</span>
-                    <span>{badgeText}</span>
-                  </span>
-                )}
+                <button
+                  onClick={() => handleRemove(item.food._id)}
+                  className="w-5 h-5 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 flex items-center justify-center transition-all cursor-pointer font-medium text-sm -mr-1 -mt-0.5 flex-shrink-0"
+                  title={lang === 'en' ? 'Remove item' : lang === 'zh' ? '删除' : 'Xóa món'}
+                >
+                  ×
+                </button>
               </div>
               <span className="text-[13px] font-bold text-[#0284c7] dark:text-sky-400 block mt-0.5">
                 {formatPrice(effectivePrice, lang)}
               </span>
             </div>
-            <button
-              onClick={() => handleRemove(item.food._id)}
-              className="w-6 h-6 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 flex items-center justify-center transition-all cursor-pointer font-medium text-sm"
-              title={lang === 'en' ? 'Remove item' : lang === 'zh' ? '删除' : 'Xóa món'}
-            >
-              ×
-            </button>
           </div>
+
           {item.note && (
-            <p className="text-[12px] font-normal text-slate-500 dark:text-slate-400 line-clamp-1 italic mt-1">
+            <p className="text-[12px] font-normal text-slate-500 dark:text-slate-400 line-clamp-1 italic mt-1.5 pl-0.5">
               {lang === 'en' ? 'Note:' : lang === 'zh' ? '备注:' : 'Ghi chú:'} {item.note}
             </p>
           )}
+
           <div className="flex justify-between items-center mt-2.5">
             <div className="flex items-center gap-2 bg-slate-200/80 dark:bg-slate-800/80 border border-slate-300/70 dark:border-white/10 rounded-full px-2 py-1 shadow-xs">
               <button
@@ -204,39 +256,36 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
           </div>
         ) : (
           <>
-            {/* Section 1: Món của tôi */}
-            {myItems.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-semibold text-sky-600 dark:text-sky-400">
-                  <span className="flex items-center gap-1">
-                    <span className="material-symbols-outlined text-sm">person</span>
-                    <span>{lang === 'en' ? 'Your Selection' : lang === 'zh' ? '您选择的商品' : 'Món bạn chọn'}</span>
-                    <span>({myItems.reduce((acc, i) => acc + i.quantity, 0)})</span>
-                  </span>
-                  <span className="text-[11px] font-mono text-slate-400">
-                    {formatPrice(myItems.reduce((acc, i) => acc + (i.unitPrice ?? i.food.price) * i.quantity, 0), lang)}
+            {groups.map((group, groupIdx) => (
+              <div
+                key={group.id}
+                className={`space-y-2 ${groupIdx > 0 ? 'pt-3 border-t border-slate-200 dark:border-white/10' : ''}`}
+              >
+                {/* Group Header: Badge (NO ICON) + Quantity + Group Subtotal */}
+                <div className="flex items-center justify-between text-xs font-semibold">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span
+                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider font-mono truncate max-w-[140px] ${
+                        group.isMine
+                          ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30'
+                          : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                      }`}
+                    >
+                      {group.callerName}
+                    </span>
+                    <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                      {group.isMine ? (lang === 'en' ? '(You)' : '(Bạn)') : (lang === 'en' ? '(Companion)' : '(Cùng bàn)')} ({group.totalQuantity})
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-mono font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                    {formatPrice(group.totalAmount, lang)}
                   </span>
                 </div>
-                {myItems.map(renderSingleItem)}
-              </div>
-            )}
 
-            {/* Section 2: Món người khác chọn trong nhóm */}
-            {othersItems.length > 0 && (
-              <div className="space-y-2 pt-2.5 border-t border-slate-200 dark:border-white/10">
-                <div className="flex items-center justify-between text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                  <span className="flex items-center gap-1">
-                    <span className="material-symbols-outlined text-sm">groups</span>
-                    <span>{lang === 'en' ? 'Table Members Selection' : lang === 'zh' ? '同桌成员选择' : 'Món thành viên cùng bàn'}</span>
-                    <span>({othersItems.reduce((acc, i) => acc + i.quantity, 0)})</span>
-                  </span>
-                  <span className="text-[11px] font-mono text-slate-400">
-                    {formatPrice(othersItems.reduce((acc, i) => acc + (i.unitPrice ?? i.food.price) * i.quantity, 0), lang)}
-                  </span>
-                </div>
-                {othersItems.map(renderSingleItem)}
+                {/* Items in this group */}
+                {group.items.map(renderSingleItem)}
               </div>
-            )}
+            ))}
           </>
         )}
 
@@ -305,8 +354,48 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
       );
     }
 
+    // Tự động tặng & áp dụng mã giảm giá 10% khi tổng đơn >= 300.000đ
+    const isEligibleAutoDiscount = totalAmount >= 300000;
+    const autoDiscountAmount = isEligibleAutoDiscount ? Math.round(totalAmount * 0.1) : 0;
+
+    // Ưu tiên mã khách chủ động nhập nếu hợp lệ và có số tiền giảm > 0
+    const hasManualCoupon = Boolean(couponResult?.valid && couponResult.discountAmount > 0);
+    const effectiveDiscount = hasManualCoupon ? couponResult!.discountAmount : autoDiscountAmount;
+    const isAutoDiscountApplied = isEligibleAutoDiscount && !hasManualCoupon;
+    const finalCalculatedTotal = Math.max(0, totalAmount - effectiveDiscount);
+
     return (
       <div className="flex-shrink-0 p-3.5 xl:p-5 bg-white/95 dark:bg-[#0B0F17]/95 border-t border-slate-200 dark:border-white/10 shadow-lg dark:shadow-2xl font-sans pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        {/* Auto 10% Voucher Banner when >= 300k */}
+        {isAutoDiscountApplied && (
+          <div className="mb-2.5 p-2.5 rounded-xl bg-gradient-to-r from-sky-500/15 via-blue-500/15 to-indigo-500/15 border border-sky-500/30 text-sky-700 dark:text-sky-300 text-xs font-semibold flex items-center gap-2">
+            <span className="material-symbols-outlined text-base text-sky-500 shrink-0">redeem</span>
+            <span className="leading-snug">
+              {lang === 'en'
+                ? 'Orders > 300k get 10% OFF automatically applied to bill!'
+                : lang === 'zh'
+                ? '满30万立减10%，已自动抵扣至账单！'
+                : 'Đơn hàng > 300k: Tự động tặng mã giảm 10% áp dụng luôn vào hóa đơn!'}
+            </span>
+          </div>
+        )}
+
+        {/* Progress incentive hint when < 300k */}
+        {!isEligibleAutoDiscount && totalAmount > 0 && (
+          <div className="mb-2.5 px-2.5 py-1.5 rounded-xl bg-sky-500/5 dark:bg-sky-500/10 border border-sky-500/20 text-[11px] text-slate-600 dark:text-slate-300 flex items-center justify-between font-sans">
+            <span className="truncate pr-1">
+              {lang === 'en'
+                ? `Add ${formatPrice(300000 - totalAmount, lang)} to get 10% OFF auto applied!`
+                : lang === 'zh'
+                ? `还差 ${formatPrice(300000 - totalAmount, lang)} 即可立减10%！`
+                : `Gọi thêm ${formatPrice(300000 - totalAmount, lang)} để được tặng mã giảm 10%!`}
+            </span>
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-[#38BDF8] text-slate-950 font-mono shrink-0">
+              TẶNG 10%
+            </span>
+          </div>
+        )}
+
         {/* Coupon Input Group */}
         <div className="flex gap-2">
           <div className="flex-1">
@@ -388,10 +477,14 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             <span>{t.subtotal || (lang === 'en' ? 'Subtotal' : lang === 'zh' ? '小计' : 'Tạm tính')} ({totalQuantity} {lang === 'en' ? 'items' : lang === 'zh' ? '件' : 'món'})</span>
             <span className="font-semibold text-slate-900 dark:text-white font-mono">{formatPrice(totalAmount, lang)}</span>
           </div>
-          {couponResult?.valid && couponResult.discountAmount > 0 && (
+          {effectiveDiscount > 0 && (
             <div className="flex justify-between text-[13.5px] font-semibold text-emerald-600 dark:text-emerald-400 font-sans">
-              <span>{lang === 'en' ? 'Discount' : lang === 'zh' ? '优惠' : 'Khuyến mãi'}</span>
-              <span className="font-mono">-{formatPrice(couponResult.discountAmount, lang)}</span>
+              <span>
+                {hasManualCoupon
+                  ? `${lang === 'en' ? 'Discount' : lang === 'zh' ? '优惠' : 'Khuyến mãi'} (${couponInput})`
+                  : (lang === 'en' ? 'Promo 10% (>300k)' : lang === 'zh' ? '满30万立减10%' : 'Tặng mã 10% (Đơn > 300k)')}
+              </span>
+              <span className="font-mono">-{formatPrice(effectiveDiscount, lang)}</span>
             </div>
           )}
           <div className="flex justify-between items-baseline pt-1">
@@ -399,13 +492,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
               {t.total || (lang === 'en' ? 'Total' : lang === 'zh' ? '总计' : 'Tổng cộng')}
             </span>
             <span className="text-[20px] font-bold text-[#0284c7] dark:text-sky-400 tracking-tight font-sans font-mono">
-              {formatPrice(
-                Math.max(
-                  0,
-                  totalAmount - (couponResult?.valid ? couponResult.discountAmount : 0)
-                ),
-                lang
-              )}
+              {formatPrice(finalCalculatedTotal, lang)}
             </span>
           </div>
         </div>
@@ -439,6 +526,8 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             ? t.submitting
             : hasPendingOrder
             ? (lang === 'en' ? 'WAITING FOR APPROVAL...' : lang === 'zh' ? '正在等待确认...' : 'ĐANG CHỜ DUYỆT ĐƠN...')
+            : effectiveDiscount > 0
+            ? (lang === 'en' ? `SUBMIT TABLE ORDER (${totalQuantity}) • -10% OFF` : lang === 'zh' ? `提交整桌订单 (${totalQuantity}) • 立减10%` : `GỬI ĐƠN CẢ BÀN (${totalQuantity} MÓN) • GIẢM 10%`)
             : (lang === 'en' ? `SUBMIT TABLE ORDER (${totalQuantity})` : lang === 'zh' ? `提交整桌订单 (${totalQuantity})` : `GỬI ĐƠN CẢ BÀN (${totalQuantity} MÓN)`)}
         </span>
       </button>
@@ -461,9 +550,8 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
               <span>{lang === 'en' ? 'GROUP TABLE CART' : lang === 'zh' ? '同桌共享购物车' : 'GIỎ HÀNG CHUNG CỦA BÀN'}</span>
             </p>
           </div>
-          <div className="bg-sky-50 dark:bg-sky-500/10 border border-sky-500/30 px-3 py-1 rounded-full text-xs font-semibold text-sky-600 dark:text-sky-400 font-mono flex items-center gap-1">
-            <span className="material-symbols-outlined text-[15px]">table_bar</span>
-            <span>{formatTableName(table?.tableName, lang)}</span>
+          <div className="bg-sky-50 dark:bg-sky-500/10 border border-sky-500/30 px-3 py-1 rounded-full text-xs font-semibold text-sky-600 dark:text-sky-400 font-mono">
+            {formatTableName(table?.tableName, lang)}
           </div>
         </div>
 

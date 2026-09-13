@@ -42,6 +42,29 @@ export class CouponsService implements OnModuleInit {
       isActive: true,
     }).exec();
 
+    // Hỗ trợ mã ưu đãi tự động KOHI10 (10% cho đơn hàng từ 300.000đ)
+    if (!coupon && code.toUpperCase() === 'KOHI10') {
+      if (orderAmount < 300000) {
+        return {
+          valid: false,
+          discountAmount: 0,
+          message: 'Đơn hàng tối thiểu 300.000đ để áp dụng ưu đãi giảm 10%.',
+        };
+      }
+      const discountAmount = Math.round((orderAmount * 10) / 100);
+      return {
+        valid: true,
+        discountAmount,
+        coupon: {
+          code: 'KOHI10',
+          type: 'percent',
+          value: 10,
+          minOrderAmount: 300000,
+          maxDiscount: 0,
+        } as any,
+      };
+    }
+
     if (!coupon) return { valid: false, discountAmount: 0, message: 'Mã giảm giá không tồn tại hoặc đã bị vô hiệu.' };
     if (new Date() > coupon.expiresAt) return { valid: false, discountAmount: 0, message: 'Mã giảm giá đã hết hạn.' };
     if (coupon.maxUsage > 0 && coupon.usedCount >= coupon.maxUsage) {

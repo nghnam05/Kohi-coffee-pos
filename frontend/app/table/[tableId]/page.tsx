@@ -451,6 +451,12 @@ export default function TableMenuPage() {
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [isLeaveTableModalOpen, setIsLeaveTableModalOpen] = useState(false);
   const [isLeavingTable, setIsLeavingTable] = useState(false);
+  const [forcedOutModal, setForcedOutModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    countdown: number;
+  } | null>(null);
 
   // Customer Notifications State
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
@@ -584,25 +590,27 @@ export default function TableMenuPage() {
 
   useEffect(() => {
     if (!tableId || !mounted) return;
-    const savedName = (
-      localStorage.getItem(`chika_name_${tableId}`) ||
-      localStorage.getItem('kohi_customer_name') ||
-      customerName ||
-      ''
-    ).trim();
-    const isDismissed =
-      localStorage.getItem(`chika_name_dismissed_${tableId}`) === 'true' ||
-      localStorage.getItem('kohi_name_dismissed') === 'true';
+    // Remove obsolete global dismissal flag so users aren't permanently locked out of the name prompt
+    localStorage.removeItem('kohi_name_dismissed');
 
-    if (savedName) {
-      setCustomerName(savedName);
-      setNameInput(savedName);
-      localStorage.setItem(`chika_name_${tableId}`, savedName);
-      localStorage.setItem('kohi_customer_name', savedName);
+    const tableSavedName = (localStorage.getItem(`chika_name_${tableId}`) || '').trim();
+    const globalSavedName = (localStorage.getItem('kohi_customer_name') || customerName || '').trim();
+    const isDismissed = sessionStorage.getItem(`kohi_name_dismissed_${tableId}`) === 'true';
+
+    if (tableSavedName) {
+      setCustomerName(tableSavedName);
+      setNameInput(tableSavedName);
       setIsNamePromptOpen(false);
     } else if (isDismissed) {
+      if (globalSavedName) {
+        setCustomerName(globalSavedName);
+        setNameInput(globalSavedName);
+      }
       setIsNamePromptOpen(false);
     } else {
+      if (globalSavedName) {
+        setNameInput(globalSavedName);
+      }
       setIsNamePromptOpen(true);
     }
   }, [tableId, mounted]);
@@ -612,6 +620,37 @@ export default function TableMenuPage() {
       setTimeout(() => nameInputRef.current?.focus(), 100);
     }
   }, [isNamePromptOpen]);
+
+  const triggerAutoOutTable = useCallback((customMessage?: string, customTitle?: string) => {
+    try { playAlertPing(); } catch {}
+
+    const targetTableId = typeof tableId === 'string' ? tableId : (tableId as any)?._id;
+
+    if (typeof window !== 'undefined' && targetTableId) {
+      try {
+        localStorage.removeItem(`chika_name_${targetTableId}`);
+        localStorage.removeItem(`chika_name_dismissed_${targetTableId}`);
+        sessionStorage.removeItem(`kohi_name_dismissed_${targetTableId}`);
+        sessionStorage.removeItem(`kohi_menu_cache_${targetTableId}`);
+        localStorage.removeItem('kohi_customer_name');
+        localStorage.removeItem('kohi_name_dismissed');
+      } catch {}
+    }
+
+    setForcedOutModal({
+      isOpen: true,
+      title: customTitle || 'Bàn đã được giải phóng',
+      message: customMessage || 'Bàn đã được nhân viên cập nhật về trạng thái Trống. Cảm ơn quý khách đã ghé thăm Kohi Coffee!',
+      countdown: 3,
+    });
+  }, [tableId]);
+
+  const handleImmediateExit = useCallback(() => {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+    }
+    router.push('/');
+  }, [router]);
 
   useEffect(() => {
     if (!tableId) return;
@@ -821,17 +860,28 @@ export default function TableMenuPage() {
       }
     });
 
+    socketRef.current.on('forceLeaveTable', ({ tableId: evtTableId, message }: { tableId: string; message?: string }) => {
+      const currentTableId = typeof tableId === 'string' ? tableId : (tableId as any)?._id;
+      if (evtTableId === currentTableId) {
+        triggerAutoOutTable(message || 'Bàn đã được nhân viên cập nhật trạng thái. Quý khách đã được tự động rời bàn.');
+      }
+    });
+
+    socketRef.current.on('tableCleared', ({ tableId: evtTableId, message }: { tableId: string; message?: string }) => {
+      const currentTableId = typeof tableId === 'string' ? tableId : (tableId as any)?._id;
+      if (evtTableId === currentTableId) {
+        triggerAutoOutTable(message || 'Bàn đã được nhân viên giải phóng sang trạng thái trống. Cảm ơn quý khách!');
+      }
+    });
+
     socketRef.current.on('tableUpdated', ({ tableId: evtTableId, status }: { tableId: string; status: string }) => {
       const currentTableId = typeof tableId === 'string' ? tableId : (tableId as any)?._id;
       if (evtTableId === currentTableId) {
         setTable((prev) => (prev ? { ...prev, status } : null));
         if (status === 'empty') {
-          try { playAlertPing(); } catch {}
-          setKitchenNotification({
-            show: true,
-            title: 'Thanh toán hoàn tất!',
-            message: 'Bàn đã được giải phóng sang trạng thái trống. Cảm ơn quý khách!',
-          });
+          triggerAutoOutTable('Bàn đã được nhân viên cập nhật về trạng thái Trống. Cảm ơn quý khách đã ghé Kohi Coffee!');
+        } else if (status === 'reserved') {
+          triggerAutoOutTable('Bàn đã được nhân viên chuyển sang trạng thái Đã đặt trước. Quý khách đã được tự động rời bàn.');
         }
       }
     });
@@ -841,7 +891,26 @@ export default function TableMenuPage() {
         socketRef.current.disconnect();
       }
     };
-  }, [tableId, router]);
+  }, [tableId, router, triggerAutoOutTable]);
+
+  // Auto-redirect countdown effect when customer is forced out of table
+  useEffect(() => {
+    if (!forcedOutModal?.isOpen) return;
+
+    if (forcedOutModal.countdown <= 0) {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+      router.push('/');
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setForcedOutModal((prev) => (prev ? { ...prev, countdown: prev.countdown - 1 } : null));
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [forcedOutModal, router]);
 
   useEffect(() => {
     if (kitchenNotification?.show) {
@@ -937,7 +1006,47 @@ export default function TableMenuPage() {
     }
   }, [tableId]);
 
+  const isLeaveDisabled = useMemo(() => {
+    // 1. Nếu có đơn hàng đã được duyệt và đang chờ làm / đang chế biến / sẵn sàng ra món
+    const hasApprovedOrCooking = activeOrders.some((o: any) =>
+      ['confirmed', 'cooking', 'preparing', 'processing', 'in_progress', 'ready'].includes(o.status)
+    );
+    if (hasApprovedOrCooking) return true;
+
+    // 2. Nếu có đơn hàng chưa thanh toán
+    const hasUnpaid = activeOrders.some(
+      (o: any) => o.status !== 'paid' && o.status !== 'cancelled' && o.status !== 'pending'
+    );
+    if (hasUnpaid) return true;
+
+    return false;
+  }, [activeOrders]);
+
+  const leaveDisabledReason = useMemo(() => {
+    const hasApprovedOrCooking = activeOrders.some((o: any) =>
+      ['confirmed', 'cooking', 'preparing', 'processing', 'in_progress', 'ready'].includes(o.status)
+    );
+    if (hasApprovedOrCooking) {
+      return lang === 'en'
+        ? 'Order is approved & being prepared'
+        : lang === 'zh'
+        ? '订单已确认正在制作中'
+        : 'Đơn đã duyệt & đang làm';
+    }
+    return '';
+  }, [activeOrders, lang]);
+
   const handleLeaveTable = () => {
+    const hasApprovedOrCooking = activeOrders.some((o: any) =>
+      ['confirmed', 'cooking', 'preparing', 'processing', 'in_progress', 'ready'].includes(o.status)
+    );
+    if (hasApprovedOrCooking) {
+      toast('Đơn hàng của bạn đã được duyệt và đang chờ làm / pha chế. Quý khách vui lòng không rời bàn lúc này.', {
+        icon: null,
+      });
+      return;
+    }
+
     const hasUnpaid = activeOrders.some(
       (o) => o.status !== 'paid' && o.status !== 'cancelled'
     );
@@ -952,6 +1061,17 @@ export default function TableMenuPage() {
   };
 
   const executeLeaveTable = async () => {
+    const hasApprovedOrCooking = activeOrders.some((o: any) =>
+      ['confirmed', 'cooking', 'preparing', 'processing', 'in_progress', 'ready'].includes(o.status)
+    );
+    if (hasApprovedOrCooking) {
+      toast('Đơn hàng của bạn đã được duyệt và đang chờ làm. Quý khách vui lòng không rời bàn lúc này.', {
+        icon: null,
+      });
+      setIsLeaveTableModalOpen(false);
+      return;
+    }
+
     const hasUnpaid = activeOrders.some(
       (o) => o.status !== 'paid' && o.status !== 'cancelled'
     );
@@ -987,6 +1107,7 @@ export default function TableMenuPage() {
       }
       localStorage.removeItem(`chika_name_${tableId}`);
       localStorage.removeItem(`chika_name_dismissed_${tableId}`);
+      sessionStorage.removeItem(`kohi_name_dismissed_${tableId}`);
       localStorage.removeItem('kohi_customer_name');
       localStorage.removeItem('kohi_name_dismissed');
       router.push('/');
@@ -1449,10 +1570,11 @@ export default function TableMenuPage() {
       localStorage.setItem(`chika_name_${tableId}`, finalName);
       localStorage.setItem('kohi_customer_name', finalName);
       localStorage.removeItem(`chika_name_dismissed_${tableId}`);
+      sessionStorage.removeItem(`kohi_name_dismissed_${tableId}`);
       localStorage.removeItem('kohi_name_dismissed');
     } else {
-      localStorage.setItem(`chika_name_dismissed_${tableId}`, 'true');
-      localStorage.setItem('kohi_name_dismissed', 'true');
+      sessionStorage.setItem(`kohi_name_dismissed_${tableId}`, 'true');
+      localStorage.removeItem('kohi_name_dismissed');
     }
     if (socketRef.current && tableId) {
       const devId = typeof window !== 'undefined' ? localStorage.getItem('kohi_device_id') || 'dev_guest' : 'dev_guest';
@@ -1477,6 +1599,10 @@ export default function TableMenuPage() {
       const uniqueNames = Array.from(new Set(resolvedNames.filter(Boolean)));
       const groupCustomerName = uniqueNames.length > 0 ? uniqueNames.join(', ') : (customerName || 'Nhóm khách');
 
+      const effectiveCouponCode = couponResult?.valid && couponInput.trim()
+        ? couponInput.trim().toUpperCase()
+        : (totalAmount >= 300000 ? 'KOHI10' : undefined);
+
       const payload = {
         tableId,
         items: cart.map((item) => {
@@ -1490,7 +1616,7 @@ export default function TableMenuPage() {
           };
         }),
         paymentMethod,
-        ...(couponResult?.valid && couponInput ? { couponCode: couponInput.toUpperCase() } : {}),
+        ...(effectiveCouponCode ? { couponCode: effectiveCouponCode } : {}),
         customerName: groupCustomerName,
       };
 
@@ -1822,6 +1948,8 @@ export default function TableMenuPage() {
         isCallingStaff={isCallingStaff}
         setIsTransferModalOpen={setIsTransferModalOpen}
         handleLeaveTable={handleLeaveTable}
+        isLeaveDisabled={isLeaveDisabled}
+        leaveDisabledReason={leaveDisabledReason}
         isDark={isDark}
         setTheme={setTheme}
         lang={lang}
@@ -1833,6 +1961,11 @@ export default function TableMenuPage() {
         totalQuantity={totalQuantity}
         onOpenNotifications={() => setIsNotificationModalOpen(true)}
         unreadNotificationCount={unreadNotificationCount}
+        customerName={customerName}
+        onOpenNamePrompt={() => {
+          setNameInput(customerName);
+          setIsNamePromptOpen(true);
+        }}
       />
 
       <div className={`fixed inset-0 md:static md:h-screen w-full max-w-full overflow-hidden flex flex-col md:flex-row bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-white font-sans antialiased selection:bg-[#3B82F6] selection:text-white transition-colors duration-200 ${
@@ -1860,6 +1993,8 @@ export default function TableMenuPage() {
           setIsAiChatOpen={setIsAiChatOpen}
           setAiInput={setAiInput}
           handleLeaveTable={handleLeaveTable}
+          isLeaveDisabled={isLeaveDisabled}
+          leaveDisabledReason={leaveDisabledReason}
           onOpenQRModal={() => setIsQRModalOpen(true)}
         />
 
@@ -1911,13 +2046,22 @@ export default function TableMenuPage() {
                           }}
                           className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all flex items-center gap-1.5 ${
                             isMe
-                              ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 hover:bg-sky-500/25 cursor-pointer'
+                              ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 hover:bg-sky-500/25 cursor-pointer shadow-xs'
                               : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10'
                           }`}
                           title={isMe ? (lang === 'en' ? 'Click to change your name' : 'Bấm để đổi tên hiển thị') : undefined}
                         >
-                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
-                          <span>{member.name || 'Khách'} {isMe && (lang === 'en' ? '(You)' : '(Bạn)')}</span>
+                          <span className={`w-1.5 h-1.5 rounded-full ${isMe ? 'bg-sky-500' : 'bg-slate-400'} shrink-0`} />
+                          <span>
+                            {isMe
+                              ? (customerName ? `${customerName} (${lang === 'en' ? 'You' : 'Bạn'})` : (lang === 'en' ? '+ Enter your name' : '+ Nhập tên của bạn'))
+                              : (member.name || 'Khách')}
+                          </span>
+                          {isMe && (
+                            <span className="material-symbols-outlined text-[12px] opacity-70">
+                              {customerName ? 'edit' : 'add'}
+                            </span>
+                          )}
                         </button>
                       );
                     })
@@ -1927,10 +2071,14 @@ export default function TableMenuPage() {
                         setNameInput(customerName);
                         setIsNamePromptOpen(true);
                       }}
-                      className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 hover:bg-sky-500/25 cursor-pointer flex items-center gap-1.5"
+                      className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 hover:bg-sky-500/25 cursor-pointer flex items-center gap-1.5 shadow-xs"
+                      title={lang === 'en' ? 'Click to enter your name' : 'Bấm để nhập tên của bạn'}
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
-                      <span>{customerName || (lang === 'en' ? 'You' : 'Bạn')} {lang === 'en' ? '(You)' : '(Bạn)'}</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
+                      <span>{customerName ? `${customerName} (${lang === 'en' ? 'You' : 'Bạn'})` : (lang === 'en' ? '+ Enter your name' : '+ Nhập tên của bạn')}</span>
+                      <span className="material-symbols-outlined text-[12px] opacity-70">
+                        {customerName ? 'edit' : 'add'}
+                      </span>
                     </button>
                   )}
                 </div>
@@ -2357,6 +2505,54 @@ export default function TableMenuPage() {
         lang={lang}
         isLeaving={isLeavingTable}
       />
+
+      {/* 2.8 Automatic Forced Out Table Modal */}
+      <AnimatePresence>
+        {forcedOutModal?.isOpen && (
+          <div className="fixed inset-0 z-50 overflow-y-auto p-4 flex items-center justify-center min-h-full">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/85 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.92, opacity: 0, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+              className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-6 shadow-2xl text-center space-y-4 my-auto"
+            >
+              <div className="w-16 h-16 mx-auto rounded-3xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center shadow-md animate-pulse">
+                <span className="material-symbols-outlined text-3xl">cleaning_services</span>
+              </div>
+
+              <div className="space-y-1.5">
+                <h3 className="text-lg font-black text-slate-900 dark:text-white font-heading">
+                  {forcedOutModal.title}
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed px-2">
+                  {forcedOutModal.message}
+                </p>
+              </div>
+
+              <div className="p-3 bg-slate-50 dark:bg-[#090D16] rounded-2xl border border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-sky-400 animate-ping" />
+                <span>Tự động chuyển về trang chủ sau <strong className="text-[#38BDF8] text-sm font-mono font-black">{forcedOutModal.countdown}s</strong></span>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleImmediateExit}
+                className="w-full py-3 bg-[#38BDF8] hover:bg-[#0284c7] text-white font-black text-xs rounded-2xl shadow-lg shadow-sky-500/25 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-base">home</span>
+                <span>Về trang chủ ngay</span>
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* VietQR Bank Payment Modal */}
       {payModalOrder && (

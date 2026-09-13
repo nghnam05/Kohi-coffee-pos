@@ -147,6 +147,9 @@ export class TablesService {
       this.ordersGateway.emitTableUpdate(id, updatedTable.status);
       if (updateTableDto.status === 'empty' && this.ordersGateway.server) {
         this.ordersGateway.server.emit('ordersUpdated');
+        this.ordersGateway.emitForceLeaveTable(id, 'Bàn đã được nhân viên cập nhật về trạng thái Trống. Quý khách đã được tự động rời bàn.');
+      } else if (updateTableDto.status === 'reserved' && this.ordersGateway.server) {
+        this.ordersGateway.emitForceLeaveTable(id, 'Bàn đã được nhân viên chuyển sang trạng thái Đã đặt trước. Quý khách đã được tự động rời bàn.');
       }
     }
 

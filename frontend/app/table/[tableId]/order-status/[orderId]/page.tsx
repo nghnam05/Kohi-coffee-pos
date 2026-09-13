@@ -138,6 +138,8 @@ interface Order {
   }>;
   status: 'pending' | 'confirmed' | 'cooking' | 'ready' | 'completed' | 'cancelled' | 'paid';
   paymentMethod?: 'cash' | 'momo' | 'bank_transfer' | string;
+  discountAmount?: number;
+  couponCode?: string;
   rewardedVoucherCode?: string;
   createdAt: string;
 }
@@ -220,6 +222,42 @@ export default function OrderStatusPage() {
     } finally {
       setIsLeaving(false);
       setIsLeaveModalOpen(false);
+    }
+  };
+
+  const [isCancellingOrder, setIsCancellingOrder] = useState(false);
+
+  const handleCancelOrder = async () => {
+    if (isCancellingOrder || !order?._id) return;
+    const confirmMsg =
+      lang === 'en'
+        ? 'Are you sure you want to cancel this order?'
+        : lang === 'zh'
+        ? '您确定要取消此订单吗？'
+        : 'Bạn có chắc chắn muốn hủy đơn hàng này không?';
+    if (!window.confirm(confirmMsg)) return;
+
+    setIsCancellingOrder(true);
+    try {
+      const res = await fetch(`${API_BASE}/orders/${order._id}/cancel`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Không thể hủy đơn hàng.');
+      }
+      toast(
+        lang === 'en'
+          ? 'Order cancelled successfully!'
+          : 'Đã hủy đơn hàng thành công!',
+        { icon: null }
+      );
+      setOrder((prev) => (prev ? { ...prev, status: 'cancelled' } : null));
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'Lỗi khi hủy đơn hàng.', { icon: null });
+    } finally {
+      setIsCancellingOrder(false);
     }
   };
 
@@ -362,6 +400,27 @@ export default function OrderStatusPage() {
         }
       }
       setTableOrders((prev) => prev.map((o) => (o._id === updatedId ? { ...o, ...updatedOrder } : o)));
+    });
+
+    socketRef.current.on('forceLeaveTable', ({ tableId: evtTableId, message }: { tableId: string; message?: string }) => {
+      if (evtTableId === tableId) {
+        toast(message || 'Bàn đã được nhân viên cập nhật về trạng thái Trống. Cảm ơn quý khách!', { icon: null });
+        setTimeout(() => router.push('/'), 2000);
+      }
+    });
+
+    socketRef.current.on('tableCleared', ({ tableId: evtTableId, message }: { tableId: string; message?: string }) => {
+      if (evtTableId === tableId) {
+        toast(message || 'Bàn đã được giải phóng sang trạng thái trống.', { icon: null });
+        setTimeout(() => router.push('/'), 2000);
+      }
+    });
+
+    socketRef.current.on('tableUpdated', ({ tableId: evtTableId, status }: { tableId: string; status: string }) => {
+      if (evtTableId === tableId && (status === 'empty' || status === 'reserved')) {
+        toast('Bàn đã được nhân viên cập nhật trạng thái. Quý khách đã rời bàn.', { icon: null });
+        setTimeout(() => router.push('/'), 2000);
+      }
     });
 
     return () => {
@@ -549,26 +608,49 @@ export default function OrderStatusPage() {
                     })}
                   </div>
 
+                  {/* Bill Subtotal & Discount breakdown */}
+                  {order.discountAmount && order.discountAmount > 0 ? (
+                    <div className="py-2.5 space-y-1.5 border-b border-dashed border-[var(--border-color)]">
+                      <div className="flex justify-between items-center text-xs text-[var(--text-secondary)] font-sans">
+                        <span>{lang === 'en' ? 'Subtotal' : lang === 'zh' ? '小计' : 'Tạm tính'}</span>
+                        <span className="font-mono font-semibold">
+                          {formatPrice(order.totalAmount + order.discountAmount)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs text-emerald-600 dark:text-emerald-400 font-semibold font-sans">
+                        <span>
+                          {order.couponCode === 'KOHI10'
+                            ? (lang === 'en' ? 'Discount 10% (Order > 300k)' : lang === 'zh' ? '满30万立减10%' : 'Tặng mã giảm 10% (Đơn > 300k)')
+                            : `${lang === 'en' ? 'Discount' : 'Giảm giá'} (${order.couponCode || 'Ưu đãi'})`}
+                        </span>
+                        <span className="font-mono">-{formatPrice(order.discountAmount)}</span>
+                      </div>
+                    </div>
+                  ) : null}
+
                   <div className="pt-3.5 flex justify-between items-center">
                     <span className="text-xs font-bold text-[var(--text-secondary)] uppercase">{t.total}</span>
                     <span className="text-lg sm:text-xl font-black text-emerald-500">{formatPrice(order.totalAmount)}</span>
                   </div>
 
-                  {order.rewardedVoucherCode && (
+                  {/* Voucher Notice */}
+                  {((order.discountAmount && order.discountAmount > 0) || order.rewardedVoucherCode) && (
                     <div className="mt-4 p-4 bg-gradient-to-r from-sky-500/10 via-cyan-500/10 to-blue-500/10 border border-sky-500/30 rounded-2xl space-y-2 text-center">
                       <div className="text-xs font-black uppercase text-[#0284c7] dark:text-[#38BDF8] tracking-wider">
-                        Quà Tặng Đơn Hàng &gt; 300.000đ
+                        Ưu Đãi Đơn Hàng &gt; 300.000đ
                       </div>
                       <p className="text-[11px] text-[var(--text-secondary)]">
-                        Kohi Coffee xin dành tặng bạn Mã giảm 10% cho lần sử dụng dịch vụ tiếp theo:
+                        {order.discountAmount && order.discountAmount > 0
+                          ? 'Kohi Coffee đã tự động tặng và áp dụng ưu đãi giảm 10% trực tiếp vào hóa đơn của bạn!'
+                          : 'Kohi Coffee xin dành tặng bạn Mã giảm 10% cho lần sử dụng dịch vụ tiếp theo:'}
                       </p>
                       <div className="flex items-center justify-center gap-2 pt-1">
                         <span className="font-mono text-base sm:text-lg font-black text-[#0284c7] dark:text-[#38BDF8] bg-[var(--bg-primary)] px-3 py-1 rounded-xl border border-sky-500/30 tracking-widest">
-                          {order.rewardedVoucherCode}
+                          {order.couponCode || order.rewardedVoucherCode || 'KOHI10'}
                         </span>
                         <button
                           onClick={() => {
-                            navigator.clipboard.writeText(order.rewardedVoucherCode || '');
+                            navigator.clipboard.writeText(order.couponCode || order.rewardedVoucherCode || 'KOHI10');
                             toast('Đã sao chép mã giảm giá!', { icon: null });
                           }}
                           className="px-3 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs active:scale-95"
@@ -1053,13 +1135,24 @@ export default function OrderStatusPage() {
                       {/* Desktop In-Card Payment Trigger Buttons (Hidden on mobile to avoid duplication with sticky footer) */}
                       <div className="hidden sm:block space-y-2 pt-2">
                         {order.status === 'pending' ? (
-                          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center space-y-1">
-                            <span className="text-xs font-black uppercase text-amber-600 dark:text-amber-400 block tracking-wide">
-                              Đang chờ phục vụ duyệt đơn
-                            </span>
-                            <p className="text-[11px] font-medium text-[var(--text-secondary)]">
-                              Quý khách vui lòng đợi nhân viên xác nhận đơn trước khi thực hiện thanh toán.
-                            </p>
+                          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center space-y-2.5">
+                            <div className="space-y-1">
+                              <span className="text-xs font-black uppercase text-amber-600 dark:text-amber-400 block tracking-wide">
+                                Đang chờ phục vụ duyệt đơn
+                              </span>
+                              <p className="text-[11px] font-medium text-[var(--text-secondary)]">
+                                Quý khách vui lòng đợi nhân viên xác nhận đơn trước khi thực hiện thanh toán.
+                              </p>
+                            </div>
+                            <button
+                              id="btn-cancel-pending-order-desktop"
+                              onClick={handleCancelOrder}
+                              disabled={isCancellingOrder}
+                              className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 font-bold text-xs uppercase tracking-wider rounded-xl border border-rose-500/20 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+                            >
+                              <span className="material-symbols-outlined text-base">close</span>
+                              <span>{isCancellingOrder ? 'Đang hủy...' : 'Hủy đơn hàng này'}</span>
+                            </button>
                           </div>
                         ) : isTableFullyPaid ? (
                           <div className="py-3 text-center bg-emerald-500/15 border border-emerald-500/30 rounded-xl text-emerald-500 font-black text-xs">
@@ -1175,8 +1268,19 @@ export default function OrderStatusPage() {
           {/* Right: Payment Actions */}
           <div className="flex items-center gap-2 flex-1 justify-end">
             {order.status === 'pending' ? (
-              <div className="h-10 px-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-black flex items-center justify-center text-center flex-1 max-w-[210px]">
-                <span>Chờ phục vụ duyệt đơn...</span>
+              <div className="flex items-center gap-2 flex-1 justify-end">
+                <div className="h-10 px-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-black flex items-center justify-center text-center flex-1 max-w-[170px] truncate">
+                  <span>Chờ duyệt...</span>
+                </div>
+                <button
+                  id="btn-cancel-pending-order-mobile"
+                  onClick={handleCancelOrder}
+                  disabled={isCancellingOrder}
+                  className="h-10 px-3 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-xl border border-rose-500/20 active:scale-95 transition-all cursor-pointer flex items-center gap-1 shrink-0 disabled:opacity-50"
+                >
+                  <span className="material-symbols-outlined text-base">close</span>
+                  <span>{isCancellingOrder ? 'Đang hủy...' : 'Hủy đơn'}</span>
+                </button>
               </div>
             ) : (
               <>
