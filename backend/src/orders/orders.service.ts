@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException, OnModuleInit, Optional, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Order, OrderDocument } from './schemas/order.schema.js';
 import { CreateOrderDto } from './dto/create-order.dto.js';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto.js';
@@ -141,6 +141,9 @@ export class OrdersService implements OnModuleInit {
   }
 
   async findOne(id: string): Promise<any> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${id}`);
+    }
     const order = await this.orderModel
       .findById(id)
       .populate('tableId')

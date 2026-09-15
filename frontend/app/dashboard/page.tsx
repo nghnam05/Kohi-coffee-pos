@@ -495,6 +495,7 @@ export default function DashboardPage() {
 
   // Responsive Drawer states for Mobile & Tablet
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isMobileMoreMenuOpen, setIsMobileMoreMenuOpen] = useState(false);
   const [isRealtimeDrawerOpen, setIsRealtimeDrawerOpen] = useState(false);
 
   // Theme resolution helper
@@ -3739,12 +3740,14 @@ export default function DashboardPage() {
           </button>
         )}
 
-        {/* Tab Menu / Thêm — Mở Sidebar Drawer chứa toàn bộ danh mục & chức năng */}
+        {/* Tab Menu / Thêm — Mở Mobile Bottom Sheet Action Menu chứa toàn bộ danh mục & chức năng */}
         <button
           type="button"
-          onClick={() => setIsMobileSidebarOpen(true)}
+          onClick={() => setIsMobileMoreMenuOpen((prev) => !prev)}
           aria-label="Mở danh mục quản trị khác"
-          className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] active:scale-95 ${isMobileSidebarOpen ||
+          aria-expanded={isMobileMoreMenuOpen}
+          aria-haspopup="dialog"
+          className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] active:scale-95 ${isMobileMoreMenuOpen || isMobileSidebarOpen ||
               (user?.role === 'admin'
                 ? ['foods', 'inventory', 'users', 'coupons', 'reservations'].includes(activeTab)
                 : ['foods'].includes(activeTab))
@@ -3763,11 +3766,451 @@ export default function DashboardPage() {
         </button>
       </nav>
 
+      {/* ── MOBILE BOTTOM SHEET ACTION MENU ("Mục Thêm") ─────────────────────── */}
+      <AnimatePresence>
+        {isMobileMoreMenuOpen && (
+          <div className="lg:hidden" id="mobile-more-menu-container">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setIsMobileMoreMenuOpen(false)}
+              className="fixed inset-0 bg-black/75 backdrop-blur-xs z-50 transition-opacity"
+              aria-hidden="true"
+            />
+
+            {/* Bottom Sheet Drawer */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+              id="mobile-more-dropdown-sheet"
+              role="dialog"
+              aria-label="Danh mục quản trị và chức năng mở rộng"
+              className="fixed inset-x-0 bottom-0 z-50 bg-white dark:bg-[#0B0F17] border-t border-slate-200 dark:border-white/10 rounded-t-[28px] shadow-2xl max-h-[85vh] flex flex-col overflow-hidden pb-[max(1.25rem,env(safe-area-inset-bottom))]"
+            >
+              {/* Grab Handle */}
+              <div className="pt-3 pb-1 flex justify-center shrink-0">
+                <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full" />
+              </div>
+
+              {/* Header */}
+              <div className="px-5 py-3 flex items-center justify-between border-b border-slate-100 dark:border-white/10 shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 flex items-center justify-center text-[#0284c7] dark:text-[#38BDF8]">
+                    <span className="material-symbols-outlined text-xl">apps</span>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900 dark:text-white leading-tight">
+                      Danh mục & Tiện ích
+                    </h3>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                      {user?.role === 'admin' ? 'Bảng điều khiển toàn diện Admin' : 'Chức năng vận hành'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsMobileMoreMenuOpen(false)}
+                  className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer"
+                  aria-label="Đóng menu"
+                >
+                  <span className="material-symbols-outlined text-lg">close</span>
+                </button>
+              </div>
+
+              {/* Action Cards List */}
+              <div className="p-4 overflow-y-auto space-y-4 flex-1 scrollbar-thin">
+                {/* ── NHÓM: VẬN HÀNH & PHỤC VỤ ── */}
+                <div className="space-y-2">
+                  <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 px-1">
+                    Vận hành & Phục vụ
+                  </p>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {/* Foods / Thực đơn */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab('foods');
+                        setIsMobileMoreMenuOpen(false);
+                      }}
+                      className={`p-3 rounded-2xl border text-left flex items-start gap-2.5 transition-all cursor-pointer select-none active:scale-95 ${
+                        activeTab === 'foods'
+                          ? 'bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 border-[#0284c7]/40 dark:border-[#38BDF8]/40 shadow-xs'
+                          : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-white/5 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                        activeTab === 'foods'
+                          ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
+                          : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-2xs'
+                      }`}>
+                        <span className="material-symbols-outlined text-xl">grid_view</span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-black text-slate-900 dark:text-white truncate">
+                          Món ăn
+                        </div>
+                        <div className="text-[10.5px] text-slate-500 dark:text-slate-400 truncate">
+                          {foods.length} món ăn
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Reservations / Bàn đã đặt */}
+                    {user?.role !== 'barista' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab('reservations' as any);
+                          setIsMobileMoreMenuOpen(false);
+                          if (token) fetchReservations(token);
+                        }}
+                        className={`p-3 rounded-2xl border text-left flex items-start gap-2.5 transition-all cursor-pointer select-none active:scale-95 ${
+                          activeTab === ('reservations' as any)
+                            ? 'bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 border-[#0284c7]/40 dark:border-[#38BDF8]/40 shadow-xs'
+                            : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-white/5 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 relative ${
+                          activeTab === ('reservations' as any)
+                            ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
+                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-2xs'
+                        }`}>
+                          <span className="material-symbols-outlined text-xl">event_available</span>
+                          {reservations.filter((r) => r.status === 'pending').length > 0 && (
+                            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-black text-slate-900 dark:text-white truncate">
+                            Bàn đã đặt
+                          </div>
+                          <div className="text-[10.5px] text-slate-500 dark:text-slate-400 truncate">
+                            {reservations.filter((r) => r.status === 'pending').length > 0
+                              ? `${reservations.filter((r) => r.status === 'pending').length} chờ duyệt`
+                              : `${reservations.length} lượt đặt`}
+                          </div>
+                        </div>
+                      </button>
+                    )}
+
+                    {/* Tables / Sơ đồ bàn */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab('tables');
+                        setIsMobileMoreMenuOpen(false);
+                      }}
+                      className={`p-3 rounded-2xl border text-left flex items-start gap-2.5 transition-all cursor-pointer select-none active:scale-95 ${
+                        activeTab === 'tables'
+                          ? 'bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 border-[#0284c7]/40 dark:border-[#38BDF8]/40 shadow-xs'
+                          : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-white/5 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                        activeTab === 'tables'
+                          ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
+                          : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-2xs'
+                      }`}>
+                        <span className="material-symbols-outlined text-xl">chair</span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-black text-slate-900 dark:text-white truncate">
+                          Sơ đồ bàn
+                        </div>
+                        <div className="text-[10.5px] text-slate-500 dark:text-slate-400 truncate">
+                          {tables.length} bàn
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Orders / Đơn hàng & KDS */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab('orders');
+                        setIsMobileMoreMenuOpen(false);
+                      }}
+                      className={`p-3 rounded-2xl border text-left flex items-start gap-2.5 transition-all cursor-pointer select-none active:scale-95 ${
+                        activeTab === 'orders'
+                          ? 'bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 border-[#0284c7]/40 dark:border-[#38BDF8]/40 shadow-xs'
+                          : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-white/5 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                        activeTab === 'orders'
+                          ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
+                          : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-2xs'
+                      }`}>
+                        <span className="material-symbols-outlined text-xl">receipt_long</span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-black text-slate-900 dark:text-white truncate">
+                          Đơn hàng
+                        </div>
+                        <div className="text-[10.5px] text-slate-500 dark:text-slate-400 truncate">
+                          {activeOrdersList.length} đang phục vụ
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* ── NHÓM: QUẢN TRỊ, TÀI CHÍNH & KHO ── */}
+                {user?.role === 'admin' && (
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 px-1">
+                      Quản trị, Tài chính & Kho
+                    </p>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {/* Users / Quản lý nhân viên */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab('users');
+                          setIsMobileMoreMenuOpen(false);
+                        }}
+                        className={`p-3 rounded-2xl border text-left flex items-start gap-2.5 transition-all cursor-pointer select-none active:scale-95 ${
+                          activeTab === 'users'
+                            ? 'bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 border-[#0284c7]/40 dark:border-[#38BDF8]/40 shadow-xs'
+                            : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-white/5 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                          activeTab === 'users'
+                            ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
+                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-2xs'
+                        }`}>
+                          <span className="material-symbols-outlined text-xl">group</span>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-black text-slate-900 dark:text-white truncate">
+                            Nhân viên
+                          </div>
+                          <div className="text-[10.5px] text-slate-500 dark:text-slate-400 truncate">
+                            Tài khoản & phân quyền
+                          </div>
+                        </div>
+                      </button>
+
+                      {/* Attendance / Chấm công & Bảng lương */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab('attendance');
+                          setIsMobileMoreMenuOpen(false);
+                        }}
+                        className={`p-3 rounded-2xl border text-left flex items-start gap-2.5 transition-all cursor-pointer select-none active:scale-95 ${
+                          activeTab === 'attendance'
+                            ? 'bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 border-[#0284c7]/40 dark:border-[#38BDF8]/40 shadow-xs'
+                            : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-white/5 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 relative ${
+                          activeTab === 'attendance'
+                            ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
+                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-2xs'
+                        }`}>
+                          <span className="material-symbols-outlined text-xl">schedule</span>
+                          {shiftSwaps.filter((s) => s.status === 'pending').length > 0 && (
+                            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-black text-slate-900 dark:text-white truncate">
+                            Chấm công
+                          </div>
+                          <div className="text-[10.5px] text-slate-500 dark:text-slate-400 truncate">
+                            {shiftSwaps.filter((s) => s.status === 'pending').length > 0
+                              ? `${shiftSwaps.filter((s) => s.status === 'pending').length} đổi ca chờ duyệt`
+                              : 'Ca làm & bảng lương'}
+                          </div>
+                        </div>
+                      </button>
+
+                      {/* Coupons / Mã giảm giá */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab('coupons' as any);
+                          setIsMobileMoreMenuOpen(false);
+                          if (token) fetchCoupons(token);
+                        }}
+                        className={`p-3 rounded-2xl border text-left flex items-start gap-2.5 transition-all cursor-pointer select-none active:scale-95 ${
+                          activeTab === ('coupons' as any)
+                            ? 'bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 border-[#0284c7]/40 dark:border-[#38BDF8]/40 shadow-xs'
+                            : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-white/5 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                          activeTab === ('coupons' as any)
+                            ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
+                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-2xs'
+                        }`}>
+                          <span className="material-symbols-outlined text-xl">local_offer</span>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-black text-slate-900 dark:text-white truncate">
+                            Mã giảm giá
+                          </div>
+                          <div className="text-[10.5px] text-slate-500 dark:text-slate-400 truncate">
+                            {coupons.length} vouchers
+                          </div>
+                        </div>
+                      </button>
+
+                      {/* Inventory / Kho nguyên liệu */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab('inventory');
+                          setIsMobileMoreMenuOpen(false);
+                        }}
+                        className={`p-3 rounded-2xl border text-left flex items-start gap-2.5 transition-all cursor-pointer select-none active:scale-95 ${
+                          activeTab === 'inventory'
+                            ? 'bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 border-[#0284c7]/40 dark:border-[#38BDF8]/40 shadow-xs'
+                            : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-white/5 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                          activeTab === 'inventory'
+                            ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
+                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-2xs'
+                        }`}>
+                          <span className="material-symbols-outlined text-xl">inventory_2</span>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-black text-slate-900 dark:text-white truncate">
+                            Kho hàng
+                          </div>
+                          <div className="text-[10.5px] text-slate-500 dark:text-slate-400 truncate">
+                            Kho & định lượng
+                          </div>
+                        </div>
+                      </button>
+
+                      {/* Analytics / Thống kê Doanh thu Cửa Hàng */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab('analytics');
+                          setIsMobileMoreMenuOpen(false);
+                          if (token) {
+                            fetchAnalytics(token, analyticsSelectedDate, analyticsSelectedMonth, analyticsPeriodMode);
+                            fetchReviews(token);
+                          }
+                        }}
+                        className={`col-span-2 p-3.5 rounded-2xl border text-left flex items-center gap-3 transition-all cursor-pointer select-none active:scale-95 ${
+                          activeTab === 'analytics'
+                            ? 'bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 border-[#0284c7]/40 dark:border-[#38BDF8]/40 shadow-xs'
+                            : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-white/5 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                          activeTab === 'analytics'
+                            ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
+                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-2xs'
+                        }`}>
+                          <span className="material-symbols-outlined text-xl">bar_chart</span>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-black text-slate-900 dark:text-white">
+                            Thống kê Doanh thu Cửa Hàng
+                          </div>
+                          <div className="text-[10.5px] text-slate-500 dark:text-slate-400">
+                            Báo cáo Thu - Chi, dòng tiền và nhịp đập kinh doanh
+                          </div>
+                        </div>
+                        <span className="material-symbols-outlined text-slate-400 text-sm">arrow_forward</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Barista-only Inventory in Menu */}
+                {user?.role === 'barista' && (
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 px-1">
+                      Kho quầy pha chế
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab('inventory');
+                        setIsMobileMoreMenuOpen(false);
+                      }}
+                      className={`w-full p-3 rounded-2xl border text-left flex items-center gap-3 transition-all cursor-pointer select-none active:scale-95 ${
+                        activeTab === 'inventory'
+                          ? 'bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 border-[#0284c7]/40 dark:border-[#38BDF8]/40 shadow-xs'
+                          : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-white/5 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-2xs flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined text-xl">inventory_2</span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-black text-slate-900 dark:text-white">
+                          Kho nguyên liệu pha chế
+                        </div>
+                        <div className="text-[10.5px] text-slate-500 dark:text-slate-400">
+                          Kiểm kê syrup, cafe, sữa và đá
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                )}
+
+                {/* ── NHÓM: THIẾT LẬP & TÀI KHOẢN ── */}
+                <div className="pt-2 border-t border-slate-100 dark:border-white/10 flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsProfileModalOpen(true);
+                      setIsMobileMoreMenuOpen(false);
+                    }}
+                    className="flex-1 flex items-center gap-2.5 p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-white/5 text-left cursor-pointer active:scale-98"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-[#3B82F6] text-[#3B82F6] dark:text-white flex items-center justify-center font-bold text-xs shrink-0">
+                      {user?.name ? user.name.charAt(0).toUpperCase() : 'N'}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate leading-tight">
+                        {user?.name || 'Tài khoản của tôi'}
+                      </p>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                        Sửa thông tin & mật khẩu
+                      </p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMobileMoreMenuOpen(false);
+                      handleLogout();
+                    }}
+                    className="h-11 px-3.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer active:scale-95 shrink-0"
+                    title="Đăng xuất khỏi hệ thống"
+                  >
+                    <span className="material-symbols-outlined text-base">logout</span>
+                    <span>Đăng xuất</span>
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Mobile Sidebar Overlay Backdrop */}
       {isMobileSidebarOpen && (
         <div
           onClick={() => setIsMobileSidebarOpen(false)}
-          className="lg:hidden fixed inset-0 bg-black/70 backdrop-blur-xs z-30"
+          className="lg:hidden fixed inset-0 bg-black/70 backdrop-blur-xs z-40"
         />
       )}
 
@@ -3775,13 +4218,13 @@ export default function DashboardPage() {
       {isRealtimeDrawerOpen && (
         <div
           onClick={() => setIsRealtimeDrawerOpen(false)}
-          className="xl:hidden fixed inset-0 bg-black/70 backdrop-blur-xs z-30"
+          className="xl:hidden fixed inset-0 bg-black/70 backdrop-blur-xs z-40"
         />
       )}
 
       {/* ── COLUMN 1: LEFT SIDEBAR (bg-white / dark:bg-[#0B0F17]) ────────────────────── */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-40 w-[260px] shrink-0 bg-white dark:bg-[#0B0F17] border-r border-slate-200 dark:border-white/10 flex flex-col justify-between h-full transition-all duration-300 ease-in-out ${isMobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'
+        className={`fixed lg:static inset-y-0 left-0 z-50 lg:z-40 w-[260px] shrink-0 bg-white dark:bg-[#0B0F17] border-r border-slate-200 dark:border-white/10 flex flex-col justify-between h-full transition-all duration-300 ease-in-out ${isMobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'
           }`}
         data-purpose="left-sidebar"
       >
@@ -4477,8 +4920,8 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
-            {/* ── ADMIN: EXECUTIVE COMMAND BAR ("Nhịp đập quán") ── */}
-            {user?.role === 'admin' && (
+            {/* ── ADMIN: EXECUTIVE COMMAND BAR ("Nhịp đập quán" — CHỈ HIỂN THỊ TẠI MỤC THỐNG KÊ DOANH THU CỬA HÀNG) ── */}
+            {user?.role === 'admin' && activeTab === 'analytics' && (
               <div className="shrink-0 mb-3 space-y-2.5 font-sans" id="executive-command-bar">
                 <div className="flex items-center justify-between px-1">
                   <div className="flex items-center gap-2">
