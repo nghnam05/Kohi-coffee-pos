@@ -45,9 +45,9 @@ export class OrdersController {
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin', 'waiter', 'barista', 'staff')
-  @Get(':id')
-  async findOne(@Param('id') id: string): Promise<OrderDocument> {
-    return this.ordersService.findOne(id);
+  @Get('transfer-requests')
+  async getPendingTransferRequests(): Promise<any[]> {
+    return this.ordersService.getPendingTransferRequests();
   }
 
   @Post('transfer-request')
@@ -59,9 +59,9 @@ export class OrdersController {
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin', 'waiter', 'barista', 'staff')
-  @Get('transfer-requests')
-  async getPendingTransferRequests(): Promise<any[]> {
-    return this.ordersService.getPendingTransferRequests();
+  @Get(':id')
+  async findOne(@Param('id') id: string): Promise<OrderDocument> {
+    return this.ordersService.findOne(id);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
