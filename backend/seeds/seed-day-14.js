@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcrypt');
 
-// 1. Manually parse .env to get MONGODB_URI
+// 1. Parse .env to get MONGODB_URI
 const envPath = fs.existsSync(path.join(__dirname, '.env'))
   ? path.join(__dirname, '.env')
   : path.join(__dirname, '..', '.env');
@@ -60,102 +60,73 @@ function makeVNTime(year, month, day, hour, minute) {
   return new Date(Date.UTC(year, month - 1, day, hour - 7, minute, 0, 0));
 }
 
-async function runSeedToday() {
-  console.log('[DB] Connecting to MongoDB Atlas...');
+async function runSeedDay14() {
+  console.log('================================================================');
+  console.log('🧹 XÓA BỎ DỮ LIỆU NGÀY 13/09/2026 & TẠO DỮ LIỆU CHUẨN NGÀY 14/09/2026');
+  console.log('================================================================\n');
+
+  console.log('[DB] Đang kết nối tới MongoDB Atlas...');
   await mongoose.connect(MONGODB_URI);
   const db = mongoose.connection.db;
-  console.log('[DB] Connected successfully.');
+  console.log('[DB] Kết nối thành công.\n');
 
-  // Xác định ngày hôm nay theo giờ Việt Nam (UTC+7)
-  const now = new Date();
-  const vnNow = new Date(now.getTime() + 7 * 3600 * 1000);
-  const year = vnNow.getUTCFullYear();
-  const month = vnNow.getUTCMonth() + 1; // 1-12
-  const day = vnNow.getUTCDate();
-  const currentHour = vnNow.getUTCHours();
-  const currentMinute = vnNow.getUTCMinutes();
+  // Khung thời gian ngày 13/09/2026 (Giờ Việt Nam UTC+7)
+  const startOfDay13 = makeVNTime(2026, 9, 13, 0, 0);
+  const endOfDay13 = makeVNTime(2026, 9, 14, 0, 0);
+  const filter13 = { $gte: startOfDay13, $lt: endOfDay13 };
 
-  console.log(`\n📅 Ngày thực hiện Seed: ${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year} (Thời gian hiện tại: ${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')} VN)`);
+  // Khung thời gian ngày 14/09/2026 (Giờ Việt Nam UTC+7)
+  const startOfDay14 = makeVNTime(2026, 9, 14, 0, 0);
+  const endOfDay14 = makeVNTime(2026, 9, 15, 0, 0);
+  const filter14 = { $gte: startOfDay14, $lt: endOfDay14 };
 
-  const startOfToday = makeVNTime(year, month, day, 0, 0);
-  const endOfToday = makeVNTime(year, month, day + 1, 0, 0);
+  // --------------------------------------------------------------------------
+  // BƯỚC 1: XÓA SẠCH DỮ LIỆU NGÀY 13/09/2026 (VÀ LÀM SẠCH NGÀY 14 NẾU CÓ)
+  // --------------------------------------------------------------------------
+  console.log('--- 1. XÓA BỎ TOÀN BỘ DỮ LIỆU GIAO DỊCH NGÀY 13/09/2026 ---');
+  const collectionsToClean = [
+    { name: 'orders', field: 'createdAt' },
+    { name: 'payments', field: 'paidAt' },
+    { name: 'attendances', field: 'date' },
+    { name: 'expenses', field: 'date' },
+    { name: 'ingredientusages', field: 'date' },
+    { name: 'reviews', field: 'createdAt' },
+    { name: 'reservations', field: 'reservationTime' },
+    { name: 'staffcalls', field: 'createdAt' },
+  ];
 
-  console.log('\n--- 1. Dọn dẹp dữ liệu giao dịch của riêng ngày hôm nay ---');
-  const deleteFilter = { $gte: startOfToday, $lt: endOfToday };
+  for (const col of collectionsToClean) {
+    // Xóa ngày 13
+    const res13 = await db.collection(col.name).deleteMany({ [col.field]: filter13 });
+    // Xóa ngày 14 (để tránh trùng lặp)
+    const res14 = await db.collection(col.name).deleteMany({ [col.field]: filter14 });
+    console.log(`  ✓ Đã xóa [${col.name.padEnd(18)}]: ${res13.deletedCount} bản ghi ngày 13/09, ${res14.deletedCount} bản ghi ngày 14/09`);
+  }
 
-  const delOrders = await db.collection('orders').deleteMany({ createdAt: deleteFilter });
-  const delPayments = await db.collection('payments').deleteMany({ paidAt: deleteFilter });
-  const delAtt = await db.collection('attendances').deleteMany({ date: deleteFilter });
-  const delExp = await db.collection('expenses').deleteMany({ date: deleteFilter });
-  const delIng = await db.collection('ingredientusages').deleteMany({ date: deleteFilter });
-  const delRev = await db.collection('reviews').deleteMany({ createdAt: deleteFilter });
-
-  console.log(`- Đã xóa ${delOrders.deletedCount} đơn hàng hôm nay.`);
-  console.log(`- Đã xóa ${delPayments.deletedCount} hóa đơn thanh toán hôm nay.`);
-  console.log(`- Đã xóa ${delAtt.deletedCount} bản ghi điểm danh hôm nay.`);
-  console.log(`- Đã xóa ${delExp.deletedCount} khoản chi phí hôm nay.`);
-  console.log(`- Đã xóa ${delIng.deletedCount} bản ghi tiêu hao nguyên liệu hôm nay.`);
-  console.log(`- Đã xóa ${delRev.deletedCount} đánh giá hôm nay.`);
-
-  // Reset tất cả các bàn về trạng thái ban đầu
+  // Reset tất cả các bàn về trạng thái empty sạch sẽ
   await db.collection('tables').updateMany({}, {
     $set: {
       status: 'empty',
       currentSessionStartedAt: null,
       occupants: [],
       activeOrdersCount: 0,
-      qrToken: null,
     }
   });
-  console.log('- Đã reset trạng thái bàn về "empty".');
+  console.log('  ✓ Đã reset tất cả các bàn về trạng thái "empty".\n');
 
-  console.log('\n--- 2. Lấy dữ liệu cơ sở (Foods, Tables, Users, Ingredients) ---');
+  // --------------------------------------------------------------------------
+  // BƯỚC 2: TẢI MASTER DATA CƠ SỞ (FOODS, TABLES, USERS, INGREDIENTS)
+  // --------------------------------------------------------------------------
+  console.log('--- 2. LẤY DỮ LIỆU DANH MỤC & NHÂN SỰ ---');
   let foods = await db.collection('foods').find({}).toArray();
   let tables = await db.collection('tables').find({}).toArray();
   let users = await db.collection('users').find({}).toArray();
   let ingredients = await db.collection('ingredients').find({}).toArray();
 
-  if (tables.length < 12) {
-    for (let i = 1; i <= 12; i++) {
-      const tName = `Bàn số ${i}`;
-      const exists = tables.find(t => t.tableName === tName);
-      if (!exists) {
-        await db.collection('tables').insertOne({
-          tableName: tName,
-          status: 'empty',
-          capacity: i <= 4 ? 2 : (i <= 8 ? 4 : 6),
-          createdAt: new Date(),
-          updatedAt: new Date()
-        });
-      }
-    }
-    tables = await db.collection('tables').find({}).toArray();
-  }
-
-  // Đảm bảo các tài khoản nhân sự và quản trị viên
-  const defaultPassword = await bcrypt.hash('123456', 10);
-  const requiredUsers = [
-    { name: 'Quản trị viên Kohi Coffee', email: 'admin@kohi.vn', role: 'admin', assignedShift: 'morning' },
-    { name: 'PV-SÁNG', email: 'pvcasang@kohi.vn', role: 'waiter', assignedShift: 'morning' },
-    { name: 'PC-SÁNG', email: 'pccasang@kohi.vn', role: 'barista', assignedShift: 'morning' },
-    { name: 'PV-CHIỀU', email: 'pvchieu@kohi.vn', role: 'waiter', assignedShift: 'afternoon' },
-    { name: 'PC-CHIỀU', email: 'pcchieu@kohi.vn', role: 'barista', assignedShift: 'afternoon' },
-    { name: 'PV-TỐI', email: 'pvtoi@kohi.vn', role: 'waiter', assignedShift: 'evening' },
-    { name: 'PC-TỐI', email: 'pctoi@kohi.vn', role: 'barista', assignedShift: 'evening' }
-  ];
-
-  for (const ru of requiredUsers) {
-    const exists = users.find(u => u.email === ru.email);
-    if (!exists) {
-      await db.collection('users').insertOne({
-        ...ru,
-        password: defaultPassword,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
-    }
-  }
-  users = await db.collection('users').find({}).toArray();
+  console.log(`  • Tổng số món trong Menu : ${foods.length}`);
+  console.log(`  • Tổng số bàn cà phê     : ${tables.length}`);
+  console.log(`  • Tổng số tài khoản      : ${users.length}`);
+  console.log(`  • Tổng số nguyên vật liệu : ${ingredients.length}`);
 
   const staffUsers = users.filter(u => u.role !== 'admin');
   const pvSang = staffUsers.find(u => u.name === 'PV-SÁNG') || staffUsers[0];
@@ -165,33 +136,35 @@ async function runSeedToday() {
   const pvToi = staffUsers.find(u => u.name === 'PV-TỐI') || staffUsers[4];
   const pcToi = staffUsers.find(u => u.name === 'PC-TỐI') || staffUsers[5];
 
-  console.log('\n--- 3. Tạo Đơn Hàng & Doanh Thu Hôm Nay ---');
+  // --------------------------------------------------------------------------
+  // BƯỚC 3: TẠO DỮ LIỆU ĐƠN HÀNG & DOANH THU CHO NGÀY 14/09/2026
+  // --------------------------------------------------------------------------
+  console.log('\n--- 3. TẠO ĐƠN HÀNG & HÓA ĐƠN DOANH THU NGÀY 14/09/2026 ---');
   const allOrders = [];
   const allPayments = [];
   const allReviews = [];
 
-  // Tìm hóa đơn lớn nhất trong DB để tăng tiếp mã HD
+  // Xác định số hóa đơn bắt đầu
   const latestPayment = await db.collection('payments').find({}).sort({ invoiceCode: -1 }).limit(1).toArray();
-  let invoiceSeq = 1500;
+  let invoiceSeq = 2000;
   if (latestPayment.length > 0 && latestPayment[0].invoiceCode) {
     const num = parseInt(latestPayment[0].invoiceCode.replace(/\D/g, ''), 10);
-    if (!isNaN(num)) invoiceSeq = num;
+    if (!isNaN(num)) invoiceSeq = Math.max(invoiceSeq, num);
   }
 
-  // 1. Phân bổ các đơn đã hoàn tất trong ngày: Ca sáng (07:15 - 11:45), Ca chiều (12:00 - 17:00), Đầu ca tối (17:00 - 17:40)
-  const completedOrdersCount = getRandomInt(45, 52);
+  // Phân bổ 48 đơn hàng hoàn tất trong ngày 14/09:
+  // - Ca sáng (07:15 - 11:45): 18 đơn
+  // - Ca chiều (12:00 - 17:15): 20 đơn
+  // - Ca tối (17:30 - 22:00): 10 đơn
   const timeSlots = [];
-  // Ca sáng (~18 đơn)
   for (let i = 0; i < 18; i++) {
     timeSlots.push({ h: getRandomInt(7, 11), m: getRandomInt(10, 55), staff: 'PV-SÁNG' });
   }
-  // Ca chiều (~22 đơn)
-  for (let i = 0; i < 22; i++) {
+  for (let i = 0; i < 20; i++) {
     timeSlots.push({ h: getRandomInt(12, 16), m: getRandomInt(5, 55), staff: 'PV-CHIỀU' });
   }
-  // Ca tối (~8 đơn đã thanh toán)
-  for (let i = 0; i < Math.max(completedOrdersCount - 40, 6); i++) {
-    timeSlots.push({ h: 17, m: getRandomInt(5, 40), staff: 'PV-TỐI' });
+  for (let i = 0; i < 10; i++) {
+    timeSlots.push({ h: getRandomInt(17, 21), m: getRandomInt(10, 50), staff: 'PV-TỐI' });
   }
 
   timeSlots.sort((a, b) => (a.h * 60 + a.m) - (b.h * 60 + b.m));
@@ -201,10 +174,10 @@ async function runSeedToday() {
     const assignedTable = getRandomItem(tables);
     const customerName = getRandomItem(CUSTOMER_NAMES);
     const randPay = Math.random();
-    const paymentMethod = randPay < 0.55 ? 'bank_transfer' : (randPay < 0.9 ? 'cash' : 'momo');
+    const paymentMethod = randPay < 0.55 ? 'bank_transfer' : (randPay < 0.85 ? 'cash' : 'momo');
 
-    const orderTime = makeVNTime(year, month, day, slot.h, slot.m);
-    const paidTime = new Date(orderTime.getTime() + getRandomInt(6, 22) * 60000);
+    const orderTime = makeVNTime(2026, 9, 14, slot.h, slot.m);
+    const paidTime = new Date(orderTime.getTime() + getRandomInt(8, 25) * 60000);
 
     const itemCount = getRandomInt(1, 3);
     const orderItems = [];
@@ -233,7 +206,7 @@ async function runSeedToday() {
       _id: orderId,
       tableId: assignedTable._id,
       tableName: assignedTable.tableName,
-      isTakeaway: Math.random() < 0.18,
+      isTakeaway: Math.random() < 0.2,
       items: orderItems.map(i => ({
         foodId: i.foodId,
         quantity: i.quantity,
@@ -288,15 +261,15 @@ async function runSeedToday() {
     };
     allPayments.push(paymentDoc);
 
-    // 20% đơn có review chân thực
-    if (Math.random() < 0.22) {
+    // 25% đơn có đánh giá review
+    if (Math.random() < 0.25) {
       allReviews.push({
         _id: new mongoose.Types.ObjectId(),
         orderId: orderDoc._id,
         foodId: orderItems[0].foodId,
         customerName,
         customerPhone: orderDoc.customerPhone,
-        rating: Math.random() < 0.75 ? 5 : 4,
+        rating: Math.random() < 0.8 ? 5 : 4,
         comment: getRandomItem(REVIEW_COMMENTS),
         isDeleted: false,
         createdAt: new Date(paidTime.getTime() + getRandomInt(5, 30) * 60000),
@@ -305,104 +278,29 @@ async function runSeedToday() {
     }
   }
 
-  // 2. Tạo 3 đơn đang phục vụ tại bàn thực tế lúc này (quán có khách đang ngồi)
-  const activeTablesConfig = [
-    {
-      tableIndex: 1, // Bàn số 2
-      customerName: 'Bảo Ngọc',
-      status: 'cooking',
-      minuteAgo: 12,
-      foodsToPick: ['Muối', 'Tart']
-    },
-    {
-      tableIndex: 4, // Bàn số 5
-      customerName: 'Minh Tuấn',
-      status: 'ready',
-      minuteAgo: 25,
-      foodsToPick: ['Cheesecake', 'Latte', 'Donut']
-    },
-    {
-      tableIndex: 7, // Bàn số 8
-      customerName: 'Hoàng Long',
-      status: 'confirmed',
-      minuteAgo: 5,
-      foodsToPick: ['Đào', 'Đen']
-    }
-  ];
+  console.log(`  ✓ Đã tạo ${allOrders.length} đơn hàng ngày 14/09 (100% đã thanh toán).`);
+  console.log(`  ✓ Đã tạo ${allPayments.length} hóa đơn giao dịch ngày 14/09.`);
+  console.log(`  ✓ Đã tạo ${allReviews.length} đánh giá khách hàng.`);
 
-  const updatedTableIds = [];
-
-  for (const cfg of activeTablesConfig) {
-    const tbl = tables[cfg.tableIndex] || tables[0];
-    const orderTime = new Date(Date.now() - cfg.minuteAgo * 60000);
-
-    const matchedFoods = foods.filter(f => cfg.foodsToPick.some(k => f.name.toLowerCase().includes(k.toLowerCase())));
-    const chosenFoods = matchedFoods.length > 0 ? matchedFoods : [foods[0], foods[1]];
-
-    const orderItems = chosenFoods.map(f => ({
-      foodId: f._id,
-      quantity: 1,
-      note: 'Dùng tại bàn',
-      orderedBy: cfg.customerName,
-      isPaid: false,
-    }));
-
-    const subtotal = chosenFoods.reduce((s, f) => s + f.price, 0);
-    const orderId = new mongoose.Types.ObjectId();
-
-    const activeOrderDoc = {
-      _id: orderId,
-      tableId: tbl._id,
-      tableName: tbl.tableName,
-      isTakeaway: false,
-      items: orderItems,
-      totalAmount: subtotal,
-      status: cfg.status,
-      paymentStatus: 'unpaid',
-      paymentMethod: 'cash',
-      customerName: cfg.customerName,
-      customerPhone: '09' + getRandomInt(10000000, 99999999),
-      isDeleted: false,
-      createdAt: orderTime,
-      updatedAt: orderTime,
-    };
-    allOrders.push(activeOrderDoc);
-
-    // Cập nhật trạng thái bàn sang "serving"
-    await db.collection('tables').updateOne(
-      { _id: tbl._id },
-      {
-        $set: {
-          status: 'serving',
-          currentSessionStartedAt: orderTime,
-          occupants: [{ customerName: cfg.customerName, joinedAt: orderTime }],
-          activeOrdersCount: 1,
-        }
-      }
-    );
-    updatedTableIds.push(tbl.tableName);
-  }
-
-  console.log(`- Đã tạo ${allOrders.length} đơn hàng (${allPayments.length} đã thanh toán, ${activeTablesConfig.length} đơn đang phục vụ).`);
-  console.log(`- Bàn đang có khách: ${updatedTableIds.join(', ')}.`);
-  console.log(`- Đã tạo ${allReviews.length} đánh giá khách hàng hôm nay.`);
-
-  console.log('\n--- 4. Tạo Chi Phí Hoạt Động Hôm Nay (Expenses) ---');
+  // --------------------------------------------------------------------------
+  // BƯỚC 4: TẠO CHI PHÍ VẬN HÀNH NGÀY 14/09/2026 (EXPENSES)
+  // --------------------------------------------------------------------------
+  console.log('\n--- 4. TẠO CHI PHÍ HOẠT ĐỘNG NGÀY 14/09/2026 ---');
   const allExpenses = [];
-  const expTime1 = makeVNTime(year, month, day, 8, 30);
+  const expTime1 = makeVNTime(2026, 9, 14, 8, 30);
   allExpenses.push({
     _id: new mongoose.Types.ObjectId(),
     title: 'Đá bi sạch tinh khiết pha chế trong ngày',
     amount: 50000,
     date: expTime1,
     category: 'Đá & Đồ uống phụ',
-    note: 'Nhập đá viên hàng ngày từ nhà cung cấp đá tinh khiết',
+    note: 'Nhập đá viên hàng ngày từ xưởng đá tinh khiết',
     createdBy: 'PV-SÁNG',
     createdAt: expTime1,
     updatedAt: expTime1,
   });
 
-  const expTime2 = makeVNTime(year, month, day, 14, 15);
+  const expTime2 = makeVNTime(2026, 9, 14, 14, 20);
   allExpenses.push({
     _id: new mongoose.Types.ObjectId(),
     title: 'Túi chữ T mang đi & nắp cầu ly nhựa mang về',
@@ -415,25 +313,28 @@ async function runSeedToday() {
     updatedAt: expTime2,
   });
 
-  console.log(`- Đã tạo ${allExpenses.length} khoản chi phí vận hành hôm nay.`);
+  console.log(`  ✓ Đã tạo ${allExpenses.length} khoản chi phí phát sinh.`);
 
-  console.log('\n--- 5. Tạo Điểm Danh Nhân Viên Hôm Nay (3 Ca) ---');
+  // --------------------------------------------------------------------------
+  // BƯỚC 5: TẠO ĐIỂM DANH ĐẦY ĐỦ 3 CA (ATTENDANCES) -> ĐỦ ĐIỀU KIỆN QUYẾT TOÁN
+  // --------------------------------------------------------------------------
+  console.log('\n--- 5. TẠO ĐIỂM DANH NHÂN VIÊN NGÀY 14/09/2026 (3 CA ĐÃ CHECKOUT) ---');
   const allAttendances = [];
-  const dateOnly = makeVNTime(year, month, day, 0, 0);
+  const dateOnly14 = makeVNTime(2026, 9, 14, 0, 0);
 
-  // Ca Sáng (06:45 - 12:05) -> Đã xong
+  // Ca Sáng (06:45 - 12:05)
   const morningShifts = [
     { staff: pvSang, shift: 'morning', inH: 6, inM: 45, outH: 12, outM: 5, note: 'Đúng giờ, mở cửa bàn ghế ngăn nắp' },
     { staff: pcSang, shift: 'morning', inH: 6, inM: 40, outH: 12, outM: 10, note: 'Kiểm tra máy pha, chuẩn bị quầy bar' }
   ];
   for (const ms of morningShifts) {
-    const inTime = makeVNTime(year, month, day, ms.inH, ms.inM);
-    const outTime = makeVNTime(year, month, day, ms.outH, ms.outM);
+    const inTime = makeVNTime(2026, 9, 14, ms.inH, ms.inM);
+    const outTime = makeVNTime(2026, 9, 14, ms.outH, ms.outM);
     const hours = parseFloat(((outTime.getTime() - inTime.getTime()) / (1000 * 60 * 60)).toFixed(2));
     allAttendances.push({
       _id: new mongoose.Types.ObjectId(),
       userId: ms.staff._id,
-      date: dateOnly,
+      date: dateOnly14,
       checkIn: inTime,
       checkOut: outTime,
       shift: ms.shift,
@@ -446,19 +347,19 @@ async function runSeedToday() {
     });
   }
 
-  // Ca Chiều (11:55 - 17:35) -> Đã xong
+  // Ca Chiều (11:55 - 17:35)
   const afternoonShifts = [
     { staff: pvChieu, shift: 'afternoon', inH: 11, inM: 55, outH: 17, outM: 35, note: 'Đúng giờ, nhận bàn giao ca chu đáo' },
     { staff: pcChieu, shift: 'afternoon', inH: 11, inM: 50, outH: 17, outM: 40, note: 'Bổ sung nguyên liệu, pha chế kịp thời' }
   ];
   for (const as of afternoonShifts) {
-    const inTime = makeVNTime(year, month, day, as.inH, as.inM);
-    const outTime = makeVNTime(year, month, day, as.outH, as.outM);
+    const inTime = makeVNTime(2026, 9, 14, as.inH, as.inM);
+    const outTime = makeVNTime(2026, 9, 14, as.outH, as.outM);
     const hours = parseFloat(((outTime.getTime() - inTime.getTime()) / (1000 * 60 * 60)).toFixed(2));
     allAttendances.push({
       _id: new mongoose.Types.ObjectId(),
       userId: as.staff._id,
-      date: dateOnly,
+      date: dateOnly14,
       checkIn: inTime,
       checkOut: outTime,
       shift: as.shift,
@@ -471,19 +372,19 @@ async function runSeedToday() {
     });
   }
 
-  // Ca Tối (17:20 - 22:35) -> Hoàn tất điểm danh để báo cáo tài chính đủ ca trong ngày
+  // Ca Tối (17:20 - 22:35)
   const eveningShifts = [
     { staff: pvToi, shift: 'evening', inH: 17, inM: 25, outH: 22, outM: 35, note: 'Đúng giờ, vệ sinh bàn ghế ngăn nắp' },
     { staff: pcToi, shift: 'evening', inH: 17, inM: 20, outH: 22, outM: 45, note: 'Vệ sinh và xả áp máy cà phê cuối ngày' }
   ];
   for (const es of eveningShifts) {
-    const inTime = makeVNTime(year, month, day, es.inH, es.inM);
-    const outTime = makeVNTime(year, month, day, es.outH, es.outM);
+    const inTime = makeVNTime(2026, 9, 14, es.inH, es.inM);
+    const outTime = makeVNTime(2026, 9, 14, es.outH, es.outM);
     const hours = parseFloat(((outTime.getTime() - inTime.getTime()) / (1000 * 60 * 60)).toFixed(2));
     allAttendances.push({
       _id: new mongoose.Types.ObjectId(),
       userId: es.staff._id,
-      date: dateOnly,
+      date: dateOnly14,
       checkIn: inTime,
       checkOut: outTime,
       shift: es.shift,
@@ -496,22 +397,25 @@ async function runSeedToday() {
     });
   }
 
-  console.log(`- Đã tạo ${allAttendances.length} bản ghi điểm danh hôm nay (đủ 3 ca x 2 nhân sự).`);
+  console.log(`  ✓ Đã tạo ${allAttendances.length} bản ghi chấm công (toàn bộ 6 ca đã check-out).`);
 
-  console.log('\n--- 6. Tạo Tiêu Hao Nguyên Liệu Hôm Nay (Ingredient Usages) ---');
+  // --------------------------------------------------------------------------
+  // BƯỚC 6: TẠO TIÊU HAO NGUYÊN LIỆU NGÀY 14/09/2026 (INGREDIENT USAGES)
+  // --------------------------------------------------------------------------
+  console.log('\n--- 6. TẠO TIÊU HAO NGUYÊN LIỆU NGÀY 14/09/2026 ---');
   const allIngredientUsages = [];
   const ingUsagePresets = [
-    { key: 'Robusta', qty: 2.8, cost: 280000 },
-    { key: 'Arabica', qty: 1.6, cost: 320000 },
-    { key: 'Sữa Tươi', qty: 7.5, cost: 225000 },
-    { key: 'Sữa Đặc', qty: 3.2, cost: 128000 },
-    { key: 'Đường', qty: 2.5, cost: 50000 },
-    { key: 'Matcha', qty: 0.35, cost: 245000 },
-    { key: 'Kem Béo', qty: 1.8, cost: 126000 },
-    { key: 'Siro', qty: 0.6, cost: 72000 },
+    { key: 'Robusta', qty: 2.9, cost: 290000 },
+    { key: 'Arabica', qty: 1.7, cost: 340000 },
+    { key: 'Sữa Tươi', qty: 7.8, cost: 234000 },
+    { key: 'Sữa Đặc', qty: 3.4, cost: 136000 },
+    { key: 'Đường', qty: 2.6, cost: 52000 },
+    { key: 'Matcha', qty: 0.38, cost: 266000 },
+    { key: 'Kem Béo', qty: 1.9, cost: 133000 },
+    { key: 'Siro', qty: 0.65, cost: 78000 },
   ];
 
-  const usageRecordTime = makeVNTime(year, month, day, 21, 30);
+  const usageRecordTime = makeVNTime(2026, 9, 14, 21, 45);
   for (const preset of ingUsagePresets) {
     const ing = ingredients.find(i => i.name.toLowerCase().includes(preset.key.toLowerCase()));
     if (ing) {
@@ -531,10 +435,12 @@ async function runSeedToday() {
       });
     }
   }
+  console.log(`  ✓ Đã tạo ${allIngredientUsages.length} bản ghi tiêu hao nguyên vật liệu.`);
 
-  console.log(`- Đã tạo ${allIngredientUsages.length} bản ghi tiêu hao nguyên liệu hôm nay.`);
-
-  console.log('\n--- 7. Lưu tất cả vào Cơ sở dữ liệu ---');
+  // --------------------------------------------------------------------------
+  // BƯỚC 7: LƯU TẤT CẢ VÀO CSDL
+  // --------------------------------------------------------------------------
+  console.log('\n--- 7. LƯU DỮ LIỆU VÀO MONGODB ATLAS ---');
   if (allOrders.length > 0) await db.collection('orders').insertMany(allOrders);
   if (allPayments.length > 0) await db.collection('payments').insertMany(allPayments);
   if (allReviews.length > 0) await db.collection('reviews').insertMany(allReviews);
@@ -542,7 +448,7 @@ async function runSeedToday() {
   if (allAttendances.length > 0) await db.collection('attendances').insertMany(allAttendances);
   if (allIngredientUsages.length > 0) await db.collection('ingredientusages').insertMany(allIngredientUsages);
 
-  // Đảm bảo tồn kho nguyên liệu sẵn sàng
+  // Đảm bảo tồn kho nguyên liệu
   for (const ing of ingredients) {
     await db.collection('ingredients').updateOne(
       { _id: ing._id },
@@ -550,7 +456,9 @@ async function runSeedToday() {
     );
   }
 
-  // Tổng kết số liệu hôm nay
+  // --------------------------------------------------------------------------
+  // BƯỚC 8: TỔNG HỢP VÀ BÁO CÁO KẾT QUẢ QUYẾT TOÁN TÀI CHÍNH
+  // --------------------------------------------------------------------------
   const totalRev = allPayments.reduce((s, p) => s + (p.totalAmount || 0), 0);
   const totalIngCost = allIngredientUsages.reduce((s, i) => s + (i.totalCost || 0), 0);
   const totalExp = allExpenses.reduce((s, e) => s + (e.amount || 0), 0);
@@ -558,20 +466,25 @@ async function runSeedToday() {
   const totalSalary = Math.round(totalHours * 25000);
   const netProfit = totalRev - totalIngCost - totalExp - totalSalary;
 
-  console.log('\n=============================================');
-  console.log(`🎉 BÁO CÁO DỮ LIỆU ĐÃ SEED CHO HÔM NAY (${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}):`);
-  console.log(`• Doanh thu bán hàng hôm nay: ${totalRev.toLocaleString('vi-VN')} đ (${allPayments.length} hóa đơn)`);
-  console.log(`• Đơn hàng đang phục vụ trực tiếp: ${activeTablesConfig.length} đơn (${updatedTableIds.join(', ')})`);
-  console.log(`• Chi phí lương nhân viên (6 ca): ${totalSalary.toLocaleString('vi-VN')} đ (${totalHours.toFixed(1)} giờ làm)`);
-  console.log(`• Chi phí nguyên liệu tiêu hao: ${totalIngCost.toLocaleString('vi-VN')} đ`);
-  console.log(`• Chi phí phát sinh vận hành: ${totalExp.toLocaleString('vi-VN')} đ`);
-  console.log(`• Lợi nhuận ròng hôm nay: ${netProfit.toLocaleString('vi-VN')} đ`);
-  console.log('=============================================\n');
+  console.log('\n================================================================');
+  console.log('📊 KẾT QUẢ QUYẾT TOÁN TÀI CHÍNH NGÀY 14/09/2026 (CHÍNH THỨC):');
+  console.log('================================================================');
+  console.log(`• 1. Tổng Doanh Thu (48 hóa đơn)   : ${totalRev.toLocaleString('vi-VN')} đ`);
+  console.log(`• 2. Chi Phí Lương (6 ca làm việc)  : ${totalSalary.toLocaleString('vi-VN')} đ (${totalHours.toFixed(1)} giờ)`);
+  console.log(`• 3. Tiền Nguyên Liệu Tiêu Hao      : ${totalIngCost.toLocaleString('vi-VN')} đ`);
+  console.log(`• 4. Chi Phí Phát Sinh Vận Hành     : ${totalExp.toLocaleString('vi-VN')} đ`);
+  console.log(`• 5. LỢI NHUẬN RÒNG CHÍNH THỨC     : ${netProfit.toLocaleString('vi-VN')} đ`);
+  console.log('• Trạng Thái Quyết Toán            : ✅ ĐỦ ĐIỀU KIỆN QUYẾT TOÁN (CHÍNH THỨC)');
+  console.log('  - Ca làm việc chưa checkout      : 0 ca');
+  console.log('  - Đơn hàng chưa thanh toán       : 0 đơn');
+  console.log('  - Bàn đang có khách ngồi         : 0 bàn');
+  console.log('================================================================\n');
 
   await mongoose.disconnect();
+  console.log('✨ HOÀN TẤT THÀNH CÔNG!');
 }
 
-runSeedToday().catch(err => {
-  console.error('Lỗi khi seed dữ liệu hôm nay:', err);
+runSeedDay14().catch((err) => {
+  console.error('Lỗi khi thực hiện:', err);
   process.exit(1);
 });
