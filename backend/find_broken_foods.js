@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const seedContent = fs.readFileSync(path.join(__dirname, 'seed.js'), 'utf-8');
+const seedContent = fs.readFileSync(path.join(__dirname, 'seeds', 'seed.js'), 'utf-8');
 
 const brokenUrls = [
   'https://images.unsplash.com/photo-1617421731671-5caee6c43422?w=800&auto=format&fit=crop&q=80',

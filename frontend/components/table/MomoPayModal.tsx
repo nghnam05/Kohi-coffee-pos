@@ -24,7 +24,7 @@ export const MomoPayModal: React.FC<MomoPayModalProps> = ({
   totalAmount,
   customerName = 'Khách',
   onSuccess,
-  apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1',
+  apiBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1').trim().replace(/[\r\n\t]+/g, '').replace(/\/+$/, ''),
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);

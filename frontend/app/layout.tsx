@@ -66,7 +66,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#090D16" />
       </head>
       <body
-        className={`${inter.variable} ${manrope.variable} ${outfit.variable} font-sans antialiased bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-white min-h-screen transition-colors duration-200`}
+        className={`${inter.variable} ${manrope.variable} ${outfit.variable} font-sans antialiased bg-[#F9FAFB] dark:bg-[#0E121B] text-slate-900 dark:text-[#CBD5E1] min-h-screen transition-colors duration-200`}
       >
         <Providers>
           {children}

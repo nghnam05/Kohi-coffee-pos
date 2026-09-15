@@ -174,8 +174,9 @@ OrderSchema.index({ tableId: 1, status: 1, isDeleted: 1 });
 // 2. KDS kitchen queue & Realtime orders list
 OrderSchema.index({ status: 1, isDeleted: 1, createdAt: -1 });
 
-// 3. Analytics revenue aggregations & period filters
+// 3. Analytics revenue aggregations & period filters (Compound index covering payment status & dates)
 OrderSchema.index({ createdAt: -1, status: 1, paymentStatus: 1 });
-
-// 4. Day ledger financial settlement & paid order history
 OrderSchema.index({ paidAt: -1, status: 1 });
+OrderSchema.index({ status: 1, paymentStatus: 1, paidAt: -1, totalAmount: 1 });
+OrderSchema.index({ status: 1, paymentStatus: 1, createdAt: -1, totalAmount: 1 });
+OrderSchema.index({ status: 1, paymentStatus: 1, 'items.foodId': 1 });

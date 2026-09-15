@@ -14,17 +14,20 @@ import { io } from 'socket.io-client';
 import { BookingClosingAlertModal } from '@/components/booking/BookingClosingAlertModal';
 import { checkReservationClosingWarning, ReservationClosingCheck } from '@/utils/storeHours';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1')
+  .trim()
+  .replace(/[\r\n\t]+/g, '')
+  .replace(/\/+$/, '');
 
 const translations = {
   vi: {
     welcome: 'Kohi Coffee & Pastry',
-    heroBadge: 'Smart Online Reservation & QR Order',
+    heroBadge: 'Cà phê đặc sản & Đặt bàn trực tuyến',
     heroTitle: 'Đặt Bàn & Giữ Chỗ Trực Tuyến',
     heroSubtitle: 'Thưởng thức cà phê rang xay thủ công & bánh ngọt tươi mới. Giữ chỗ trước để chọn vị trí đẹp nhất!',
     btnBookTab: 'Đặt Bàn Trực Tuyến',
     btnLookupTab: 'Tra Cứu Đặt Bàn',
-    btnLogin: 'Đăng nhập Nhân viên',
+    btnLogin: 'Nhân viên',
     selectTableLabel: '1. Chọn bàn phù hợp',
     selectTableSub: 'Bấm vào bàn bạn muốn đặt để giữ chỗ',
     refreshMap: 'Cập nhật sơ đồ',
@@ -65,12 +68,12 @@ const translations = {
   },
   en: {
     welcome: 'Kohi Coffee & Pastry',
-    heroBadge: 'Smart Online Reservation & QR Order',
+    heroBadge: 'Specialty Coffee & Table Reservation',
     heroTitle: 'Online Table Reservation',
     heroSubtitle: 'Enjoy handcrafted specialty coffee & fresh pastries. Book in advance to secure your favorite table!',
     btnBookTab: 'Reserve a Table',
     btnLookupTab: 'Lookup Reservation',
-    btnLogin: 'Staff Login',
+    btnLogin: 'Staff',
     selectTableLabel: '1. Select Your Table',
     selectTableSub: 'Click on an available table below to select it',
     refreshMap: 'Refresh Map',
@@ -111,12 +114,12 @@ const translations = {
   },
   zh: {
     welcome: 'Kohi Coffee & Pastry',
-    heroBadge: 'Smart Online Reservation & QR Order',
+    heroBadge: '精品咖啡与在线订座',
     heroTitle: '在线预订桌位与留座',
     heroSubtitle: '享用手工精制咖啡与新鲜糕点。提前预订以获得最佳座位！',
     btnBookTab: '在线预订桌位',
     btnLookupTab: '查询预订',
-    btnLogin: '员工登录',
+    btnLogin: '员工',
     selectTableLabel: '1. 选择合适桌位',
     selectTableSub: '点击下方空桌进行留座预订',
     refreshMap: '刷新桌位图',
@@ -245,7 +248,10 @@ export default function Home() {
     // Default datetime input to 2 hours from now
     setPresetTime(2);
 
-    const socketBase = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
+    const socketBase = (process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001')
+      .trim()
+      .replace(/[\r\n\t]+/g, '')
+      .replace(/\/+$/, '');
     const socket = io(socketBase);
 
     socket.on('reservationStatusUpdated', ({ id, status, checkInCode }: any) => {
@@ -611,15 +617,15 @@ export default function Home() {
   );
 
   return (
-    <div className="fixed inset-0 w-full h-full flex flex-col overflow-hidden bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans antialiased">
+    <div className="fixed inset-0 w-full h-full flex flex-col overflow-hidden bg-[#F9FAFB] dark:bg-[#0E121B] text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans antialiased">
       {/* Top Header Bar (Fixed / Stationary: Không bao giờ cuộn) */}
-      <header className="shrink-0 z-40 bg-white/95 dark:bg-[#0B0F17]/95 border-b border-slate-200 dark:border-white/10 w-full shadow-xs backdrop-blur-xl">
-        <div className="flex justify-between items-center w-full px-3 sm:px-6 md:px-12 py-2 sm:py-3 max-w-7xl mx-auto gap-2">
+      <header className="shrink-0 z-40 bg-white/95 dark:bg-[#0E121B]/95 border-b border-slate-200/80 dark:border-white/10 w-full shadow-xs backdrop-blur-xl">
+        <div className="flex justify-between items-center w-full px-3.5 sm:px-6 md:px-12 py-3.5 sm:py-4.5 md:py-5 min-h-[64px] sm:min-h-[72px] md:min-h-[80px] max-w-7xl mx-auto gap-2">
           <BrandLogo onClick={() => router.push('/')} />
 
           <div className="flex items-center gap-2 sm:gap-3.5 shrink-0">
             {/* Language Selector Pill */}
-            <div className="inline-flex items-center px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border border-slate-200 dark:border-slate-700/80 text-[11px] sm:text-xs font-semibold bg-white dark:bg-slate-800/90 shadow-2xs">
+            <div className="inline-flex items-center px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full border border-slate-200 dark:border-slate-700/80 text-[11px] sm:text-xs font-semibold bg-white dark:bg-slate-800/90 shadow-2xs">
               <button
                 type="button"
                 onClick={() => setLang('vi')}
@@ -631,7 +637,7 @@ export default function Home() {
               >
                 VI
               </button>
-              <span className="mx-1 sm:mx-1.5 text-slate-300 dark:text-slate-600 font-normal">|</span>
+              <span className="mx-0.5 sm:mx-1.5 text-slate-300 dark:text-slate-600 font-normal">|</span>
               <button
                 type="button"
                 onClick={() => setLang('en')}
@@ -643,7 +649,7 @@ export default function Home() {
               >
                 EN
               </button>
-              <span className="mx-1 sm:mx-1.5 text-slate-300 dark:text-slate-600 font-normal">|</span>
+              <span className="mx-0.5 sm:mx-1.5 text-slate-300 dark:text-slate-600 font-normal">|</span>
               <button
                 type="button"
                 onClick={() => setLang('zh')}
@@ -662,12 +668,12 @@ export default function Home() {
               type="button"
               aria-label="Toggle Theme"
               onClick={() => setTheme(isDark ? 'light' : 'dark')}
-              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 border border-slate-200 dark:border-slate-700/80 rounded-full bg-white dark:bg-slate-800/90 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors shadow-2xs cursor-pointer"
+              className="flex items-center justify-center w-8 h-8 sm:w-auto sm:px-3 sm:py-2 sm:gap-1.5 border border-slate-200 dark:border-slate-700/80 rounded-full bg-white dark:bg-slate-800/90 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors shadow-2xs cursor-pointer shrink-0"
             >
               <svg
                 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${
                   !isDark ? 'text-amber-500' : 'text-slate-400 dark:text-slate-500'
-                }`}
+                } ${isDark ? 'hidden sm:block' : 'block'}`}
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -677,11 +683,11 @@ export default function Home() {
                   fillRule="evenodd"
                 />
               </svg>
-              <span className="text-slate-300 dark:text-slate-600 font-normal">|</span>
+              <span className="hidden sm:inline text-slate-300 dark:text-slate-600 font-normal">|</span>
               <svg
                 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${
                   isDark ? 'text-amber-400 dark:text-amber-300' : 'text-slate-400'
-                }`}
+                } ${!isDark ? 'hidden sm:block' : 'block'}`}
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -693,50 +699,51 @@ export default function Home() {
             <button
               type="button"
               onClick={() => router.push('/login')}
-              className="inline-flex items-center justify-center px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all duration-150 cursor-pointer active:scale-95 whitespace-nowrap shrink-0"
+              className="inline-flex items-center justify-center px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-xs transition-all duration-150 cursor-pointer active:scale-95 whitespace-nowrap shrink-0"
             >
-              <span className="sm:hidden">Đăng nhập</span>
-              <span className="hidden sm:inline">{t.btnLogin || 'Đăng nhập Nhân viên'}</span>
+              <span>{t.btnLogin || 'Nhân viên'}</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Scrollable Container (Natural Block Flow: NO flex justify-between, so footer sits only at the bottom) */}
+      {/* Scrollable Container */}
       <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain w-full scrollbar-thin" style={{ WebkitOverflowScrolling: 'touch' }}>
-        {/* Main Container */}
-        <main className="pt-4 sm:pt-8 pb-12 px-3 sm:px-6 md:px-12 w-full max-w-7xl mx-auto overflow-x-hidden">
+        <div className="min-h-full flex flex-col justify-between">
+          {/* Main Container */}
+          <main className="flex-1 pt-4 sm:pt-8 pb-12 px-3 sm:px-6 md:px-12 w-full max-w-7xl mx-auto overflow-x-hidden">
           {/* Hero Section */}
           <section className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
-            <div className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider mb-3 sm:mb-4 border border-blue-100 dark:border-blue-800/50 shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-blue-400 animate-pulse" />
-              <span>{t.heroBadge}</span>
+            <div className="mb-2.5 sm:mb-3">
+              <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.24em] text-sky-600 dark:text-sky-400">
+                {t.heroBadge}
+              </span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2 sm:mb-3">
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2 sm:mb-3 text-balance">
               {t.heroTitle}
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 text-sm sm:text-base leading-relaxed">
+            <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-base leading-relaxed max-w-xl mx-auto">
               {t.heroSubtitle}
             </p>
           </section>
 
           {/* Tab Navigation: Đặt Bàn vs Tra Cứu */}
-          <div className="flex justify-center border-b border-slate-200 dark:border-slate-800 mb-8">
-            <nav aria-label="Tabs" className="flex space-x-8 sm:space-x-12 -mb-px">
+          <div className="flex justify-center border-b border-slate-200 dark:border-slate-800 mb-6 sm:mb-8">
+            <nav aria-label="Tabs" className="flex justify-center w-full max-w-md space-x-2 sm:space-x-8 -mb-px px-1">
               <button
                 type="button"
                 onClick={() => {
                   setActiveTab('reserve');
                   setError('');
                 }}
-                className={`py-3 px-2 text-sm font-bold inline-flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+                className={`flex-1 sm:flex-initial py-2.5 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-1.5 sm:gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === 'reserve'
                     ? 'border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 translate-y-[1px]'
                     : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
-                <span className="material-symbols-outlined text-base">calendar_month</span>
-                <span>{t.btnBookTab}</span>
+                <span className="material-symbols-outlined text-base sm:text-lg shrink-0">calendar_month</span>
+                <span className="whitespace-nowrap">{t.btnBookTab}</span>
               </button>
               <button
                 type="button"
@@ -744,14 +751,14 @@ export default function Home() {
                   setActiveTab('lookup');
                   setError('');
                 }}
-                className={`py-3 px-2 text-sm font-semibold inline-flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+                className={`flex-1 sm:flex-initial py-2.5 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold inline-flex items-center justify-center gap-1.5 sm:gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === 'lookup'
                     ? 'border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 translate-y-[1px]'
                     : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
-                <span className="material-symbols-outlined text-base">search</span>
-                <span>{t.btnLookupTab}</span>
+                <span className="material-symbols-outlined text-base sm:text-lg shrink-0">search</span>
+                <span className="whitespace-nowrap">{t.btnLookupTab}</span>
               </button>
             </nav>
           </div>
@@ -1752,7 +1759,7 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white/90 dark:bg-[#090D16]/95 border-t border-slate-200/80 dark:border-white/10 mt-auto w-full backdrop-blur-md">
+      <footer className="shrink-0 bg-white/90 dark:bg-[#090D16]/95 border-t border-slate-200/80 dark:border-white/10 mt-auto w-full backdrop-blur-md">
         <div className="flex flex-col md:flex-row justify-between items-center w-full px-4 md:px-12 py-4 sm:py-5 max-w-7xl mx-auto gap-3 sm:gap-4">
           <div className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 text-center md:text-left leading-relaxed">
             <span className="font-semibold text-slate-700 dark:text-slate-300">© {new Date().getFullYear()} Kohi Coffee & Pastry.</span>{' '}
@@ -1775,6 +1782,7 @@ export default function Home() {
           </div>
         </div>
       </footer>
+        </div>
       </div>
     </div>
   );

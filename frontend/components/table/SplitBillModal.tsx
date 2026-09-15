@@ -52,7 +52,10 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
   // Send realtime staff call notification when customer opens split bill payment modal
   useEffect(() => {
     if (isOpen && table?._id) {
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+      const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1')
+        .trim()
+        .replace(/[\r\n\t]+/g, '')
+        .replace(/\/+$/, '');
       fetch(`${API_BASE}/staff-calls`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

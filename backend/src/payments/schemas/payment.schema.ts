@@ -71,3 +71,5 @@ export class Payment {
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);
+PaymentSchema.index({ paidAt: -1, isDeleted: 1 });
+PaymentSchema.index({ orderId: 1 });

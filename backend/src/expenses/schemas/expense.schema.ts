@@ -25,4 +25,4 @@ export class Expense {
 }
 
 export const ExpenseSchema = SchemaFactory.createForClass(Expense);
-ExpenseSchema.index({ date: 1 });
+ExpenseSchema.index({ date: -1, amount: 1 });

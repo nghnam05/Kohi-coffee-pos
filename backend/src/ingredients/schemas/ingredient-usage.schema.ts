@@ -34,3 +34,4 @@ export class IngredientUsage {
 }
 
 export const IngredientUsageSchema = SchemaFactory.createForClass(IngredientUsage);
+IngredientUsageSchema.index({ date: -1, totalCost: 1 });

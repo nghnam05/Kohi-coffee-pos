@@ -14,8 +14,14 @@ import { formatTableName } from '@/utils/format';
 import { toast } from 'react-hot-toast';
 import { LeaveTableModal } from '@/components/table/LeaveTableModal';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
-const SOCKET_BASE = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1')
+  .trim()
+  .replace(/[\r\n\t]+/g, '')
+  .replace(/\/+$/, '');
+const SOCKET_BASE = (process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001')
+  .trim()
+  .replace(/[\r\n\t]+/g, '')
+  .replace(/\/+$/, '');
 
 const DICTIONARY = {
   vi: {
@@ -694,24 +700,101 @@ export default function OrderStatusPage() {
                   </p>
 
                   {hasReviewed ? (
-                    <div className="text-center py-6 bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4">
-                      <span className="text-xs font-bold text-emerald-500">
-                        {lang === 'vi' ? 'Cảm ơn bạn đã gửi đánh giá!' : 'Thank you for your review!'}
-                      </span>
+                    <div className="py-5 px-4 bg-emerald-500/10 border border-emerald-500/25 rounded-2xl text-center space-y-3.5">
+                      <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center mx-auto border border-emerald-500/30">
+                        <span className="material-symbols-outlined text-2xl">verified</span>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-[var(--text-primary)]">
+                          {lang === 'vi' ? 'Cảm ơn bạn đã gửi đánh giá!' : 'Thank you for your feedback!'}
+                        </h4>
+                        <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                          {lang === 'vi' ? 'Ý kiến quý giá của bạn giúp Kohi ngày càng hoàn thiện hơn.' : 'Your review helps Kohi continually improve.'}
+                        </p>
+                      </div>
+
+                      {/* Gamification Loyalty Voucher Banner */}
+                      <div className="p-3.5 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-500/30 rounded-xl text-left flex items-center justify-between gap-2.5">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-amber-500 text-sm">redeem</span>
+                            <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                              Quà tặng tri ân
+                            </span>
+                          </div>
+                          <p className="text-xs font-black font-mono text-[var(--text-primary)] mt-0.5">
+                            MÃ: <span className="text-[#0284c7] dark:text-[#38BDF8]">KOHICARE10</span>
+                          </p>
+                          <p className="text-[10px] text-[var(--text-secondary)]">Giảm 10% cho lần ghé tiếp theo (HSD: 30 ngày)</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText('KOHICARE10');
+                            toast('Đã sao chép mã ưu đãi KOHICARE10!', { icon: null });
+                          }}
+                          className="px-3 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold text-[10px] uppercase tracking-wider rounded-lg shadow-xs active:scale-95 transition-all cursor-pointer shrink-0"
+                        >
+                          Sao chép
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <div className="space-y-3.5">
-                      <div className="flex gap-2 justify-center py-1">
-                        {[1, 2, 3, 4, 5].map((s) => (
-                          <button
-                            key={s}
-                            onClick={() => setOverallStar(s)}
-                            className={`text-2xl sm:text-3xl transition-transform hover:scale-125 cursor-pointer ${
-                              s <= overallStar ? 'text-amber-400' : 'text-slate-300 dark:text-slate-700'
-                            }`}
-                          >★</button>
-                        ))}
+                      {/* Interactive Star Rating with Dynamic Emotion */}
+                      <div className="text-center py-1">
+                        <div className="flex gap-2 justify-center">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <button
+                              key={s}
+                              onClick={() => setOverallStar(s)}
+                              className={`text-2xl sm:text-3xl transition-transform hover:scale-125 cursor-pointer ${
+                                s <= overallStar ? 'text-amber-400' : 'text-slate-300 dark:text-slate-700'
+                              }`}
+                            >★</button>
+                          ))}
+                        </div>
+                        <p className="text-xs font-bold text-amber-600 dark:text-amber-400 mt-1">
+                          {overallStar === 1 && 'Rất thất vọng 😞'}
+                          {overallStar === 2 && 'Chưa hài lòng 🙁'}
+                          {overallStar === 3 && 'Tạm ổn 😐'}
+                          {overallStar === 4 && 'Hài lòng 😊'}
+                          {overallStar === 5 && 'Tuyệt vời! 🤩'}
+                        </p>
                       </div>
+
+                      {/* Quick-Feedback Chips */}
+                      <div className="flex flex-wrap gap-1.5 justify-center">
+                        {(overallStar >= 4
+                          ? ['Đồ uống ngon ☕', 'Phục vụ nhanh ⚡', 'Không gian đẹp 🌿', 'Nhân viên nhiệt tình 🥰', 'Rất đáng tiền 💰']
+                          : ['Đồ uống hơi ngọt 🍬', 'Phục vụ chậm ⏳', 'Không gian ồn ào 📢', 'Món ra chưa đủ ⚠️', 'Cần cải thiện thái độ 💬']
+                        ).map((chip) => {
+                          const isSelected = overallComment.includes(chip);
+                          return (
+                            <button
+                              key={chip}
+                              type="button"
+                              onClick={() => {
+                                if (isSelected) {
+                                  setOverallComment((prev) =>
+                                    prev.replace(chip, '').replace(/,\s*,/g, ',').trim().replace(/^,\s*|,\s*$/g, '')
+                                  );
+                                } else {
+                                  setOverallComment((prev) => (prev ? `${prev}, ${chip}` : chip));
+                                }
+                              }}
+                              className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'bg-[#0284c7] text-white border-[#0284c7] shadow-xs'
+                                  : 'bg-[var(--bg-primary)] hover:bg-slate-100 dark:hover:bg-slate-800 text-[var(--text-secondary)] border-[var(--border-color)]'
+                              }`}
+                            >
+                              {chip}
+                            </button>
+                          );
+                        })}
+                      </div>
+
                       <textarea
                         value={overallComment}
                         onChange={(e) => setOverallComment(e.target.value)}
@@ -737,47 +820,79 @@ export default function OrderStatusPage() {
                 {/* Top Card: Live Progress Header & Stepper */}
                 <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-lg space-y-4 sm:space-y-6">
                   {/* Row 1: Status Title & Meta Badges */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 sm:pb-4 border-b border-[var(--border-color)]">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 sm:pb-4 border-b border-[var(--border-color)]">
                     <div>
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <span className="w-2 h-2 rounded-full bg-[#0284c7] dark:bg-[#38BDF8] animate-ping inline-block" />
-                        <span className="text-[10px] sm:text-[11px] font-black text-[#0284c7] dark:text-[#38BDF8] uppercase tracking-widest">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#0284c7] dark:bg-[#38BDF8] animate-ping inline-block" />
+                        <span className="text-[10px] sm:text-[11px] font-black text-[#0284c7] dark:text-[#38BDF8] uppercase tracking-widest font-mono">
                           TRẠNG THÁI TRỰC TUYẾN
                         </span>
                       </div>
-                      <h1 className="text-lg sm:text-2xl font-black text-[var(--text-primary)] tracking-tight">
+                      <h1 className="text-xl sm:text-2xl font-black text-[var(--text-primary)] tracking-tight">
                         {(t.steps as any)[order.status]}
                       </h1>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                      <div className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-bold">
-                        <span className="text-[var(--text-tertiary)] mr-1">Mã đơn:</span>
-                        <span className="text-[#0284c7] dark:text-[#38BDF8] uppercase font-extrabold">#{order._id.slice(-6).toUpperCase()}</span>
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+                      <div className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-extrabold font-mono">
+                        <span className="text-[var(--text-tertiary)] mr-1">Mã:</span>
+                        <span className="text-[#0284c7] dark:text-[#38BDF8] uppercase">#{order._id.slice(-6).toUpperCase()}</span>
                       </div>
 
                       <div className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-bold">
                         <span className="text-[var(--text-tertiary)] mr-1">Vị trí:</span>
-                        <span>{formatTableName(order.tableId?.tableName, lang)}</span>
+                        <span className="font-extrabold text-[var(--text-primary)]">{formatTableName(order.tableId?.tableName, lang)}</span>
                         {order.customerName && <span className="text-[var(--text-secondary)] font-normal ml-1">({order.customerName})</span>}
                       </div>
 
                       {order.status !== 'cancelled' && (
-                        <div className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-bold">
-                          ~{new Date(new Date(order.createdAt).getTime() + 20 * 60 * 1000).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                        <div className="flex items-center gap-1.5 px-3 py-1 sm:py-1.5 bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] border border-sky-500/25 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-extrabold shadow-2xs font-mono">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#0284c7] dark:bg-[#38BDF8] animate-pulse" />
+                          <span>
+                            {order.status === 'completed'
+                              ? 'Đã phục vụ tại bàn'
+                              : order.status === 'ready'
+                              ? 'Đang mang ra bàn'
+                              : `Dự kiến: ~${new Date(new Date(order.createdAt).getTime() + 15 * 60 * 1000).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`}
+                          </span>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Row 2: Responsive Stepper (Scrollable horizontally on mobile to prevent text collision) */}
-                  <div className="pt-1 overflow-x-auto scrollbar-none">
-                    <div className="relative min-w-[460px] sm:min-w-0 sm:max-w-4xl mx-auto px-2 py-2">
+                  {/* Row 2: Ergonomic Adaptive Stepper */}
+                  {/* Mobile Compact Progress View (sm:hidden) */}
+                  <div className="sm:hidden space-y-2 pt-1">
+                    <div className="flex items-center justify-between text-xs font-extrabold">
+                      <span className="text-[var(--text-secondary)]">Tiến trình đơn:</span>
+                      <span className="text-[#0284c7] dark:text-[#38BDF8] font-mono">
+                        Bước {Math.max(1, currentStepIndex + 1)}/{stepsList.length}: {(t.steps as any)[order.status]}
+                      </span>
+                    </div>
+
+                    <div className="w-full h-2.5 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden p-0.5">
+                      <div
+                        className="h-full bg-gradient-to-r from-[#0284c7] via-cyan-400 to-emerald-500 rounded-full transition-all duration-500"
+                        style={{ width: `${Math.min(100, Math.max(12, ((currentStepIndex + 1) / stepsList.length) * 100))}%` }}
+                      />
+                    </div>
+
+                    <div className="flex justify-between items-center px-1 text-[10px] text-[var(--text-tertiary)] font-bold">
+                      <span>Đã gửi</span>
+                      <span>Pha chế</span>
+                      <span>Ra món</span>
+                      <span>Thanh toán</span>
+                    </div>
+                  </div>
+
+                  {/* Desktop Full Timeline View (hidden sm:block) */}
+                  <div className="hidden sm:block pt-1">
+                    <div className="relative max-w-4xl mx-auto px-4 py-2">
                       {/* Background connecting track line */}
-                      <div className="absolute left-6 right-6 top-5 -translate-y-1/2 h-1 bg-[var(--border-color)] z-0 rounded-full" />
+                      <div className="absolute left-8 right-8 top-5 -translate-y-1/2 h-1 bg-[var(--border-color)] z-0 rounded-full" />
                       {/* Active progress fill line */}
                       <div
-                        className="absolute left-6 top-5 -translate-y-1/2 h-1 bg-gradient-to-r from-[#0284c7] via-cyan-400 to-emerald-500 transition-all duration-700 z-0 rounded-full"
+                        className="absolute left-8 top-5 -translate-y-1/2 h-1 bg-gradient-to-r from-[#0284c7] via-cyan-400 to-emerald-500 transition-all duration-700 z-0 rounded-full"
                         style={{ width: `${Math.max(0, (currentStepIndex / (stepsList.length - 1)) * 92)}%` }}
                       />
 
@@ -787,14 +902,14 @@ export default function OrderStatusPage() {
                           const isCurrent = idx === currentStepIndex;
 
                           return (
-                            <div key={stepKey} className="flex flex-col items-center shrink-0 w-16 sm:w-auto">
+                            <div key={stepKey} className="flex flex-col items-center shrink-0">
                               {/* Step Node Circle */}
                               <div
-                                className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs font-black transition-all ${
+                                className={`w-9 h-9 lg:w-10 lg:h-10 rounded-full flex items-center justify-center text-xs font-black transition-all ${
                                   isCompleted
                                     ? 'bg-emerald-500 text-white shadow-sm'
                                     : isCurrent
-                                    ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 ring-4 ring-[#0284c7]/30 dark:ring-sky-500/40 font-black scale-105 sm:scale-110 shadow-md'
+                                    ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 ring-4 ring-[#0284c7]/30 dark:ring-sky-500/40 font-black scale-110 shadow-md'
                                     : 'bg-[var(--bg-card)] border-2 border-[var(--border-color)] text-[var(--text-tertiary)]'
                                 }`}
                               >
@@ -803,7 +918,7 @@ export default function OrderStatusPage() {
 
                               {/* Step Label */}
                               <span
-                                className={`text-[10.5px] sm:text-xs font-bold mt-1.5 text-center whitespace-nowrap ${
+                                className={`text-xs font-bold mt-2 text-center whitespace-nowrap ${
                                   isCurrent
                                     ? 'text-[#0284c7] dark:text-[#38BDF8]'
                                     : isCompleted
@@ -868,7 +983,7 @@ export default function OrderStatusPage() {
                         )}
                       </div>
 
-                      {/* Items List with Split Checkboxes */}
+                      {/* Items List with Split Checkboxes (Selectable Card Pattern) */}
                       <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
                         {order.items.map((item, idx) => {
                           const itemCaller = item.orderedBy || (() => {
@@ -886,48 +1001,50 @@ export default function OrderStatusPage() {
                             <div
                               key={idx}
                               onClick={() => !isPaidItem && toggleItemSelection(idx)}
-                              className={`flex items-center justify-between p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border text-xs transition-all ${
+                              className={`flex items-center justify-between p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border text-xs transition-all select-none ${
                                 isPaidItem
-                                  ? 'bg-emerald-500/5 border-emerald-500/20 opacity-80 cursor-default'
+                                  ? 'bg-emerald-500/5 border-emerald-500/20 opacity-75 cursor-default'
                                   : isSelected
-                                  ? 'bg-[#0284c7]/10 dark:bg-sky-500/15 border-[#0284c7]/40 dark:border-sky-500/40 cursor-pointer shadow-xs'
-                                  : 'bg-[var(--bg-primary)] border-[var(--border-color)] hover:border-[#0284c7]/30 cursor-pointer'
+                                  ? 'bg-[#0284c7]/10 dark:bg-sky-500/15 border-[#0284c7] dark:border-[#38BDF8] ring-1 ring-[#0284c7]/30 shadow-sm cursor-pointer'
+                                  : 'bg-[var(--bg-primary)] border-[var(--border-color)] hover:border-[#0284c7]/40 hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer'
                               }`}
                             >
-                              <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                              <div className="flex items-center gap-3 min-w-0 pr-2">
                                 {/* Selection Checkbox / Paid Badge */}
                                 {isPaidItem ? (
-                                  <span className="w-5 h-5 rounded-md bg-emerald-500 text-white font-black text-[10px] flex items-center justify-center shrink-0">
+                                  <span className="w-5 h-5 rounded-md bg-emerald-500 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
                                     ✓
                                   </span>
                                 ) : (
-                                  <input
-                                    type="checkbox"
-                                    checked={isSelected}
-                                    onChange={() => toggleItemSelection(idx)}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-[#0284c7] focus:ring-[#0284c7] cursor-pointer shrink-0"
-                                  />
+                                  <div className="relative flex items-center justify-center shrink-0">
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={() => toggleItemSelection(idx)}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="w-5 h-5 rounded-md border-slate-300 dark:border-slate-600 text-[#0284c7] focus:ring-[#0284c7] cursor-pointer"
+                                    />
+                                  </div>
                                 )}
 
-                                <span className="px-2 py-0.5 bg-[#0284c7]/15 text-[#0284c7] dark:text-[#38BDF8] font-black rounded-lg shrink-0 font-mono">
+                                <span className="px-2 py-0.5 bg-[#0284c7]/15 text-[#0284c7] dark:text-[#38BDF8] font-black rounded-lg shrink-0 font-mono text-xs">
                                   x{item.quantity}
                                 </span>
 
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-1.5 flex-wrap">
-                                    <p className={`font-bold truncate ${isPaidItem ? 'line-through text-slate-400 dark:text-slate-500' : 'text-[var(--text-primary)]'}`}>
+                                    <p className={`font-bold text-xs sm:text-sm truncate ${isPaidItem ? 'line-through text-slate-400 dark:text-slate-500' : 'text-[var(--text-primary)]'}`}>
                                       {item.foodId?.name || 'Món ăn'}
                                     </p>
 
                                     {itemCaller && (
-                                      <span className="px-1.5 py-0.2 rounded text-[10px] font-black uppercase tracking-wider bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 font-mono shrink-0">
+                                      <span className="px-1.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 font-mono shrink-0">
                                         {itemCaller}
                                       </span>
                                     )}
 
                                     {isPaidItem && (
-                                      <span className="px-1.5 py-0.2 rounded text-[10px] font-extrabold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-mono shrink-0">
+                                      <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-mono shrink-0">
                                         ✓ Đã trả {item.paidBy ? `(${item.paidBy})` : ''}
                                       </span>
                                     )}
@@ -936,7 +1053,7 @@ export default function OrderStatusPage() {
                                 </div>
                               </div>
 
-                              <span className={`font-extrabold shrink-0 font-mono ${isPaidItem ? 'text-slate-400 dark:text-slate-500' : 'text-[var(--text-primary)]'}`}>
+                              <span className={`font-extrabold shrink-0 font-mono text-xs sm:text-sm ${isPaidItem ? 'text-slate-400 dark:text-slate-500' : 'text-[#0284c7] dark:text-[#38BDF8]'}`}>
                                 {formatPrice((item.foodId?.price || 0) * item.quantity)}
                               </span>
                             </div>
@@ -1160,7 +1277,7 @@ export default function OrderStatusPage() {
                           </div>
                         ) : (
                           <>
-                            {/* Bank / VietQR button */}
+                            {/* Bank / VietQR button (Primary Solid High-Emphasis) */}
                             <button
                               onClick={() => {
                                 if (paymentAmountToPay <= 0) {
@@ -1170,22 +1287,26 @@ export default function OrderStatusPage() {
                                 setIsBankModalOpen(true);
                               }}
                               disabled={paymentAmountToPay <= 0}
-                              className="w-full py-3.5 bg-[#0284c7] hover:bg-[#0369a1] disabled:opacity-50 text-white font-black text-xs uppercase tracking-wider rounded-xl sm:rounded-2xl shadow-md active:scale-95 transition-all cursor-pointer text-center"
+                              className="w-full py-3.5 bg-[#0284c7] hover:bg-[#0369a1] disabled:opacity-50 text-white font-black text-xs uppercase tracking-wider rounded-xl sm:rounded-2xl shadow-md shadow-sky-500/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 text-center"
                             >
-                              Chuyển khoản Ngân hàng (VietQR)
+                              <span className="material-symbols-outlined text-lg">qr_code_2</span>
+                              <span>Chuyển khoản Ngân hàng (VietQR)</span>
                             </button>
 
-                            {/* Cash payment button */}
+                            {/* Cash payment button (Secondary Tinted / Outlined) */}
                             <button
                               onClick={handleSplitCashPayment}
                               disabled={callStaffCooldown > 0 || isCallingStaff || isPayingSplitCash || paymentAmountToPay <= 0}
-                              className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:opacity-50 text-white font-black text-xs uppercase tracking-wider rounded-xl sm:rounded-2xl shadow-sm active:scale-95 transition-all cursor-pointer text-center"
+                              className="w-full py-3 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 disabled:opacity-50 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-black text-xs uppercase tracking-wider rounded-xl sm:rounded-2xl shadow-xs active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 text-center"
                             >
-                              {isPayingSplitCash
-                                ? 'Đang gửi...'
-                                : callStaffCooldown > 0
-                                ? `Đã gọi phục vụ (${callStaffCooldown}s)`
-                                : `Thanh toán Tiền mặt (${formatPrice(paymentAmountToPay)})`}
+                              <span className="material-symbols-outlined text-lg">payments</span>
+                              <span>
+                                {isPayingSplitCash
+                                  ? 'Đang gửi...'
+                                  : callStaffCooldown > 0
+                                  ? `Đã gọi phục vụ (${callStaffCooldown}s)`
+                                  : `Thanh toán Tiền mặt (${formatPrice(paymentAmountToPay)})`}
+                              </span>
                             </button>
                           </>
                         )}
@@ -1284,16 +1405,17 @@ export default function OrderStatusPage() {
               </div>
             ) : (
               <>
-                {/* Split Cash Button */}
+                {/* Split Cash Button (Secondary Tinted) */}
                 <button
                   onClick={handleSplitCashPayment}
                   disabled={callStaffCooldown > 0 || isCallingStaff || isPayingSplitCash || paymentAmountToPay <= 0}
-                  className="h-10 px-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:opacity-50 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-xs active:scale-95 transition-all cursor-pointer text-center shrink-0 whitespace-nowrap"
+                  className="h-10 px-3 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 disabled:opacity-50 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-bold text-xs uppercase tracking-wider rounded-xl shadow-xs active:scale-95 transition-all cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap"
                 >
-                  {isPayingSplitCash ? 'Đang gửi...' : 'Tiền mặt'}
+                  <span className="material-symbols-outlined text-base">payments</span>
+                  <span>{isPayingSplitCash ? 'Đang gửi...' : 'Tiền mặt'}</span>
                 </button>
 
-                {/* Split VietQR Button */}
+                {/* Split VietQR Button (Primary Solid) */}
                 <button
                   onClick={() => {
                     if (paymentAmountToPay <= 0) {
@@ -1303,9 +1425,10 @@ export default function OrderStatusPage() {
                     setIsBankModalOpen(true);
                   }}
                   disabled={paymentAmountToPay <= 0}
-                  className="h-10 px-4 bg-[#0284c7] hover:bg-[#0369a1] disabled:opacity-50 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md active:scale-95 transition-all cursor-pointer text-center flex-1 max-w-[155px] truncate whitespace-nowrap"
+                  className="h-10 px-3.5 bg-[#0284c7] hover:bg-[#0369a1] disabled:opacity-50 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md shadow-sky-500/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5 flex-1 max-w-[170px] truncate whitespace-nowrap"
                 >
-                  Chuyển khoản
+                  <span className="material-symbols-outlined text-base">qr_code_2</span>
+                  <span>Chuyển khoản</span>
                 </button>
               </>
             )}

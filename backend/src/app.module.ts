@@ -30,8 +30,8 @@ import { ExpensesModule } from './expenses/expenses.module.js';
       useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URI'),
         dbName: 'kohi-coffee',
-        maxPoolSize: 50,
-        minPoolSize: 10,
+        maxPoolSize: 10,
+        minPoolSize: 2,
         serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
       }),

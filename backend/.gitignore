@@ -54,3 +54,11 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+check_images.js
+clean_data.cjs
+clean_data.js
+seed.cjs
+seed.js
+seed-day-14.js
+check_images.js

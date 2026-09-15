@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 
-const seedContent = fs.readFileSync(path.join(__dirname, 'seed.js'), 'utf-8');
+const seedContent = fs.readFileSync(path.join(__dirname, 'seeds', 'seed.js'), 'utf-8');
 
 // Find all matches of image: '...'
 const imageRegex = /image:\s*'([^']+)'/g;

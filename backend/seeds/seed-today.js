@@ -4,7 +4,9 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 
 // 1. Manually parse .env to get MONGODB_URI
-const envPath = path.join(__dirname, '.env');
+const envPath = fs.existsSync(path.join(__dirname, '.env'))
+  ? path.join(__dirname, '.env')
+  : path.join(__dirname, '..', '.env');
 if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, 'utf-8');
   envContent.split(/\r?\n/).forEach((line) => {

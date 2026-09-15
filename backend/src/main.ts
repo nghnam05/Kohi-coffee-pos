@@ -12,9 +12,9 @@ import { json, urlencoded } from 'express';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // 0. Tăng dung lượng nhận payload cho JSON (phục vụ Upload ảnh Base64)
-  app.use(json({ limit: '50mb' }));
-  app.use(urlencoded({ limit: '50mb', extended: true }));
+  // 0. Giới hạn dung lượng nhận payload JSON an toàn (15MB đủ cho ảnh Base64 chất lượng cao, tránh tràn RAM)
+  app.use(json({ limit: '15mb' }));
+  app.use(urlencoded({ limit: '15mb', extended: true }));
 
   // 1. Kích hoạt Global Validation Pipe
   app.useGlobalPipes(
