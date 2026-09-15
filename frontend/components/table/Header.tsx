@@ -78,7 +78,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <>
       {/* ── Mobile Top App Bar ──────────────────────────────────────────────── */}
-      <header className="fixed top-0 left-0 right-0 z-40 h-16 px-4 bg-white/90 dark:bg-[#0B0F17]/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 flex justify-between items-center md:hidden shadow-xs transition-colors">
+      <header className="fixed top-0 left-0 right-0 z-40 h-16 px-4 bg-white/90 dark:bg-[#0E121B]/95 backdrop-blur-xl border-b border-slate-200/80 dark:border-white/10 flex justify-between items-center md:hidden shadow-xs transition-colors">
         <BrandLogo />
         <div className="flex items-center gap-1.5 sm:gap-2">
 

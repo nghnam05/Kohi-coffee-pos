@@ -10,31 +10,31 @@
   --font-heading: var(--font-inter), 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* ── Light Mode (2026 Crisp Porcelain & Skyblue System) ──── */
+/* ── Light Mode (Artisan Porcelain & Deep Skyblue System) ─── */
 :root {
-  /* Backgrounds & Canvas */
-  --bg-primary:                  #F8FAFC; /* Slate 50 - Ultra-clean modern light canvas */
-  --bg-surface:                  #FFFFFF; /* Pure White surface */
-  --bg-surface-dim:              #E2E8F0;
+  /* Backgrounds & Canvas (Soft Porcelain) */
+  --bg-primary:                  #F9FAFB; /* Soft Porcelain White Canvas */
+  --bg-surface:                  #FFFFFF; /* Pure Milk Porcelain Surface */
+  --bg-surface-dim:              #F3F4F6;
   --bg-surface-bright:           #FFFFFF;
   --bg-container-lowest:         #FFFFFF;
-  --bg-container-low:            #F1F5F9;
-  --bg-container:                #E2E8F0;
-  --bg-container-high:           #CBD5E1;
-  --bg-container-highest:        #94A3B8;
+  --bg-container-low:            #F3F4F6;
+  --bg-container:                #E5E7EB;
+  --bg-container-high:           #D1D5DB;
+  --bg-container-highest:        #9CA3AF;
 
   --bg-card:                     #FFFFFF;
-  --bg-card-inner:               #F1F5F9;
-  --bg-subtle:                   #F8FAFC;
-  --bg-muted:                    #E2E8F0;
+  --bg-card-inner:               #F9FAFB;
+  --bg-subtle:                   #F3F4F6;
+  --bg-muted:                    #E5E7EB;
 
   /* Borders & Outlines */
-  --border-color:                #E2E8F0; /* Subtle light border */
-  --border-strong:               #CBD5E1; /* Accessible contrast border */
-  --border-focus:                #38BDF8; /* Skyblue focus indicator */
+  --border-color:                #E5E7EB; /* Subtle tactile border */
+  --border-strong:               #D1D5DB; /* Accessible contrast border */
+  --border-focus:                #0284C7; /* Skyblue focus indicator */
 
   /* Typography */
-  --text-primary:                #090D16; /* Deep Black - Maximum contrast 16:1 */
+  --text-primary:                #0F172A; /* Deep Obsidian - Maximum clarity */
   --text-secondary:              #334155; /* Slate 700 - Highly legible */
   --text-tertiary:               #64748B; /* Slate 500 - WCAG AAA compliant */
   --text-quaternary:             #94A3B8;
@@ -95,34 +95,34 @@
   --shadow-sidebar:              1px 0 0 #E2E8F0;
 }
 
-/* ── Dark Mode (2026 Deep OLED Void & Electric Skyblue) ──── */
+/* ── Dark Mode (Warm Espresso Obsidian & Soft Skyblue) ───── */
 [data-theme="dark"],
 .dark {
-  /* Backgrounds & Canvas */
-  --bg-primary:                  #090D16; /* Pure Deep OLED Black */
-  --bg-surface:                  #0F172A; /* Surface slate */
-  --bg-surface-dim:              #0B0F17;
-  --bg-surface-bright:           #131929;
-  --bg-container-lowest:         #090D16;
-  --bg-container-low:            #0D121F;
-  --bg-container:                #131929; /* Card & Panel container */
-  --bg-container-high:           #1A2234;
-  --bg-container-highest:        #242E45;
+  /* Backgrounds & Canvas (Deep Roasted Obsidian) */
+  --bg-primary:                  #0E121B; /* Warm Espresso Obsidian */
+  --bg-surface:                  #141924; /* Smoked Quartz Slate Surface */
+  --bg-surface-dim:              #0B0E16;
+  --bg-surface-bright:           #19202E;
+  --bg-container-lowest:         #0A0D14;
+  --bg-container-low:            #10141D;
+  --bg-container:                #151A25; /* Card & Panel container */
+  --bg-container-high:           #1B2230;
+  --bg-container-highest:        #232A3B;
 
-  --bg-card:                     #131929; /* Deep Slate Glass Card */
-  --bg-card-inner:               #1A2234; /* Inner container */
-  --bg-subtle:                   #0D121F;
-  --bg-muted:                    #1E293B;
+  --bg-card:                     #141924; /* Smoked Slate Card */
+  --bg-card-inner:               #19202E; /* Inner container */
+  --bg-subtle:                   #10141D;
+  --bg-muted:                    #1E2535;
 
   /* Borders & Outlines */
-  --border-color:                rgba(255, 255, 255, 0.08); /* 2026 Translucent micro-border */
-  --border-strong:               rgba(255, 255, 255, 0.16);
+  --border-color:                rgba(255, 255, 255, 0.07); /* Micro-border */
+  --border-strong:               rgba(255, 255, 255, 0.13);
   --border-focus:                #38BDF8; /* Electric Skyblue focus ring */
 
-  /* Typography */
-  --text-primary:                #FFFFFF; /* Pure White - Maximum contrast 18:1 */
-  --text-secondary:              #CBD5E1; /* Slate 300 */
-  --text-tertiary:               #94A3B8; /* Slate 400 - WCAG AAA compliant */
+  /* Typography (Anti-Halation & Silky Hierarchy) */
+  --text-primary:                #FFFFFF; /* Pure White - Crisp Headings */
+  --text-secondary:              #CBD5E1; /* Slate 300 - Soft on eyes, no glare */
+  --text-tertiary:               #94A3B8; /* Slate 400 - Calm subtle text */
   --text-quaternary:             #64748B;
 
   /* Brand Palette (Skyblue Accent) */
@@ -166,10 +166,10 @@
   --payment-inactive-border:     rgba(255, 255, 255, 0.08);
   --payment-inactive-text:       #94A3B8;
 
-  /* Shadows (Glassmorphic glow depth) */
-  --shadow-xs:                   0 1px 2px 0 rgba(0, 0, 0, 0.4);
-  --shadow-card:                 0 8px 24px -4px rgba(0, 0, 0, 0.5), 0 2px 6px -1px rgba(0, 0, 0, 0.3);
-  --shadow-card-hover:           0 16px 36px -6px rgba(56, 189, 248, 0.2), 0 0 16px rgba(56, 189, 248, 0.1);
+  /* Shadows (Natural depth, no artificial neon glow) */
+  --shadow-xs:                   0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-card:                 0 4px 16px -2px rgba(0, 0, 0, 0.35), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover:           0 12px 28px -4px rgba(0, 0, 0, 0.45), 0 4px 10px -2px rgba(0, 0, 0, 0.25);
   --shadow-sidebar:              1px 0 0 rgba(255, 255, 255, 0.08);
 }
 

@@ -3,7 +3,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1')
+  .trim()
+  .replace(/[\r\n\t]+/g, '')
+  .replace(/\/+$/, '');
 
 interface FoodReviewModalProps {
   isOpen: boolean;
@@ -13,6 +16,26 @@ interface FoodReviewModalProps {
   formatPrice: (price: number, lang: any) => string;
   lang?: any;
 }
+
+const EMOTION_LABELS: Record<number, { vi: string; en: string; zh: string; emoji: string }> = {
+  1: { vi: 'Rất thất vọng', en: 'Very Dissatisfied', zh: '非常不满意', emoji: '😞' },
+  2: { vi: 'Chưa hài lòng', en: 'Dissatisfied', zh: '不满意', emoji: '🙁' },
+  3: { vi: 'Tạm ổn', en: 'Average', zh: '一般', emoji: '😐' },
+  4: { vi: 'Hài lòng', en: 'Satisfied', zh: '满意', emoji: '😊' },
+  5: { vi: 'Tuyệt vời!', en: 'Excellent!', zh: '非常满意！', emoji: '🤩' },
+};
+
+const QUICK_CHIPS_HIGH = {
+  vi: ['Đồ uống ngon ☕', 'Phục vụ nhanh ⚡', 'Không gian đẹp 🌿', 'Nhân viên nhiệt tình 🥰', 'Rất đáng tiền 💰'],
+  en: ['Delicious Drinks ☕', 'Fast Service ⚡', 'Cozy Ambiance 🌿', 'Friendly Staff 🥰', 'Great Value 💰'],
+  zh: ['饮品美味 ☕', '出餐迅速 ⚡', '环境优美 🌿', '服务热情 🥰', '物超所值 💰'],
+};
+
+const QUICK_CHIPS_LOW = {
+  vi: ['Đồ uống hơi ngọt 🍬', 'Phục vụ chậm ⏳', 'Không gian ồn ào 📢', 'Món ra chưa đủ ⚠️', 'Cần cải thiện thái độ 💬'],
+  en: ['Too Sweet 🍬', 'Slow Service ⏳', 'Noisy Space 📢', 'Missing Items ⚠️', 'Staff Attitude 💬'],
+  zh: ['饮品偏甜 🍬', '上餐较慢 ⏳', '环境嘈杂 📢', '遗漏餐品 ⚠️', '需改善态度 💬'],
+};
 
 export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
   isOpen,
@@ -28,6 +51,7 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isSubmittedSuccess, setIsSubmittedSuccess] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [copiedVoucher, setCopiedVoucher] = useState<boolean>(false);
 
   if (!isOpen || !order) return null;
 
@@ -48,8 +72,33 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
     return 'Món ăn';
   };
 
+  const getItemImage = (item: any): string | null => {
+    if (typeof item.foodId === 'object' && item.foodId?.image) return item.foodId.image;
+    if (item.food?.image) return item.food.image;
+    if (item.image) return item.image;
+    return null;
+  };
+
   const handleStarClick = (foodId: string, star: number) => {
     setFoodStars((prev) => ({ ...prev, [foodId]: star }));
+  };
+
+  const handleToggleChip = (chip: string) => {
+    if (overallComment.includes(chip)) {
+      setOverallComment((prev) =>
+        prev.replace(chip, '').replace(/,\s*,/g, ',').trim().replace(/^,\s*|,\s*$/g, '')
+      );
+    } else {
+      setOverallComment((prev) => (prev ? `${prev}, ${chip}` : chip));
+    }
+  };
+
+  const handleCopyVoucher = () => {
+    try {
+      navigator.clipboard.writeText('KOHICARE10');
+      setCopiedVoucher(true);
+      setTimeout(() => setCopiedVoucher(false), 2500);
+    } catch (e) {}
   };
 
   const handleSubmit = async () => {
@@ -94,6 +143,13 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
     }
   };
 
+  const chipsList = overallStar >= 4
+    ? (QUICK_CHIPS_HIGH[lang as keyof typeof QUICK_CHIPS_HIGH] || QUICK_CHIPS_HIGH.vi)
+    : (QUICK_CHIPS_LOW[lang as keyof typeof QUICK_CHIPS_LOW] || QUICK_CHIPS_LOW.vi);
+
+  const emotionInfo = EMOTION_LABELS[overallStar] || EMOTION_LABELS[5];
+  const emotionText = (lang === 'en' ? emotionInfo.en : lang === 'zh' ? emotionInfo.zh : emotionInfo.vi) + ' ' + emotionInfo.emoji;
+
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none">
@@ -136,8 +192,8 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
           </div>
 
           {isSubmittedSuccess ? (
-            <div className="py-8 text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto border border-emerald-500/30">
+            <div className="py-6 text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto border border-emerald-500/30 shadow-xs">
                 <span className="material-symbols-outlined text-3xl">task_alt</span>
               </div>
               <div className="space-y-1">
@@ -152,11 +208,50 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
                     : 'Ý kiến đóng góp của bạn giúp Kohi Coffee ngày càng nâng cao chất lượng phục vụ và món ăn.'}
                 </p>
               </div>
+
+              {/* Gamified Post-Review Voucher Reward Banner */}
+              <div className="p-4 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-500/30 rounded-2xl text-left space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-amber-500 text-base">redeem</span>
+                    <span className="text-[11px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 font-mono">
+                      {lang === 'en' ? 'Loyalty Gift Voucher' : lang === 'zh' ? '感恩回馈礼券' : 'Quà tặng tri ân Kohi'}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                    -10% OFF
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between bg-[var(--bg-card)]/80 p-2.5 rounded-xl border border-amber-500/20">
+                  <div>
+                    <span className="text-[10px] text-[var(--text-secondary)] uppercase block font-semibold">Mã ưu đãi:</span>
+                    <span className="text-sm font-black font-mono text-[#0284c7] dark:text-[#38BDF8]">KOHICARE10</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyVoucher}
+                    className="px-3 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold text-[11px] uppercase tracking-wider rounded-lg shadow-xs active:scale-95 transition-all cursor-pointer flex items-center gap-1 shrink-0"
+                  >
+                    <span className="material-symbols-outlined text-sm">{copiedVoucher ? 'check' : 'content_copy'}</span>
+                    <span>{copiedVoucher ? 'Đã chép' : 'Sao chép'}</span>
+                  </button>
+                </div>
+
+                <p className="text-[10px] text-[var(--text-secondary)] leading-relaxed">
+                  {lang === 'en'
+                    ? 'Valid for 30 days across all Kohi Coffee branches on your next visit.'
+                    : lang === 'zh'
+                    ? '有效期 30 天，适用于所有 Kohi Coffee 门店下次消费。'
+                    : 'Áp dụng giảm 10% cho lần ghé tiếp theo tại tất cả chi nhánh Kohi Coffee (HSD: 30 ngày).'}
+                </p>
+              </div>
+
               <button
                 onClick={onClose}
-                className="px-6 py-2.5 bg-[var(--brand-primary)] text-white text-xs font-bold rounded-xl shadow-md cursor-pointer hover:bg-[var(--brand-primary-hover)] transition-all"
+                className="w-full py-3 bg-[#0284c7] text-white text-xs font-bold rounded-xl shadow-md cursor-pointer hover:bg-[#0369a1] active:scale-95 transition-all"
               >
-                {lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng'}
+                {lang === 'en' ? 'Done & Close' : lang === 'zh' ? '完成并关闭' : 'Hoàn tất & Đóng'}
               </button>
             </div>
           ) : (
@@ -172,7 +267,7 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
                       key={s}
                       type="button"
                       onClick={() => setOverallStar(s)}
-                      className="p-1 transition-transform active:scale-95 cursor-pointer"
+                      className="p-1 transition-transform active:scale-95 hover:scale-110 cursor-pointer"
                     >
                       <span className={`material-symbols-outlined text-3xl ${
                         s <= overallStar ? 'text-amber-400 fill-current' : 'text-gray-300 dark:text-gray-600'
@@ -181,6 +276,37 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
                       </span>
                     </button>
                   ))}
+                </div>
+
+                {/* Emotional Star Rating Label */}
+                <p className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                  {emotionText}
+                </p>
+              </div>
+
+              {/* Quick-Feedback Chips */}
+              <div className="space-y-1.5">
+                <p className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
+                  {lang === 'en' ? 'Quick Feedback Tags:' : lang === 'zh' ? '快捷标签:' : 'Gợi ý nhận xét nhanh:'}
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {chipsList.map((chip) => {
+                    const isSelected = overallComment.includes(chip);
+                    return (
+                      <button
+                        key={chip}
+                        type="button"
+                        onClick={() => handleToggleChip(chip)}
+                        className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all cursor-pointer select-none ${
+                          isSelected
+                            ? 'bg-[#0284c7] text-white border-[#0284c7] shadow-xs'
+                            : 'bg-[var(--bg-primary)] hover:bg-slate-100 dark:hover:bg-slate-800 text-[var(--text-secondary)] border-[var(--border-color)]'
+                        }`}
+                      >
+                        {chip}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -192,15 +318,30 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
                 {items.map((item: any, idx: number) => {
                   const foodId = getItemFoodId(item);
                   const currentStar = foodStars[foodId] || overallStar;
+                  const foodImage = getItemImage(item);
+
                   return (
                     <div key={idx} className="p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl flex items-center justify-between gap-3 text-xs">
-                      <div className="truncate">
-                        <span className="font-bold text-[var(--text-primary)] block truncate">
-                          {getItemName(item)}
-                        </span>
-                        <span className="text-[11px] text-[var(--text-secondary)]">
-                          {lang === 'en' ? 'Quantity:' : lang === 'zh' ? '数量:' : 'Số lượng:'} {item.quantity}
-                        </span>
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        {foodImage ? (
+                          <img
+                            src={foodImage}
+                            alt=""
+                            className="w-10 h-10 rounded-lg object-cover border border-[var(--border-color)] shrink-0"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-[#0284c7]/10 text-[#0284c7] flex items-center justify-center shrink-0 border border-[#0284c7]/20">
+                            <span className="material-symbols-outlined text-base">local_cafe</span>
+                          </div>
+                        )}
+                        <div className="truncate">
+                          <span className="font-bold text-[var(--text-primary)] block truncate">
+                            {getItemName(item)}
+                          </span>
+                          <span className="text-[11px] text-[var(--text-secondary)]">
+                            {lang === 'en' ? 'Quantity:' : lang === 'zh' ? '数量:' : 'Số lượng:'} {item.quantity}
+                          </span>
+                        </div>
                       </div>
 
                       <div className="flex items-center gap-1 shrink-0">
@@ -209,7 +350,7 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
                             key={s}
                             type="button"
                             onClick={() => handleStarClick(foodId, s)}
-                            className="p-0.5 cursor-pointer"
+                            className="p-0.5 cursor-pointer hover:scale-110 transition-transform"
                           >
                             <span className={`material-symbols-outlined text-xl ${
                               s <= currentStar ? 'text-amber-400' : 'text-gray-300 dark:text-gray-600'
@@ -234,7 +375,7 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
                   value={overallComment}
                   onChange={(e) => setOverallComment(e.target.value)}
                   placeholder={lang === 'en' ? 'Taste, service quality, recommendations...' : lang === 'zh' ? '餐品口味、服务态度...' : 'Hương vị món ăn, thái độ phục vụ...'}
-                  className="w-full p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl text-xs text-[var(--text-primary)] outline-none focus:border-[var(--brand-primary)] transition-all resize-none"
+                  className="w-full p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl text-xs text-[var(--text-primary)] outline-none focus:border-[#0284c7] transition-all resize-none font-sans"
                 />
               </div>
 
@@ -248,7 +389,7 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
               <button
                 disabled={isSubmitting}
                 onClick={handleSubmit}
-                className={`w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                className={`w-full py-3.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer ${
                   isSubmitting ? 'opacity-70 cursor-not-allowed' : 'active:scale-95'
                 }`}
               >

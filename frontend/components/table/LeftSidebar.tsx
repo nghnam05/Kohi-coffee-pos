@@ -80,7 +80,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   return (
     <aside
       data-lenis-prevent
-      className="hidden md:flex flex-col h-full py-4 px-3.5 xl:px-4 w-64 xl:w-72 flex-shrink-0 bg-white/95 dark:bg-[#0F172A]/75 backdrop-blur-xl text-slate-900 dark:text-white border-r border-slate-200 dark:border-white/10 overflow-hidden transition-colors font-sans"
+      className="hidden md:flex flex-col h-full py-4 px-3.5 xl:px-4 w-64 xl:w-72 flex-shrink-0 bg-white/95 dark:bg-[#111622]/90 backdrop-blur-xl text-slate-900 dark:text-slate-100 border-r border-slate-200/80 dark:border-white/10 overflow-hidden transition-colors font-sans"
     >
       {/* Top Fixed Section */}
       <div className="shrink-0">

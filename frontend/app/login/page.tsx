@@ -9,7 +9,10 @@ import { LanguageToggleSwitch, Lang } from '@/components/table/LanguageToggleSwi
 import { BrandLogo } from '@/components/table/BrandLogo';
 import CloudLoader from '../components/CloudLoader';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1')
+  .trim()
+  .replace(/[\r\n\t]+/g, '')
+  .replace(/\/+$/, '');
 
 export default function LoginPage() {
   const router = useRouter();

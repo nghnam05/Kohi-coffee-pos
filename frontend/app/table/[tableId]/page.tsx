@@ -239,8 +239,14 @@ const DICTIONARY = {
     } as Record<string, string>,
   },
 };
-const SOCKET_BASE = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const SOCKET_BASE = (process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001')
+  .trim()
+  .replace(/[\r\n\t]+/g, '')
+  .replace(/\/+$/, '');
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1')
+  .trim()
+  .replace(/[\r\n\t]+/g, '')
+  .replace(/\/+$/, '');
 
 const formatPrice = (amount: number, lang: Lang): string => {
   if (lang === 'en') {
@@ -2001,7 +2007,7 @@ export default function TableMenuPage() {
         {/* Main Catalog View (Desktop/Tablet Column 2) */}
         <main
           data-lenis-prevent
-          className="flex-1 w-full min-w-0 h-full flex flex-col overflow-hidden bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-white relative pt-16 md:pt-0 transition-colors duration-200"
+          className="flex-1 w-full min-w-0 h-full flex flex-col overflow-hidden bg-[#F9FAFB] dark:bg-[#0E121B] text-slate-900 dark:text-slate-100 relative pt-16 md:pt-0 transition-colors duration-200"
         >
           <div
             className="absolute inset-0 pointer-events-none opacity-[0.03]"
@@ -2012,7 +2018,7 @@ export default function TableMenuPage() {
           />
 
           {/* Stationary Header Section: Title + Categories + Search (Fixed on mobile & desktop) */}
-          <div className="shrink-0 bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-xl z-20 border-b border-slate-200/80 dark:border-white/10 transition-colors shadow-xs">
+          <div className="shrink-0 bg-white/95 dark:bg-[#0E121B]/95 backdrop-blur-xl z-20 border-b border-slate-200/80 dark:border-white/10 transition-colors shadow-xs">
             {/* Desktop & Mobile Title Header */}
             <CatalogHeader
               t={t}
@@ -2057,11 +2063,6 @@ export default function TableMenuPage() {
                               ? (customerName ? `${customerName} (${lang === 'en' ? 'You' : 'Bạn'})` : (lang === 'en' ? '+ Enter your name' : '+ Nhập tên của bạn'))
                               : (member.name || 'Khách')}
                           </span>
-                          {isMe && (
-                            <span className="material-symbols-outlined text-[12px] opacity-70">
-                              {customerName ? 'edit' : 'add'}
-                            </span>
-                          )}
                         </button>
                       );
                     })
@@ -2076,9 +2077,6 @@ export default function TableMenuPage() {
                     >
                       <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
                       <span>{customerName ? `${customerName} (${lang === 'en' ? 'You' : 'Bạn'})` : (lang === 'en' ? '+ Enter your name' : '+ Nhập tên của bạn')}</span>
-                      <span className="material-symbols-outlined text-[12px] opacity-70">
-                        {customerName ? 'edit' : 'add'}
-                      </span>
                     </button>
                   )}
                 </div>
@@ -2131,9 +2129,21 @@ export default function TableMenuPage() {
             </div>
 
             {/* Mobile Category Horizontal Scroll Bar with Counts */}
-            <div className="px-4 flex md:hidden gap-2 overflow-x-auto pb-2.5 scrollbar-none flex-shrink-0">
+            <div
+              data-lenis-prevent
+              className="px-4 flex md:hidden gap-2 overflow-x-auto pb-2.5 scrollbar-none flex-shrink-0 w-full max-w-full min-w-0 touch-pan-x overscroll-x-contain"
+              style={{ WebkitOverflowScrolling: 'touch' }}
+              onWheel={(e) => {
+                if (e.deltaY !== 0) {
+                  e.currentTarget.scrollLeft += e.deltaY;
+                }
+              }}
+            >
               <button
-                onClick={() => setActiveCategory('')}
+                onClick={(e) => {
+                  setActiveCategory('');
+                  e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }}
                 className={`px-3.5 py-1.5 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 flex items-center ${
                   activeCategory === ''
                     ? 'bg-[#2563EB] text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)]'
@@ -2151,7 +2161,10 @@ export default function TableMenuPage() {
                 return (
                   <button
                     key={cat}
-                    onClick={() => setActiveCategory(cat)}
+                    onClick={(e) => {
+                      setActiveCategory(cat);
+                      e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                    }}
                     className={`px-3.5 py-1.5 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 flex items-center ${
                       isActive
                         ? 'bg-[#2563EB] text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)]'
@@ -2253,7 +2266,16 @@ export default function TableMenuPage() {
                 </div>
 
                 {/* Horizontal Scroll Cards Carousel */}
-                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory -mx-4 px-4">
+                <div
+                  data-lenis-prevent
+                  className="flex gap-3 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory -mx-4 px-4 w-[calc(100%+2rem)] max-w-[calc(100%+2rem)] min-w-0 touch-pan-x overscroll-x-contain"
+                  style={{ WebkitOverflowScrolling: 'touch' }}
+                  onWheel={(e) => {
+                    if (e.deltaY !== 0) {
+                      e.currentTarget.scrollLeft += e.deltaY;
+                    }
+                  }}
+                >
                   {suggestedFoods.map((sFood) => {
                     const cartItem = myCartMap.get(sFood._id);
                     const quantity = cartItem?.quantity ?? 0;

@@ -429,17 +429,16 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
             pointerEvents: isAiChatOpen || isHidden ? 'none' : 'auto',
           }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className={`pointer-events-auto absolute right-3.5 bottom-[76px] md:right-6 md:bottom-8 w-11 h-11 md:w-12 md:h-12 rounded-full bg-[#090D16] hover:bg-slate-900 text-white shadow-[0_8px_25px_rgba(0,0,0,0.5),0_0_15px_rgba(56,189,248,0.25)] border-2 border-[#38BDF8] flex items-center justify-center cursor-grab active:cursor-grabbing backdrop-blur-md group touch-none select-none ${
+          className={`pointer-events-auto absolute right-3.5 bottom-[76px] md:right-6 md:bottom-8 w-11 h-11 md:w-12 md:h-12 rounded-full bg-slate-900 dark:bg-[#151C2C] hover:bg-slate-800 text-white shadow-lg shadow-black/25 border border-slate-700/80 dark:border-white/15 flex items-center justify-center cursor-grab active:cursor-grabbing backdrop-blur-md group touch-none select-none transition-all ${
             isAiChatOpen || isHidden ? 'invisible pointer-events-none' : ''
           }`}
-          title="Kohi AI Assistant (Kéo thả di chuyển)"
-          aria-label="Kohi AI Assistant"
+          title="Tư vấn chọn món & Hỗ trợ (Kohi Concierge)"
+          aria-label="Tư vấn chọn món & Hỗ trợ"
         >
           <div className="relative flex items-center justify-center pointer-events-none">
-            <span className="material-symbols-outlined text-[22px] md:text-[24px] text-[#38BDF8] group-hover:scale-110 transition-transform select-none animate-pulse">
-              auto_awesome
+            <span className="material-symbols-outlined text-[20px] md:text-[22px] text-sky-400 group-hover:scale-105 transition-transform select-none">
+              chat_bubble
             </span>
-            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-[#090D16]" />
           </div>
         </motion.button>
       </div>

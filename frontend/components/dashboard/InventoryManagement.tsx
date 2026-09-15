@@ -352,7 +352,15 @@ export const InventoryManagement: React.FC<InventoryManagementProps> = ({
       {/* Category Pills & Search Row */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         {/* Category Selector */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+        <div
+          data-lenis-prevent
+          className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar min-w-0 max-w-full touch-pan-x overscroll-x-contain"
+          onWheel={(e) => {
+            if (e.deltaY !== 0) {
+              e.currentTarget.scrollLeft += e.deltaY;
+            }
+          }}
+        >
           {categories.map((cat) => (
             <button
               key={cat}
