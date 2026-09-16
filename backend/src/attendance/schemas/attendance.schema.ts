@@ -40,8 +40,8 @@ export class Attendance {
 }
 
 export const AttendanceSchema = SchemaFactory.createForClass(Attendance);
-// Unique: mỗi nhân viên chỉ có 1 bản ghi checkIn/ngày
-AttendanceSchema.index({ userId: 1, date: 1 }, { unique: true });
+// Unique: mỗi nhân viên chỉ có tối đa 1 bản ghi cho mỗi ca (shift) trong ngày
+AttendanceSchema.index({ userId: 1, date: 1, shift: 1 }, { unique: true });
 
 // 🚀 Performance Optimization Indexes:
 // 1. Date range queries for analytics, settlement & payroll

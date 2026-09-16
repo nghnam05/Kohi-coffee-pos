@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -136,6 +136,24 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
 
   const currentTotalPrice = currentUnitPrice * modalQuantity;
 
+  // Keyboard accessibility: Close modals on Escape key
+  useEffect(() => {
+    if (!selectedFood) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (isLightboxOpen) {
+          setIsLightboxOpen(false);
+        } else if (isModalAiOpen) {
+          setIsModalAiOpen(false);
+        } else {
+          setSelectedFood(null);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedFood, isLightboxOpen, isModalAiOpen, setIsLightboxOpen, setIsModalAiOpen, setSelectedFood]);
+
   return (
     <>
       {/* ── MODAL: Food Detail ────────────────────────────────────────────── */}
@@ -156,6 +174,10 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
 
             {/* Modal Card (Mobile Bottom Sheet / Desktop Modal) */}
             <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="food-modal-title"
+              aria-describedby="food-modal-desc"
               initial={{ opacity: 0, y: 40, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 40, scale: 0.98 }}
@@ -163,12 +185,12 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
               className="relative w-full max-w-3xl xl:max-w-[820px] bg-white dark:bg-[#0F172A] border-t md:border border-slate-200 dark:border-white/10 rounded-t-[28px] md:rounded-3xl shadow-2xl z-10 overflow-hidden flex flex-col md:flex-row max-h-[85dvh] sm:max-h-[88dvh] md:max-h-[85vh]"
             >
               {/* Mobile Drag Indicator Handle */}
-              <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mt-2.5 mb-1 md:hidden shrink-0 opacity-70" />
+              <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mt-2.5 mb-1 md:hidden shrink-0 opacity-70" aria-hidden="true" />
 
               {/* Left Image Section - Compact Floating Hero with Full Uncropped Image */}
               <div
                 onClick={() => setIsLightboxOpen(true)}
-                className="w-full md:w-[42%] h-52 sm:h-64 md:h-auto md:min-h-[440px] bg-slate-900/90 relative flex-shrink-0 cursor-pointer group flex items-center justify-center overflow-hidden"
+                className="w-full md:w-[42%] h-44 sm:h-60 md:h-auto md:min-h-[440px] bg-slate-900/90 relative flex-shrink-0 cursor-pointer group flex items-center justify-center overflow-hidden"
               >
                 {/* Layer 1: Blurred Atmosphere Background */}
                 <Image
@@ -190,12 +212,12 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                 />
 
                 {/* Gradient Vignette for better contrast on mobile */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none md:hidden z-10" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none md:hidden z-10" aria-hidden="true" />
 
                 {/* Top Left Category Badge */}
                 <div className="absolute top-3 left-3 z-20">
                   <span className="inline-flex items-center gap-1.5 bg-slate-950/80 text-amber-300 border border-amber-500/40 text-[10px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full shadow-md backdrop-blur-md">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0 shadow-[0_0_6px_#f59e0b]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0 shadow-[0_0_6px_#f59e0b]" aria-hidden="true" />
                     {translateCategory ? translateCategory(selectedFood.category) : selectedFood.category}
                   </span>
                 </div>
@@ -208,14 +230,15 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                     setSelectedFood(null);
                     setIsModalAiOpen(false);
                   }}
-                  className="absolute top-3 right-3 z-30 w-9 h-9 rounded-full bg-slate-950/70 hover:bg-slate-950 text-white flex items-center justify-center backdrop-blur-md transition-all active:scale-90 border border-white/20 shadow-lg md:hidden cursor-pointer"
+                  className="absolute top-3 right-3 z-30 w-9 h-9 rounded-full bg-slate-950/70 hover:bg-slate-950 text-white flex items-center justify-center backdrop-blur-md transition-all active:scale-90 border border-white/20 shadow-lg md:hidden cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-500"
                   title={lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng'}
+                  aria-label={lang === 'en' ? 'Close food details' : lang === 'zh' ? '关闭详情' : 'Đóng chi tiết món'}
                 >
-                  <span className="material-symbols-outlined text-lg">close</span>
+                  <span className="material-symbols-outlined text-lg" aria-hidden="true">close</span>
                 </button>
 
                 {/* Zoom Pill Button */}
-                <div className="absolute bottom-3 right-3 z-20 px-3 py-1.5 rounded-full bg-slate-950/80 border border-white/20 text-white text-[10px] font-extrabold flex items-center gap-1.5 backdrop-blur-md shadow-lg transition-transform group-hover:scale-105 active:scale-95">
+                <div className="absolute bottom-3 right-3 z-20 px-3 py-1.5 rounded-full bg-slate-950/80 border border-white/20 text-white text-[10px] font-extrabold flex items-center gap-1.5 backdrop-blur-md shadow-lg transition-transform group-hover:scale-105 active:scale-95" aria-hidden="true">
                   <span className="material-symbols-outlined text-xs text-[#38BDF8]">zoom_in</span>
                   <span>{lang === 'en' ? 'Full View' : lang === 'zh' ? '全屏大图' : 'Xem full ảnh'}</span>
                 </div>
@@ -230,10 +253,11 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                     setSelectedFood(null);
                     setIsModalAiOpen(false);
                   }}
-                  className="hidden md:flex absolute top-4 right-4 z-30 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95 border border-slate-200 dark:border-white/10"
+                  className="hidden md:flex absolute top-4 right-4 z-30 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95 border border-slate-200 dark:border-white/10 focus-visible:ring-2 focus-visible:ring-sky-500"
                   title={lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng'}
+                  aria-label={lang === 'en' ? 'Close food details' : lang === 'zh' ? '关闭详情' : 'Đóng chi tiết món'}
                 >
-                  <span className="material-symbols-outlined text-lg">close</span>
+                  <span className="material-symbols-outlined text-lg" aria-hidden="true">close</span>
                 </button>
 
                 {/* Scrollable Details Body */}
@@ -242,19 +266,19 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                   <div className="pr-0 md:pr-8">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
-                        <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white leading-tight">
+                        <h3 id="food-modal-title" className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white leading-tight">
                           {selectedFood.name}
                         </h3>
                         {selectedFood.description && (
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed line-clamp-2">
+                          <p id="food-modal-desc" className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed line-clamp-2">
                             {selectedFood.description}
                           </p>
                         )}
 
                         {/* Social Proof: Rating & Sold Count */}
                         <div className="flex items-center gap-2 mt-2 text-xs text-slate-500 dark:text-slate-400 font-sans flex-wrap">
-                          <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 px-2 py-0.5 rounded-lg font-bold">
-                            <span className="material-symbols-outlined text-xs fill-current leading-none">star</span>
+                          <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 px-2 py-0.5 rounded-lg font-bold" aria-label={`Đánh giá ${(selectedFood.rating || 5.0).toFixed(1)} trên 5 sao`}>
+                            <span className="material-symbols-outlined text-xs fill-current leading-none" aria-hidden="true">star</span>
                             <span>{(selectedFood.rating || 5.0).toFixed(1)}</span>
                           </span>
                           {selectedFood.totalReviews !== undefined && selectedFood.totalReviews > 0 ? (
@@ -262,9 +286,9 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                               ({selectedFood.totalReviews} {lang === 'en' ? 'reviews' : lang === 'zh' ? '条评价' : 'đánh giá'})
                             </span>
                           ) : null}
-                          <span className="text-slate-300 dark:text-slate-700 leading-none">•</span>
+                          <span className="text-slate-300 dark:text-slate-700 leading-none" aria-hidden="true">•</span>
                           <span className="inline-flex items-center gap-1 bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/25 px-2 py-0.5 rounded-lg font-medium text-[11px]">
-                            <span className="material-symbols-outlined text-xs">local_fire_department</span>
+                            <span className="material-symbols-outlined text-xs" aria-hidden="true">local_fire_department</span>
                             <span>
                               {lang === 'en'
                                 ? `${selectedFood.soldCount || 0} sold`
@@ -275,7 +299,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                           </span>
                         </div>
                       </div>
-                      <div className="text-xl sm:text-2xl font-bold text-[#0284c7] dark:text-[#38BDF8] tracking-tight shrink-0 text-right font-mono">
+                      <div className="text-xl sm:text-2xl font-bold text-[#0284c7] dark:text-[#38BDF8] tracking-tight shrink-0 text-right font-mono" aria-label={`Giá: ${formatPrice(currentUnitPrice, lang)}`}>
                         {formatPrice(currentUnitPrice, lang)}
                       </div>
                     </div>
@@ -296,9 +320,10 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                             );
                           }
                         }}
-                        className="inline-flex items-center gap-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/25 rounded-full px-3 py-1 text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-2xs group"
+                        className="inline-flex items-center gap-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-[#0284c7] dark:text-[#38BDF8] border border-sky-500/25 rounded-full px-3 py-1 text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-2xs group focus-visible:ring-2 focus-visible:ring-sky-500"
+                        aria-label={lang === 'en' ? `Ask AI about ${selectedFood.name}` : `Hỏi AI về món ${selectedFood.name}`}
                       >
-                        <span className="material-symbols-outlined text-sm group-hover:rotate-12 transition-transform">
+                        <span className="material-symbols-outlined text-sm group-hover:rotate-12 transition-transform" aria-hidden="true">
                           auto_awesome
                         </span>
                         <span>
@@ -315,18 +340,18 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                   {/* Size Selector - Visual Cards with Dynamic Prices */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      <label id="size-options-label" className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 font-sans">
                         {lang === 'en' ? 'Size Options' : lang === 'zh' ? '规格 / 尺寸' : 'Kích cỡ / Size'}
                       </label>
-                      <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400">
+                      <span className="text-[11px] font-bold text-[#0284c7] dark:text-[#38BDF8]">
                         {selectedSize === 'S'
-                          ? (lang === 'en' ? 'Regular' : lang === 'zh' ? '标准杯' : 'Cỡ Vừa')
+                          ? (lang === 'en' ? 'Regular' : lang === 'zh' ? '标准杯' : 'Cỡ Vừa (250ml)')
                           : selectedSize === 'M'
-                          ? (lang === 'en' ? 'Medium' : lang === 'zh' ? '大杯' : 'Cỡ Lớn')
-                          : (lang === 'en' ? 'Large' : lang === 'zh' ? '特大杯' : 'Đặc Biệt')}
+                          ? (lang === 'en' ? 'Medium' : lang === 'zh' ? '大杯' : 'Cỡ Lớn (350ml)')
+                          : (lang === 'en' ? 'Large' : lang === 'zh' ? '特大杯' : 'Đặc Biệt (500ml)')}
                       </span>
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-2 sm:gap-2.5" role="radiogroup" aria-labelledby="size-options-label">
                       {(['S', 'M', 'L'] as const).map((sz) => {
                         const isActive = selectedSize === sz;
                         const sizeUnitPrice = Math.round(
@@ -343,20 +368,23 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                           <button
                             key={sz}
                             type="button"
+                            role="radio"
+                            aria-checked={isActive}
+                            aria-label={`Size ${sz}, ${sizeSub}, ${formatPrice(sizeUnitPrice, lang)}`}
                             onClick={() => setSelectedSize(sz)}
-                            className={`py-2.5 px-2 rounded-2xl border transition-all duration-150 active:scale-95 cursor-pointer text-center relative flex flex-col items-center justify-center ${
+                            className={`py-3 px-2 rounded-2xl border transition-all duration-150 active:scale-95 cursor-pointer text-center relative flex flex-col items-center justify-center focus-visible:ring-2 focus-visible:ring-sky-500 ${
                               isActive
-                                ? 'border-blue-500 bg-blue-500/10 dark:bg-blue-500/15 shadow-sm ring-1 ring-blue-500'
-                                : 'border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/60 hover:border-slate-300 dark:hover:border-white/20'
+                                ? 'border-[#38BDF8] bg-sky-500/10 dark:bg-sky-500/15 shadow-sm ring-1 ring-[#38BDF8]'
+                                : 'border-slate-200/80 dark:border-white/5 bg-slate-50 dark:bg-slate-900/60 hover:border-slate-300 dark:hover:border-white/15'
                             }`}
                           >
-                            <span className={`text-xs font-semibold ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>
+                            <span className={`text-xs font-bold ${isActive ? 'text-[#0284c7] dark:text-[#38BDF8]' : 'text-slate-800 dark:text-slate-200'}`}>
                               Size {sz}
                             </span>
-                            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">
                               {sizeSub}
                             </span>
-                            <span className={`text-[11px] font-bold mt-1 font-mono ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                            <span className={`text-[11px] font-extrabold mt-1 font-mono ${isActive ? 'text-[#0284c7] dark:text-[#38BDF8]' : 'text-slate-700 dark:text-slate-300'}`}>
                               {formatPrice(sizeUnitPrice, lang)}
                             </span>
                           </button>
@@ -369,7 +397,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                   {isMilkTea && (
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 font-sans">
                           {lang === 'en' ? 'Toppings / Add-ons' : lang === 'zh' ? '配料 / 加料' : 'Topping / Món kèm'}
                         </label>
                         <span className="text-[10px] text-slate-400">
@@ -392,8 +420,8 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                               }}
                               className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-bold border flex items-center justify-between transition-all cursor-pointer ${
                                 isSelected
-                                  ? 'bg-blue-500/15 border-blue-500 text-blue-600 dark:text-blue-400 shadow-2xs'
-                                  : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-blue-400/50'
+                                  ? 'bg-sky-500/15 border-sky-500 text-[#0284c7] dark:text-[#38BDF8] shadow-2xs'
+                                  : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-white/5 text-slate-700 dark:text-slate-300 hover:border-sky-400/50'
                               }`}
                             >
                               <div className="flex items-center gap-2 truncate mr-1">
@@ -415,10 +443,10 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                   {/* Special Instructions & 1-Tap Quick Chips */}
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 font-sans">
                         {lang === 'en' ? 'Special Instructions' : lang === 'zh' ? '口味备注' : 'Ghi chú cho Barista'}
                       </label>
-                      <span className="text-[10px] font-medium text-slate-400">
+                      <span className="text-[10px] font-medium text-slate-400 font-mono">
                         {modalNote.length}/200
                       </span>
                     </div>
@@ -431,11 +459,13 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                           <button
                             key={note}
                             type="button"
+                            aria-pressed={isSelected}
+                            aria-label={`${isSelected ? 'Bỏ chọn' : 'Chọn'} ${note}`}
                             onClick={() => handleToggleQuickNote(note)}
-                            className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-all active:scale-95 cursor-pointer ${
+                            className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-all active:scale-95 cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-500 ${
                               isSelected
-                                ? 'bg-blue-500 text-white border-blue-500 shadow-2xs'
-                                : 'bg-slate-100 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:border-blue-400/50'
+                                ? 'bg-slate-900 text-white dark:bg-sky-400 dark:text-slate-950 border-transparent shadow-2xs'
+                                : 'bg-slate-100 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-white/10 hover:border-sky-400/50'
                             }`}
                           >
                             {isSelected ? `✓ ${note}` : `+ ${note}`}
@@ -448,16 +478,17 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                     <input
                       type="text"
                       maxLength={200}
+                      aria-label={lang === 'en' ? 'Custom note for barista' : 'Ghi chú cho Barista'}
                       placeholder={
                         lang === 'en'
-                          ? 'e.g. less sugar, less ice...'
+                           ? 'e.g. less sugar, less ice...'
                           : lang === 'zh'
                           ? '例如：微糖、少冰、不加奶...'
                           : 'Ví dụ: ít đường, ít đá, không sữa...'
                       }
                       value={modalNote}
                       onChange={(e) => setModalNote(e.target.value.slice(0, 200))}
-                      className="w-full bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-500 transition-all"
+                      className="w-full bg-slate-50 dark:bg-slate-900/80 border border-slate-200/80 dark:border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-sky-500 focus-visible:ring-2 focus-visible:ring-sky-500 transition-all font-sans"
                     />
                   </div>
 
@@ -470,9 +501,9 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                       return null;
                     })()}
                   {foodReviews.length > 0 && (
-                    <div className="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-white/10">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-500 dark:text-blue-400 mb-1 flex items-center gap-1">
-                        <span className="material-symbols-outlined text-xs">star</span>
+                    <div className="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200/80 dark:border-white/10">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#0284c7] dark:text-[#38BDF8] mb-1 flex items-center gap-1 font-sans">
+                        <span className="material-symbols-outlined text-xs" aria-hidden="true">star</span>
                         {lang === 'en' ? 'Featured Review' : lang === 'zh' ? '精选评价' : 'Đánh giá nổi bật'}
                       </p>
                       <p className="text-xs text-slate-600 dark:text-slate-400 italic">
@@ -483,27 +514,34 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                 </div>
 
                 {/* Sticky Bottom Action Bar */}
-                <div className="p-3.5 sm:p-4 border-t border-slate-200 dark:border-white/10 bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-md flex items-center justify-between gap-3 sticky bottom-0 z-20">
+                <div className="p-3.5 sm:p-4 border-t border-slate-200/80 dark:border-white/10 bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-md flex items-center justify-between gap-3 sticky bottom-0 z-20 font-sans">
                   {/* Quantity Stepper */}
-                  <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl p-1 shadow-2xs">
+                  <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-2xl p-1 shadow-2xs">
                     <button
                       type="button"
                       onClick={() => setModalQuantity((q) => Math.max(1, q - 1))}
-                      className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors active:scale-90 cursor-pointer"
+                      aria-label={lang === 'en' ? 'Decrease quantity' : 'Giảm số lượng'}
+                      className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors active:scale-90 cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-500"
                       title={lang === 'en' ? 'Decrease' : lang === 'zh' ? '减少' : 'Giảm số lượng'}
                     >
-                      <span className="material-symbols-outlined text-base">remove</span>
+                      <span className="material-symbols-outlined text-base" aria-hidden="true">remove</span>
                     </button>
-                    <span className="text-base font-bold text-slate-900 dark:text-white w-7 text-center select-none font-mono">
+                    <span
+                      className="text-base font-bold text-slate-900 dark:text-white w-7 text-center select-none font-mono"
+                      role="status"
+                      aria-live="polite"
+                      aria-label={`${lang === 'en' ? 'Quantity' : 'Số lượng'}: ${modalQuantity}`}
+                    >
                       {modalQuantity}
                     </span>
                     <button
                       type="button"
                       onClick={() => setModalQuantity((q) => q + 1)}
-                      className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors active:scale-90 cursor-pointer"
+                      aria-label={lang === 'en' ? 'Increase quantity' : 'Tăng số lượng'}
+                      className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors active:scale-90 cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-500"
                       title={lang === 'en' ? 'Increase' : lang === 'zh' ? '增加' : 'Tăng số lượng'}
                     >
-                      <span className="material-symbols-outlined text-base">add</span>
+                      <span className="material-symbols-outlined text-base" aria-hidden="true">add</span>
                     </button>
                   </div>
 
@@ -511,12 +549,13 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                   <button
                     type="button"
                     onClick={handleAddFromModal}
-                    className="flex-1 py-3.5 px-4 sm:px-5 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 text-white font-bold text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-blue-500/25 active:scale-[0.98] transition-all flex items-center justify-between cursor-pointer"
+                    aria-label={`${lang === 'en' ? 'Add to cart' : 'Thêm vào giỏ hàng'}: ${selectedFood.name}, ${modalQuantity} ${lang === 'en' ? 'item' : 'món'}, ${formatPrice(currentTotalPrice, lang)}`}
+                    className="flex-1 py-3.5 px-4 sm:px-5 rounded-2xl bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-wider shadow-md active:scale-[0.98] transition-all flex items-center justify-between cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-500"
                   >
-                    <span className="truncate mr-2">
+                    <span className="truncate mr-2 font-sans">
                       {lang === 'en' ? 'ADD TO CART' : lang === 'zh' ? '加入购物车' : 'THÊM VÀO GIỎ'}
                     </span>
-                    <span className="font-bold bg-white/20 px-2.5 py-1 rounded-xl text-xs sm:text-sm whitespace-nowrap font-mono">
+                    <span className="font-bold bg-white/20 dark:bg-slate-950/20 px-2.5 py-1 rounded-xl text-xs sm:text-sm whitespace-nowrap font-mono">
                       {formatPrice(currentTotalPrice, lang)}
                     </span>
                   </button>

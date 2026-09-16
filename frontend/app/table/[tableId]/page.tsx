@@ -1419,17 +1419,40 @@ export default function TableMenuPage() {
     const cName = typeof window !== 'undefined' ? (localStorage.getItem(`chika_name_${tableId}`) || customerName || 'Bạn').trim() : 'Bạn';
     const addonTotal = selectedAddons.reduce((sum, a) => sum + (ADDON_PRICES[a] ?? 0), 0);
     const adjusted = Math.round(selectedFood.price * SIZE_MULTIPLIERS[selectedSize] + addonTotal);
+
+    const customizationParts = [
+      selectedSize !== 'M' ? `Size ${selectedSize}` : '',
+      ...selectedAddons,
+      modalNote.trim(),
+    ].filter(Boolean);
+    const finalNote = customizationParts.join(' | ');
+
     setCart((prev) => {
-      const existing = prev.find((item) => item.food._id === selectedFood._id && item.addedByDeviceId === devId);
+      const existing = prev.find(
+        (item) =>
+          item.food._id === selectedFood._id &&
+          item.addedByDeviceId === devId &&
+          (item.note || '') === finalNote
+      );
       let updated: CartItem[];
       if (existing) {
         updated = prev.map((item) =>
-          item.food._id === selectedFood._id && item.addedByDeviceId === devId
-            ? { ...item, quantity: item.quantity + modalQuantity, note: modalNote || item.note, unitPrice: adjusted }
+          item === existing
+            ? { ...item, quantity: item.quantity + modalQuantity, unitPrice: adjusted }
             : item
         );
       } else {
-        updated = [...prev, { food: selectedFood, quantity: modalQuantity, note: modalNote, unitPrice: adjusted, addedBy: cName, addedByDeviceId: devId }];
+        updated = [
+          ...prev,
+          {
+            food: selectedFood,
+            quantity: modalQuantity,
+            note: finalNote,
+            unitPrice: adjusted,
+            addedBy: cName,
+            addedByDeviceId: devId,
+          },
+        ];
       }
       if (socketRef.current && tableId) {
         socketRef.current.emit('updateGroupCart', {
@@ -1780,15 +1803,28 @@ export default function TableMenuPage() {
   };
 
   const categories = useMemo(() => {
-    const foodCats = foods.map((f) => f.category);
-    const combined = Array.from(new Set([...dbCategories, ...foodCats]));
-    return combined.filter(Boolean);
+    const list: string[] = [];
+    const seen = new Set<string>();
+    [...dbCategories, ...foods.map((f) => f.category)].forEach((cat) => {
+      if (!cat) return;
+      const key = normalizeCategoryKey(cat);
+      if (!seen.has(key)) {
+        seen.add(key);
+        list.push(cat);
+      }
+    });
+    return list;
   }, [foods, dbCategories]);
 
   const categoryCountMap = useMemo(() => {
     const map = new Map<string, number>();
     foods.forEach((f) => {
-      map.set(f.category, (map.get(f.category) || 0) + 1);
+      const rawCat = f.category;
+      const normKey = normalizeCategoryKey(rawCat);
+      map.set(rawCat, (map.get(rawCat) || 0) + 1);
+      if (normKey && normKey !== rawCat) {
+        map.set(normKey, (map.get(normKey) || 0) + 1);
+      }
     });
     return map;
   }, [foods]);
@@ -2146,12 +2182,12 @@ export default function TableMenuPage() {
                 }}
                 className={`px-3.5 py-1.5 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 flex items-center ${
                   activeCategory === ''
-                    ? 'bg-[#2563EB] text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)]'
-                    : 'bg-white dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white shadow-xs'
+                    ? 'bg-slate-900 text-white dark:bg-sky-400 dark:text-slate-950 shadow-xs'
+                    : 'bg-white dark:bg-[#131926] text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 shadow-2xs'
                 }`}
               >
                 <span>{lang === 'en' ? 'All' : lang === 'zh' ? '全部' : 'Tất cả'}</span>
-                <span className={`ml-1 text-[11px] font-bold ${activeCategory === '' ? 'text-white/90' : 'text-slate-400 dark:text-slate-500'}`}>
+                <span className={`ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${activeCategory === '' ? 'bg-white/20 dark:bg-slate-950/20 text-white dark:text-slate-950' : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400'}`}>
                   {foods.length}
                 </span>
               </button>
@@ -2167,12 +2203,12 @@ export default function TableMenuPage() {
                     }}
                     className={`px-3.5 py-1.5 rounded-xl text-[12px] font-bold tracking-[0.02em] whitespace-nowrap transition-all font-sans cursor-pointer shrink-0 flex items-center ${
                       isActive
-                        ? 'bg-[#2563EB] text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)]'
-                        : 'bg-white dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white shadow-xs'
+                        ? 'bg-slate-900 text-white dark:bg-sky-400 dark:text-slate-950 shadow-xs'
+                        : 'bg-white dark:bg-[#131926] text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 shadow-2xs'
                     }`}
                   >
                     <span>{translateCategory(cat)}</span>
-                    <span className={`ml-1 text-[11px] font-bold ${isActive ? 'text-white/90' : 'text-slate-400 dark:text-slate-500'}`}>
+                    <span className={`ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${isActive ? 'bg-white/20 dark:bg-slate-950/20 text-white dark:text-slate-950' : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400'}`}>
                       {count}
                     </span>
                   </button>
@@ -2311,7 +2347,7 @@ export default function TableMenuPage() {
                           </p>
                         </div>
                         <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100 dark:border-white/5">
-                          <span className="text-xs font-extrabold text-[#2563EB] dark:text-sky-400 font-mono">
+                          <span className="text-xs font-extrabold text-[#0284c7] dark:text-[#38BDF8] font-mono">
                             {formatPrice(sFood.price, lang)}
                           </span>
                           <button
@@ -2319,7 +2355,7 @@ export default function TableMenuPage() {
                             className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
                               quantity > 0
                                 ? 'bg-sky-500/20 text-sky-600 dark:text-sky-400 border border-sky-500/30'
-                                : 'bg-[#2563EB] text-white shadow-2xs'
+                                : 'bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 shadow-xs'
                             }`}
                             title={lang === 'en' ? 'Select' : lang === 'zh' ? '选择' : 'Chọn'}
                           >
@@ -2603,22 +2639,24 @@ export default function TableMenuPage() {
             transition={{ type: 'spring', stiffness: 350, damping: 25 }}
             className="fixed bottom-3 left-3 right-3 z-40 lg:hidden pointer-events-auto"
           >
-            <div className="w-full bg-white/95 dark:bg-slate-900/95 text-slate-900 dark:text-white backdrop-blur-md border border-slate-200/90 dark:border-white/10 rounded-2xl p-2.5 sm:p-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-between font-sans">
+            <div className="w-full bg-white/95 dark:bg-[#0d1322]/95 text-slate-900 dark:text-white backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-2xl p-2.5 sm:p-3 shadow-[0_10px_35px_rgba(0,0,0,0.18)] flex items-center justify-between font-sans">
               <div
                 onClick={() => setIsCartOpen(true)}
                 className="flex items-center gap-2.5 min-w-0 cursor-pointer flex-1 mr-2"
               >
-                <div className="relative w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-white/5 text-slate-700 dark:text-slate-200">
+                <div className="relative w-11 h-11 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-white/10 text-slate-700 dark:text-slate-200">
                   <span className="material-symbols-outlined text-2xl">local_mall</span>
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#2563EB] text-white text-[10px] font-bold flex items-center justify-center shadow-xs leading-none">
-                    {totalQuantity}
-                  </span>
+                  {totalQuantity > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 text-[10px] font-black flex items-center justify-center shadow-xs leading-none">
+                      {totalQuantity}
+                    </span>
+                  )}
                 </div>
                 <div className="min-w-0">
                   <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 leading-tight truncate">
                     {lang === 'en' ? 'Table Cart' : lang === 'zh' ? '全桌购物车' : 'Giỏ hàng chung'}
                   </p>
-                  <p className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight mt-0.5 truncate font-sans">
+                  <p className="text-sm font-extrabold text-[#0284c7] dark:text-[#38BDF8] leading-tight mt-0.5 truncate font-mono">
                     {formatPrice(totalAmount, lang)}
                   </p>
                 </div>
@@ -2627,7 +2665,7 @@ export default function TableMenuPage() {
               {cart.length > 0 ? (
                 <button
                   onClick={() => setIsCartOpen(true)}
-                  className="px-3.5 sm:px-4 py-2.5 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white font-bold text-xs sm:text-[13px] flex items-center gap-1.5 shrink-0 shadow-md active:scale-95 transition-all cursor-pointer font-sans"
+                  className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 font-bold text-xs sm:text-[13px] flex items-center gap-1.5 shrink-0 shadow-md active:scale-95 transition-all cursor-pointer font-sans"
                 >
                   <span className="material-symbols-outlined text-base">check_circle</span>
                   <span>{lang === 'en' ? 'Submit table order' : lang === 'zh' ? '发送点单请求' : 'Gửi yêu cầu gọi món'}</span>
@@ -2637,7 +2675,7 @@ export default function TableMenuPage() {
                   onClick={() => {
                     setIsCartOpen(true);
                   }}
-                  className="px-3.5 sm:px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold text-xs sm:text-[13px] flex items-center gap-1.5 shrink-0 border border-slate-200/60 dark:border-white/5 cursor-pointer font-sans"
+                  className="px-3.5 sm:px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 font-bold text-xs sm:text-[13px] flex items-center gap-1.5 shrink-0 border border-slate-200/60 dark:border-white/10 cursor-pointer font-sans"
                 >
                   <span className="material-symbols-outlined text-base text-slate-400">check_circle</span>
                   <span>{lang === 'en' ? 'Submit table order' : lang === 'zh' ? '发送点单请求' : 'Gửi yêu cầu gọi món'}</span>

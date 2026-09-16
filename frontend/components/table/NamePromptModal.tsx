@@ -30,6 +30,18 @@ export const NamePromptModal: React.FC<NamePromptModalProps> = ({
   table,
   lang = 'vi',
 }) => {
+  // Handle keyboard Escape to dismiss/proceed
+  React.useEffect(() => {
+    if (!mounted || !isNamePromptOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleConfirmName();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mounted, isNamePromptOpen, handleConfirmName]);
+
   return (
     <AnimatePresence>
       {mounted && isNamePromptOpen && (
@@ -42,6 +54,10 @@ export const NamePromptModal: React.FC<NamePromptModalProps> = ({
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
         >
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="name-prompt-title"
+            aria-describedby="name-prompt-desc"
             initial={{ opacity: 0, scale: 0.94, y: 24 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94, y: 24 }}
@@ -49,18 +65,18 @@ export const NamePromptModal: React.FC<NamePromptModalProps> = ({
             className="w-full max-w-md bg-[var(--bg-card)] rounded-2xl shadow-2xl border border-[var(--border-color)] overflow-hidden text-left"
           >
             {/* Top accent bar */}
-            <div className="h-1 w-full bg-[var(--brand-primary)]" />
+            <div className="h-1 w-full bg-[var(--brand-primary)]" aria-hidden="true" />
 
-            <div className="p-8 flex flex-col gap-6">
+            <div className="p-5 sm:p-8 flex flex-col gap-4 sm:gap-6">
               {/* Branding */}
               <div>
                 <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-[var(--brand-primary)] font-sans mb-2">
                   Kohi Coffee &amp; Pastry
                 </p>
-                <h2 className="text-[24px] font-bold text-[var(--text-primary)] leading-tight font-sans">
+                <h2 id="name-prompt-title" className="text-[24px] font-bold text-[var(--text-primary)] leading-tight font-sans">
                   {lang === 'en' ? 'What is your name?' : lang === 'zh' ? '您怎么称呼？' : 'Bạn tên gì?'}
                 </h2>
-                <p className="text-[13.5px] text-[var(--text-secondary)] mt-2 leading-relaxed font-sans">
+                <p id="name-prompt-desc" className="text-[13.5px] text-[var(--text-secondary)] mt-2 leading-relaxed font-sans">
                   {lang === 'en'
                     ? 'Enter a name so staff can easily identify group orders. Optional.'
                     : lang === 'zh'
@@ -79,6 +95,8 @@ export const NamePromptModal: React.FC<NamePromptModalProps> = ({
                   onChange={(e) => setNameInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleConfirmName()}
                   placeholder={lang === 'en' ? 'E.g. Alex, Table Group A...' : lang === 'zh' ? '例如：张先生，A组...' : 'Ví dụ: Anh Minh, Nhóm A, Cô Lan...'}
+                  aria-label={lang === 'en' ? 'Your name' : lang === 'zh' ? '您的称呼' : 'Tên của bạn'}
+                  autoComplete="name"
                   maxLength={40}
                   className="w-full px-4 py-3 text-[15px] font-normal bg-[var(--bg-card-inner)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] placeholder-[var(--text-tertiary)] outline-none focus:border-[var(--brand-primary)] focus:ring-2 focus:ring-[var(--brand-primary)]/20 transition-all font-sans"
                 />
@@ -87,7 +105,7 @@ export const NamePromptModal: React.FC<NamePromptModalProps> = ({
                 <button
                   id="confirm-name-btn"
                   onClick={handleConfirmName}
-                  className="w-full h-[52px] uiverse-btn text-[var(--brand-primary-fg)] text-[14px] font-bold uppercase tracking-[0.04em] rounded-xl transition-all active:scale-[0.98] shadow-md font-sans cursor-pointer"
+                  className="w-full h-[52px] uiverse-btn text-[var(--brand-primary-fg)] text-[14px] font-bold uppercase tracking-[0.04em] rounded-xl transition-all active:scale-[0.98] shadow-md font-sans cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
                 >
                   {nameInput.trim()
                     ? (lang === 'en' ? `Confirm — ${nameInput.trim()}` : lang === 'zh' ? `确认 — ${nameInput.trim()}` : `Xác nhận — ${nameInput.trim()}`)
@@ -97,7 +115,7 @@ export const NamePromptModal: React.FC<NamePromptModalProps> = ({
                 <button
                   id="skip-name-btn"
                   onClick={handleConfirmName}
-                  className="w-full h-10 text-[13px] font-medium text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors font-sans cursor-pointer"
+                  className="w-full h-10 text-[13px] font-medium text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors font-sans cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
                 >
                   {lang === 'en' ? 'Skip' : lang === 'zh' ? '跳过' : 'Bỏ qua'}
                 </button>

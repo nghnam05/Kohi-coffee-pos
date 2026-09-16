@@ -100,6 +100,18 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
   customerName,
   hasPendingOrder = false,
 }) => {
+  // Keyboard accessibility: Escape key to dismiss mobile drawer
+  React.useEffect(() => {
+    if (!isCartOpen || !setIsCartOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsCartOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isCartOpen, setIsCartOpen]);
+
   const renderCartItems = () => {
     const storedName = typeof window !== 'undefined' ? localStorage.getItem('kohi_customer_name') : null;
     const effectiveCustomerName = (customerName && customerName !== 'Khách' && customerName !== 'Bạn')
@@ -195,7 +207,8 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                 <button
                   onClick={() => handleRemove(item.food._id)}
                   className="w-5 h-5 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 flex items-center justify-center transition-all cursor-pointer font-medium text-sm -mr-1 -mt-0.5 flex-shrink-0"
-                  title={lang === 'en' ? 'Remove item' : lang === 'zh' ? '删除' : 'Xóa món'}
+                  title={lang === 'en' ? `Remove ${item.food.name}` : lang === 'zh' ? `删除 ${item.food.name}` : `Xóa món ${item.food.name}`}
+                  aria-label={lang === 'en' ? `Remove ${item.food.name}` : lang === 'zh' ? `删除 ${item.food.name}` : `Xóa món ${item.food.name}`}
                 >
                   ×
                 </button>
@@ -217,17 +230,19 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
               <button
                 onClick={() => handleDecrease(item.food._id)}
                 className="w-6 h-6 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-300/80 dark:hover:bg-slate-700 transition-colors active:scale-95 cursor-pointer font-medium text-base leading-none"
-                title={lang === 'en' ? 'Decrease' : 'Giảm'}
+                title={lang === 'en' ? `Decrease quantity for ${item.food.name}` : `Giảm số lượng ${item.food.name}`}
+                aria-label={lang === 'en' ? `Decrease quantity for ${item.food.name}` : `Giảm số lượng ${item.food.name}`}
               >
                 −
               </button>
-              <span className="text-xs font-semibold text-slate-900 dark:text-white min-w-5 text-center font-mono">
+              <span className="text-xs font-semibold text-slate-900 dark:text-white min-w-5 text-center font-mono" role="status" aria-label={`${item.quantity} ${item.food.name}`}>
                 {item.quantity}
               </span>
               <button
                 onClick={() => handleIncrease(item.food)}
                 className="w-6 h-6 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-300/80 dark:hover:bg-slate-700 transition-colors active:scale-95 cursor-pointer font-medium text-base leading-none"
-                title={lang === 'en' ? 'Increase' : 'Tăng'}
+                title={lang === 'en' ? `Increase quantity for ${item.food.name}` : `Tăng số lượng ${item.food.name}`}
+                aria-label={lang === 'en' ? `Increase quantity for ${item.food.name}` : `Tăng số lượng ${item.food.name}`}
               >
                 +
               </button>
@@ -365,7 +380,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
     const finalCalculatedTotal = Math.max(0, totalAmount - effectiveDiscount);
 
     return (
-      <div className="flex-shrink-0 p-3.5 xl:p-5 bg-white/95 dark:bg-[#0B0F17]/95 border-t border-slate-200 dark:border-white/10 shadow-lg dark:shadow-2xl font-sans pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className="flex-shrink-0 max-h-[60vh] sm:max-h-none overflow-y-auto p-3.5 xl:p-5 bg-white/95 dark:bg-[#0B0F17]/95 border-t border-slate-200 dark:border-white/10 shadow-lg dark:shadow-2xl font-sans pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         {/* Auto 10% Voucher Banner when >= 300k */}
         {isAutoDiscountApplied && (
           <div className="mb-2.5 p-2.5 rounded-xl bg-gradient-to-r from-sky-500/15 via-blue-500/15 to-indigo-500/15 border border-sky-500/30 text-sky-700 dark:text-sky-300 text-xs font-semibold flex items-center gap-2">
@@ -408,6 +423,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
               }}
               onKeyDown={(e) => e.key === 'Enter' && handleValidateCoupon()}
               placeholder={t.promoCode ? `${t.promoCode}...` : (lang === 'en' ? 'Promo Code...' : lang === 'zh' ? '优惠码...' : 'Mã giảm giá...')}
+              aria-label={lang === 'en' ? 'Promo or discount code' : lang === 'zh' ? '优惠码' : 'Mã giảm giá'}
               className="w-full bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl py-2.5 px-3.5 text-xs text-slate-900 dark:text-white font-medium uppercase focus:border-sky-500 outline-none font-sans placeholder-slate-400 dark:placeholder-slate-500"
             />
           </div>
@@ -438,8 +454,12 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
         <div className="border-t border-slate-200 dark:border-white/10 my-3" />
 
         {/* Payment Method Selector - High Contrast, Clear Interactive State */}
-        <div className="flex gap-2">
+        <div className="flex gap-2" role="radiogroup" aria-label={lang === 'en' ? 'Payment method' : lang === 'zh' ? '支付方式' : 'Phương thức thanh toán'}>
           <button
+            type="button"
+            role="radio"
+            aria-checked={paymentMethod === 'cash'}
+            aria-label={lang === 'en' ? 'Pay with cash' : lang === 'zh' ? '现金支付' : 'Thanh toán tiền mặt'}
             onClick={() => setPaymentMethod('cash')}
             className={`flex-1 h-[44px] px-2 text-xs font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 transition-all font-sans cursor-pointer ${
               paymentMethod === 'cash'
@@ -447,13 +467,17 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                 : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-sky-400 shadow-xs'
             }`}
           >
-            <span className="material-symbols-outlined text-base">payments</span>
+            <span className="material-symbols-outlined text-base" aria-hidden="true">payments</span>
             <span>{t.cash || (lang === 'en' ? 'Cash' : lang === 'zh' ? '现金' : 'Tiền mặt')}</span>
             {paymentMethod === 'cash' && (
-              <span className="material-symbols-outlined text-[15px] text-slate-950 font-bold">check_circle</span>
+              <span className="material-symbols-outlined text-[15px] text-slate-950 font-bold" aria-hidden="true">check_circle</span>
             )}
           </button>
           <button
+            type="button"
+            role="radio"
+            aria-checked={paymentMethod === 'bank_transfer' || paymentMethod === 'momo'}
+            aria-label={lang === 'en' ? 'Pay with bank transfer QR' : lang === 'zh' ? '银行转账扫码' : 'Thanh toán Chuyển khoản QR'}
             onClick={() => setPaymentMethod('bank_transfer')}
             className={`flex-1 h-[44px] px-2 text-xs font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 transition-all font-sans cursor-pointer ${
               paymentMethod === 'bank_transfer' || paymentMethod === 'momo'
@@ -461,10 +485,10 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                 : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-sky-400 shadow-xs'
             }`}
           >
-            <span className="material-symbols-outlined text-base">qr_code_2</span>
+            <span className="material-symbols-outlined text-base" aria-hidden="true">qr_code_2</span>
             <span>{t.bankTransfer || (lang === 'en' ? 'Bank QR' : lang === 'zh' ? '银行转账' : 'CK Ngân hàng')}</span>
             {(paymentMethod === 'bank_transfer' || paymentMethod === 'momo') && (
-              <span className="material-symbols-outlined text-[15px] text-slate-950 font-bold">check_circle</span>
+              <span className="material-symbols-outlined text-[15px] text-slate-950 font-bold" aria-hidden="true">check_circle</span>
             )}
           </button>
         </div>
@@ -538,19 +562,19 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
   return (
     <>
       {/* ── DESKTOP CART SIDEBAR ───────────────────────────────────────────── */}
-      <aside className="hidden lg:flex w-[320px] xl:w-[360px] h-full flex-col bg-white/95 dark:bg-[#0F172A]/80 backdrop-blur-xl border-l border-slate-200 dark:border-white/10 flex-shrink-0 transition-colors">
+      <aside className="hidden lg:flex w-[320px] xl:w-[360px] h-full flex-col bg-white/95 dark:bg-[#0d1322]/95 backdrop-blur-xl border-l border-slate-200/80 dark:border-white/5 flex-shrink-0 transition-colors">
         {/* Header */}
-        <div className="px-4 xl:px-5 py-4 border-b border-slate-200 dark:border-white/10 flex justify-between items-center bg-white/90 dark:bg-[#0F172A]/90 font-sans">
+        <div className="px-4 xl:px-5 py-4 border-b border-slate-200/80 dark:border-white/5 flex justify-between items-center bg-white/95 dark:bg-[#0d1322]/95 font-sans">
           <div>
             <h3 className="text-base font-bold text-slate-900 dark:text-white leading-tight">
               {t.cartTitle}
             </h3>
-            <p className="text-[10px] font-semibold text-sky-600 dark:text-sky-400 uppercase tracking-wider mt-0.5 font-mono flex items-center gap-1">
+            <p className="text-[10px] font-semibold text-[#0284c7] dark:text-[#38BDF8] uppercase tracking-wider mt-0.5 font-mono flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span>{lang === 'en' ? 'GROUP TABLE CART' : lang === 'zh' ? '同桌共享购物车' : 'GIỎ HÀNG CHUNG CỦA BÀN'}</span>
             </p>
           </div>
-          <div className="bg-sky-50 dark:bg-sky-500/10 border border-sky-500/30 px-3 py-1 rounded-full text-xs font-semibold text-sky-600 dark:text-sky-400 font-mono">
+          <div className="bg-sky-500/10 border border-sky-500/25 px-3 py-1 rounded-full text-xs font-bold text-[#0284c7] dark:text-[#38BDF8] font-mono">
             {formatTableName(table?.tableName, lang)}
           </div>
         </div>
@@ -574,31 +598,35 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
 
             {/* Bottom Sheet Modal */}
             <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="mobile-cart-title"
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="fixed bottom-0 inset-x-0 z-50 h-[85dvh] max-h-[85dvh] bg-white dark:bg-[#0F172A] rounded-t-[28px] border-t border-slate-200 dark:border-white/10 shadow-2xl flex flex-col font-sans lg:hidden overflow-hidden text-left"
+              className="fixed bottom-0 inset-x-0 z-50 h-[85dvh] max-h-[85dvh] bg-white dark:bg-[#0d1322] rounded-t-[32px] border-t border-slate-200/80 dark:border-white/5 shadow-2xl flex flex-col font-sans lg:hidden overflow-hidden text-left"
             >
               {/* Drawer Handle */}
-              <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto my-2.5 flex-shrink-0" />
+              <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto my-2.5 flex-shrink-0 opacity-70" aria-hidden="true" />
 
               {/* Mobile Drawer Header */}
-              <div className="px-5 py-2.5 border-b border-slate-200 dark:border-white/10 flex justify-between items-center bg-white dark:bg-[#0F172A] flex-shrink-0">
+              <div className="px-5 py-3 border-b border-slate-200/80 dark:border-white/5 flex justify-between items-center bg-white dark:bg-[#0d1322] flex-shrink-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  <h3 id="mobile-cart-title" className="text-base font-bold text-slate-900 dark:text-white">
                     {t.cartTitle}
                   </h3>
-                  <span className="bg-[#38BDF8] text-slate-950 text-xs font-semibold px-2.5 py-0.5 rounded-full shadow-2xs font-mono">
+                  <span className="bg-[#38BDF8] text-slate-950 text-xs font-black px-2.5 py-0.5 rounded-full shadow-2xs font-mono" aria-label={`${totalQuantity} ${lang === 'en' ? 'items' : lang === 'zh' ? '件' : 'món'}`}>
                     {totalQuantity} {lang === 'en' ? 'items' : lang === 'zh' ? '件' : 'món'}
                   </span>
                 </div>
                 <button
                   onClick={() => setIsCartOpen && setIsCartOpen(false)}
-                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer font-medium text-lg leading-none"
-                  title="Đóng giỏ hàng"
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer font-medium text-lg leading-none active:scale-95"
+                  title={lang === 'en' ? 'Close cart' : lang === 'zh' ? '关闭购物车' : 'Đóng giỏ hàng'}
+                  aria-label={lang === 'en' ? 'Close cart' : lang === 'zh' ? '关闭购物车' : 'Đóng giỏ hàng'}
                 >
-                  ×
+                  <span className="material-symbols-outlined text-lg" aria-hidden="true">close</span>
                 </button>
               </div>
 

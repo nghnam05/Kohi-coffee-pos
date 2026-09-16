@@ -3427,6 +3427,15 @@ export default function DashboardPage() {
           ? paidOrdersList
           : orders;
 
+  // Normalization helper for category keys to strictly prevent duplicates
+  const normalizeCatKey = (name: string) =>
+    (name || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/[^a-z0-9]/g, '');
+
   // Unique food categories dynamically fetched from DB
   const availableCategories = Array.from(
     new Set(foods.map((f) => f.category).filter(Boolean))
@@ -3439,14 +3448,14 @@ export default function DashboardPage() {
       f.category?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory =
       selectedCategory === 'all' ||
-      f.category?.toLowerCase() === selectedCategory.toLowerCase();
+      normalizeCatKey(f.category) === normalizeCatKey(selectedCategory);
     return matchesSearch && matchesCategory;
   });
 
   // Helper to map category icons
   const getCategoryIcon = (catName: string) => {
     const found = categories.find(
-      (c) => c.name?.toLowerCase() === catName?.toLowerCase()
+      (c) => normalizeCatKey(c.name) === normalizeCatKey(catName)
     );
     if (found?.icon) return found.icon;
     const lower = catName?.toLowerCase() || '';
@@ -3458,7 +3467,7 @@ export default function DashboardPage() {
     return 'category';
   };
 
-  // Unified list of categories for filter bar
+  // Unified list of categories for filter bar (deduplicated by normalized key)
   const categoriesToDisplay = (() => {
     const list: { name: string; icon: string; order: number }[] = [];
     const seen = new Set<string>();
@@ -3466,8 +3475,9 @@ export default function DashboardPage() {
     categories
       .filter((c) => c.isActive !== false)
       .forEach((c) => {
-        if (c.name && !seen.has(c.name.toLowerCase())) {
-          seen.add(c.name.toLowerCase());
+        const key = normalizeCatKey(c.name);
+        if (c.name && !seen.has(key)) {
+          seen.add(key);
           list.push({
             name: c.name,
             icon: c.icon || getCategoryIcon(c.name),
@@ -3477,8 +3487,9 @@ export default function DashboardPage() {
       });
 
     foods.forEach((f) => {
-      if (f.category && !seen.has(f.category.toLowerCase())) {
-        seen.add(f.category.toLowerCase());
+      const key = normalizeCatKey(f.category);
+      if (f.category && !seen.has(key)) {
+        seen.add(key);
         list.push({
           name: f.category,
           icon: getCategoryIcon(f.category),
@@ -3500,7 +3511,7 @@ export default function DashboardPage() {
     filteredFoods.forEach((food) => {
       const matchedCat =
         categoriesToDisplay.find(
-          (c) => c.name?.toLowerCase() === food.category?.toLowerCase()
+          (c) => normalizeCatKey(c.name) === normalizeCatKey(food.category)
         )?.name ||
         food.category ||
         'Khác';
@@ -3544,7 +3555,7 @@ export default function DashboardPage() {
   return (
     <div className="h-screen max-h-screen bg-white dark:bg-[#0B0F17] text-gray-900 dark:text-slate-100 flex flex-col lg:flex-row overflow-hidden font-sans select-none relative transition-colors duration-300">
       {/* ── MOBILE TOP NAVIGATION BAR (Visible on screens < lg) ──────────────── */}
-      <div className="lg:hidden shrink-0 flex items-center justify-between bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-md border-b border-gray-200 dark:border-white/10 px-3 sm:px-4 py-0 h-14 text-gray-900 dark:text-slate-100 z-30 transition-colors shadow-xs">
+      <div className="lg:hidden shrink-0 flex items-center justify-between bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-md border-b border-gray-200 dark:border-white/10 px-3 sm:px-4 py-0 h-14 sm:h-16 text-gray-900 dark:text-slate-100 z-30 transition-colors shadow-xs">
         <div className="flex items-center gap-2 sm:gap-3">
           <BrandLogo onClick={() => router.push('/')} />
           {user?.role && (
@@ -3558,14 +3569,23 @@ export default function DashboardPage() {
           <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
           <button
             onClick={() => setIsRealtimeDrawerOpen(!isRealtimeDrawerOpen)}
-            className="relative h-10 w-10 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-900 border border-transparent dark:border-white/10 text-gray-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-[#38BDF8] transition-all cursor-pointer active:scale-95 shrink-0"
+            className="relative h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-900 border border-transparent dark:border-white/10 text-gray-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-[#38BDF8] transition-all cursor-pointer active:scale-95 shrink-0"
             aria-label="Thông báo realtime"
             title="Xem thông báo realtime"
           >
             <span className="material-symbols-outlined text-lg">notifications</span>
             {(staffCalls.length > 0 || (user?.role === 'barista' && brewingQueue.length > 0) || (user?.role !== 'barista' && user?.role !== 'admin' && drinkReadyList.length > 0)) && (
-              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#3B82F6] dark:bg-[#38BDF8] animate-pulse" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#3B82F6] dark:bg-[#38BDF8] animate-pulse" />
             )}
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsMobileSidebarOpen(true)}
+            aria-label="Mở danh mục menu"
+            className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-900 border border-transparent dark:border-white/10 text-gray-700 dark:text-slate-200 hover:text-[#0284c7] dark:hover:text-[#38BDF8] active:scale-95 transition-all cursor-pointer shrink-0"
+            title="Menu & Tùy chọn"
+          >
+            <span className="material-symbols-outlined text-xl">more_vert</span>
           </button>
         </div>
       </div>
@@ -3573,8 +3593,9 @@ export default function DashboardPage() {
       {/* ── BOTTOM TAB BAR (Mobile-only, < lg - Optimized 4-5 Tabs) ────────────── */}
       <nav
         aria-label="Thanh điều hướng ứng dụng"
-        className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-lg border-t border-slate-200 dark:border-white/10 flex items-center justify-around h-16 px-1 shadow-[0_-4px_24px_rgba(0,0,0,0.12)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.4)]"
+        className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-lg border-t border-slate-200 dark:border-white/10 h-16 pb-[env(safe-area-inset-bottom)] px-2 shadow-[0_-4px_24px_rgba(0,0,0,0.12)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.4)]"
       >
+        <div className="w-full max-w-xl mx-auto flex items-center justify-around h-full">
         {/* Tab 1: Đơn hàng / KDS */}
         <button
           type="button"
@@ -3589,7 +3610,7 @@ export default function DashboardPage() {
             ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed'
             : activeTab === 'orders'
               ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black cursor-pointer active:scale-95'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold cursor-pointer active:scale-95'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-normal cursor-pointer active:scale-95'
             }`}
         >
           <div className="relative flex items-center justify-center">
@@ -3630,7 +3651,7 @@ export default function DashboardPage() {
               ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed'
               : activeTab === 'inventory'
                 ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black cursor-pointer active:scale-95'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold cursor-pointer active:scale-95'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-normal cursor-pointer active:scale-95'
               }`}
           >
             <div className="relative flex items-center justify-center">
@@ -3652,11 +3673,11 @@ export default function DashboardPage() {
               ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed'
               : activeTab === 'tables'
                 ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black cursor-pointer active:scale-95'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold cursor-pointer active:scale-95'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-normal cursor-pointer active:scale-95'
               }`}
           >
             <div className="relative flex items-center justify-center">
-              <span className="material-symbols-outlined text-xl">chair</span>
+              <span className="material-symbols-outlined text-xl">table_restaurant</span>
             </div>
             <span className="text-[9.5px] tracking-tight">Bàn</span>
           </button>
@@ -3678,7 +3699,7 @@ export default function DashboardPage() {
               ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed'
               : activeTab === ('reservations' as any)
                 ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black cursor-pointer active:scale-95'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold cursor-pointer active:scale-95'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-normal cursor-pointer active:scale-95'
               }`}
           >
             <div className="relative flex items-center justify-center">
@@ -3762,6 +3783,7 @@ export default function DashboardPage() {
           </div>
           <span className="text-[9.5px] tracking-tight">Thêm</span>
         </button>
+        </div>
       </nav>
 
       {/* Mobile Sidebar Overlay Backdrop */}
@@ -3782,7 +3804,7 @@ export default function DashboardPage() {
 
       {/* ── COLUMN 1: LEFT SIDEBAR (bg-white / dark:bg-[#0B0F17]) ────────────────────── */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-40 w-[260px] shrink-0 bg-white dark:bg-[#0B0F17] border-r border-slate-200 dark:border-white/10 flex flex-col justify-between h-full transition-all duration-300 ease-in-out ${isMobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'
+        className={`fixed lg:static inset-y-0 left-0 z-40 w-[280px] max-w-[85vw] shrink-0 bg-white dark:bg-[#0B0F17] border-r border-slate-200 dark:border-white/10 flex flex-col justify-between h-full transition-all duration-300 ease-in-out ${isMobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'
           }`}
         data-purpose="left-sidebar"
       >
@@ -3803,30 +3825,34 @@ export default function DashboardPage() {
             {/* Admin Grouped Navigation vs Staff Navigation */}
             {user?.role === 'admin' ? (
               <div className="space-y-4">
-                {/* ── NHÓM 1: VẬN HÀNH SẢNH & BẾP ── */}
+                {/* ── NHÓM 1: VẬN HÀNH THỜI GIAN THỰC (OPERATIONS) ── */}
                 <div className="space-y-1">
-                  <p className="px-3 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    Vận hành sảnh & Bếp
-                  </p>
+                  <div className="px-3 pb-1 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                      Vận hành thời gian thực
+                    </p>
+                  </div>
+
                   {/* Realtime Orders Tab for Admin */}
                   <button
                     onClick={() => {
                       setActiveTab('orders');
                       setIsMobileSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${activeTab === 'orders'
-                      ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
-                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
+                    className={`w-full flex items-center px-3 py-2.5 text-xs sm:text-sm rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'orders'
+                        ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
                     <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'orders'
-                      ? 'text-[#3B82F6] dark:text-[#38BDF8]'
-                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
+                        ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                        : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>receipt_long</span>
                     <span className="flex-1 truncate text-left">{t.tabOrders}</span>
-                    <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${activeTab === 'orders'
-                      ? 'bg-[#3B82F6] text-white'
-                      : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                    <span className={`ml-auto inline-block py-0.5 px-2 text-[11px] rounded-full font-black flex-shrink-0 ${activeTab === 'orders'
+                        ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                       }`}>
                       {activeOrdersList.length}
                     </span>
@@ -3838,19 +3864,19 @@ export default function DashboardPage() {
                       setActiveTab('tables');
                       setIsMobileSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${activeTab === 'tables'
-                      ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
-                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
+                    className={`w-full flex items-center px-3 py-2.5 text-xs sm:text-sm rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'tables'
+                        ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
                     <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'tables'
-                      ? 'text-[#3B82F6] dark:text-[#38BDF8]'
-                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                      }`}>chair</span>
+                        ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                        : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
+                      }`}>table_restaurant</span>
                     <span className="flex-1 truncate text-left">{t.tabTables}</span>
-                    <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${activeTab === 'tables'
-                      ? 'bg-[#3B82F6] text-white'
-                      : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                    <span className={`ml-auto inline-block py-0.5 px-2 text-[11px] rounded-full font-black flex-shrink-0 ${activeTab === 'tables'
+                        ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                       }`}>
                       {tables.length}
                     </span>
@@ -3863,75 +3889,71 @@ export default function DashboardPage() {
                       setIsMobileSidebarOpen(false);
                       if (token) fetchReservations(token);
                     }}
-                    className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${activeTab === ('reservations' as any)
-                      ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
-                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
+                    className={`w-full flex items-center px-3 py-2.5 text-xs sm:text-sm rounded-xl group transition-all text-left cursor-pointer ${activeTab === ('reservations' as any)
+                        ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
                     <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === ('reservations' as any)
-                      ? 'text-[#3B82F6] dark:text-[#38BDF8]'
-                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
+                        ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                        : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>event_available</span>
                     <span className="flex-1 truncate text-left">Quản lý bàn đã đặt</span>
-                    <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${activeTab === ('reservations' as any)
-                      ? 'bg-[#3B82F6] text-white'
-                      : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                    <span className={`ml-auto inline-block py-0.5 px-2 text-[11px] rounded-full font-black flex-shrink-0 ${activeTab === ('reservations' as any)
+                        ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                       }`}>
                       {reservations.length}
                     </span>
                   </button>
+                </div>
 
-                  {/* Foods Tab */}
+                {/* ── NHÓM 2: QUẢN TRỊ CỬA HÀNG (STORE MANAGEMENT) ── */}
+                <div className="pt-2 border-t border-slate-100 dark:border-white/5 space-y-1">
+                  <p className="px-3 pb-1 text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    Quản trị cửa hàng
+                  </p>
+
+                  {/* Foods / Menu Tab */}
                   <button
                     onClick={() => {
                       setActiveTab('foods');
                       setIsMobileSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${activeTab === 'foods'
-                      ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
-                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
+                    className={`w-full flex items-center px-3 py-2.5 text-xs sm:text-sm rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'foods'
+                        ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
                     <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'foods'
-                      ? 'text-[#3B82F6] dark:text-[#38BDF8]'
-                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                      }`}>grid_view</span>
+                        ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                        : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
+                      }`}>menu_book</span>
                     <span className="flex-1 truncate text-left">{t.tabFoods}</span>
-                    <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${activeTab === 'foods'
-                      ? 'bg-[#3B82F6] text-white'
-                      : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                    <span className={`ml-auto inline-block py-0.5 px-2 text-[11px] rounded-full font-black flex-shrink-0 ${activeTab === 'foods'
+                        ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                       }`}>
                       {foods.length}
                     </span>
                   </button>
-                </div>
 
-                {/* ── NHÓM 2: QUẢN TRỊ NHÂN SỰ ── */}
-                <div className="pt-2 border-t border-slate-100 dark:border-white/5 space-y-1">
-                  <p className="px-3 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    Quản trị nhân sự
-                  </p>
-                  {/* Attendance Tab */}
+                  {/* Inventory Tab */}
                   <button
                     onClick={() => {
-                      setActiveTab('attendance');
+                      setActiveTab('inventory');
                       setIsMobileSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${activeTab === 'attendance'
-                      ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold ring-2 ring-blue-500/40'
-                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
+                    className={`w-full flex items-center px-3 py-2.5 text-xs sm:text-sm rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'inventory'
+                        ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'attendance'
-                      ? 'text-[#3B82F6] dark:text-[#38BDF8]'
-                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                      }`}>schedule</span>
-                    <span className="flex-1 truncate text-left">Chấm công & Bảng lương</span>
-                    {shiftSwaps.filter((s) => s.status === 'pending').length > 0 && (
-                      <span className="ml-auto px-2 py-0.5 text-[10px] font-black bg-amber-500 text-white rounded-full animate-pulse shadow-xs">
-                        {shiftSwaps.filter((s) => s.status === 'pending').length} đổi ca
-                      </span>
-                    )}
+                    <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'inventory'
+                        ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                        : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
+                      }`}>inventory_2</span>
+                    <span className="flex-1 truncate text-left">Quản lý kho nguyên liệu</span>
                   </button>
 
                   {/* Users Management Tab */}
@@ -3940,24 +3962,48 @@ export default function DashboardPage() {
                       setActiveTab('users');
                       setIsMobileSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${activeTab === 'users'
-                      ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
-                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
+                    className={`w-full flex items-center px-3 py-2.5 text-xs sm:text-sm rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'users'
+                        ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
                     <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'users'
-                      ? 'text-[#3B82F6] dark:text-[#38BDF8]'
-                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
+                        ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                        : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>group</span>
                     <span className="flex-1 truncate text-left">{t.tabUsers}</span>
                   </button>
+
+                  {/* Attendance & Payroll Tab */}
+                  <button
+                    onClick={() => {
+                      setActiveTab('attendance');
+                      setIsMobileSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center px-3 py-2.5 text-xs sm:text-sm rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'attendance'
+                        ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
+                      }`}
+                  >
+                    <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'attendance'
+                        ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                        : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
+                      }`}>schedule</span>
+                    <span className="flex-1 truncate text-left">Chấm công & Bảng lương</span>
+                    {shiftSwaps.filter((s) => s.status === 'pending').length > 0 && (
+                      <span className="ml-auto px-2 py-0.5 text-[10px] font-black bg-amber-500 text-white rounded-full animate-pulse shadow-xs">
+                        {shiftSwaps.filter((s) => s.status === 'pending').length} đổi ca
+                      </span>
+                    )}
+                  </button>
                 </div>
 
-                {/* ── NHÓM 3: TÀI CHÍNH & KHO ── */}
+                {/* ── NHÓM 3: TÀI CHÍNH & TIẾP THỊ (FINANCE & GROWTH) ── */}
                 <div className="pt-2 border-t border-slate-100 dark:border-white/5 space-y-1">
-                  <p className="px-3 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    Tài chính & Kho
+                  <p className="px-3 pb-1 text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    Tài chính & Tiếp thị
                   </p>
+
                   {/* Revenue Analytics Tab */}
                   <button
                     onClick={() => {
@@ -3968,14 +4014,14 @@ export default function DashboardPage() {
                         fetchReviews(token);
                       }
                     }}
-                    className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${activeTab === 'analytics'
-                      ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
-                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
+                    className={`w-full flex items-center px-3 py-2.5 text-xs sm:text-sm rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'analytics'
+                        ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
                     <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'analytics'
-                      ? 'text-[#3B82F6] dark:text-[#38BDF8]'
-                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
+                        ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                        : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>bar_chart</span>
                     <span className="flex-1 truncate text-left">Thống kê doanh thu</span>
                   </button>
@@ -3987,40 +4033,22 @@ export default function DashboardPage() {
                       setIsMobileSidebarOpen(false);
                       if (token) fetchCoupons(token);
                     }}
-                    className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${activeTab === ('coupons' as any)
-                      ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
-                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
+                    className={`w-full flex items-center px-3 py-2.5 text-xs sm:text-sm rounded-xl group transition-all text-left cursor-pointer ${activeTab === ('coupons' as any)
+                        ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
                     <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === ('coupons' as any)
-                      ? 'text-[#3B82F6] dark:text-[#38BDF8]'
-                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
+                        ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                        : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>local_offer</span>
                     <span className="flex-1 truncate text-left">Mã giảm giá</span>
-                    <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${activeTab === ('coupons' as any)
-                      ? 'bg-[#3B82F6] text-white'
-                      : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                    <span className={`ml-auto inline-block py-0.5 px-2 text-[11px] rounded-full font-black flex-shrink-0 ${activeTab === ('coupons' as any)
+                        ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                       }`}>
                       {coupons.length}
                     </span>
-                  </button>
-
-                  {/* Inventory Tab */}
-                  <button
-                    onClick={() => {
-                      setActiveTab('inventory');
-                      setIsMobileSidebarOpen(false);
-                    }}
-                    className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${activeTab === 'inventory'
-                      ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
-                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
-                      }`}
-                  >
-                    <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'inventory'
-                      ? 'text-[#3B82F6] dark:text-[#38BDF8]'
-                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                      }`}>inventory_2</span>
-                    <span className="flex-1 truncate text-left">Quản lý kho nguyên liệu</span>
                   </button>
                 </div>
               </div>
@@ -4038,7 +4066,7 @@ export default function DashboardPage() {
                     ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
                     : activeTab === 'orders'
                       ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
-                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
+                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-normal'
                     }`}
                 >
                   <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'orders'
@@ -4051,7 +4079,7 @@ export default function DashboardPage() {
                   {isStaffLocked ? (
                     <span className="material-symbols-outlined text-sm text-amber-500 ml-auto">lock</span>
                   ) : (
-                    <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${activeTab === 'orders'
+                    <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-extrabold font-mono flex-shrink-0 ${activeTab === 'orders'
                       ? 'bg-[#3B82F6] text-white'
                       : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                       }`}>
@@ -4074,18 +4102,18 @@ export default function DashboardPage() {
                         ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
                         : activeTab === 'foods'
                           ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
-                          : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
+                          : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-normal'
                         }`}
                     >
                       <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'foods'
                         ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                         : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                        }`}>grid_view</span>
+                        }`}>menu_book</span>
                       <span className="flex-1 truncate text-left">{t.tabFoods}</span>
                       {isStaffLocked ? (
                         <span className="material-symbols-outlined text-sm text-amber-500 ml-auto">lock</span>
                       ) : (
-                        <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${activeTab === 'foods'
+                        <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-extrabold font-mono flex-shrink-0 ${activeTab === 'foods'
                           ? 'bg-[#3B82F6] text-white'
                           : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                           }`}>
@@ -4105,18 +4133,18 @@ export default function DashboardPage() {
                         ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
                         : activeTab === 'tables'
                           ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
-                          : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
+                          : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-normal'
                         }`}
                     >
                       <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'tables'
                         ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                         : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                        }`}>chair</span>
+                        }`}>table_restaurant</span>
                       <span className="flex-1 truncate text-left">{t.tabTables}</span>
                       {isStaffLocked ? (
                         <span className="material-symbols-outlined text-sm text-amber-500 ml-auto">lock</span>
                       ) : (
-                        <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${activeTab === 'tables'
+                        <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-extrabold font-mono flex-shrink-0 ${activeTab === 'tables'
                           ? 'bg-[#3B82F6] text-white'
                           : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                           }`}>
@@ -4137,7 +4165,7 @@ export default function DashboardPage() {
                         ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
                         : activeTab === ('reservations' as any)
                           ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
-                          : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
+                          : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-normal'
                         }`}
                     >
                       <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === ('reservations' as any)
@@ -4148,7 +4176,7 @@ export default function DashboardPage() {
                       {isStaffLocked ? (
                         <span className="material-symbols-outlined text-sm text-amber-500 ml-auto">lock</span>
                       ) : (
-                        <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-medium flex-shrink-0 ${activeTab === ('reservations' as any)
+                        <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-extrabold font-mono flex-shrink-0 ${activeTab === ('reservations' as any)
                           ? 'bg-[#3B82F6] text-white'
                           : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                           }`}>
@@ -4167,7 +4195,7 @@ export default function DashboardPage() {
                   }}
                   className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${activeTab === 'attendance'
                     ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold ring-2 ring-blue-500/40'
-                    : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
+                    : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-normal'
                     }`}
                 >
                   <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'attendance'
@@ -4195,7 +4223,7 @@ export default function DashboardPage() {
                       ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
                       : activeTab === 'inventory'
                         ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
-                        : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-medium'
+                        : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-normal'
                       }`}
                   >
                     <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'inventory'
@@ -4211,7 +4239,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Controls & Bottom User Profile */}
-        <div className="p-4 border-t border-slate-200 dark:border-white/10 space-y-3 font-sans">
+        <div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-slate-200 dark:border-white/10 space-y-3 font-sans">
           <div className="flex items-center justify-between gap-2">
             <LanguageToggleSwitch lang={lang} setLang={setLang} />
             <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
@@ -4229,8 +4257,8 @@ export default function DashboardPage() {
                 {user?.name ? user.name.charAt(0).toUpperCase() : 'N'}
               </div>
               <div className="truncate min-w-0 flex-1">
-                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate leading-tight">{user?.name || 'Nhân viên Phục vụ'}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 truncate leading-tight">Sửa thông tin</p>
+                <p className="text-sm font-extrabold text-slate-900 dark:text-slate-100 truncate leading-tight">{user?.name || 'Nhân viên Phục vụ'}</p>
+                <p className="text-xs font-normal text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 truncate leading-tight">Sửa thông tin</p>
               </div>
             </button>
             <button
@@ -4247,9 +4275,9 @@ export default function DashboardPage() {
       {/* ── COLUMN 2: CENTER WORKSPACE (bg-white / dark:bg-[#0B0F17]) ────────────────── */}
       <main className="flex-1 min-w-0 bg-white dark:bg-[#0B0F17] text-gray-900 dark:text-slate-100 flex flex-col h-full max-h-full overflow-hidden px-3 pt-3 pb-3 sm:p-6 lg:pb-6 transition-colors duration-300 font-sans">
         {/* Workspace Top Bar (Fixed Header) */}
-        <div className="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-200 dark:border-white/10">
+        <div className="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 mb-3.5 sm:mb-4 pb-3 border-b border-slate-200 dark:border-white/10">
           <div className="flex items-center gap-3 min-w-0">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight font-heading truncate">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight font-heading truncate">
               {activeTab === 'orders' && (user?.role === 'barista' ? 'Quầy pha chế (KDS)' : t.tabOrders)}
               {activeTab === 'foods' && t.tabFoods}
               {activeTab === 'tables' && t.tabTables}
@@ -4262,7 +4290,7 @@ export default function DashboardPage() {
             </h2>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap">
             {/* Global Refresh Data Button */}
             <button
               onClick={() => {
@@ -4303,13 +4331,13 @@ export default function DashboardPage() {
               <span>Thông báo</span>
             </button>
 
-            {/* Role-Specific Context Pill Buttons */}
-            {user?.role === 'barista' && (
+            {/* Tab-Scoped Context Notification Buttons: Chỉ hiển thị trong mục tương ứng */}
+            {/* 1. Mục Đơn hàng / Pha chế (Tab orders): hiển thị món chờ pha hoặc món xong */}
+            {activeTab === 'orders' && user?.role === 'barista' && (
               <button
                 disabled={isStaffLocked}
                 onClick={() => {
                   if (isStaffLocked) return;
-                  setActiveTab('orders');
                   setIsRealtimeDrawerOpen(true);
                 }}
                 className={`h-10 px-3 flex items-center gap-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-black transition-all shrink-0 ${isStaffLocked ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer active:scale-95'
@@ -4321,7 +4349,24 @@ export default function DashboardPage() {
               </button>
             )}
 
-            {(user?.role === 'waiter' || user?.role === 'staff' || !user?.role) && (
+            {activeTab === 'orders' && (user?.role === 'waiter' || user?.role === 'staff' || !user?.role) && drinkReadyList.length > 0 && (
+              <button
+                disabled={isStaffLocked}
+                onClick={() => {
+                  if (isStaffLocked) return;
+                  setIsRealtimeDrawerOpen(true);
+                }}
+                className={`h-10 px-3 flex items-center gap-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-black transition-all shrink-0 animate-pulse ${isStaffLocked ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer active:scale-95'
+                  }`}
+                title="Đồ uống sẵn sàng trả bàn"
+              >
+                <span className="material-symbols-outlined text-base">local_cafe</span>
+                <span>{drinkReadyList.length} món xong</span>
+              </button>
+            )}
+
+            {/* 2. Mục Quản lý bàn (Tab tables): chỉ hiển thị đổi bàn và gọi bàn */}
+            {activeTab === 'tables' && (
               <>
                 {pendingTransferRequests.length > 0 && (
                   <button
@@ -4338,21 +4383,6 @@ export default function DashboardPage() {
                     <span>{pendingTransferRequests.length} đổi bàn</span>
                   </button>
                 )}
-                {drinkReadyList.length > 0 && (
-                  <button
-                    disabled={isStaffLocked}
-                    onClick={() => {
-                      if (isStaffLocked) return;
-                      setIsRealtimeDrawerOpen(true);
-                    }}
-                    className={`h-10 px-3 flex items-center gap-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-black transition-all shrink-0 animate-pulse ${isStaffLocked ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer active:scale-95'
-                      }`}
-                    title="Đồ uống sẵn sàng trả bàn"
-                  >
-                    <span className="material-symbols-outlined text-base">local_cafe</span>
-                    <span>{drinkReadyList.length} món xong</span>
-                  </button>
-                )}
                 {staffCalls.length > 0 && (
                   <button
                     disabled={isStaffLocked}
@@ -4362,28 +4392,22 @@ export default function DashboardPage() {
                     }}
                     className={`h-10 px-3 flex items-center gap-1.5 rounded-xl bg-[#38BDF8]/15 border border-[#38BDF8]/40 text-[#0284c7] dark:text-[#38BDF8] text-xs font-black transition-all shrink-0 ${isStaffLocked ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer active:scale-95'
                       }`}
+                    title="Khách hàng gọi phục vụ tại bàn"
                   >
                     <span className="w-2 h-2 rounded-full bg-[#38BDF8] animate-pulse shrink-0" />
-                    <span>{staffCalls.length} cuộc gọi bàn</span>
+                    <span>{staffCalls.length} gọi bàn</span>
                   </button>
                 )}
               </>
             )}
 
-            {user?.role === 'admin' && staffCalls.length > 0 && (
+            {/* 3. Mục Chấm công & Ca làm (Tab attendance): chỉ hiển thị đổi ca */}
+            {activeTab === 'attendance' && user?.role === 'admin' && shiftSwaps.filter((s) => s.status === 'pending').length > 0 && (
               <button
-                onClick={() => setIsRealtimeDrawerOpen(true)}
-                className="h-10 px-3 flex items-center gap-1.5 rounded-xl bg-[#0059b9]/10 border border-[#0059b9]/30 text-[#0059b9] dark:text-[#38BDF8] text-xs font-black cursor-pointer active:scale-95 transition-all shrink-0"
-                title="Khách hàng gọi phục vụ"
-              >
-                <span className="w-2 h-2 rounded-full bg-[#0059b9] animate-pulse shrink-0" />
-                <span>{staffCalls.length} gọi bàn</span>
-              </button>
-            )}
-
-            {user?.role === 'admin' && shiftSwaps.filter((s) => s.status === 'pending').length > 0 && (
-              <button
-                onClick={() => setActiveTab('attendance')}
+                onClick={() => {
+                  const el = document.getElementById('actionable-shift-swap-approval-banner');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
                 className="h-10 px-3 flex items-center gap-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-black cursor-pointer active:scale-95 transition-all shrink-0 animate-pulse"
                 title="Yêu cầu đổi ca chờ Admin duyệt"
               >
@@ -4391,9 +4415,6 @@ export default function DashboardPage() {
                 <span>{shiftSwaps.filter((s) => s.status === 'pending').length} đổi ca</span>
               </button>
             )}
-
-
-
             {/* Search Input for foods/tables */}
             {activeTab === 'foods' && (
               <input
@@ -4478,230 +4499,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
-            {/* ── ADMIN: EXECUTIVE COMMAND BAR ("Nhịp đập quán") ── */}
-            {user?.role === 'admin' && (
-              <div className="shrink-0 mb-3 space-y-2.5 font-sans" id="executive-command-bar">
-                <div className="flex items-center justify-between px-1">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                      Tổng quan vận hành thời gian thực
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsCommandBarCollapsed(!isCommandBarCollapsed)}
-                    className="text-[10px] font-bold text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors flex items-center gap-1 cursor-pointer"
-                  >
-                    <span>{isCommandBarCollapsed ? 'Mở rộng' : 'Thu gọn'}</span>
-                    <span className="material-symbols-outlined text-sm">{isCommandBarCollapsed ? 'expand_more' : 'expand_less'}</span>
-                  </button>
-                </div>
 
-                {!isCommandBarCollapsed && (
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-                    {/* KPI 1: Doanh thu */}
-                    <div
-                      onClick={() => setActiveTab('analytics')}
-                      className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] hover:border-[#0284c7]/40 dark:hover:border-[#38BDF8]/40 p-3 rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
-                      title="Bấm để xem chi tiết Báo cáo Thu - Chi"
-                    >
-                      <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
-                        <span className="text-[10px] font-black uppercase tracking-wider">Doanh thu hôm nay</span>
-                        <span className="material-symbols-outlined text-base text-emerald-500 group-hover:scale-110 transition-transform">payments</span>
-                      </div>
-                      <div className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
-                        {formatPrice(analyticsSummary?.periodGross ?? analyticsSummary?.todayGross ?? paymentHistory.reduce((s, p) => s + (p.totalAmount || 0), 0))}
-                      </div>
-                      <div className="mt-1 flex items-center gap-1.5 flex-wrap">
-                        {analyticsSummary?.settlementStatus ? (
-                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${analyticsSummary.settlementStatus.isSettled
-                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
-                            }`}>
-                            {analyticsSummary.settlementStatus.isSettled ? '✓ Đã chốt sổ' : `Tạm tính (${analyticsSummary.settlementStatus.unpaidOrdersCount || 0} chưa thu)`}
-                          </span>
-                        ) : (
-                          <span className="text-[10px] text-slate-400">Từ hóa đơn trong ngày</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* KPI 2: Công suất bàn */}
-                    {(() => {
-                      const servingCount = tables.filter(t => t.status === 'serving' || t.status === 'occupied').length;
-                      const totalCount = tables.length;
-                      const occupancyRate = totalCount > 0 ? Math.round((servingCount / totalCount) * 100) : 0;
-                      return (
-                        <div
-                          onClick={() => setActiveTab('tables')}
-                          className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] hover:border-[#0284c7]/40 dark:hover:border-[#38BDF8]/40 p-3 rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
-                          title="Bấm để xem Sơ đồ bàn"
-                        >
-                          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
-                            <span className="text-[10px] font-black uppercase tracking-wider">Công suất bàn</span>
-                            <span className="material-symbols-outlined text-base text-sky-500 group-hover:scale-110 transition-transform">chair</span>
-                          </div>
-                          <div className="flex items-baseline gap-1.5">
-                            <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
-                              {servingCount}/{totalCount}
-                            </span>
-                            <span className="text-[11px] font-black text-[#0284c7] dark:text-[#38BDF8]">
-                              ({occupancyRate}%)
-                            </span>
-                          </div>
-                          <div className="mt-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all duration-500 ${occupancyRate >= 90 ? 'bg-amber-500' : occupancyRate >= 70 ? 'bg-sky-500' : 'bg-emerald-500'
-                                }`}
-                              style={{ width: `${Math.min(100, occupancyRate)}%` }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })()}
-
-                    {/* KPI 3: Đơn hàng & Pha chế */}
-                    {(() => {
-                      const activeOrdersCount = orders.filter(o => ['pending', 'confirmed', 'cooking', 'ready'].includes(o.status)).length;
-                      const brewingCount = orders.filter(o => o.status === 'cooking' || o.status === 'pending').length;
-                      return (
-                        <div
-                          onClick={() => setActiveTab('orders')}
-                          className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] hover:border-[#0284c7]/40 dark:hover:border-[#38BDF8]/40 p-3 rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
-                          title="Bấm để xem Quản lý đơn hàng & KDS"
-                        >
-                          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
-                            <span className="text-[10px] font-black uppercase tracking-wider">Đang phục vụ</span>
-                            <span className="material-symbols-outlined text-base text-amber-500 group-hover:scale-110 transition-transform">soup_kitchen</span>
-                          </div>
-                          <div className="flex items-baseline gap-1.5">
-                            <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
-                              {activeOrdersCount}
-                            </span>
-                            <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">đơn đang chạy</span>
-                          </div>
-                          <div className="mt-1 flex items-center gap-1.5 text-[10px] text-slate-400">
-                            <span className={`w-1.5 h-1.5 rounded-full ${brewingCount > 0 ? 'bg-amber-500 animate-pulse' : 'bg-slate-400'}`} />
-                            <span>{brewingCount} món đang đợi pha chế</span>
-                          </div>
-                        </div>
-                      );
-                    })()}
-
-                    {/* KPI 4: Nhân sự trực ca */}
-                    {(() => {
-                      const activeStaffCount = attendances.filter(a => a.checkIn && !a.checkOut).length;
-                      const pendingSwapsCount = shiftSwaps.filter(s => s.status === 'pending').length;
-                      return (
-                        <div
-                          onClick={() => setActiveTab('attendance')}
-                          className={`bg-white dark:bg-[#131929] border p-3 rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer group ${pendingSwapsCount > 0
-                              ? 'border-amber-500/30 hover:border-amber-500'
-                              : 'border-slate-200 dark:border-[#1e293b] hover:border-[#0284c7]/40 dark:hover:border-[#38BDF8]/40'
-                            }`}
-                          title="Bấm để xem Chấm công & Bảng lương"
-                        >
-                          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
-                            <span className="text-[10px] font-black uppercase tracking-wider">Nhân sự trực ca</span>
-                            <span className="material-symbols-outlined text-base text-indigo-500 group-hover:scale-110 transition-transform">badge</span>
-                          </div>
-                          <div className="flex items-baseline gap-1.5">
-                            <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
-                              {activeStaffCount}
-                            </span>
-                            <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">nhân viên check-in</span>
-                          </div>
-                          <div className="mt-1 flex items-center gap-1.5">
-                            {pendingSwapsCount > 0 ? (
-                              <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse">
-                                ⚠️ {pendingSwapsCount} đổi ca chờ duyệt
-                              </span>
-                            ) : (
-                              <span className="text-[10px] text-slate-400">Hoạt động bình thường</span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                )}
-
-                {/* ── ACTIONABLE SHIFT SWAP APPROVAL CARDS (DUYỆT ĐỔI CA 1-CHẠM) ── */}
-                {shiftSwaps.filter((s) => s.status === 'pending').length > 0 && (
-                  <div
-                    id="actionable-shift-swap-approval-banner"
-                    className="p-3 bg-amber-500/10 dark:bg-amber-500/10 border border-amber-500/30 rounded-2xl transition-all"
-                  >
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-amber-500 text-lg">published_with_changes</span>
-                        <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                          Duyệt nhanh yêu cầu đổi ca ({shiftSwaps.filter((s) => s.status === 'pending').length})
-                        </h4>
-                      </div>
-                      <button
-                        onClick={() => setActiveTab('attendance')}
-                        className="text-[10px] font-black text-amber-700 dark:text-amber-300 hover:underline cursor-pointer"
-                      >
-                        Xem tất cả ca làm →
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                      {shiftSwaps.filter((s) => s.status === 'pending').map((swap) => {
-                        const curLabel = swap.currentShift === 'morning' ? 'Ca Sáng' : swap.currentShift === 'afternoon' ? 'Ca Chiều' : 'Ca Tối';
-                        const reqLabel = swap.requestedShift === 'morning' ? 'Ca Sáng' : swap.requestedShift === 'afternoon' ? 'Ca Chiều' : 'Ca Tối';
-                        return (
-                          <div
-                            key={swap._id}
-                            className="bg-white dark:bg-[#0d1525] border border-amber-500/20 p-2.5 rounded-xl flex flex-col justify-between gap-2 shadow-2xs"
-                          >
-                            <div className="space-y-1">
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="font-extrabold text-slate-900 dark:text-white truncate">
-                                  {swap.userId?.name || 'Nhân viên'}
-                                </span>
-                                <span className="text-[10px] px-1.5 py-0.5 rounded font-black bg-amber-500/15 text-amber-600 dark:text-amber-400">
-                                  Chờ duyệt
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-700 dark:text-slate-300">
-                                <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">{curLabel}</span>
-                                <span className="text-slate-400">→</span>
-                                <span className="px-1.5 py-0.5 bg-sky-500/15 text-sky-600 dark:text-sky-400 rounded font-black border border-sky-500/20">{reqLabel}</span>
-                              </div>
-                              {swap.reason && (
-                                <p className="text-[10px] text-slate-500 italic truncate" title={swap.reason}>
-                                  "{swap.reason}"
-                                </p>
-                              )}
-                            </div>
-
-                            <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/80">
-                              <button
-                                type="button"
-                                onClick={() => handleUpdateShiftSwapStatus(swap._id, 'rejected')}
-                                className="px-2.5 py-1 text-[10px] font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 rounded-lg border border-rose-500/20 transition-all cursor-pointer active:scale-95"
-                              >
-                                Từ chối
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleUpdateShiftSwapStatus(swap._id, 'approved')}
-                                className="px-3 py-1 text-[10px] font-black text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg shadow-xs shadow-emerald-500/20 transition-all cursor-pointer active:scale-95"
-                              >
-                                ✓ Duyệt ngay
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
 
             {/* Realtime Orders View */}
             {activeTab === 'orders' && (
@@ -4710,45 +4508,66 @@ export default function DashboardPage() {
                 {/* ── ORDERS TOOLBAR ─────────────────────────────────────────── */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
                   {/* Filter Tabs */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none p-1 bg-[#ebedf8] dark:bg-[#131929] rounded-xl border border-[#c1c6d6] dark:border-[#1e293b]">
+                  <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none p-1 bg-slate-100/80 dark:bg-white/5 rounded-2xl border border-slate-200/80 dark:border-white/5">
                     <button
                       onClick={() => setOrderStatusFilter('active')}
-                      className={`flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${orderStatusFilter === 'active'
-                        ? 'bg-white dark:bg-[#1e293b] text-[#0059b9] dark:text-[#38BDF8] shadow-xs font-extrabold'
-                        : 'text-[#414754] dark:text-slate-400 hover:text-[#181c23] dark:hover:text-slate-200'
-                        }`}
+                      className={`h-9 sm:h-10 flex-shrink-0 flex items-center gap-2 px-3.5 sm:px-4 rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-95 ${
+                        orderStatusFilter === 'active'
+                          ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-xs border border-slate-200/60 dark:border-white/5'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                      }`}
                     >
                       <span className="whitespace-nowrap">Đang xử lý</span>
-                      {orders.filter(o => ['pending', 'confirmed', 'cooking', 'ready'].includes(o.status)).length > 0 && (
-                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${orderStatusFilter === 'active' ? 'bg-[#0059b9] text-white' : 'bg-[#acc7fe]/50 text-[#385282]'}`}>
-                          {orders.filter(o => ['pending', 'confirmed', 'cooking', 'ready'].includes(o.status)).length}
+                      {orders.filter((o) => ['pending', 'confirmed', 'cooking', 'ready'].includes(o.status)).length > 0 && (
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                            orderStatusFilter === 'active'
+                              ? 'bg-sky-500 text-white dark:bg-sky-400 dark:text-slate-950'
+                              : 'bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300'
+                          }`}
+                        >
+                          {orders.filter((o) => ['pending', 'confirmed', 'cooking', 'ready'].includes(o.status)).length}
                         </span>
                       )}
                     </button>
                     <button
                       onClick={() => setOrderStatusFilter('unpaid')}
-                      className={`flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${orderStatusFilter === 'unpaid'
-                        ? 'bg-white dark:bg-[#1e293b] text-amber-600 dark:text-amber-400 shadow-xs font-extrabold'
-                        : 'text-[#414754] dark:text-slate-400 hover:text-[#181c23] dark:hover:text-slate-200'
-                        }`}
+                      className={`h-9 sm:h-10 flex-shrink-0 flex items-center gap-2 px-3.5 sm:px-4 rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-95 ${
+                        orderStatusFilter === 'unpaid'
+                          ? 'bg-white dark:bg-white/10 text-amber-600 dark:text-amber-400 shadow-xs border border-slate-200/60 dark:border-white/5'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                      }`}
                     >
                       <span className="whitespace-nowrap">Đang chờ thanh toán</span>
-                      {orders.filter(o => o.status === 'completed').length > 0 && (
-                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${orderStatusFilter === 'unpaid' ? 'bg-amber-500 text-white' : 'bg-[#acc7fe]/50 text-[#385282]'}`}>
-                          {orders.filter(o => o.status === 'completed').length}
+                      {orders.filter((o) => o.status === 'completed').length > 0 && (
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                            orderStatusFilter === 'unpaid'
+                              ? 'bg-amber-500 text-white'
+                              : 'bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300'
+                          }`}
+                        >
+                          {orders.filter((o) => o.status === 'completed').length}
                         </span>
                       )}
                     </button>
                     <button
                       onClick={() => setOrderStatusFilter('paid')}
-                      className={`flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${orderStatusFilter === 'paid'
-                        ? 'bg-white dark:bg-[#1e293b] text-emerald-600 dark:text-emerald-400 shadow-xs font-extrabold'
-                        : 'text-[#414754] dark:text-slate-400 hover:text-[#181c23] dark:hover:text-slate-200'
-                        }`}
+                      className={`h-9 sm:h-10 flex-shrink-0 flex items-center gap-2 px-3.5 sm:px-4 rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-95 ${
+                        orderStatusFilter === 'paid'
+                          ? 'bg-white dark:bg-white/10 text-emerald-600 dark:text-emerald-400 shadow-xs border border-slate-200/60 dark:border-white/5'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                      }`}
                     >
-                      <span className="whitespace-nowrap">Tất cả (chỉ đơn hàng đã thanh toán)</span>
+                      <span className="whitespace-nowrap">Tất cả (đã thanh toán)</span>
                       {paymentHistory.length > 0 && (
-                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${orderStatusFilter === 'paid' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' : 'bg-[#acc7fe]/50 text-[#385282]'}`}>
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                            orderStatusFilter === 'paid'
+                              ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                              : 'bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300'
+                          }`}
+                        >
                           {paymentHistory.length}
                         </span>
                       )}
@@ -4766,7 +4585,7 @@ export default function DashboardPage() {
                         setTakeawayCouponCode('');
                         setIsTakeawayModalOpen(true);
                       }}
-                      className="px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer w-full sm:w-auto"
+                      className="h-10 sm:h-11 px-5 bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 font-bold text-xs sm:text-sm rounded-2xl shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer w-full sm:w-auto"
                     >
                       <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
                       <span>Tạo đơn mang về</span>
@@ -4803,46 +4622,6 @@ export default function DashboardPage() {
                         </button>
                       </div>
                     )}
-                  </div>
-                )}
-
-                {/* Table Transfer Requests (Simple modern card, NO icons, NO emojis) */}
-                {pendingTransferRequests.length > 0 && (
-                  <div className="mb-4 space-y-2">
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-1">
-                      Yêu cầu chuyển bàn ({pendingTransferRequests.length})
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {pendingTransferRequests.map((req) => (
-                        <div
-                          key={req.id}
-                          className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between"
-                        >
-                          <div>
-                            <div className="text-sm font-bold text-slate-900 dark:text-white">
-                              {req.fromTableName} chuyển sang {req.toTableName}
-                            </div>
-                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                              Khách hàng: {req.customerName || 'Khách tại bàn'}
-                            </div>
-                          </div>
-                          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
-                            <button
-                              onClick={() => handleApproveTransfer(req.id)}
-                              className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer"
-                            >
-                              Chấp nhận
-                            </button>
-                            <button
-                              onClick={() => handleRejectTransfer(req.id)}
-                              className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all cursor-pointer"
-                            >
-                              Từ chối
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
                   </div>
                 )}
 
@@ -5030,13 +4809,32 @@ export default function DashboardPage() {
                 {/* Paid Payment History Grid View */}
                 {orderStatusFilter === 'paid' ? (
                   paymentHistory.length === 0 ? (
-                    <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-12 text-center text-slate-400">
-                      <p className="text-sm font-bold text-slate-900 dark:text-white">
-                        {paymentSearchQuery || paymentDateFilter ? `Không tìm thấy hóa đơn phù hợp với bộ lọc` : 'Chưa có hóa đơn thanh toán nào'}
-                      </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        {paymentDateFilter ? `Không có hóa đơn phát sinh trong ngày ${paymentDateFilter.split('-').reverse().join('/')}` : 'Thử đổi từ khóa hoặc tìm kiếm bằng Mã Hóa Đơn HD-XXXXXX'}
-                      </p>
+                    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-3xl p-10 sm:p-14 text-center flex flex-col items-center justify-center gap-4 max-w-xl mx-auto my-6 shadow-xs">
+                      <div className="w-16 h-16 rounded-3xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 flex items-center justify-center text-slate-400">
+                        <span className="material-symbols-outlined text-3xl">receipt_long</span>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-base font-black text-slate-900 dark:text-white font-heading">
+                          {paymentSearchQuery || paymentDateFilter ? 'Không tìm thấy hóa đơn phù hợp' : 'Chưa có hóa đơn thanh toán nào'}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
+                          {paymentDateFilter
+                            ? `Không có hóa đơn phát sinh trong ngày ${paymentDateFilter.split('-').reverse().join('/')}.`
+                            : 'Thử tìm kiếm bằng Mã Hóa Đơn HD-XXXXXX hoặc chọn khoảng thời gian khác.'}
+                        </p>
+                      </div>
+                      {(paymentSearchQuery || paymentDateFilter) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPaymentSearchQuery('');
+                            setPaymentDateFilter('');
+                          }}
+                          className="mt-1 h-10 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-all cursor-pointer"
+                        >
+                          Xóa bộ lọc tìm kiếm
+                        </button>
+                      )}
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -5282,7 +5080,7 @@ export default function DashboardPage() {
                     );
                   })()
                 ) : displayedOrders.length === 0 ? (
-                  <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-12 text-center text-slate-400">
+                  <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center text-slate-400">
                     <p className="text-sm font-bold text-slate-900 dark:text-white">
                       {(orderStatusFilter as string) === 'paid' ? 'Chưa có đơn hàng nào đã thanh toán' : t.noOrders}
                     </p>
@@ -5294,19 +5092,19 @@ export default function DashboardPage() {
                       const getOrderStatusBadge = (status: string) => {
                         switch (status) {
                           case 'pending':
-                            return <span className="px-2.5 py-0.5 bg-amber-500/15 text-amber-600 dark:text-amber-400 rounded-full text-[10px] font-semibold uppercase tracking-wider">Chờ duyệt</span>;
+                            return <span className="px-2.5 py-0.5 bg-amber-500/15 text-amber-600 dark:text-amber-400 rounded-full text-[10px] font-bold uppercase tracking-wider">Chờ duyệt</span>;
                           case 'confirmed':
-                            return <span className="px-2.5 py-0.5 bg-sky-500/15 text-sky-600 dark:text-[#38BDF8] rounded-full text-[10px] font-semibold uppercase tracking-wider">Chờ pha chế</span>;
+                            return <span className="px-2.5 py-0.5 bg-sky-500/15 text-sky-600 dark:text-[#38BDF8] rounded-full text-[10px] font-bold uppercase tracking-wider">Chờ pha chế</span>;
                           case 'cooking':
-                            return <span className="px-2.5 py-0.5 bg-sky-500/20 text-[#38BDF8] rounded-full text-[10px] font-semibold uppercase tracking-wider">Đang pha chế</span>;
+                            return <span className="px-2.5 py-0.5 bg-sky-500/20 text-[#38BDF8] rounded-full text-[10px] font-bold uppercase tracking-wider">Đang pha chế</span>;
                           case 'ready':
-                            return <span className="px-2.5 py-0.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-semibold uppercase tracking-wider">Chờ ra món</span>;
+                            return <span className="px-2.5 py-0.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-bold uppercase tracking-wider">Chờ ra món</span>;
                           case 'completed':
-                            return <span className="px-2.5 py-0.5 bg-amber-500/15 text-amber-700 dark:text-amber-300 rounded-full text-[10px] font-semibold uppercase tracking-wider">Chờ thanh toán</span>;
+                            return <span className="px-2.5 py-0.5 bg-amber-500/15 text-amber-700 dark:text-amber-300 rounded-full text-[10px] font-bold uppercase tracking-wider">Chờ thanh toán</span>;
                           case 'paid':
-                            return <span className="px-2.5 py-0.5 bg-emerald-600/20 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-semibold uppercase tracking-wider">Đã thanh toán</span>;
+                            return <span className="px-2.5 py-0.5 bg-emerald-600/20 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-bold uppercase tracking-wider">Đã thanh toán</span>;
                           default:
-                            return <span className="px-2.5 py-0.5 bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full text-[10px] font-semibold uppercase tracking-wider">Đang xử lý</span>;
+                            return <span className="px-2.5 py-0.5 bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full text-[10px] font-bold uppercase tracking-wider">Đang xử lý</span>;
                         }
                       };
 
@@ -5316,18 +5114,19 @@ export default function DashboardPage() {
                       return (
                         <div
                           key={order._id}
-                          className={`bg-white dark:bg-[#0E131F] border rounded-2xl p-4 sm:p-4.5 shadow-xs dark:shadow-md flex flex-col justify-between transition-all duration-200 hover:shadow-lg hover:border-[#38BDF8]/40 ${isSelected
-                            ? 'border-[#38BDF8] ring-2 ring-[#38BDF8]/40 bg-sky-50/20 dark:bg-sky-500/5'
-                            : order.status === 'pending'
-                              ? 'border-amber-400/80 dark:border-amber-500/60 shadow-md shadow-amber-500/5'
+                          className={`bg-white dark:bg-[#0d1322] border rounded-3xl p-4 sm:p-5 shadow-xs dark:shadow-md flex flex-col justify-between transition-all duration-200 hover:shadow-lg hover:border-slate-300 dark:hover:border-white/20 ${
+                            isSelected
+                              ? 'border-[#38BDF8] ring-2 ring-[#38BDF8]/40 bg-sky-50/20 dark:bg-sky-500/5'
+                              : order.status === 'pending'
+                              ? 'border-amber-400/70 dark:border-amber-500/50 shadow-sm'
                               : isPaid
-                                ? 'border-emerald-500/30'
-                                : 'border-slate-200/80 dark:border-white/10'
-                            }`}
+                              ? 'border-emerald-500/30'
+                              : 'border-slate-200/80 dark:border-white/5'
+                          }`}
                         >
                           <div>
                             {/* Card Header: Checkbox + Table + Status */}
-                            <div className="flex items-start justify-between pb-3 border-b border-slate-100 dark:border-white/10 mb-3 gap-2">
+                            <div className="flex items-start justify-between pb-3.5 border-b border-slate-100 dark:border-white/5 mb-3.5 gap-2">
                               <div className="flex items-start gap-2.5 min-w-0">
                                 <input
                                   type="checkbox"
@@ -5343,26 +5142,28 @@ export default function DashboardPage() {
                                 />
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-1.5">
-                                    <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white font-heading truncate">
+                                    <h3 className="text-base sm:text-[17px] font-extrabold text-slate-900 dark:text-white truncate tracking-tight">
                                       {order.isTakeaway || !order.tableId ? (
-                                        <span className="text-[#0284c7] dark:text-[#38BDF8]">Mang về</span>
+                                        <span className="text-[#0284c7] dark:text-[#38BDF8]">
+                                          Mang về
+                                        </span>
                                       ) : (
                                         order.tableId?.tableName || t.unknownTable
                                       )}
                                     </h3>
                                     {order.paymentNotified && order.status !== 'paid' && (
-                                      <span className="px-1.5 py-0.5 bg-amber-500 text-white rounded text-[9.5px] font-black uppercase shrink-0">
+                                      <span className="px-2 py-0.5 bg-amber-500 text-white rounded-md text-[10px] font-bold uppercase shrink-0">
                                         Báo CK
                                       </span>
                                     )}
                                   </div>
 
-                                  <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-500 dark:text-slate-400 font-semibold flex-wrap">
-                                    <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 rounded-md text-[10px] font-extrabold uppercase">
+                                  <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-400 dark:text-slate-500 font-normal flex-wrap">
+                                    <span className="px-2 py-0.5 bg-slate-100/80 dark:bg-white/5 text-slate-600 dark:text-slate-300 rounded-md text-[10px] font-extrabold uppercase border border-slate-200/50 dark:border-white/5">
                                       {order.paymentMethod === 'bank_transfer' ? 'VietQR' : order.paymentMethod === 'momo' ? 'MoMo' : 'Tiền mặt'}
                                     </span>
                                     {(order.customerName || order.customerPhone) && (
-                                      <span className="truncate max-w-[110px]">
+                                      <span className="truncate max-w-[120px]">
                                         • {order.customerName || 'Khách'}
                                       </span>
                                     )}
@@ -5370,7 +5171,7 @@ export default function DashboardPage() {
                                 </div>
                               </div>
 
-                              <div className="flex flex-col items-end gap-1 shrink-0">
+                              <div className="flex flex-col items-end gap-1.5 shrink-0">
                                 {getOrderStatusBadge(order.status)}
                                 {(() => {
                                   if (!order.createdAt) return null;
@@ -5392,15 +5193,16 @@ export default function DashboardPage() {
                                         {timeStr}
                                       </span>
                                       <span
-                                        className={`px-1.5 py-0.2 rounded text-[9.5px] font-black tracking-tight ${isOverdue
-                                          ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 animate-pulse'
-                                          : isWarning
-                                            ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30'
-                                            : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                                          }`}
+                                        className={`px-1.5 py-0.5 rounded-md text-[10px] font-extrabold tracking-tight ${
+                                          isOverdue
+                                            ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 animate-pulse'
+                                            : isWarning
+                                            ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30'
+                                            : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25'
+                                        }`}
                                         title={`Thời gian từ khi đặt: ${elapsedMins} phút`}
                                       >
-                                        ⏱ {elapsedMins}p
+                                        {elapsedMins}p
                                       </span>
                                     </div>
                                   );
@@ -5409,15 +5211,15 @@ export default function DashboardPage() {
                             </div>
 
                             {/* Order Items List (Clean & Modern typography, high-contrast recipe notes) */}
-                            <div className="py-1 space-y-2 mb-3">
+                            <div className="py-1 space-y-2.5 mb-3.5">
                               {order.items?.map((item, idx) => (
                                 <div key={idx} className="flex items-start gap-2.5 text-xs">
-                                  <span className="px-2 py-0.5 rounded-md bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] font-black text-[11px] shrink-0 font-mono">
+                                  <span className="w-6 h-6 rounded-lg bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] font-black text-[11px] flex items-center justify-center shrink-0 font-mono">
                                     {item.quantity}x
                                   </span>
                                   <div className="min-w-0 flex-1">
                                     <div className="flex items-center gap-1.5 flex-wrap">
-                                      <p className={`font-bold text-[12.5px] leading-snug ${item.isPaid ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-200'}`}>
+                                      <p className={`font-extrabold text-[13px] leading-snug ${item.isPaid ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-slate-100'}`}>
                                         {item.foodId?.name || 'Món ăn'}
                                       </p>
                                       {(item.orderedBy || (item.note && item.note.match(/^\[(.*?)\]/)?.[1])) && (
@@ -5446,9 +5248,9 @@ export default function DashboardPage() {
                             {/* Split Payment Progress Bar */}
                             {order.paidAmount && order.paidAmount > 0 && order.status !== 'paid' ? (
                               <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-white/5 space-y-1.5 mb-3">
-                                <div className="flex justify-between text-[10.5px] font-bold">
+                                <div className="flex justify-between text-[10.5px] font-normal">
                                   <span className="text-slate-500 dark:text-slate-400">Tiến độ thanh toán:</span>
-                                  <span className="text-emerald-600 dark:text-emerald-400 font-mono">
+                                  <span className="text-emerald-600 dark:text-emerald-400 font-extrabold font-mono">
                                     {Math.round((order.paidAmount / order.totalAmount) * 100)}%
                                   </span>
                                 </div>
@@ -5501,7 +5303,7 @@ export default function DashboardPage() {
                           <div className="space-y-2.5 pt-2.5 border-t border-slate-100 dark:border-white/10">
                             {/* Payment Status Display */}
                             <div className="flex items-center justify-between px-0.5">
-                              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Thanh toán</span>
+                              <span className="text-[11px] font-normal text-slate-400 uppercase tracking-wider">Thanh toán</span>
                               <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-full ${order.status === 'paid' || order.paymentStatus === 'paid'
                                 ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
                                 : order.paymentNotified
@@ -5533,7 +5335,7 @@ export default function DashboardPage() {
 
                               return (
                                 <div className="pt-2 border-t border-dashed border-slate-200 dark:border-slate-800">
-                                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                                  <span className="text-[10px] font-normal text-slate-400 uppercase tracking-wider block mb-1">
                                     Thu tiền từng người:
                                   </span>
                                   <div className="flex flex-wrap gap-1.5">
@@ -5563,20 +5365,20 @@ export default function DashboardPage() {
                             {/* Step 1 -> 2: Phục vụ xác nhận & gửi pha chế hoặc Từ chối */}
                             {order.status === 'pending' && (
                               user?.role === 'barista' ? (
-                                <div className="w-full py-2.5 text-center text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 rounded-xl border border-amber-500/20 select-none">
+                                <div className="w-full py-2.5 text-center text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 rounded-2xl border border-amber-500/20 select-none">
                                   Chờ phục vụ duyệt đơn
                                 </div>
                               ) : (
                                 <div className="flex items-center gap-2">
                                   <button
                                     onClick={() => handleUpdateStatus(order._id, 'confirmed')}
-                                    className="flex-1 h-10 bg-[#38BDF8] hover:bg-sky-400 text-slate-950 font-black text-xs rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
+                                    className="flex-1 h-11 bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 font-extrabold text-xs rounded-2xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
                                   >
                                     Duyệt đơn
                                   </button>
                                   <button
                                     onClick={() => handleUpdateStatus(order._id, 'cancelled')}
-                                    className="h-10 px-4 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 font-bold text-xs rounded-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center uppercase"
+                                    className="h-11 px-4 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/25 font-extrabold text-xs rounded-2xl transition-all active:scale-95 cursor-pointer flex items-center justify-center uppercase"
                                     title="Từ chối đơn rác / Khách không có tại bàn"
                                   >
                                     Từ chối
@@ -5590,12 +5392,12 @@ export default function DashboardPage() {
                               user?.role === 'barista' || user?.role === 'admin' ? (
                                 <button
                                   onClick={() => handleUpdateStatus(order._id, 'cooking')}
-                                  className="w-full h-10 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-xs rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
+                                  className="w-full h-11 bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold text-xs rounded-2xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
                                 >
                                   Bắt đầu pha chế
                                 </button>
                               ) : (
-                                <div className="w-full py-2.5 text-center text-xs font-bold text-sky-600 dark:text-[#38BDF8] bg-sky-500/10 rounded-xl border border-sky-500/20 select-none">
+                                <div className="w-full py-2.5 text-center text-xs font-bold text-sky-600 dark:text-[#38BDF8] bg-sky-500/10 rounded-2xl border border-sky-500/20 select-none">
                                   Đã chuyển quầy pha chế
                                 </div>
                               )
@@ -5606,12 +5408,12 @@ export default function DashboardPage() {
                               user?.role === 'barista' || user?.role === 'admin' ? (
                                 <button
                                   onClick={() => handleUpdateStatus(order._id, 'ready')}
-                                  className="w-full h-10 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
+                                  className="w-full h-11 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs rounded-2xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
                                 >
                                   Hoàn tất pha chế
                                 </button>
                               ) : (
-                                <div className="w-full py-2.5 text-center text-xs font-bold text-sky-600 dark:text-[#38BDF8] bg-sky-500/10 rounded-xl border border-sky-500/20 select-none">
+                                <div className="w-full py-2.5 text-center text-xs font-bold text-sky-600 dark:text-[#38BDF8] bg-sky-500/10 rounded-2xl border border-sky-500/20 select-none">
                                   Đang pha chế tại quầy
                                 </div>
                               )
@@ -5620,13 +5422,13 @@ export default function DashboardPage() {
                             {/* Step 4 -> 5: Phục vụ mang đồ ra bàn cho Khách */}
                             {order.status === 'ready' && (
                               user?.role === 'barista' ? (
-                                <div className="w-full py-2.5 text-center text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 rounded-xl border border-emerald-500/20 select-none">
+                                <div className="w-full py-2.5 text-center text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 select-none">
                                   Đã báo phục vụ ra món
                                 </div>
                               ) : (
                                 <button
                                   onClick={() => handleUpdateStatus(order._id, 'completed')}
-                                  className="w-full h-10 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
+                                  className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-2xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
                                 >
                                   Xác nhận ra món
                                 </button>
@@ -5636,14 +5438,14 @@ export default function DashboardPage() {
                             {/* Step 5: Phục vụ thanh toán */}
                             {order.status === 'completed' && (
                               user?.role === 'barista' ? (
-                                <div className="w-full py-2.5 text-center text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-white/5 select-none">
+                                <div className="w-full py-2.5 text-center text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/5 rounded-2xl border border-slate-200/50 dark:border-white/5 select-none">
                                   Đã hoàn tất món
                                 </div>
                               ) : (
                                 <div className="flex gap-2">
                                   <button
                                     onClick={() => handleUpdateStatus(order._id, 'paid')}
-                                    className="flex-1 h-10 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-xs rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
+                                    className="flex-1 h-11 bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 font-extrabold text-xs rounded-2xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
                                   >
                                     Xác nhận nhận tiền
                                   </button>
@@ -5677,35 +5479,38 @@ export default function DashboardPage() {
             {activeTab === 'foods' && (
               <div className="flex-1 overflow-y-auto space-y-4 pb-32 lg:pb-10 scrollbar-thin">
                 {/* Top Toolbar: Count, View Mode Switcher, Category Manager, Add Food */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl shadow-xs">
+                {/* Top Toolbar: Count, View Mode Switcher, Category Manager, Add Food */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 bg-white dark:bg-[#111622] border border-slate-200/80 dark:border-white/[0.08] p-3.5 sm:p-4 rounded-3xl shadow-xs">
                   <div className="flex items-center gap-3 flex-wrap">
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Tổng cộng {filteredFoods.length} món ăn
+                    <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300">
+                      Tổng cộng <strong className="text-slate-900 dark:text-white font-bold">{filteredFoods.length}</strong> món ăn
                     </span>
 
                     {/* View Mode Toggle: [Lưới] và [Bảng] */}
-                    <div className="flex items-center p-0.5 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold">
+                    <div className="flex items-center p-1 bg-slate-100/90 dark:bg-[#090D16] rounded-xl border border-slate-200/80 dark:border-white/10 text-xs font-semibold">
                       <button
                         type="button"
                         onClick={() => setFoodViewMode('grid')}
-                        className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${foodViewMode === 'grid'
-                          ? 'bg-white dark:bg-[#1e293b] text-[#0284c7] dark:text-[#38BDF8] shadow-xs font-black'
-                          : 'text-slate-500 hover:text-slate-900 dark:hover:text-white font-bold'
+                        className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${foodViewMode === 'grid'
+                          ? 'bg-white dark:bg-[#1e293b] text-[#0284c7] dark:text-[#38BDF8] shadow-xs font-bold'
+                          : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                           }`}
                         title="Hiển thị dạng lưới"
                       >
-                        Lưới
+                        <span className="material-symbols-outlined text-[15px]">grid_view</span>
+                        <span>Lưới</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => setFoodViewMode('table')}
-                        className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${foodViewMode === 'table'
-                          ? 'bg-white dark:bg-[#1e293b] text-[#0284c7] dark:text-[#38BDF8] shadow-xs font-black'
-                          : 'text-slate-500 hover:text-slate-900 dark:hover:text-white font-bold'
+                        className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${foodViewMode === 'table'
+                          ? 'bg-white dark:bg-[#1e293b] text-[#0284c7] dark:text-[#38BDF8] shadow-xs font-bold'
+                          : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                           }`}
                         title="Hiển thị dạng bảng"
                       >
-                        Bảng
+                        <span className="material-symbols-outlined text-[15px]">table_rows</span>
+                        <span>Bảng</span>
                       </button>
                     </div>
                   </div>
@@ -5718,8 +5523,9 @@ export default function DashboardPage() {
                           setCategoryForm({ name: '', icon: 'local_cafe', order: categories.length + 1, isActive: true });
                           setIsCategoryModalOpen(true);
                         }}
-                        className="px-3 sm:px-4 py-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-extrabold text-xs rounded-xl transition-all flex items-center justify-center border border-slate-200 dark:border-slate-700 cursor-pointer text-center"
+                        className="px-3.5 sm:px-4 py-2.5 bg-slate-100/90 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 text-slate-800 dark:text-slate-200 font-bold text-xs sm:text-sm rounded-2xl transition-all flex items-center justify-center gap-1.5 border border-slate-200/80 dark:border-white/10 cursor-pointer active:scale-95"
                       >
+                        <span className="material-symbols-outlined text-base">category</span>
                         <span className="truncate">Quản lý Danh mục</span>
                       </button>
                     )}
@@ -5729,30 +5535,30 @@ export default function DashboardPage() {
                         setFoodForm({ name: '', price: '', category: categories[0]?.name || 'Cà phê', description: '', image: '', isAvailable: true });
                         setIsFoodModalOpen(true);
                       }}
-                      className={`px-3.5 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-xl sm:rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer text-center ${user?.role === 'admin' ? '' : 'col-span-2 sm:col-span-1'
+                      className={`px-4 sm:px-5 py-2.5 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] hover:text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-sky-500/20 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer ${user?.role === 'admin' ? '' : 'col-span-2 sm:col-span-1'
                         }`}
                     >
-                      <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
+                      <span className="material-symbols-outlined text-lg">add_circle</span>
                       <span className="truncate">Thêm món mới</span>
                     </button>
                   </div>
                 </div>
 
-                {/* Category Filter Pills Bar (Hiển thị theo danh mục - Không dùng icon) */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                {/* Category Filter Pills Bar */}
+                <div className="p-1.5 bg-white dark:bg-[#111622] rounded-2xl border border-slate-200/80 dark:border-white/[0.08] flex items-center gap-1.5 overflow-x-auto scrollbar-none shadow-xs">
                   <button
                     type="button"
                     onClick={() => setSelectedCategory('all')}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer border ${selectedCategory === 'all'
-                      ? 'bg-[#38BDF8] text-[#090D16] border-[#38BDF8] font-black shadow-sm'
-                      : 'bg-white dark:bg-[#131929] border-slate-200 dark:border-[#1e293b] text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700'
+                    className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${selectedCategory === 'all'
+                      ? 'bg-[#38BDF8] text-[#090D16] font-bold shadow-sm'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                       }`}
                   >
                     <span>Tất cả</span>
                     <span
-                      className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${selectedCategory === 'all'
+                      className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${selectedCategory === 'all'
                         ? 'bg-black/20 text-[#090D16]'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                        : 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400'
                         }`}
                     >
                       {foods.length}
@@ -5760,25 +5566,25 @@ export default function DashboardPage() {
                   </button>
 
                   {categoriesToDisplay.map((cat) => {
-                    const isSelected = selectedCategory?.toLowerCase() === cat.name?.toLowerCase();
+                    const isSelected = selectedCategory !== 'all' && normalizeCatKey(selectedCategory) === normalizeCatKey(cat.name);
                     const count = foods.filter(
-                      (f) => f.category?.toLowerCase() === cat.name?.toLowerCase()
+                      (f) => normalizeCatKey(f.category) === normalizeCatKey(cat.name)
                     ).length;
                     return (
                       <button
                         key={cat.name}
                         type="button"
                         onClick={() => setSelectedCategory(isSelected ? 'all' : cat.name)}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer border ${isSelected
-                          ? 'bg-[#38BDF8] text-[#090D16] border-[#38BDF8] font-black shadow-sm'
-                          : 'bg-white dark:bg-[#131929] border-slate-200 dark:border-[#1e293b] text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700'
+                        className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${isSelected
+                          ? 'bg-[#38BDF8] text-[#090D16] font-bold shadow-sm'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                           }`}
                       >
                         <span>{cat.name}</span>
                         <span
-                          className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${isSelected
+                          className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${isSelected
                             ? 'bg-black/20 text-[#090D16]'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                            : 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400'
                             }`}
                         >
                           {count}
@@ -5790,7 +5596,7 @@ export default function DashboardPage() {
 
                 {/* Empty State */}
                 {filteredFoods.length === 0 ? (
-                  <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3">
+                  <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3">
                     <span className="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600">
                       search_off
                     </span>
@@ -5802,11 +5608,12 @@ export default function DashboardPage() {
                     </p>
                     {(selectedCategory !== 'all' || searchQuery) && (
                       <button
+                        type="button"
                         onClick={() => {
                           setSelectedCategory('all');
                           setSearchQuery('');
                         }}
-                        className="mt-2 px-4 py-2 bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-800 text-xs font-black rounded-xl text-[#0284c7] dark:text-[#38BDF8] transition-all cursor-pointer"
+                        className="mt-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold rounded-xl text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
                       >
                         Xem tất cả món ăn
                       </button>
@@ -5830,73 +5637,77 @@ export default function DashboardPage() {
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-5">
                             {group.items.map((food) => (
                               <div
                                 key={food._id}
-                                className="group relative bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] hover:border-[#38BDF8]/60 dark:hover:border-[#38BDF8]/50 rounded-2xl p-3 sm:p-3.5 shadow-xs hover:shadow-lg transition-all duration-200 flex flex-col justify-between overflow-hidden"
+                                className="group relative bg-white dark:bg-[#111622] rounded-3xl p-3.5 sm:p-4 border border-slate-200/80 dark:border-white/[0.08] hover:border-[#38BDF8]/50 dark:hover:border-[#38BDF8]/40 shadow-xs hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-sky-950/20 transition-all duration-300 flex flex-col justify-between overflow-hidden"
                               >
                                 <div>
-                                  <div className="relative w-full h-44 sm:h-48 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800/80 border border-slate-100 dark:border-white/5">
+                                  <div className="relative w-full h-44 sm:h-48 md:h-52 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-white/5">
                                     {food.image ? (
                                       <img
                                         src={food.image}
                                         alt={food.name}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                         loading="lazy"
                                       />
                                     ) : (
-                                      <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-1">
-                                        <span className="material-symbols-outlined text-4xl">restaurant</span>
-                                        <span className="text-[11px] font-medium">Chưa có ảnh</span>
+                                      <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-1.5">
+                                        <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600">local_cafe</span>
+                                        <span className="text-xs font-medium text-slate-400">Chưa có ảnh</span>
                                       </div>
                                     )}
 
-                                    <span className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-lg text-[10px] font-black bg-black/65 backdrop-blur-md text-white border border-white/10 shadow-xs">
-                                      {food.category}
-                                    </span>
-
+                                    {/* Availability Status: Floating Frosted Pill */}
                                     <button
                                       type="button"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleToggleFoodAvailability(food);
                                       }}
-                                      className={`absolute top-2.5 right-2.5 px-2.5 py-1 rounded-lg text-[10px] font-black backdrop-blur-md shadow-xs transition-all active:scale-90 cursor-pointer ${food.isAvailable
-                                        ? 'bg-emerald-500/90 hover:bg-emerald-600 text-white'
-                                        : 'bg-red-500/90 hover:bg-red-600 text-white'
+                                      className={`absolute top-2.5 right-2.5 px-3 py-1 rounded-full text-[11px] font-semibold backdrop-blur-md shadow-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 ${food.isAvailable
+                                        ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30'
+                                        : 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-600 dark:text-rose-300 border border-rose-500/30'
                                         }`}
                                       title={food.isAvailable ? 'Bấm để Tạm ngưng món nhanh' : 'Bấm để Mở bán lại nhanh'}
                                     >
-                                      {food.isAvailable ? '✓ Đang bán' : '✕ Tạm ngưng'}
+                                      <span
+                                        className={`w-1.5 h-1.5 rounded-full ${food.isAvailable ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
+                                          }`}
+                                      />
+                                      <span>{food.isAvailable ? 'Đang bán' : 'Tạm ngưng'}</span>
                                     </button>
                                   </div>
 
-                                  <div className="mt-3 space-y-1">
+                                  <div className="mt-3.5 space-y-1">
+                                    <span className="text-[10.5px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
+                                      {food.category}
+                                    </span>
                                     <h4
-                                      className="font-black text-sm sm:text-base text-slate-900 dark:text-white group-hover:text-[#38BDF8] transition-colors truncate"
+                                      className="font-bold text-sm sm:text-base text-slate-900 dark:text-white group-hover:text-[#38BDF8] transition-colors truncate"
                                       title={food.name}
                                     >
                                       {food.name}
                                     </h4>
                                     {food.description ? (
-                                      <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
+                                      <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
                                         {food.description}
                                       </p>
                                     ) : (
-                                      <p className="text-[11px] text-slate-400 dark:text-slate-500 italic">
-                                        Món ngon tại Kohi Coffee
+                                      <p className="text-xs text-slate-400 dark:text-slate-500 italic">
+                                        Món ngon đặc sắc tại Kohi Coffee
                                       </p>
                                     )}
                                   </div>
                                 </div>
 
-                                <div className="mt-3 pt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between gap-2">
+                                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between gap-2">
                                   <div>
-                                    <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 block">
-                                      Giá tiền
+                                    <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-slate-500 block">
+                                      Giá bán
                                     </span>
-                                    <span className="font-black text-sm sm:text-base text-[#0284c7] dark:text-[#38BDF8]">
+                                    <span className="font-extrabold text-sm sm:text-base text-[#0284c7] dark:text-[#38BDF8] tracking-tight">
                                       {formatPrice(food.price)}
                                     </span>
                                   </div>
@@ -5915,17 +5726,17 @@ export default function DashboardPage() {
                                         });
                                         setIsFoodModalOpen(true);
                                       }}
-                                      className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-[#1e293b] hover:bg-sky-50 dark:hover:bg-sky-950/40 text-slate-600 dark:text-slate-300 hover:text-[#38BDF8] transition-all flex items-center justify-center cursor-pointer active:scale-95"
+                                      className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-sky-500/15 text-slate-600 dark:text-slate-300 hover:text-[#38BDF8] border border-slate-200/60 dark:border-white/10 transition-all flex items-center justify-center cursor-pointer active:scale-90"
                                       title="Chỉnh sửa món"
                                     >
-                                      <span className="material-symbols-outlined text-base">edit</span>
+                                      <span className="material-symbols-outlined text-[17px]">edit</span>
                                     </button>
                                     <button
                                       onClick={() => setFoodToDelete(food._id)}
-                                      className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-[#1e293b] hover:bg-red-50 dark:hover:bg-red-950/40 text-slate-600 dark:text-slate-300 hover:text-red-500 transition-all flex items-center justify-center cursor-pointer active:scale-95"
+                                      className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-rose-500/15 text-slate-600 dark:text-slate-300 hover:text-rose-500 border border-slate-200/60 dark:border-white/10 transition-all flex items-center justify-center cursor-pointer active:scale-90"
                                       title="Xóa món"
                                     >
-                                      <span className="material-symbols-outlined text-base">delete</span>
+                                      <span className="material-symbols-outlined text-[17px]">delete</span>
                                     </button>
                                   </div>
                                 </div>
@@ -5948,73 +5759,77 @@ export default function DashboardPage() {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-5">
                           {filteredFoods.map((food) => (
                             <div
                               key={food._id}
-                              className="group relative bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] hover:border-[#38BDF8]/60 dark:hover:border-[#38BDF8]/50 rounded-2xl p-3 sm:p-3.5 shadow-xs hover:shadow-lg transition-all duration-200 flex flex-col justify-between overflow-hidden"
+                              className="group relative bg-white dark:bg-[#111622] rounded-3xl p-3.5 sm:p-4 border border-slate-200/80 dark:border-white/[0.08] hover:border-[#38BDF8]/50 dark:hover:border-[#38BDF8]/40 shadow-xs hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-sky-950/20 transition-all duration-300 flex flex-col justify-between overflow-hidden"
                             >
                               <div>
-                                <div className="relative w-full h-44 sm:h-48 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800/80 border border-slate-100 dark:border-white/5">
+                                <div className="relative w-full h-44 sm:h-48 md:h-52 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-white/5">
                                   {food.image ? (
                                     <img
                                       src={food.image}
                                       alt={food.name}
-                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                       loading="lazy"
                                     />
                                   ) : (
-                                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-1">
-                                      <span className="material-symbols-outlined text-4xl">restaurant</span>
-                                      <span className="text-[11px] font-medium">Chưa có ảnh</span>
+                                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-1.5">
+                                      <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600">local_cafe</span>
+                                      <span className="text-xs font-medium text-slate-400">Chưa có ảnh</span>
                                     </div>
                                   )}
 
-                                  <span className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-lg text-[10px] font-black bg-black/65 backdrop-blur-md text-white border border-white/10 shadow-xs">
-                                    {food.category}
-                                  </span>
-
+                                  {/* Availability Status: Floating Frosted Pill */}
                                   <button
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleToggleFoodAvailability(food);
                                     }}
-                                    className={`absolute top-2.5 right-2.5 px-2.5 py-1 rounded-lg text-[10px] font-black backdrop-blur-md shadow-xs transition-all active:scale-90 cursor-pointer ${food.isAvailable
-                                      ? 'bg-emerald-500/90 hover:bg-emerald-600 text-white'
-                                      : 'bg-red-500/90 hover:bg-red-600 text-white'
+                                    className={`absolute top-2.5 right-2.5 px-3 py-1 rounded-full text-[11px] font-semibold backdrop-blur-md shadow-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 ${food.isAvailable
+                                      ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30'
+                                      : 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-600 dark:text-rose-300 border border-rose-500/30'
                                       }`}
                                     title={food.isAvailable ? 'Bấm để Tạm ngưng món nhanh' : 'Bấm để Mở bán lại nhanh'}
                                   >
-                                    {food.isAvailable ? '✓ Đang bán' : '✕ Tạm ngưng'}
+                                    <span
+                                      className={`w-1.5 h-1.5 rounded-full ${food.isAvailable ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
+                                        }`}
+                                    />
+                                    <span>{food.isAvailable ? 'Đang bán' : 'Tạm ngưng'}</span>
                                   </button>
                                 </div>
 
-                                <div className="mt-3 space-y-1">
+                                <div className="mt-3.5 space-y-1">
+                                  <span className="text-[10.5px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
+                                    {food.category}
+                                  </span>
                                   <h4
-                                    className="font-black text-sm sm:text-base text-slate-900 dark:text-white group-hover:text-[#38BDF8] transition-colors truncate"
+                                    className="font-bold text-sm sm:text-base text-slate-900 dark:text-white group-hover:text-[#38BDF8] transition-colors truncate"
                                     title={food.name}
                                   >
                                     {food.name}
                                   </h4>
                                   {food.description ? (
-                                    <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
                                       {food.description}
                                     </p>
                                   ) : (
-                                    <p className="text-[11px] text-slate-400 dark:text-slate-500 italic">
-                                      Món ngon tại Kohi Coffee
+                                    <p className="text-xs text-slate-400 dark:text-slate-500 italic">
+                                      Món ngon đặc sắc tại Kohi Coffee
                                     </p>
                                   )}
                                 </div>
                               </div>
 
-                              <div className="mt-3 pt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between gap-2">
+                              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between gap-2">
                                 <div>
-                                  <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 block">
-                                    Giá tiền
+                                  <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-slate-500 block">
+                                    Giá bán
                                   </span>
-                                  <span className="font-black text-sm sm:text-base text-[#0284c7] dark:text-[#38BDF8]">
+                                  <span className="font-extrabold text-sm sm:text-base text-[#0284c7] dark:text-[#38BDF8] tracking-tight">
                                     {formatPrice(food.price)}
                                   </span>
                                 </div>
@@ -6033,17 +5848,17 @@ export default function DashboardPage() {
                                       });
                                       setIsFoodModalOpen(true);
                                     }}
-                                    className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-[#1e293b] hover:bg-sky-50 dark:hover:bg-sky-950/40 text-slate-600 dark:text-slate-300 hover:text-[#38BDF8] transition-all flex items-center justify-center cursor-pointer active:scale-95"
+                                    className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-sky-500/15 text-slate-600 dark:text-slate-300 hover:text-[#38BDF8] border border-slate-200/60 dark:border-white/10 transition-all flex items-center justify-center cursor-pointer active:scale-90"
                                     title="Chỉnh sửa món"
                                   >
-                                    <span className="material-symbols-outlined text-base">edit</span>
+                                    <span className="material-symbols-outlined text-[17px]">edit</span>
                                   </button>
                                   <button
                                     onClick={() => setFoodToDelete(food._id)}
-                                    className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-[#1e293b] hover:bg-red-50 dark:hover:bg-red-950/40 text-slate-600 dark:text-slate-300 hover:text-red-500 transition-all flex items-center justify-center cursor-pointer active:scale-95"
+                                    className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-rose-500/15 text-slate-600 dark:text-slate-300 hover:text-rose-500 border border-slate-200/60 dark:border-white/10 transition-all flex items-center justify-center cursor-pointer active:scale-90"
                                     title="Xóa món"
                                   >
-                                    <span className="material-symbols-outlined text-base">delete</span>
+                                    <span className="material-symbols-outlined text-[17px]">delete</span>
                                   </button>
                                 </div>
                               </div>
@@ -6054,41 +5869,53 @@ export default function DashboardPage() {
                     )}
                   </div>
                 ) : (
-                  /* ── DẠNG BẢNG NHƯ ẢNH (Table View Mode: As in the user screenshot) ── */
+                  /* ── DẠNG BẢNG (Table View Mode: Modern Boutique & Hospitality) ── */
                   <div className="space-y-4">
                     {/* Mobile Card List (< sm: 640px) */}
-                    <div className="grid grid-cols-1 gap-3 sm:hidden">
+                    <div className="grid grid-cols-1 gap-2.5 sm:hidden">
                       {filteredFoods.map((food) => (
-                        <div key={food._id} className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-4 flex items-center justify-between gap-3 shadow-xs">
+                        <div
+                          key={food._id}
+                          className="bg-white dark:bg-[#0d1322] border border-slate-200/80 dark:border-white/5 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-xs hover:border-slate-300 dark:hover:border-white/10 transition-all"
+                        >
                           <div className="flex items-center gap-3 min-w-0">
                             {food.image ? (
-                              <img src={food.image} alt={food.name} className="w-12 h-12 rounded-xl object-cover bg-slate-200 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-[#1e293b]" />
+                              <img
+                                src={food.image}
+                                alt={food.name}
+                                className="w-13 h-13 rounded-xl object-cover bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-100 dark:border-white/5 shadow-xs"
+                              />
                             ) : (
-                              <div className="w-12 h-12 rounded-xl bg-slate-200 dark:bg-slate-800 shrink-0 flex items-center justify-center text-slate-400">
+                              <div className="w-13 h-13 rounded-xl bg-slate-100 dark:bg-white/5 shrink-0 flex items-center justify-center text-slate-400 border border-slate-200/50 dark:border-white/5">
                                 <span className="material-symbols-outlined text-xl">restaurant</span>
                               </div>
                             )}
-                            <div className="truncate">
-                              <h4 className="font-extrabold text-slate-900 dark:text-white text-xs truncate">{food.name}</h4>
-                              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{food.category}</p>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="font-black text-[#0284c7] dark:text-[#38BDF8] text-xs">{formatPrice(food.price)}</span>
+                            <div className="min-w-0">
+                              <h4 className="font-bold text-slate-900 dark:text-white text-[13px] leading-snug truncate">{food.name}</h4>
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mt-0.5 truncate">{food.category}</p>
+                              <div className="flex items-center gap-2 mt-1.5">
+                                <span className="font-extrabold text-[#0284c7] dark:text-[#38BDF8] text-xs">{formatPrice(food.price)}</span>
                                 <button
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleToggleFoodAvailability(food);
                                   }}
-                                  className={`px-2 py-0.5 rounded-md text-[9.5px] font-black transition-all active:scale-90 cursor-pointer ${food.isAvailable ? 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30' : 'bg-red-500/15 hover:bg-red-500/25 text-red-500 dark:text-red-400 border border-red-500/30'}`}
+                                  className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all active:scale-95 cursor-pointer select-none ${
+                                    food.isAvailable
+                                      ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25'
+                                      : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 dark:text-rose-400 border border-rose-500/25'
+                                  }`}
                                   title={food.isAvailable ? 'Bấm để Tạm ngưng món nhanh' : 'Bấm để Mở bán lại nhanh'}
                                 >
-                                  {food.isAvailable ? '✓ Đang bán' : '✕ Tạm ngưng'}
+                                  <span className={`w-1.5 h-1.5 rounded-full ${food.isAvailable ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                  <span>{food.isAvailable ? 'Đang bán' : 'Tạm ngưng'}</span>
                                 </button>
                               </div>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-1 shrink-0">
+                          <div className="flex items-center gap-1.5 shrink-0">
                             <button
                               onClick={() => {
                                 setEditingFood(food);
@@ -6102,17 +5929,17 @@ export default function DashboardPage() {
                                 });
                                 setIsFoodModalOpen(true);
                               }}
-                              className="p-2 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 rounded-xl hover:text-[#38BDF8] transition-colors"
+                              className="w-9 h-9 rounded-xl bg-slate-100/80 dark:bg-white/5 hover:bg-sky-500/10 text-slate-500 dark:text-slate-400 hover:text-sky-500 border border-slate-200/50 dark:border-white/5 transition-all flex items-center justify-center cursor-pointer active:scale-95"
                               title="Chỉnh sửa món"
                             >
-                              <span className="material-symbols-outlined text-base">edit</span>
+                              <span className="material-symbols-outlined text-[17px]">edit</span>
                             </button>
                             <button
                               onClick={() => setFoodToDelete(food._id)}
-                              className="p-2 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 rounded-xl hover:text-red-500 transition-colors"
+                              className="w-9 h-9 rounded-xl bg-slate-100/80 dark:bg-white/5 hover:bg-rose-500/10 text-slate-500 dark:text-slate-400 hover:text-rose-500 border border-slate-200/50 dark:border-white/5 transition-all flex items-center justify-center cursor-pointer active:scale-95"
                               title="Xóa món"
                             >
-                              <span className="material-symbols-outlined text-base">delete</span>
+                              <span className="material-symbols-outlined text-[17px]">delete</span>
                             </button>
                           </div>
                         </div>
@@ -6120,29 +5947,46 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Desktop Table View (>= sm: 640px) */}
-                    <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl overflow-x-auto shadow-xs">
+                    <div className="hidden sm:block bg-white dark:bg-[#0d1322] border border-slate-200/80 dark:border-white/5 rounded-3xl overflow-x-auto shadow-xs">
                       <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
-                        <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
+                        <thead className="bg-slate-50/70 dark:bg-white/[0.02] text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-wider font-bold border-b border-slate-100 dark:border-white/5">
                           <tr>
-                            <th className="p-4">Món</th>
-                            <th className="p-4">Danh mục</th>
-                            <th className="p-4">Giá tiền</th>
-                            <th className="p-4">Trạng thái</th>
-                            <th className="p-4 text-right">Hành động</th>
+                            <th className="py-3.5 px-5">Món</th>
+                            <th className="py-3.5 px-5">Danh mục</th>
+                            <th className="py-3.5 px-5">Giá tiền</th>
+                            <th className="py-3.5 px-5">Trạng thái</th>
+                            <th className="py-3.5 px-5 text-right">Hành động</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
+                        <tbody className="divide-y divide-slate-100 dark:divide-white/[0.03]">
                           {filteredFoods.map((food) => (
-                            <tr key={food._id} className="hover:bg-slate-100/60 dark:hover:bg-[#182035] transition-colors">
-                              <td className="p-4 font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                                {food.image && (
-                                  <img src={food.image} alt={food.name} className="w-9 h-9 rounded-lg object-cover bg-slate-200 dark:bg-slate-800" />
+                            <tr key={food._id} className="hover:bg-slate-50/60 dark:hover:bg-white/[0.02] transition-colors">
+                              <td className="py-3 px-5 font-bold text-slate-900 dark:text-white flex items-center gap-3.5">
+                                {food.image ? (
+                                  <img
+                                    src={food.image}
+                                    alt={food.name}
+                                    className="w-10 h-10 rounded-xl object-cover bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-white/5 shadow-xs"
+                                  />
+                                ) : (
+                                  <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 border border-slate-200/50 dark:border-white/5">
+                                    <span className="material-symbols-outlined text-lg">restaurant</span>
+                                  </div>
                                 )}
-                                <span>{food.name}</span>
+                                <div>
+                                  <span className="font-bold text-slate-900 dark:text-white text-sm block leading-tight">{food.name}</span>
+                                  {food.description && (
+                                    <span className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1 mt-0.5">{food.description}</span>
+                                  )}
+                                </div>
                               </td>
-                              <td className="p-4 text-slate-500 dark:text-slate-400">{food.category}</td>
-                              <td className="p-4 font-bold text-[#0284c7] dark:text-[#38BDF8]">{formatPrice(food.price)}</td>
-                              <td className="p-4">
+                              <td className="py-3 px-5">
+                                <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100/70 dark:bg-white/5 text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-white/5">
+                                  {food.category}
+                                </span>
+                              </td>
+                              <td className="py-3 px-5 font-extrabold text-[#0284c7] dark:text-[#38BDF8] text-sm tracking-tight">{formatPrice(food.price)}</td>
+                              <td className="py-3 px-5">
                                 <button
                                   type="button"
                                   onClick={(e) => {
@@ -6150,48 +5994,49 @@ export default function DashboardPage() {
                                     handleToggleFoodAvailability(food);
                                   }}
                                   disabled={togglingFoodId === food._id}
-                                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black transition-all cursor-pointer select-none active:scale-95 ${food.isAvailable
-                                      ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30'
-                                      : 'bg-rose-500/15 text-rose-500 dark:text-rose-400 hover:bg-rose-500/25 border border-rose-500/30'
-                                    } ${togglingFoodId === food._id ? 'opacity-50 cursor-wait' : ''}`}
-                                  title={food.isAvailable ? "Bấm để chuyển sang Tạm ngưng (Hết hàng)" : "Bấm để chuyển sang Đang bán"}
+                                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer select-none active:scale-95 ${
+                                    food.isAvailable
+                                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/25'
+                                      : 'bg-rose-500/10 text-rose-500 dark:text-rose-400 hover:bg-rose-500/20 border border-rose-500/25'
+                                  } ${togglingFoodId === food._id ? 'opacity-50 cursor-wait' : ''}`}
+                                  title={food.isAvailable ? 'Bấm để chuyển sang Tạm ngưng' : 'Bấm để chuyển sang Đang bán'}
                                 >
                                   {togglingFoodId === food._id ? (
-                                    <span className="animate-spin inline-block">⏳</span>
-                                  ) : food.isAvailable ? (
-                                    <span>✓</span>
+                                    <span className="animate-spin inline-block text-xs">⏳</span>
                                   ) : (
-                                    <span>✕</span>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${food.isAvailable ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                                   )}
                                   <span>{food.isAvailable ? 'Đang bán' : 'Tạm ngưng'}</span>
                                 </button>
                               </td>
-                              <td className="p-4 text-right space-x-2">
-                                <button
-                                  onClick={() => {
-                                    setEditingFood(food);
-                                    setFoodForm({
-                                      name: food.name || '',
-                                      price: food.price ? String(food.price) : '',
-                                      category: food.category || 'Cà phê',
-                                      description: food.description || '',
-                                      image: food.image || '',
-                                      isAvailable: food.isAvailable ?? true,
-                                    });
-                                    setIsFoodModalOpen(true);
-                                  }}
-                                  className="p-1.5 text-slate-400 hover:text-[#38BDF8] transition-colors"
-                                  title="Chỉnh sửa món"
-                                >
-                                  <span className="material-symbols-outlined text-base">edit</span>
-                                </button>
-                                <button
-                                  onClick={() => setFoodToDelete(food._id)}
-                                  className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
-                                  title="Xóa món"
-                                >
-                                  <span className="material-symbols-outlined text-base">delete</span>
-                                </button>
+                              <td className="py-3 px-5 text-right">
+                                <div className="inline-flex items-center gap-1.5">
+                                  <button
+                                    onClick={() => {
+                                      setEditingFood(food);
+                                      setFoodForm({
+                                        name: food.name || '',
+                                        price: food.price ? String(food.price) : '',
+                                        category: food.category || 'Cà phê',
+                                        description: food.description || '',
+                                        image: food.image || '',
+                                        isAvailable: food.isAvailable ?? true,
+                                      });
+                                      setIsFoodModalOpen(true);
+                                    }}
+                                    className="w-8 h-8 rounded-lg bg-slate-100/70 dark:bg-white/5 hover:bg-sky-500/10 text-slate-500 dark:text-slate-400 hover:text-sky-500 transition-all flex items-center justify-center cursor-pointer active:scale-90"
+                                    title="Chỉnh sửa món"
+                                  >
+                                    <span className="material-symbols-outlined text-[16px]">edit</span>
+                                  </button>
+                                  <button
+                                    onClick={() => setFoodToDelete(food._id)}
+                                    className="w-8 h-8 rounded-lg bg-slate-100/70 dark:bg-white/5 hover:bg-rose-500/10 text-slate-500 dark:text-slate-400 hover:text-rose-500 transition-all flex items-center justify-center cursor-pointer active:scale-90"
+                                    title="Xóa món"
+                                  >
+                                    <span className="material-symbols-outlined text-[16px]">delete</span>
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           ))}
@@ -6264,7 +6109,7 @@ export default function DashboardPage() {
                       setTableForm({ tableName: '', status: 'empty' });
                       setIsTableModalOpen(true);
                     }}
-                    className="px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+                    className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
                     <span>Thêm bàn mới</span>
@@ -6377,7 +6222,7 @@ export default function DashboardPage() {
                                 {(tbl.tableName || 'B').charAt(0).toUpperCase()}
                               </div>
                               <div>
-                                <h4 className="font-black text-slate-900 dark:text-white text-sm tracking-tight">{tbl.tableName}</h4>
+                                <h4 className="font-extrabold text-slate-900 dark:text-white text-sm tracking-tight">{tbl.tableName}</h4>
                                 {hasActiveOrders && (
                                   <div>
                                     <p className="text-[10.5px] font-extrabold text-slate-700 dark:text-slate-300">
@@ -6405,7 +6250,7 @@ export default function DashboardPage() {
 
                           {/* Quick Status Control Buttons */}
                           <div className="space-y-1">
-                            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Đổi trạng thái nhanh:</span>
+                            <span className="text-[10px] font-normal text-slate-400 uppercase tracking-wider block">Đổi trạng thái nhanh:</span>
                             <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100 dark:bg-[#090D16] rounded-xl border border-slate-200 dark:border-[#1e293b]">
                               <button
                                 type="button"
@@ -6478,7 +6323,7 @@ export default function DashboardPage() {
             {/* Users Management View: ADMIN ONLY */}
             {activeTab === 'users' && user?.role === 'admin' && (
               <div className="flex-1 overflow-y-auto space-y-4 pb-32 lg:pb-10 scrollbar-thin">
-                <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl flex justify-between items-center shadow-xs">
+                <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-xs">
                   <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Danh sách {usersList.length} nhân viên</span>
                   <button
                     onClick={() => {
@@ -6486,7 +6331,7 @@ export default function DashboardPage() {
                       setUserForm({ name: '', email: '', password: '', role: 'staff', assignedShift: 'morning' });
                       setIsUserModalOpen(true);
                     }}
-                    className="px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+                    className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
                     <span>Thêm nhân viên mới</span>
@@ -6614,42 +6459,57 @@ export default function DashboardPage() {
             {activeTab === 'attendance' && (
               <div className="flex-1 overflow-y-auto space-y-4 pb-32 lg:pb-10 scrollbar-thin">
 
-                {/* ── HERO HEADER CARD ─────────────────────────────────────────── */}
-                <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-[#0f1b2d] dark:from-[#0c1526] dark:to-[#090D16] rounded-2xl p-5 sm:p-6 shadow-xl border border-slate-800/50">
-                  {/* Subtle background decoration */}
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-[#38BDF8]/5 rounded-full -translate-y-1/2 translate-x-1/4 pointer-events-none" />
-                  <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#38BDF8]/3 rounded-full translate-y-1/2 -translate-x-1/4 pointer-events-none" />
-
+                {/* ── HERO HEADER CARD (Compact, Streamlined) ─────────────────── */}
+                <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-[#0f1b2d] dark:from-[#0c1526] dark:to-[#090D16] rounded-2xl p-3.5 sm:p-4 shadow-lg border border-slate-800/50">
                   <div className="relative">
-                    {/* Title row */}
-                    <div className="flex items-start justify-between gap-3 mb-4">
-                      <div>
-                        <p className="text-[10px] font-black text-[#38BDF8]/70 uppercase tracking-widest mb-1">
-                          {user?.role === 'admin' ? 'Quản lý nhân sự' : 'Ca làm của tôi'}
-                        </p>
-                        <h2 className="text-lg sm:text-2xl font-black text-white tracking-tight leading-tight">
-                          {user?.role === 'admin' ? 'Bảng Chấm công' : 'Điểm danh ca làm'}
-                        </h2>
-                        <p className="text-[11px] text-slate-400 mt-1 font-medium max-w-xs">
-                          {user?.role === 'admin'
-                            ? 'Theo dõi, chỉnh sửa và thanh toán lương nhân viên theo ca'
-                            : 'Lưu trực tiếp vào hệ thống theo thời gian thực'}
-                        </p>
-                      </div>
-                      {/* Live date badge */}
-                      <div className="shrink-0 text-right">
-                        <span className="block text-xs font-black text-white/80">
-                          {new Date().toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit' })}
-                        </span>
-                        <span className="block text-[10px] text-slate-400 mt-0.5 font-medium">
-                          {new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
-                    </div>
+                    {/* Admin: Compact horizontal layout */}
+                    {user?.role === 'admin' ? (
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-black text-[#38BDF8] uppercase tracking-wider">Tổng quan điểm danh</span>
+                            <span className="text-[11px] text-slate-400 font-mono">
+                              • {new Date().toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit' })} ({new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })})
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-400 mt-0.5 font-medium hidden sm:block">
+                            Theo dõi giờ làm việc thực tế và quyết toán chi trả lương nhân viên
+                          </p>
+                        </div>
 
-                    {/* Staff: Shift info + Action Buttons */}
-                    {user?.role !== 'admin' && (
+                        {/* Summary stat pills */}
+                        <div className="grid grid-cols-3 gap-2 shrink-0">
+                          <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-center min-w-[75px]">
+                            <span className="block text-base font-black text-white font-mono leading-tight">{displayedAttendances.length}</span>
+                            <span className="block text-[9.5px] text-slate-400 font-normal">Lượt công</span>
+                          </div>
+                          <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-center min-w-[75px]">
+                            <span className="block text-base font-black text-[#38BDF8] font-mono leading-tight">
+                              {displayedAttendances.filter(a => !a.checkOut).length}
+                            </span>
+                            <span className="block text-[9.5px] text-slate-400 font-normal">Đang ca</span>
+                          </div>
+                          <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-center min-w-[75px]">
+                            <span className="block text-base font-black text-amber-400 font-mono leading-tight">
+                              {shiftSwaps.filter(s => s.status === 'pending').length}
+                            </span>
+                            <span className="block text-[9.5px] text-slate-400 font-normal">Đổi ca</span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      /* Staff: Shift info + Action Buttons */
                       <div className="space-y-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-[10px] font-black text-[#38BDF8]/70 uppercase tracking-widest mb-0.5">Ca làm của tôi</p>
+                            <h2 className="text-base sm:text-xl font-black text-white tracking-tight leading-tight">Điểm danh ca làm</h2>
+                          </div>
+                          <div className="text-right text-xs text-white/80 font-mono">
+                            {new Date().toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit' })}
+                          </div>
+                        </div>
+
                         {/* Pending shift swap banner */}
                         {(() => {
                           const pendingSwap = shiftSwaps.find((s) => s.status === 'pending');
@@ -6658,7 +6518,7 @@ export default function DashboardPage() {
                             pendingSwap.requestedShift === 'morning' ? 'Ca Sáng (06h–12h)' :
                               pendingSwap.requestedShift === 'afternoon' ? 'Ca Chiều (12h–18h)' : 'Ca Tối (18h–23h)';
                           return (
-                            <div className="px-3.5 py-2.5 bg-amber-500/15 border border-amber-500/30 rounded-xl text-amber-300 text-[11px] font-bold flex items-center justify-between gap-2">
+                            <div className="px-3.5 py-2 bg-amber-500/15 border border-amber-500/30 rounded-xl text-amber-300 text-[11px] font-bold flex items-center justify-between gap-2">
                               <span>Đang chờ duyệt đổi sang <strong>{reqLabel}</strong></span>
                               <span className="px-2 py-0.5 bg-amber-500/20 rounded-md text-[10px] uppercase font-black shrink-0">Chờ</span>
                             </div>
@@ -6667,7 +6527,7 @@ export default function DashboardPage() {
 
                         {/* Shift pill + buttons */}
                         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                          <div className="flex items-center gap-2 px-3.5 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold w-fit">
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl text-xs font-bold w-fit">
                             <span className="text-slate-400">Ca đăng ký:</span>
                             {(() => {
                               const shift = user?.assignedShift || 'morning';
@@ -6681,7 +6541,7 @@ export default function DashboardPage() {
                             <button
                               onClick={handleCheckIn}
                               disabled={isCheckingIn || isCheckedIn || isCheckedOut || !isCurrentTimeInShift()}
-                              className={`h-10 px-5 text-white font-black text-xs rounded-xl shadow-lg transition-all ${isCheckedIn || isCheckedOut || !isCurrentTimeInShift()
+                              className={`h-9 px-4 text-white font-black text-xs rounded-xl shadow-md transition-all ${isCheckedIn || isCheckedOut || !isCurrentTimeInShift()
                                 ? 'bg-slate-700/50 text-slate-400 cursor-not-allowed shadow-none border border-white/5'
                                 : 'bg-emerald-500 hover:bg-emerald-400 shadow-emerald-500/20 active:scale-95 cursor-pointer'
                                 }`}
@@ -6693,13 +6553,13 @@ export default function DashboardPage() {
                                   : isCheckedOut
                                     ? 'Đã kết thúc ca hôm nay'
                                     : !isCurrentTimeInShift()
-                                      ? 'Khóa điểm danh (Ngoài giờ ca)'
+                                      ? 'Khóa điểm danh'
                                       : 'Bắt đầu ca (Check-in)'}
                             </button>
                             <button
                               onClick={handleCheckOut}
                               disabled={!isCheckedIn || isCheckedOut}
-                              className={`h-10 px-5 text-white font-black text-xs rounded-xl shadow-lg transition-all ${!isCheckedIn || isCheckedOut
+                              className={`h-9 px-4 text-white font-black text-xs rounded-xl shadow-md transition-all ${!isCheckedIn || isCheckedOut
                                 ? 'bg-slate-700/50 text-slate-400 cursor-not-allowed shadow-none border border-white/5'
                                 : 'bg-amber-500 hover:bg-amber-400 shadow-amber-500/20 active:scale-95 cursor-pointer'
                                 }`}
@@ -6711,48 +6571,26 @@ export default function DashboardPage() {
                                 setRequestedSwapShift(user?.assignedShift === 'morning' ? 'afternoon' : 'morning');
                                 setIsShiftSwapModalOpen(true);
                               }}
-                              className="h-10 px-4 bg-white/10 hover:bg-white/20 text-white/80 font-bold text-xs rounded-xl border border-white/10 transition-all active:scale-95 cursor-pointer"
+                              className="h-9 px-3.5 bg-white/10 hover:bg-white/20 text-white/80 font-bold text-xs rounded-xl border border-white/10 transition-all active:scale-95 cursor-pointer"
                             >
                               Đổi ca
                             </button>
                           </div>
                         </div>
                         {!isCheckedIn && !isCheckedOut && !isCurrentTimeInShift() && (
-                          <div className="p-3 bg-rose-500/15 border border-rose-500/30 rounded-xl text-rose-300 text-xs font-bold flex items-center gap-2">
+                          <div className="p-2.5 bg-rose-500/15 border border-rose-500/30 rounded-xl text-rose-300 text-xs font-bold flex items-center gap-2">
                             <span className="material-symbols-outlined text-base text-rose-400 shrink-0">lock_clock</span>
-                            <span>Hiện tại ngoài khung giờ <strong>{getShiftTimeLabel()}</strong>. Hệ thống đã khóa tính năng điểm danh. Bạn chỉ có thể điểm danh trong thời gian đăng ký ca.</span>
+                            <span>Hiện tại ngoài khung giờ <strong>{getShiftTimeLabel()}</strong>. Hệ thống đã khóa tính năng điểm danh.</span>
                           </div>
                         )}
-                      </div>
-                    )}
-
-                    {/* Admin: summary stats */}
-                    {user?.role === 'admin' && (
-                      <div className="grid grid-cols-3 gap-3 mt-2">
-                        <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
-                          <span className="block text-xl font-black text-white">{displayedAttendances.length}</span>
-                          <span className="block text-[10px] text-slate-400 font-medium mt-0.5">Lượt chấm công</span>
-                        </div>
-                        <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
-                          <span className="block text-xl font-black text-[#38BDF8]">
-                            {displayedAttendances.filter(a => !a.checkOut).length}
-                          </span>
-                          <span className="block text-[10px] text-slate-400 font-medium mt-0.5">Đang làm ca</span>
-                        </div>
-                        <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
-                          <span className="block text-xl font-black text-amber-400">
-                            {shiftSwaps.filter(s => s.status === 'pending').length}
-                          </span>
-                          <span className="block text-[10px] text-slate-400 font-medium mt-0.5">Chờ đổi ca</span>
-                        </div>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* ── ADMIN: SHIFT SWAP APPROVAL PANEL ────────────────────────── */}
+                {/* ── ADMIN: SHIFT SWAP APPROVAL PANEL (CHỈ HIỂN THỊ Ở MỤC CHẤM CÔNG CA LÀM) ── */}
                 {user?.role === 'admin' && shiftSwaps.filter(s => s.status === 'pending').length > 0 && (
-                  <div className="bg-white dark:bg-[#131929] border border-amber-500/20 rounded-2xl p-4 shadow-xs">
+                  <div id="actionable-shift-swap-approval-banner" className="bg-white dark:bg-[#131929] border border-amber-500/20 rounded-2xl p-4 shadow-xs">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
                         Yêu cầu đổi ca cần duyệt
@@ -6883,13 +6721,13 @@ export default function DashboardPage() {
 
                               <div className="grid grid-cols-2 gap-2 text-xs">
                                 <div className="bg-slate-50 dark:bg-[#0d1525] p-2 rounded-xl">
-                                  <span className="block text-[10px] text-slate-400 font-medium">Số ca làm</span>
+                                  <span className="block text-[10px] text-slate-400 font-normal">Số ca làm</span>
                                   <span className="block font-bold text-slate-800 dark:text-slate-200 font-mono">
                                     {wp.totalShifts} ca {wp.paidShifts > 0 && <span className="text-[10px] text-emerald-600 font-normal">({wp.paidShifts} đã trả)</span>}
                                   </span>
                                 </div>
                                 <div className="bg-slate-50 dark:bg-[#0d1525] p-2 rounded-xl">
-                                  <span className="block text-[10px] text-slate-400 font-medium">Giờ chưa thanh toán</span>
+                                  <span className="block text-[10px] text-slate-400 font-normal">Giờ chưa thanh toán</span>
                                   <span className="block font-bold text-slate-800 dark:text-slate-200 font-mono">
                                     {wp.unpaidHours}h <span className="text-[10px] text-slate-400 font-normal">/ {wp.totalHours}h</span>
                                   </span>
@@ -6898,7 +6736,7 @@ export default function DashboardPage() {
 
                               <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-[#1e293b]">
                                 <div>
-                                  <span className="block text-[10px] text-slate-400 font-medium">
+                                  <span className="block text-[10px] text-slate-400 font-normal">
                                     {wp.paidHours > 0 ? 'Lương Còn Lại Tuần Này' : 'Lương Tuần'}
                                   </span>
                                   <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 font-mono">
@@ -6915,7 +6753,7 @@ export default function DashboardPage() {
                                     <button
                                       type="button"
                                       onClick={() => handleOpenSalaryConfig({ _id: wp.staffId, name: wp.staffName, role: wp.staffRole })}
-                                      className="whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
+                                      className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-9 px-3 bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
                                     >
                                       <span className="material-symbols-outlined text-sm text-slate-400">tune</span>
                                       <span>Cấu hình</span>
@@ -6939,13 +6777,13 @@ export default function DashboardPage() {
                                             attendanceIds: wp.unpaidAttendances.map((a) => a._id),
                                           })
                                         }
-                                        className="whitespace-nowrap inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
+                                        className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-9 px-3.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
                                       >
                                         <span className="material-symbols-outlined text-sm">payments</span>
-                                        <span>Chi trả Tuần</span>
+                                        <span>Chi trả</span>
                                       </button>
                                     ) : (
-                                      <span className="whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 shrink-0">
+                                      <span className="whitespace-nowrap inline-flex items-center gap-1.5 h-9 px-3 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 shrink-0">
                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                                         <span>Đã trả hết</span>
                                       </span>
@@ -6961,18 +6799,22 @@ export default function DashboardPage() {
 
                     {/* Weekly Desktop View (>= sm) */}
                     <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl overflow-hidden shadow-xs">
-                      <div className="overflow-x-auto scrollbar-thin">
-                        <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[1080px] border-collapse">
-                          <thead className="bg-slate-50/90 dark:bg-[#0B101B] border-b border-slate-200/80 dark:border-white/10 text-slate-500 dark:text-slate-400 uppercase text-[10.5px] tracking-wider font-black select-none">
+                      <div className="relative overflow-x-auto scrollbar-thin">
+                        <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[880px] border-collapse">
+                          <thead className="bg-slate-50/95 dark:bg-[#0B101B]/95 border-b border-slate-200/80 dark:border-white/10 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider font-black select-none">
                             <tr>
-                              <th scope="col" className="py-3.5 px-4 whitespace-nowrap min-w-[170px]">Tuần Làm Việc</th>
-                              <th scope="col" className="py-3.5 px-4 whitespace-nowrap min-w-[210px]">Nhân Viên</th>
-                              <th scope="col" className="py-3.5 px-4 whitespace-nowrap min-w-[110px]">Vai Trò</th>
-                              <th scope="col" className="py-3.5 px-4 whitespace-nowrap min-w-[110px] text-center">Tổng Ca Làm</th>
-                              <th scope="col" className="py-3.5 px-4 whitespace-nowrap min-w-[150px] text-center">Giờ Chưa Trả / Tổng</th>
-                              {user?.role === 'admin' && <th scope="col" className="py-3.5 px-4 whitespace-nowrap min-w-[130px] text-center">Mức Lương/Giờ</th>}
-                              {user?.role === 'admin' && <th scope="col" className="py-3.5 px-4 whitespace-nowrap min-w-[160px]">Lương Còn Lại</th>}
-                              {user?.role === 'admin' && <th scope="col" className="py-3.5 px-4 whitespace-nowrap min-w-[220px] text-right">Thao Tác</th>}
+                              <th scope="col" className="py-3 px-3.5 whitespace-nowrap min-w-[125px]">Tuần Làm Việc</th>
+                              <th scope="col" className="py-3 px-3.5 whitespace-nowrap min-w-[135px]">Nhân Viên</th>
+                              <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[85px]">Vai Trò</th>
+                              <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[75px] text-center">Tổng Ca</th>
+                              <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[95px] text-center">Giờ Chưa Trả</th>
+                              {user?.role === 'admin' && <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[105px] text-center">Mức Lương/Giờ</th>}
+                              {user?.role === 'admin' && <th scope="col" className="py-3 px-3 whitespace-nowrap min-w-[110px]">Lương Còn Lại</th>}
+                              {user?.role === 'admin' && (
+                                <th scope="col" className="sticky right-0 z-20 py-3 px-3.5 whitespace-nowrap min-w-[165px] text-right bg-slate-50/95 dark:bg-[#0B101B]/95 shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.06)] dark:shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.4)]">
+                                  Thao Tác
+                                </th>
+                              )}
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b]/60">
@@ -6988,27 +6830,27 @@ export default function DashboardPage() {
                                 const isWaiter = wp.staffRole === 'waiter' || wp.staffRole === 'staff';
                                 const roleLabel = wp.staffRole === 'admin' ? 'Quản trị' : wp.staffRole === 'barista' ? 'Pha chế' : isWaiter ? 'Phục vụ' : 'Nhân viên';
                                 return (
-                                  <tr key={wp.key} className="hover:bg-slate-50/70 dark:hover:bg-[#182035]/50 transition-colors">
+                                  <tr key={wp.key} className="group hover:bg-slate-50/70 dark:hover:bg-[#182035]/50 transition-colors">
                                     {/* Tuần làm việc */}
-                                    <td className="py-3.5 px-4 whitespace-nowrap align-middle">
-                                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-mono font-bold text-xs">
+                                    <td className="py-3 px-3.5 whitespace-nowrap align-middle">
+                                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-mono font-bold text-xs">
                                         <span className="material-symbols-outlined text-sm text-amber-500 shrink-0">calendar_month</span>
                                         <span>{wp.weekLabel}</span>
                                       </div>
                                     </td>
 
                                     {/* Nhân viên */}
-                                    <td className="py-3.5 px-4 whitespace-nowrap align-middle">
-                                      <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500/15 to-blue-600/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/25 flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">
+                                    <td className="py-3 px-3.5 whitespace-nowrap align-middle">
+                                      <div className="flex items-center gap-2.5">
+                                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500/15 to-blue-600/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/25 flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">
                                           {initials}
                                         </div>
                                         <div className="min-w-0">
-                                          <div className="font-extrabold text-slate-900 dark:text-white text-xs truncate max-w-[160px]">
+                                          <div className="font-extrabold text-slate-900 dark:text-white text-xs truncate max-w-[130px]">
                                             {wp.staffName}
                                           </div>
                                           {wp.staffEmail && (
-                                            <div className="text-[10.5px] text-slate-400 dark:text-slate-500 truncate max-w-[160px]">
+                                            <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate max-w-[130px]">
                                               {wp.staffEmail}
                                             </div>
                                           )}
@@ -7017,8 +6859,8 @@ export default function DashboardPage() {
                                     </td>
 
                                     {/* Vai trò */}
-                                    <td className="py-3.5 px-4 whitespace-nowrap align-middle">
-                                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-bold border ${
+                                    <td className="py-3 px-2.5 whitespace-nowrap align-middle">
+                                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                                         wp.staffRole === 'admin' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' :
                                         wp.staffRole === 'barista' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20' :
                                         isWaiter ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' :
@@ -7030,27 +6872,27 @@ export default function DashboardPage() {
                                     </td>
 
                                     {/* Tổng ca làm */}
-                                    <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
+                                    <td className="py-3 px-2.5 text-center whitespace-nowrap align-middle">
                                       <span className="font-mono font-bold text-xs text-slate-900 dark:text-slate-100">
                                         {wp.totalShifts} ca
                                       </span>
                                       {wp.paidShifts > 0 && (
-                                        <span className="block text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                                        <span className="block text-[9.5px] text-emerald-600 dark:text-emerald-400 font-medium">
                                           ({wp.paidShifts} đã trả)
                                         </span>
                                       )}
                                     </td>
 
                                     {/* Giờ công */}
-                                    <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle font-mono text-xs">
+                                    <td className="py-3 px-2.5 text-center whitespace-nowrap align-middle font-mono text-xs">
                                       <span className="font-extrabold text-slate-900 dark:text-white">{wp.unpaidHours}h</span>
-                                      <span className="text-slate-400 dark:text-slate-500 font-medium"> / {wp.totalHours}h</span>
+                                      <span className="text-slate-400 dark:text-slate-500 font-medium text-[10.5px]"> / {wp.totalHours}h</span>
                                     </td>
 
                                     {/* Mức lương / giờ */}
                                     {user?.role === 'admin' && (
-                                      <td className="py-3.5 px-4 whitespace-nowrap text-center align-middle">
-                                        <div className="inline-flex items-center bg-slate-50 dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-xl px-2.5 py-1 shadow-2xs focus-within:ring-2 focus-within:ring-[#38BDF8]/40 focus-within:border-[#0284c7] dark:focus-within:border-[#38BDF8] transition-all">
+                                      <td className="py-3 px-2.5 whitespace-nowrap text-center align-middle">
+                                        <div className="inline-flex items-center bg-slate-50 dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-xl px-2 py-0.5 shadow-2xs focus-within:ring-2 focus-within:ring-[#38BDF8]/40 focus-within:border-[#0284c7] dark:focus-within:border-[#38BDF8] transition-all">
                                           <input
                                             type="number"
                                             step="1000"
@@ -7060,33 +6902,33 @@ export default function DashboardPage() {
                                               setStaffHourlyRates((prev) => ({ ...prev, [wp.staffId]: val }));
                                             }}
                                             onBlur={(e) => handleUpdateHourlyRate(wp.staffId, Number(e.target.value))}
-                                            className="w-16 bg-transparent text-xs font-mono font-black text-slate-900 dark:text-white focus:outline-none text-right"
+                                            className="w-14 bg-transparent text-xs font-mono font-black text-slate-900 dark:text-white focus:outline-none text-right"
                                           />
-                                          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-1 select-none">đ/h</span>
+                                          <span className="text-[9.5px] font-bold text-slate-400 dark:text-slate-500 ml-0.5 select-none">đ/h</span>
                                         </div>
                                       </td>
                                     )}
 
                                     {/* Lương còn lại */}
                                     {user?.role === 'admin' && (
-                                      <td className="py-3.5 px-4 whitespace-nowrap align-middle font-mono font-black text-sm text-emerald-600 dark:text-emerald-400">
+                                      <td className="py-3 px-3 whitespace-nowrap align-middle font-mono font-black text-xs text-emerald-600 dark:text-emerald-400">
                                         <div>{formatPrice(wp.unpaidSalary)}</div>
                                         {wp.paidHours > 0 && (
-                                          <div className="text-[10px] text-slate-400 dark:text-slate-500 font-normal mt-0.5">
+                                          <div className="text-[9.5px] text-slate-400 dark:text-slate-500 font-normal mt-0.5">
                                             Đã trả: {formatPrice(wp.alreadyPaidSalary)}
                                           </div>
                                         )}
                                       </td>
                                     )}
 
-                                    {/* Thao tác */}
+                                    {/* Thao tác - Sticky Right */}
                                     {user?.role === 'admin' && (
-                                      <td className="py-3.5 px-4 text-right whitespace-nowrap align-middle">
-                                        <div className="flex items-center justify-end gap-2 shrink-0">
+                                      <td className="sticky right-0 z-10 py-3 px-3.5 text-right whitespace-nowrap align-middle bg-white group-hover:bg-slate-50/90 dark:bg-[#131929] dark:group-hover:bg-[#182035]/90 shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.06)] dark:shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.4)] transition-colors">
+                                        <div className="flex items-center justify-end gap-1.5 shrink-0">
                                           <button
                                             type="button"
                                             onClick={() => handleOpenSalaryConfig({ _id: wp.staffId, name: wp.staffName, role: wp.staffRole })}
-                                            className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-xl bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
+                                            className="whitespace-nowrap inline-flex items-center justify-center gap-1 h-7.5 px-2.5 rounded-xl bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-[11px] border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
                                             title="Cấu hình mức lương & phụ cấp"
                                           >
                                             <span className="material-symbols-outlined text-sm text-slate-400">tune</span>
@@ -7111,14 +6953,14 @@ export default function DashboardPage() {
                                                   attendanceIds: wp.unpaidAttendances.map((a) => a._id),
                                                 })
                                               }
-                                              className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-8 px-3.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
+                                              className="whitespace-nowrap inline-flex items-center justify-center gap-1 h-7.5 px-3 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-[11px] shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
                                               title="Thực hiện chi trả lương tuần"
                                             >
                                               <span className="material-symbols-outlined text-sm">payments</span>
-                                              <span>Chi trả Tuần</span>
+                                              <span>Chi trả</span>
                                             </button>
                                           ) : (
-                                            <span className="whitespace-nowrap inline-flex items-center gap-1.5 h-8 px-3 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 shrink-0">
+                                            <span className="whitespace-nowrap inline-flex items-center gap-1 h-7.5 px-2.5 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] rounded-xl border border-emerald-500/20 shrink-0">
                                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                                               <span>Đã trả hết</span>
                                             </span>
@@ -7207,7 +7049,7 @@ export default function DashboardPage() {
                                     <button
                                       type="button"
                                       onClick={() => handleOpenSalaryConfig({ _id: hp.staffId, name: hp.staffName, role: hp.staffRole })}
-                                      className="whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
+                                      className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-9 px-3 bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
                                     >
                                       <span className="material-symbols-outlined text-sm text-slate-400">tune</span>
                                       <span>Cấu hình</span>
@@ -7229,13 +7071,13 @@ export default function DashboardPage() {
                                             attendanceIds: hp.unpaidAttendanceIds,
                                           })
                                         }
-                                        className="whitespace-nowrap inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
+                                        className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-9 px-3.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
                                       >
                                         <span className="material-symbols-outlined text-sm">payments</span>
-                                        <span>Chi trả Giờ</span>
+                                        <span>Chi trả</span>
                                       </button>
                                     ) : (
-                                      <span className="whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 shrink-0">
+                                      <span className="whitespace-nowrap inline-flex items-center gap-1.5 h-9 px-3 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 shrink-0">
                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                                         <span>Đã trả hết</span>
                                       </span>
@@ -7251,17 +7093,21 @@ export default function DashboardPage() {
 
                     {/* Hourly Desktop View (>= sm) */}
                     <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl overflow-hidden shadow-xs">
-                      <div className="overflow-x-auto scrollbar-thin">
-                        <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[1080px] border-collapse">
-                          <thead className="bg-slate-50/90 dark:bg-[#0B101B] border-b border-slate-200/80 dark:border-white/10 text-slate-500 dark:text-slate-400 uppercase text-[10.5px] tracking-wider font-black select-none">
+                      <div className="relative overflow-x-auto scrollbar-thin">
+                        <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[820px] border-collapse">
+                          <thead className="bg-slate-50/95 dark:bg-[#0B101B]/95 border-b border-slate-200/80 dark:border-white/10 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider font-black select-none">
                             <tr>
-                              <th scope="col" className="py-3.5 px-4 whitespace-nowrap min-w-[210px]">Nhân Viên</th>
-                              <th scope="col" className="py-3.5 px-4 whitespace-nowrap min-w-[110px]">Vai Trò</th>
-                              <th scope="col" className="py-3.5 px-4 whitespace-nowrap min-w-[110px] text-center">Tổng Ca Làm</th>
-                              <th scope="col" className="py-3.5 px-4 whitespace-nowrap min-w-[150px] text-center">Giờ Chưa Trả / Tổng</th>
-                              {user?.role === 'admin' && <th scope="col" className="py-3.5 px-4 whitespace-nowrap min-w-[130px] text-center">Mức Lương/Giờ</th>}
-                              {user?.role === 'admin' && <th scope="col" className="py-3.5 px-4 whitespace-nowrap min-w-[160px]">Lương Còn Lại</th>}
-                              {user?.role === 'admin' && <th scope="col" className="py-3.5 px-4 whitespace-nowrap min-w-[220px] text-right">Thao Tác</th>}
+                              <th scope="col" className="py-3 px-3.5 whitespace-nowrap min-w-[140px]">Nhân Viên</th>
+                              <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[85px]">Vai Trò</th>
+                              <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[75px] text-center">Tổng Ca</th>
+                              <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[95px] text-center">Giờ Chưa Trả</th>
+                              {user?.role === 'admin' && <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[105px] text-center">Mức Lương/Giờ</th>}
+                              {user?.role === 'admin' && <th scope="col" className="py-3 px-3 whitespace-nowrap min-w-[110px]">Lương Còn Lại</th>}
+                              {user?.role === 'admin' && (
+                                <th scope="col" className="sticky right-0 z-20 py-3 px-3.5 whitespace-nowrap min-w-[165px] text-right bg-slate-50/95 dark:bg-[#0B101B]/95 shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.06)] dark:shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.4)]">
+                                  Thao Tác
+                                </th>
+                              )}
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b]/60">
@@ -7277,19 +7123,19 @@ export default function DashboardPage() {
                                 const isWaiter = hp.staffRole === 'waiter' || hp.staffRole === 'staff';
                                 const roleLabel = hp.staffRole === 'admin' ? 'Quản trị' : hp.staffRole === 'barista' ? 'Pha chế' : isWaiter ? 'Phục vụ' : 'Nhân viên';
                                 return (
-                                  <tr key={hp.staffId} className="hover:bg-slate-50/70 dark:hover:bg-[#182035]/50 transition-colors">
+                                  <tr key={hp.staffId} className="group hover:bg-slate-50/70 dark:hover:bg-[#182035]/50 transition-colors">
                                     {/* Nhân viên */}
-                                    <td className="py-3.5 px-4 whitespace-nowrap align-middle">
-                                      <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500/15 to-blue-600/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/25 flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">
+                                    <td className="py-3 px-3.5 whitespace-nowrap align-middle">
+                                      <div className="flex items-center gap-2.5">
+                                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500/15 to-blue-600/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/25 flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">
                                           {initials}
                                         </div>
                                         <div className="min-w-0">
-                                          <div className="font-extrabold text-slate-900 dark:text-white text-xs truncate max-w-[160px]">
+                                          <div className="font-extrabold text-slate-900 dark:text-white text-xs truncate max-w-[130px]">
                                             {hp.staffName}
                                           </div>
                                           {hp.staffEmail && (
-                                            <div className="text-[10.5px] text-slate-400 dark:text-slate-500 truncate max-w-[160px]">
+                                            <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate max-w-[130px]">
                                               {hp.staffEmail}
                                             </div>
                                           )}
@@ -7298,8 +7144,8 @@ export default function DashboardPage() {
                                     </td>
 
                                     {/* Vai trò */}
-                                    <td className="py-3.5 px-4 whitespace-nowrap align-middle">
-                                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-bold border ${
+                                    <td className="py-3 px-2.5 whitespace-nowrap align-middle">
+                                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                                         hp.staffRole === 'admin' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' :
                                         hp.staffRole === 'barista' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20' :
                                         isWaiter ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' :
@@ -7311,20 +7157,20 @@ export default function DashboardPage() {
                                     </td>
 
                                     {/* Tổng ca làm */}
-                                    <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle font-mono font-bold text-xs text-slate-800 dark:text-slate-200">
+                                    <td className="py-3 px-2.5 text-center whitespace-nowrap align-middle font-mono font-bold text-xs text-slate-800 dark:text-slate-200">
                                       {hp.totalShifts} ca
                                     </td>
 
                                     {/* Giờ công */}
-                                    <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle font-mono text-xs">
+                                    <td className="py-3 px-2.5 text-center whitespace-nowrap align-middle font-mono text-xs">
                                       <span className="font-extrabold text-slate-900 dark:text-white">{hp.unpaidHours}h</span>
-                                      <span className="text-slate-400 dark:text-slate-500 font-medium"> / {hp.totalHours}h</span>
+                                      <span className="text-slate-400 dark:text-slate-500 font-medium text-[10.5px]"> / {hp.totalHours}h</span>
                                     </td>
 
                                     {/* Đơn giá / giờ */}
                                     {user?.role === 'admin' && (
-                                      <td className="py-3.5 px-4 whitespace-nowrap text-center align-middle">
-                                        <div className="inline-flex items-center px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10 font-mono font-bold text-xs text-slate-900 dark:text-white">
+                                      <td className="py-3 px-2.5 whitespace-nowrap text-center align-middle">
+                                        <div className="inline-flex items-center px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10 font-mono font-bold text-xs text-slate-900 dark:text-white">
                                           {formatPrice(hp.hourlyRate)}/h
                                         </div>
                                       </td>
@@ -7332,24 +7178,24 @@ export default function DashboardPage() {
 
                                     {/* Lương còn lại */}
                                     {user?.role === 'admin' && (
-                                      <td className="py-3.5 px-4 whitespace-nowrap align-middle font-mono font-black text-sm text-[#0284c7] dark:text-[#38BDF8]">
+                                      <td className="py-3 px-3 whitespace-nowrap align-middle font-mono font-black text-xs text-[#0284c7] dark:text-[#38BDF8]">
                                         <div>{formatPrice(hp.unpaidSalary)}</div>
                                         {hp.paidHours > 0 && (
-                                          <div className="text-[10px] text-slate-400 dark:text-slate-500 font-normal mt-0.5">
+                                          <div className="text-[9.5px] text-slate-400 dark:text-slate-500 font-normal mt-0.5">
                                             Đã trả: {formatPrice(hp.alreadyPaidSalary)} / Tổng: {formatPrice(hp.totalSalary)}
                                           </div>
                                         )}
                                       </td>
                                     )}
 
-                                    {/* Thao tác */}
+                                    {/* Thao tác - Sticky Right */}
                                     {user?.role === 'admin' && (
-                                      <td className="py-3.5 px-4 text-right whitespace-nowrap align-middle">
-                                        <div className="flex items-center justify-end gap-2 shrink-0">
+                                      <td className="sticky right-0 z-10 py-3 px-3.5 text-right whitespace-nowrap align-middle bg-white group-hover:bg-slate-50/90 dark:bg-[#131929] dark:group-hover:bg-[#182035]/90 shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.06)] dark:shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.4)] transition-colors">
+                                        <div className="flex items-center justify-end gap-1.5 shrink-0">
                                           <button
                                             type="button"
                                             onClick={() => handleOpenSalaryConfig({ _id: hp.staffId, name: hp.staffName, role: hp.staffRole })}
-                                            className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-xl bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
+                                            className="whitespace-nowrap inline-flex items-center justify-center gap-1 h-7.5 px-2.5 rounded-xl bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-[11px] border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
                                             title="Cấu hình mức lương & phụ cấp"
                                           >
                                             <span className="material-symbols-outlined text-sm text-slate-400">tune</span>
@@ -7372,14 +7218,14 @@ export default function DashboardPage() {
                                                   attendanceIds: hp.unpaidAttendanceIds,
                                                 })
                                               }
-                                              className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-8 px-3.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
+                                              className="whitespace-nowrap inline-flex items-center justify-center gap-1 h-7.5 px-3 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-[11px] shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
                                               title="Thực hiện chi trả lương theo giờ"
                                             >
                                               <span className="material-symbols-outlined text-sm">payments</span>
-                                              <span>Chi trả Giờ</span>
+                                              <span>Chi trả</span>
                                             </button>
                                           ) : (
-                                            <span className="whitespace-nowrap inline-flex items-center gap-1.5 h-8 px-3 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 shrink-0">
+                                            <span className="whitespace-nowrap inline-flex items-center gap-1 h-7.5 px-2.5 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] rounded-xl border border-emerald-500/20 shrink-0">
                                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                                               <span>Đã trả hết</span>
                                             </span>
@@ -7576,20 +7422,24 @@ export default function DashboardPage() {
 
                     {/* Desktop Table View (>= sm: 640px) */}
                     <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200/80 dark:border-[#1e293b] rounded-2xl overflow-hidden shadow-xs">
-                      <div className="overflow-x-auto">
+                      <div className="relative overflow-x-auto scrollbar-thin">
                         <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[850px]">
-                          <thead className="bg-slate-50 dark:bg-[#0d1525] border-b border-slate-200/80 dark:border-[#1e293b] text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-wider font-bold">
+                          <thead className="bg-slate-50/95 dark:bg-[#0d1525]/95 border-b border-slate-200/80 dark:border-[#1e293b] text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-wider font-bold select-none">
                             <tr>
-                              <th className="py-3 px-4">Ngày</th>
-                              <th className="py-3 px-4">Nhân viên</th>
-                              <th className="py-3 px-4">Vai trò</th>
-                              <th className="py-3 px-4">Ca làm</th>
-                              <th className="py-3 px-4">Check-in</th>
-                              <th className="py-3 px-4">Check-out</th>
-                              <th className="py-3 px-4 text-center">Tổng giờ</th>
-                              {user?.role === 'admin' && <th className="py-3 px-4">Mức lương/giờ</th>}
-                              {user?.role === 'admin' && <th className="py-3 px-4">Lương tính (VND)</th>}
-                              {user?.role === 'admin' && <th className="py-3 px-4 text-right">Hành động</th>}
+                              <th className="py-3 px-3 whitespace-nowrap min-w-[85px]">Ngày</th>
+                              <th className="py-3 px-3 whitespace-nowrap min-w-[130px]">Nhân viên</th>
+                              <th className="py-3 px-2.5 whitespace-nowrap min-w-[80px]">Vai trò</th>
+                              <th className="py-3 px-2.5 whitespace-nowrap min-w-[75px]">Ca làm</th>
+                              <th className="py-3 px-2.5 whitespace-nowrap min-w-[75px]">Check-in</th>
+                              <th className="py-3 px-2.5 whitespace-nowrap min-w-[75px]">Check-out</th>
+                              <th className="py-3 px-2 whitespace-nowrap text-center min-w-[65px]">Tổng giờ</th>
+                              {user?.role === 'admin' && <th className="py-3 px-2.5 whitespace-nowrap min-w-[95px]">Mức lương/giờ</th>}
+                              {user?.role === 'admin' && <th className="py-3 px-3 whitespace-nowrap min-w-[95px]">Lương tính</th>}
+                              {user?.role === 'admin' && (
+                                <th className="sticky right-0 z-20 py-3 px-3.5 whitespace-nowrap min-w-[195px] text-right bg-slate-50/95 dark:bg-[#0d1525]/95 shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.06)] dark:shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.4)]">
+                                  Hành động
+                                </th>
+                              )}
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b]/60">
@@ -7636,32 +7486,32 @@ export default function DashboardPage() {
                                 const initials = staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
 
                                 return (
-                                  <tr key={att._id} className="hover:bg-slate-50/70 dark:hover:bg-[#182035]/50 transition-colors">
+                                  <tr key={att._id} className="group hover:bg-slate-50/70 dark:hover:bg-[#182035]/50 transition-colors">
                                     {/* Date */}
-                                    <td className="py-3 px-4 font-mono font-medium text-xs text-slate-600 dark:text-slate-300">
+                                    <td className="py-3 px-3 font-mono font-medium text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap">
                                       {formattedDate}
                                     </td>
 
                                     {/* Staff Name & Avatar */}
-                                    <td className="py-3 px-4">
-                                      <div className="flex items-center gap-2.5">
+                                    <td className="py-3 px-3 whitespace-nowrap">
+                                      <div className="flex items-center gap-2">
                                         <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-extrabold text-xs flex items-center justify-center shrink-0">
                                           {initials}
                                         </div>
                                         <div className="min-w-0">
-                                          <div className="font-bold text-slate-900 dark:text-white text-xs truncate flex items-center gap-1.5">
+                                          <div className="font-bold text-slate-900 dark:text-white text-xs truncate max-w-[120px] flex items-center gap-1.5">
                                             <span>{staffName}</span>
                                             {isActive && (
                                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" title="Đang làm ca" />
                                             )}
                                           </div>
-                                          {staffEmail && <div className="text-[10px] text-slate-400 truncate">{staffEmail}</div>}
+                                          {staffEmail && <div className="text-[10px] text-slate-400 truncate max-w-[120px]">{staffEmail}</div>}
                                         </div>
                                       </div>
                                     </td>
 
                                     {/* Role */}
-                                    <td className="py-3 px-4">
+                                    <td className="py-3 px-2.5 whitespace-nowrap">
                                       <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${staffRole === 'admin' ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' :
                                         staffRole === 'barista' ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300' :
                                           staffRole === 'waiter' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' :
@@ -7672,7 +7522,7 @@ export default function DashboardPage() {
                                     </td>
 
                                     {/* Shift */}
-                                    <td className="py-3 px-4">
+                                    <td className="py-3 px-2.5 whitespace-nowrap">
                                       {(() => {
                                         const s = att.shift || 'morning';
                                         if (s === 'morning') {
@@ -7698,25 +7548,25 @@ export default function DashboardPage() {
                                     </td>
 
                                     {/* Check-in */}
-                                    <td className="py-3 px-4 font-mono font-medium text-xs text-emerald-600 dark:text-emerald-400">
-                                      {checkInTime ? checkInTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '--:--:--'}
+                                    <td className="py-3 px-2.5 font-mono font-medium text-xs text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                                      {checkInTime ? checkInTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
                                     </td>
 
                                     {/* Check-out */}
-                                    <td className="py-3 px-4 font-mono font-medium text-xs">
+                                    <td className="py-3 px-2.5 font-mono font-medium text-xs whitespace-nowrap">
                                       <span className={checkOutTime ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'}>
-                                        {checkOutTime ? checkOutTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Đang làm ca'}
+                                        {checkOutTime ? checkOutTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'Đang làm ca'}
                                       </span>
                                     </td>
 
                                     {/* Total Hours */}
-                                    <td className="py-3 px-4 text-center font-mono font-bold text-xs text-slate-800 dark:text-slate-200">
+                                    <td className="py-3 px-2 text-center font-mono font-bold text-xs text-slate-800 dark:text-slate-200 whitespace-nowrap">
                                       {hoursWorked}h
                                     </td>
 
                                     {/* Rate/Hour Input */}
                                     {user?.role === 'admin' && (
-                                      <td className="py-3 px-4">
+                                      <td className="py-3 px-2.5 whitespace-nowrap">
                                         <div className="flex items-center gap-1">
                                           <input
                                             type="number"
@@ -7727,32 +7577,32 @@ export default function DashboardPage() {
                                               setStaffHourlyRates((prev) => ({ ...prev, [staffId]: val }));
                                             }}
                                             onBlur={(e) => handleUpdateHourlyRate(staffId, Number(e.target.value))}
-                                            className="w-20 bg-slate-50 dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-lg px-2 py-1 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0284c7] dark:focus:border-[#38BDF8]"
+                                            className="w-16 bg-slate-50 dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-lg px-1.5 py-0.5 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0284c7] dark:focus:border-[#38BDF8]"
                                           />
-                                          <span className="text-[10px] font-medium text-slate-400">đ/h</span>
+                                          <span className="text-[9.5px] font-medium text-slate-400">đ/h</span>
                                         </div>
                                       </td>
                                     )}
 
                                     {/* Calculated Salary */}
                                     {user?.role === 'admin' && (
-                                      <td className="py-3 px-4 font-mono font-extrabold text-xs text-[#0284c7] dark:text-[#38BDF8]">
+                                      <td className="py-3 px-3 font-mono font-extrabold text-xs text-[#0284c7] dark:text-[#38BDF8] whitespace-nowrap">
                                         {formatPrice(totalSalary)}
                                       </td>
                                     )}
 
-                                    {/* Action Buttons */}
+                                    {/* Action Buttons - Sticky Right */}
                                     {user?.role === 'admin' && (
-                                      <td className="py-3 px-4 text-right">
-                                        <div className="flex items-center justify-end gap-1.5">
+                                      <td className="sticky right-0 z-10 py-3 px-3.5 text-right whitespace-nowrap align-middle bg-white group-hover:bg-slate-50/90 dark:bg-[#131929] dark:group-hover:bg-[#182035]/90 shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.06)] dark:shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.4)] transition-colors">
+                                        <div className="flex items-center justify-end gap-1 shrink-0">
                                           <button
                                             onClick={() => handleOpenSalaryConfig({ _id: staffId, name: staffName, role: staffRole })}
-                                            className="px-2.5 py-1.5 bg-white dark:bg-[#131929] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-[11px] font-bold rounded-xl border border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                                            className="h-7 px-2 bg-white dark:bg-[#131929] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-[10.5px] font-bold rounded-xl border border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs active:scale-95 transition-all cursor-pointer"
                                           >
                                             Cấu hình
                                           </button>
                                           {att.isPaid ? (
-                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] rounded-xl border border-emerald-500/20 shrink-0">
+                                            <span className="inline-flex items-center gap-1 h-7 px-2 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-[10.5px] rounded-xl border border-emerald-500/20 shrink-0">
                                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                                               <span>Đã trả</span>
                                             </span>
@@ -7772,7 +7622,7 @@ export default function DashboardPage() {
                                                   attendanceIds: [att._id],
                                                 })
                                               }
-                                              className="px-3 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-extrabold text-[11px] rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-md active:scale-95 transition-all cursor-pointer"
+                                              className="h-7 px-2.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-extrabold text-[10.5px] rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-md active:scale-95 transition-all cursor-pointer"
                                             >
                                               Chi trả Ca
                                             </button>
@@ -7787,13 +7637,13 @@ export default function DashboardPage() {
                                               });
                                               setIsAttendanceModalOpen(true);
                                             }}
-                                            className="px-2.5 py-1.5 bg-white dark:bg-[#131929] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-[11px] font-bold rounded-xl border border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                                            className="h-7 px-2 bg-white dark:bg-[#131929] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-[10.5px] font-bold rounded-xl border border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs active:scale-95 transition-all cursor-pointer"
                                           >
                                             Sửa
                                           </button>
                                           <button
                                             onClick={() => setAttendanceToDelete(att._id)}
-                                            className="px-2.5 py-1.5 bg-rose-500/10 hover:bg-rose-500 text-rose-600 dark:text-rose-400 hover:text-white text-[11px] font-bold rounded-xl border border-rose-500/20 hover:border-rose-500 active:scale-95 transition-all cursor-pointer"
+                                            className="h-7 px-2 bg-rose-500/10 hover:bg-rose-500 text-rose-600 dark:text-rose-400 hover:text-white text-[10.5px] font-bold rounded-xl border border-rose-500/20 hover:border-rose-500 active:scale-95 transition-all cursor-pointer"
                                           >
                                             Xóa
                                           </button>
@@ -7816,6 +7666,156 @@ export default function DashboardPage() {
             {/* Analytics View: ADMIN ONLY */}
             {activeTab === 'analytics' && user?.role === 'admin' && (
               <div className="flex-1 overflow-y-auto space-y-6 pb-32 lg:pb-10 scrollbar-thin">
+                {/* ── ADMIN: EXECUTIVE COMMAND BAR (CHỈ HIỂN THỊ Ở MỤC THỐNG KÊ DOANH THU CỬA HÀNG) ── */}
+                <div className="shrink-0 space-y-2.5 font-sans" id="executive-command-bar">
+                  <div className="flex items-center justify-between px-1">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        Tổng quan doanh thu & vận hành thời gian thực
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsCommandBarCollapsed(!isCommandBarCollapsed)}
+                      className="text-[10px] font-bold text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>{isCommandBarCollapsed ? 'Mở rộng' : 'Thu gọn'}</span>
+                      <span className="material-symbols-outlined text-sm">{isCommandBarCollapsed ? 'expand_more' : 'expand_less'}</span>
+                    </button>
+                  </div>
+
+                  {!isCommandBarCollapsed && (
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+                      {/* KPI 1: Doanh thu */}
+                      <div
+                        className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3 rounded-2xl shadow-2xs"
+                      >
+                        <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
+                          <span className="text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-400">Doanh thu hôm nay</span>
+                          <span className="material-symbols-outlined text-base text-emerald-500">payments</span>
+                        </div>
+                        <div className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
+                          {formatPrice(analyticsSummary?.periodGross ?? analyticsSummary?.todayGross ?? paymentHistory.reduce((s, p) => s + (p.totalAmount || 0), 0))}
+                        </div>
+                        <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                          {analyticsSummary?.settlementStatus ? (
+                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                              analyticsSummary.settlementStatus.isSettled 
+                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
+                                : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                            }`}>
+                              {analyticsSummary.settlementStatus.isSettled ? '✓ Đã chốt sổ' : `Tạm tính (${analyticsSummary.settlementStatus.unpaidOrdersCount || 0} chưa thu)`}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-slate-400">Từ hóa đơn trong ngày</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* KPI 2: Công suất bàn */}
+                      {(() => {
+                        const servingCount = tables.filter(t => t.status === 'serving' || t.status === 'occupied').length;
+                        const totalCount = tables.length;
+                        const occupancyRate = totalCount > 0 ? Math.round((servingCount / totalCount) * 100) : 0;
+                        return (
+                          <div
+                            onClick={() => setActiveTab('tables')}
+                            className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] hover:border-[#0284c7]/40 dark:hover:border-[#38BDF8]/40 p-3 rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+                            title="Bấm để xem Sơ đồ bàn"
+                          >
+                            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
+                              <span className="text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-400">Công suất bàn</span>
+                              <span className="material-symbols-outlined text-base text-sky-500 group-hover:scale-110 transition-transform">table_restaurant</span>
+                            </div>
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
+                                {servingCount}/{totalCount}
+                              </span>
+                              <span className="text-[11px] font-black text-[#0284c7] dark:text-[#38BDF8]">
+                                ({occupancyRate}%)
+                              </span>
+                            </div>
+                            <div className="mt-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all duration-500 ${
+                                  occupancyRate >= 90 ? 'bg-amber-500' : occupancyRate >= 70 ? 'bg-sky-500' : 'bg-emerald-500'
+                                }`}
+                                style={{ width: `${Math.min(100, occupancyRate)}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                      {/* KPI 3: Đơn hàng & Pha chế */}
+                      {(() => {
+                        const activeOrdersCount = orders.filter(o => ['pending', 'confirmed', 'cooking', 'ready'].includes(o.status)).length;
+                        const brewingCount = orders.filter(o => o.status === 'cooking' || o.status === 'pending').length;
+                        return (
+                          <div
+                            onClick={() => setActiveTab('orders')}
+                            className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] hover:border-[#0284c7]/40 dark:hover:border-[#38BDF8]/40 p-3 rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+                            title="Bấm để xem Quản lý đơn hàng & KDS"
+                          >
+                            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
+                              <span className="text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-400">Đang phục vụ</span>
+                              <span className="material-symbols-outlined text-base text-amber-500 group-hover:scale-110 transition-transform">soup_kitchen</span>
+                            </div>
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
+                                {activeOrdersCount}
+                              </span>
+                              <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">đơn đang chạy</span>
+                            </div>
+                            <div className="mt-1 flex items-center gap-1.5 text-[10px] text-slate-400">
+                              <span className={`w-1.5 h-1.5 rounded-full ${brewingCount > 0 ? 'bg-amber-500 animate-pulse' : 'bg-slate-400'}`} />
+                              <span>{brewingCount} món đang đợi pha chế</span>
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                      {/* KPI 4: Nhân sự trực ca */}
+                      {(() => {
+                        const activeStaffCount = attendances.filter(a => a.checkIn && !a.checkOut).length;
+                        const pendingSwapsCount = shiftSwaps.filter(s => s.status === 'pending').length;
+                        return (
+                          <div
+                            onClick={() => setActiveTab('attendance')}
+                            className={`bg-white dark:bg-[#131929] border p-3 rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer group ${
+                              pendingSwapsCount > 0 
+                                ? 'border-amber-500/30 hover:border-amber-500' 
+                                : 'border-slate-200 dark:border-[#1e293b] hover:border-[#0284c7]/40 dark:hover:border-[#38BDF8]/40'
+                            }`}
+                            title="Bấm để xem Chấm công & Bảng lương"
+                          >
+                            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
+                              <span className="text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-400">Nhân sự trực ca</span>
+                              <span className="material-symbols-outlined text-base text-indigo-500 group-hover:scale-110 transition-transform">badge</span>
+                            </div>
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
+                                {activeStaffCount}
+                              </span>
+                              <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">nhân viên check-in</span>
+                            </div>
+                            <div className="mt-1 flex items-center gap-1.5">
+                              {pendingSwapsCount > 0 ? (
+                                <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse">
+                                  ⚠️ {pendingSwapsCount} đổi ca chờ duyệt
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-slate-400">Hoạt động bình thường</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
+
                 {/* ── BÁO CÁO THU - CHI CỬA HÀNG (ADMIN ONLY) ────────────────────────── */}
                 <div className="space-y-4">
                   {/* Header Title & Segmented Period Toggle */}
@@ -8092,6 +8092,7 @@ export default function DashboardPage() {
                     const expense = analyticsSummary?.periodExpenseCost ?? analyticsSummary?.todayExpenseCost ?? 0;
                     const totalCost = salary + ingredient + expense;
                     const netProfit = analyticsSummary?.periodNetProfit ?? analyticsSummary?.todayNetProfit ?? (gross - totalCost);
+                    const isLoss = netProfit < 0;
                     const netMarginPercent = gross > 0 ? Math.round((netProfit / gross) * 100) : 0;
                     const costRatioPercent = gross > 0 ? Math.round((totalCost / gross) * 100) : 0;
                     const salaryRatioPercent = gross > 0 ? Math.round((salary / gross) * 100) : 0;
@@ -8100,35 +8101,50 @@ export default function DashboardPage() {
                     return (
                       <div
                         id="smart-financial-margin-insights"
-                        className="p-3.5 bg-gradient-to-r from-slate-50 via-sky-50/20 to-slate-50 dark:from-[#101726] dark:via-[#0e1b2e] dark:to-[#101726] border border-slate-200 dark:border-[#1e293b] rounded-2xl shadow-2xs"
+                        className={`p-3.5 border rounded-2xl shadow-2xs transition-all ${
+                          isLoss
+                            ? 'bg-gradient-to-r from-rose-50 via-rose-50/30 to-amber-50/20 dark:from-[#211018] dark:via-[#1c0f1b] dark:to-[#18111e] border-rose-300 dark:border-rose-900/50'
+                            : 'bg-gradient-to-r from-slate-50 via-sky-50/20 to-slate-50 dark:from-[#101726] dark:via-[#0e1b2e] dark:to-[#101726] border-slate-200 dark:border-[#1e293b]'
+                        }`}
                       >
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                           <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-500 shrink-0">
-                              <span className="material-symbols-outlined text-lg">insights</span>
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                              isLoss
+                                ? 'bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-400'
+                                : 'bg-sky-500/10 border border-sky-500/20 text-sky-500'
+                            }`}>
+                              <span className="material-symbols-outlined text-lg">
+                                {isLoss ? 'warning' : 'insights'}
+                              </span>
                             </div>
                             <div>
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
                                   Chỉ số hiệu quả tài chính & Tỷ suất sinh lời
                                 </span>
-                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${netMarginPercent >= 50
-                                    ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                                    : netMarginPercent >= 20
-                                      ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/20'
-                                      : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20'
-                                  }`}>
-                                  Biên lợi nhuận: {netMarginPercent}%
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                                  isLoss
+                                    ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30'
+                                    : netMarginPercent >= 50
+                                      ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                                      : netMarginPercent >= 20
+                                        ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/20'
+                                        : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                                }`}>
+                                  {isLoss ? `Thâm hụt: ${netMarginPercent}%` : `Biên lợi nhuận: ${netMarginPercent}%`}
                                 </span>
                               </div>
                               <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                                 {gross === 0
                                   ? 'Chưa ghi nhận doanh thu trong kỳ này để tính tỷ suất tài chính.'
-                                  : netMarginPercent >= 50
-                                    ? `Hiệu suất sinh lời xuất sắc: Mỗi 100đ doanh thu tạo ra ${netMarginPercent}đ lợi nhuận ròng sau mọi chi phí.`
-                                    : netMarginPercent >= 20
-                                      ? `Biên lợi nhuận ổn định (${netMarginPercent}%). Tỷ lệ chi phí vận hành chiếm ${costRatioPercent}% doanh thu.`
-                                      : `Cần lưu ý: Tỷ lệ tổng chi phí (${costRatioPercent}%) đang cao so với doanh thu kỳ này.`}
+                                  : isLoss
+                                    ? `Lưu ý: Kỳ này đang chịu lỗ ròng do tổng chi phí (${costRatioPercent}% doanh thu) vượt quá số tiền thực thu.`
+                                    : netMarginPercent >= 50
+                                      ? `Hiệu suất sinh lời xuất sắc: Mỗi 100đ doanh thu tạo ra ${netMarginPercent}đ lợi nhuận ròng sau mọi chi phí.`
+                                      : netMarginPercent >= 20
+                                        ? `Biên lợi nhuận ổn định (${netMarginPercent}%). Tỷ lệ chi phí vận hành chiếm ${costRatioPercent}% doanh thu.`
+                                        : `Cần lưu ý: Tỷ lệ tổng chi phí (${costRatioPercent}%) đang cao so với doanh thu kỳ này.`}
                               </p>
                             </div>
                           </div>
@@ -8148,9 +8164,11 @@ export default function DashboardPage() {
                               </div>
                               <div className="w-px h-3 bg-slate-200 dark:bg-slate-700" />
                               <div className="flex items-center gap-1.5" title="Tỷ suất lợi nhuận ròng">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                                <span className={`w-2 h-2 rounded-full ${isLoss ? 'bg-rose-500' : 'bg-emerald-500'}`} />
                                 <span className="text-[11px] text-slate-500 dark:text-slate-400">Ròng:</span>
-                                <span className="text-[11px] font-black text-emerald-600 dark:text-emerald-400">{netMarginPercent}%</span>
+                                <span className={`text-[11px] font-black ${isLoss ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                                  {netMarginPercent}%
+                                </span>
                               </div>
                             </div>
                           )}
@@ -8159,20 +8177,24 @@ export default function DashboardPage() {
                     );
                   })()}
 
-                  {/* 5 Financial KPI Cards (Clean Typography - No Redundant Icons) */}
+                  {/* 5 Financial KPI Cards (Clean Typography - Modern Surface Tokens) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
                     {/* Card 1: Gross Revenue */}
-                    <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 sm:p-5 rounded-2xl shadow-xs hover:border-emerald-500/40 transition-all group relative overflow-hidden">
+                    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xs hover:border-emerald-500/40 transition-all group relative overflow-hidden">
                       <div className="flex items-center justify-between gap-1 flex-wrap">
                         <span className="text-slate-500 dark:text-slate-400 text-xs font-bold whitespace-nowrap">1. Tổng Doanh Thu</span>
-                        {analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && (
+                        {analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus ? (
                           <span
-                            className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${analyticsSummary.settlementStatus.isSettled
-                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                            className={`text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${analyticsSummary.settlementStatus.isSettled
+                                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                                : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse'
                               }`}
                           >
-                            {analyticsSummary.settlementStatus.isSettled ? 'Đã Chốt' : 'Tạm Tính'}
+                            {analyticsSummary.settlementStatus.isSettled ? '✓ Đã Chốt Sổ' : 'Tạm Tính'}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                            Cả Tháng
                           </span>
                         )}
                       </div>
@@ -8182,18 +8204,18 @@ export default function DashboardPage() {
                         </span>
                         <p className="text-[10px] text-slate-400 mt-1 font-medium">
                           {analyticsPeriodMode === 'day'
-                            ? (analyticsSummary?.settlementStatus?.isSettled ? 'Thu từ đơn hàng (Đã quyết toán)' : 'Thu từ đơn hàng ngày này (Tạm tính)')
-                            : 'Tổng thu cả tháng'}
+                            ? (analyticsSummary?.settlementStatus?.isSettled ? 'Hóa đơn đã quyết toán đầy đủ' : 'Thu từ đơn hàng ngày này (tạm tính)')
+                            : 'Tổng thực thu toàn bộ tháng'}
                         </p>
                       </div>
                     </div>
 
                     {/* Card 2: Salary Costs */}
-                    <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 sm:p-5 rounded-2xl shadow-xs hover:border-amber-500/40 transition-all group relative overflow-hidden">
+                    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xs hover:border-amber-500/40 transition-all group relative overflow-hidden">
                       <div className="flex items-center justify-between gap-1 flex-wrap">
                         <span className="text-slate-500 dark:text-slate-400 text-xs font-bold whitespace-nowrap">2. Chi Phí Lương</span>
                         {analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus?.activeShiftsCount > 0 && (
-                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 shrink-0">
                             Đang chạy ca
                           </span>
                         )}
@@ -8213,9 +8235,12 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Card 3: Ingredient Costs */}
-                    <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 sm:p-5 rounded-2xl shadow-xs hover:border-sky-500/40 transition-all group relative overflow-hidden">
+                    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xs hover:border-sky-500/40 transition-all group relative overflow-hidden">
                       <div className="flex items-center justify-between">
                         <span className="text-slate-500 dark:text-slate-400 text-xs font-bold whitespace-nowrap">3. Tiền Nguyên Liệu</span>
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] border border-sky-500/20">
+                          Định mức kho
+                        </span>
                       </div>
                       <div className="mt-3">
                         <span className="text-xl sm:text-2xl font-black text-[#0284c7] dark:text-[#38BDF8] font-heading tracking-tight">
@@ -8233,7 +8258,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Card 4: Incidental / Operating Expenses (Chi Mới) */}
-                    <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 sm:p-5 rounded-2xl shadow-xs hover:border-purple-500/40 transition-all group relative overflow-hidden">
+                    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xs hover:border-purple-500/40 transition-all group relative overflow-hidden">
                       <div className="flex items-center justify-between">
                         <span className="text-slate-500 dark:text-slate-400 text-xs font-bold whitespace-nowrap">4. Tiền Phát Sinh</span>
                         <button
@@ -8247,7 +8272,7 @@ export default function DashboardPage() {
                             });
                             setIsAddExpenseModalOpen(true);
                           }}
-                          className="px-2 py-0.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded-md transition-colors cursor-pointer text-xs font-black"
+                          className="px-2.5 py-1 bg-purple-500/15 hover:bg-purple-500/25 text-purple-600 dark:text-purple-400 rounded-lg transition-colors cursor-pointer text-[11px] font-black active:scale-95 border border-purple-500/20"
                           title="Thêm chi phí phát sinh"
                         >
                           + Thêm
@@ -8264,48 +8289,69 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Card 5: Net Profit */}
-                    <div
-                      className={`bg-white dark:bg-[#131929] border p-4 sm:p-5 rounded-2xl shadow-xs transition-all group relative overflow-hidden sm:col-span-2 lg:col-span-1 ${analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
-                        ? 'border-amber-500/40 dark:border-amber-500/30 hover:border-amber-500 bg-gradient-to-br from-amber-500/10 via-sky-500/5 to-transparent'
-                        : 'border-emerald-500/40 dark:border-emerald-500/30 hover:border-emerald-500 bg-gradient-to-br from-emerald-500/10 via-sky-500/5 to-transparent'
-                        }`}
-                    >
-                      <div className="flex items-center justify-between gap-1 flex-wrap">
-                        <span
-                          className={`text-xs font-black whitespace-nowrap ${analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
-                            ? 'text-amber-600 dark:text-amber-400'
-                            : 'text-emerald-600 dark:text-emerald-400'
-                            }`}
+                    {(() => {
+                      const netProfitVal = analyticsSummary?.periodNetProfit ?? analyticsSummary?.todayNetProfit ?? 0;
+                      const isNegative = netProfitVal < 0;
+
+                      return (
+                        <div
+                          className={`bg-white dark:bg-[#111827] border p-4 sm:p-5 rounded-3xl shadow-xs transition-all group relative overflow-hidden sm:col-span-2 lg:col-span-1 ${
+                            isNegative
+                              ? 'border-rose-500/40 dark:border-rose-500/30 hover:border-rose-500 bg-gradient-to-br from-rose-500/10 via-amber-500/5 to-transparent'
+                              : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
+                                ? 'border-amber-500/40 dark:border-amber-500/30 hover:border-amber-500 bg-gradient-to-br from-amber-500/10 via-sky-500/5 to-transparent'
+                                : 'border-emerald-500/40 dark:border-emerald-500/30 hover:border-emerald-500 bg-gradient-to-br from-emerald-500/10 via-sky-500/5 to-transparent'
+                          }`}
                         >
-                          5. Lợi Nhuận Ròng
-                        </span>
-                        {analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && (
-                          <span
-                            className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${analyticsSummary.settlementStatus.isSettled
-                              ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
-                              : 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30'
+                          <div className="flex items-center justify-between gap-1 flex-wrap">
+                            <span
+                              className={`text-xs font-black whitespace-nowrap ${
+                                isNegative
+                                  ? 'text-rose-600 dark:text-rose-400'
+                                  : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
+                                    ? 'text-amber-600 dark:text-amber-400'
+                                    : 'text-emerald-600 dark:text-emerald-400'
                               }`}
-                          >
-                            {analyticsSummary.settlementStatus.isSettled ? '✓ Đã Quyết Toán' : 'Chờ Chốt Ca & Chi Phí'}
-                          </span>
-                        )}
-                      </div>
-                      <div className="mt-3">
-                        <span
-                          className={`text-xl sm:text-2xl font-black font-heading tracking-tight ${analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
-                            ? 'text-amber-600 dark:text-amber-400'
-                            : 'text-emerald-600 dark:text-emerald-400'
-                            }`}
-                        >
-                          {formatPrice(analyticsSummary?.periodNetProfit ?? analyticsSummary?.todayNetProfit ?? 0)}
-                        </span>
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium">
-                          {analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
-                            ? 'Tạm tính (Chưa chốt lương ca làm & chi phí cuối ngày)'
-                            : 'Thu - Lương - NL - Phát sinh (Chính thức)'}
-                        </p>
-                      </div>
-                    </div>
+                            >
+                              {isNegative ? '5. Lỗ Ròng (Thâm Hụt)' : '5. Lợi Nhuận Ròng'}
+                            </span>
+                            {analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && (
+                              <span
+                                className={`text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${
+                                  isNegative
+                                    ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30'
+                                    : analyticsSummary.settlementStatus.isSettled
+                                      ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                                      : 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30'
+                                }`}
+                              >
+                                {isNegative ? 'Thâm Hụt' : analyticsSummary.settlementStatus.isSettled ? '✓ Đã Quyết Toán' : 'Chờ Chốt Ca'}
+                              </span>
+                            )}
+                          </div>
+                          <div className="mt-3">
+                            <span
+                              className={`text-xl sm:text-2xl font-black font-heading tracking-tight ${
+                                isNegative
+                                  ? 'text-rose-600 dark:text-rose-400'
+                                  : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
+                                    ? 'text-amber-600 dark:text-amber-400'
+                                    : 'text-emerald-600 dark:text-emerald-400'
+                              }`}
+                            >
+                              {formatPrice(netProfitVal)}
+                            </span>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                              {isNegative
+                                ? 'Chi phí trong kỳ vượt quá doanh thu'
+                                : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
+                                  ? 'Tạm tính (Chưa chốt lương ca làm & chi phí cuối ngày)'
+                                  : 'Thu - Lương - NL - Phát sinh (Chính thức)'}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Detailed Breakdown Section: Day Ledger OR Monthly Aggregation Table */}
@@ -8817,7 +8863,7 @@ export default function DashboardPage() {
                 {/* Overview Weekly/Monthly & Review Indicators */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl shadow-xs">
-                    <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold block">Lợi nhuận ròng tuần này</span>
+                    <span className="text-slate-500 dark:text-slate-400 text-xs font-normal uppercase tracking-wider block">Lợi nhuận ròng tuần này</span>
                     <span className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block font-heading">
                       {formatPrice(analyticsSummary?.week || 0)}
                     </span>
@@ -8826,7 +8872,7 @@ export default function DashboardPage() {
                     </span>
                   </div>
                   <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl shadow-xs">
-                    <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold block">Lợi nhuận ròng tháng này</span>
+                    <span className="text-slate-500 dark:text-slate-400 text-xs font-normal uppercase tracking-wider block">Lợi nhuận ròng tháng này</span>
                     <span className="text-xl sm:text-2xl font-black text-purple-600 dark:text-purple-400 mt-1 block font-heading">
                       {formatPrice(analyticsSummary?.month || 0)}
                     </span>
@@ -8835,7 +8881,7 @@ export default function DashboardPage() {
                     </span>
                   </div>
                   <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl shadow-xs">
-                    <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold block">Đánh giá trung bình</span>
+                    <span className="text-slate-500 dark:text-slate-400 text-xs font-normal uppercase tracking-wider block">Đánh giá trung bình</span>
                     <span className="text-xl sm:text-2xl font-black text-amber-500 dark:text-amber-400 mt-1 flex items-center gap-1 font-heading">
                       <span className="material-symbols-outlined text-amber-500 text-lg sm:text-xl">star</span>
                       <span>{avgStar} / 5.0</span>
@@ -9043,7 +9089,7 @@ export default function DashboardPage() {
             {/* Coupons View: ADMIN ONLY */}
             {activeTab === ('coupons' as any) && user?.role === 'admin' && (
               <div className="flex-1 overflow-y-auto space-y-4 pb-32 lg:pb-10 scrollbar-thin">
-                <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl flex justify-between items-center shadow-xs">
+                <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-xs">
                   <div>
                     <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading">
                       Chương trình Khuyến mãi & Voucher
@@ -9067,7 +9113,7 @@ export default function DashboardPage() {
                       });
                       setIsCouponModalOpen(true);
                     }}
-                    className="px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+                    className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
                     <span>Tạo mã mới</span>
@@ -9243,7 +9289,7 @@ export default function DashboardPage() {
                               <h4 className="font-extrabold text-slate-900 dark:text-white text-base tracking-tight font-heading truncate">
                                 {res.customerName}
                               </h4>
-                              <div className="font-mono text-xs font-bold text-slate-500 dark:text-slate-400">
+                              <div className="font-mono text-xs font-normal text-slate-500 dark:text-slate-400">
                                 {res.customerPhone}
                               </div>
                             </div>
@@ -9265,7 +9311,7 @@ export default function DashboardPage() {
                           {/* Middle Info Block: Clean Structured Micro-Grid without Icons */}
                           <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-50 dark:bg-[#0B0F17] border border-slate-100 dark:border-white/5 text-xs">
                             <div>
-                              <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                              <div className="text-[10px] font-normal text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                 Bàn đặt
                               </div>
                               <div className="font-extrabold text-slate-900 dark:text-white text-xs mt-0.5 truncate">
@@ -9273,7 +9319,7 @@ export default function DashboardPage() {
                               </div>
                             </div>
                             <div>
-                              <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                              <div className="text-[10px] font-normal text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                 Số lượng
                               </div>
                               <div className="font-extrabold text-slate-900 dark:text-white text-xs mt-0.5">
@@ -9281,7 +9327,7 @@ export default function DashboardPage() {
                               </div>
                             </div>
                             <div className="col-span-2 pt-2 border-t border-slate-200/60 dark:border-white/5 flex justify-between items-center">
-                              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                              <span className="text-[10px] font-normal text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                 Giờ nhận bàn
                               </span>
                               <span className="font-mono font-extrabold text-slate-800 dark:text-slate-200 text-xs">
@@ -9492,7 +9538,7 @@ export default function DashboardPage() {
 
       {/* ── COLUMN 3: RIGHT REALTIME ACTIVITY SIDEBAR (bg-slate-50 / dark:bg-[#0F172A]) ────── */}
       <aside
-        className={`fixed xl:static inset-y-0 right-0 z-40 w-[320px] shrink-0 bg-slate-50/90 dark:bg-[#0F172A]/70 backdrop-blur-xl border-l border-slate-200 dark:border-white/10 p-5 h-screen flex flex-col overflow-y-auto transition-all duration-300 ease-in-out ${isRealtimeDrawerOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full xl:translate-x-0'
+        className={`fixed xl:static inset-y-0 right-0 z-40 w-[320px] sm:w-[350px] max-w-[88vw] shrink-0 bg-slate-50/95 dark:bg-[#0F172A]/90 backdrop-blur-xl border-l border-slate-200 dark:border-white/10 p-4 sm:p-5 h-screen flex flex-col overflow-y-auto transition-all duration-300 ease-in-out ${isRealtimeDrawerOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full xl:translate-x-0'
           }`}
       >
         <div className="flex justify-between items-center mb-4 border-b border-slate-200 dark:border-white/10 pb-3">
@@ -9947,10 +9993,7 @@ export default function DashboardPage() {
                         </span>
                       </div>
 
-                      <p className="text-[11.5px] text-amber-800 dark:text-amber-300 font-black leading-tight flex items-center gap-1">
-                        <span className="material-symbols-outlined text-sm text-amber-600">account_balance_wallet</span>
-                        <span>Khách hàng vừa bấm báo đã chuyển khoản!</span>
-                      </p>
+                      <p className="text-[11.5px] text-amber-800 dark:text-amber-300 font-black leading-tight">Khách hàng vừa bấm báo đã chuyển khoản!</p>
 
                       <div className="flex items-center justify-between pt-1 border-t border-amber-500/20">
                         <span className="text-[10.5px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tổng đơn:</span>

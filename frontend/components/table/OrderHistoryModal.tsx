@@ -42,6 +42,22 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
   const [isCallingCashStaff, setIsCallingCashStaff] = useState(false);
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
 
+  // Keyboard accessibility: Escape key handling
+  React.useEffect(() => {
+    if (!isOrderHistoryModalOpen && !selectedCashOrder) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (selectedCashOrder) {
+          setSelectedCashOrder(null);
+        } else if (isOrderHistoryModalOpen) {
+          setIsOrderHistoryModalOpen(false);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOrderHistoryModalOpen, selectedCashOrder, setIsOrderHistoryModalOpen]);
+
   const handleCancelOrder = async (order: any) => {
     if (!order?._id || cancellingOrderId) return;
     const confirmMsg =
@@ -145,23 +161,26 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
 
           {/* Modal Container */}
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="order-history-title"
             initial={{ scale: 0.96, opacity: 0, y: 10 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.96, opacity: 0, y: 10 }}
             transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-            className="relative w-full max-w-xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 rounded-2xl p-6 sm:p-7 shadow-2xl z-10 max-h-[90vh] flex flex-col font-sans text-left"
+            className="relative w-full max-w-xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 rounded-2xl p-4 sm:p-7 shadow-2xl z-10 max-h-[90vh] flex flex-col font-sans text-left"
           >
             {/* Header */}
             <div className="flex items-start justify-between pb-4 border-b border-slate-200 dark:border-white/10 shrink-0">
               <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white font-heading tracking-tight">
+                <h3 id="order-history-title" className="text-lg font-bold text-slate-900 dark:text-white font-heading tracking-tight">
                   {lang === 'en' ? 'Order History' : lang === 'zh' ? '订单历史' : 'Lịch sử đơn hàng'}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2 font-medium">
                   <span>{table?.tableName ? (lang === 'en' ? `Table ${table.tableName}` : lang === 'zh' ? `桌号 ${table.tableName}` : `Bàn số ${table.tableName}`) : (lang === 'en' ? 'Table' : lang === 'zh' ? '桌号' : 'Bàn')}</span>
                   <span>•</span>
                   <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
                     {lang === 'en' ? 'Live updates' : lang === 'zh' ? '实时更新' : 'Cập nhật trực tiếp'}
                   </span>
                 </p>
@@ -170,9 +189,10 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
               <button
                 onClick={() => setIsOrderHistoryModalOpen(false)}
                 className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
-                title="Đóng lịch sử đơn hàng"
+                title={lang === 'en' ? 'Close order history' : lang === 'zh' ? '关闭订单历史' : 'Đóng lịch sử đơn hàng'}
+                aria-label={lang === 'en' ? 'Close order history' : lang === 'zh' ? '关闭订单历史' : 'Đóng lịch sử đơn hàng'}
               >
-                <span className="material-symbols-outlined text-lg">close</span>
+                <span className="material-symbols-outlined text-lg" aria-hidden="true">close</span>
               </button>
             </div>
 
@@ -478,6 +498,9 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
               className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs"
             />
             <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="cash-guidance-title"
               initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
@@ -487,11 +510,11 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
               {/* Header */}
               <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center" aria-hidden="true">
                     <span className="material-symbols-outlined text-xl">payments</span>
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                    <h4 id="cash-guidance-title" className="text-sm font-bold text-slate-900 dark:text-white">
                       {lang === 'en' ? 'Cash Payment' : lang === 'zh' ? '现金支付' : 'Thanh toán Tiền mặt'}
                     </h4>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -502,6 +525,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                 <button
                   onClick={() => setSelectedCashOrder(null)}
                   className="w-8 h-8 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center text-lg cursor-pointer"
+                  aria-label={lang === 'en' ? 'Close cash payment modal' : lang === 'zh' ? '关闭现金支付窗口' : 'Đóng cửa sổ thanh toán tiền mặt'}
                 >
                   ×
                 </button>

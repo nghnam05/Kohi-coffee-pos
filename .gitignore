@@ -1,3 +1,96 @@
-.claude 
-.agents
+# ─────────────────────────────────────────────────────────────
+# KOHI COFFEE POS — COMPREHENSIVE .GITIGNORE
+# ─────────────────────────────────────────────────────────────
+
+# ── 1. DEPENDENCIES & PACKAGES ──────────────────────────────
+node_modules/
+**/node_modules/
+.pnp
+.pnp.js
+.yarn/
+package-lock.json.bak
+
+# ── 2. ENVIRONMENT & SECRETS (BẢO MẬT TUYỆT ĐỐI) ────────────
+.env
+.env.*
+*.env
+**/.env
+**/.env.*
+*.local
+**/.env.local
+**/.env.development.local
+**/.env.test.local
+**/.env.production.local
+*.pem
+*.key
+*.cert
+
+# ── 3. BUILD OUTPUTS & COMPILED ARTIFACTS ───────────────────
+dist/
+**/dist/
+build/
+**/build/
+.next/
+**/.next/
+out/
+**/out/
+*.tsbuildinfo
+.vercel/
+
+# ── 4. LOGS & DEBUGGING ─────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ── 5. AI ASSISTANTS, SCRATCH & TEMPORARY SCRIPTS ───────────
+.claude/
+.agents/
+.gemini/
+scratch/
+**/scratch/
 scratch
+.system_generated/
+.user_uploaded/
+restore_foods.cjs
+**/restore_foods.cjs
+check_db.cjs
+**/check_db.cjs
+analyze_fonts.cjs
+apply_font_weight_fixes.cjs
+*.scratch.js
+*.scratch.cjs
+
+# ── 6. TEMPORARY & CACHE DIRECTORIES ────────────────────────
+.temp/
+.tmp/
+tmp/
+*.tmp
+*.bak
+*.swp
+*.swo
+coverage/
+**/coverage/
+.nyc_output/
+
+# ── 7. IDE, EDITORS & OS SYSTEM FILES ───────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ── 8. TEMPORARY WORKFLOW & AUDIT NOTES ─────────────────────
+bugs.md
+DESIGN.md
+ui_refactor_rules_and_command.md

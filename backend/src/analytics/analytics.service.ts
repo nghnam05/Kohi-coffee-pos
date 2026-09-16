@@ -9,6 +9,7 @@ import { Expense, ExpenseDocument } from '../expenses/schemas/expense.schema.js'
 import { IngredientUsage, IngredientUsageDocument } from '../ingredients/schemas/ingredient-usage.schema.js';
 import { Table, TableDocument } from '../tables/schemas/table.schema.js';
 import { Food, FoodDocument } from '../foods/schemas/food.schema.js';
+import { getVietnamTime } from '../common/time.util.js';
 
 @Injectable()
 export class AnalyticsService {
@@ -74,11 +75,11 @@ export class AnalyticsService {
    */
   async getSummary(dateStr?: string, monthStr?: string): Promise<any> {
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-    const startOfWeek = new Date(todayStart);
-    startOfWeek.setDate(todayStart.getDate() - 6); // 7 ngày gần nhất
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+    const vnNow = getVietnamTime(now);
+    const todayStart = vnNow.startOfDay;
+    const todayEnd = vnNow.endOfDay;
+    const startOfWeek = new Date(todayStart.getTime() - 6 * 86400000);
+    const startOfMonth = new Date(Date.UTC(vnNow.year, vnNow.month, 1, -7, 0, 0, 0));
 
     // Baseline metrics (Today, Week, Month) với in-memory cache 20 giây để tối ưu tốc độ phản hồi khi chuyển ngày
     let baselineData: any;
@@ -114,9 +115,9 @@ export class AnalyticsService {
       const estimatedCOGS = Math.round(todayGross * 0.3);
       const effectiveCOGS = totalInventoryValue > 0 && totalInventoryValue < estimatedCOGS ? totalInventoryValue : estimatedCOGS;
       const todayEffectiveCOGS = todayIngredientUsageCost > 0 ? todayIngredientUsageCost : effectiveCOGS;
-      const todayNetProfit = Math.max(0, todayGross - todaySalary - todayEffectiveCOGS - todayExpenseCost);
-      const weekNetProfit = Math.max(0, weekGross - weekSalary - weekIngredientUsageCost - weekExpenseCost);
-      const monthNetProfit = Math.max(0, monthGross - monthSalary - monthIngredientUsageCost - monthExpenseCost);
+      const todayNetProfit = todayGross - todaySalary - todayEffectiveCOGS - todayExpenseCost;
+      const weekNetProfit = weekGross - weekSalary - weekIngredientUsageCost - weekExpenseCost;
+      const monthNetProfit = monthGross - monthSalary - monthIngredientUsageCost - monthExpenseCost;
 
       baselineData = {
         todayGross,
@@ -168,8 +169,8 @@ export class AnalyticsService {
 
     // Xác định kỳ thống kê được chọn: Ngày hay Tháng
     let periodType: 'day' | 'month' = 'day';
-    let selectedDate = dateStr || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    let selectedMonth = monthStr || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    let selectedDate = dateStr || vnNow.dateStr;
+    let selectedMonth = monthStr || `${vnNow.year}-${String(vnNow.month + 1).padStart(2, '0')}`;
 
     let startOfPeriod: Date;
     let endOfPeriod: Date;
@@ -177,13 +178,14 @@ export class AnalyticsService {
     if (monthStr) {
       periodType = 'month';
       const [mYear, mMonth] = monthStr.split('-').map(Number);
-      startOfPeriod = new Date(mYear, mMonth - 1, 1, 0, 0, 0, 0);
-      endOfPeriod = new Date(mYear, mMonth, 0, 23, 59, 59, 999);
+      startOfPeriod = new Date(Date.UTC(mYear, mMonth - 1, 1, -7, 0, 0, 0));
+      const nextMonthDate = new Date(Date.UTC(mYear, mMonth, 1, -7, 0, 0, 0));
+      endOfPeriod = new Date(nextMonthDate.getTime() - 1);
     } else {
       periodType = 'day';
       const [dYear, dMonth, dDay] = selectedDate.split('-').map(Number);
-      startOfPeriod = new Date(dYear, dMonth - 1, dDay, 0, 0, 0, 0);
-      endOfPeriod = new Date(dYear, dMonth - 1, dDay, 23, 59, 59, 999);
+      startOfPeriod = new Date(Date.UTC(dYear, dMonth - 1, dDay, -7, 0, 0, 0));
+      endOfPeriod = new Date(Date.UTC(dYear, dMonth - 1, dDay, 16, 59, 59, 999));
     }
 
     // Tính toán số liệu cho kỳ được chọn (Selected Period)
@@ -194,9 +196,11 @@ export class AnalyticsService {
       this.sumIngredientUsages(startOfPeriod, endOfPeriod),
     ]);
 
-    // Tiền nguyên liệu của ngày đó: Cộng dồn tất cả các lần giảm nguyên liệu (tiêu hao) trong kỳ
+    // Tiền nguyên liệu của ngày đó: Ưu tiên số tiêu hao thực tế; nếu chưa xuất kho mà có doanh thu, ước tính 30% doanh thu
     const periodIngredientCost = periodIngredientUsage;
-    const periodNetProfit = Math.max(0, periodGross - periodSalary - periodIngredientCost - periodExpenseCost);
+    const estimatedPeriodCOGS = Math.round(periodGross * 0.3);
+    const effectivePeriodIngredientCost = periodIngredientCost > 0 ? periodIngredientCost : (periodGross > 0 ? estimatedPeriodCOGS : 0);
+    const periodNetProfit = periodGross - periodSalary - effectivePeriodIngredientCost - periodExpenseCost;
 
     // Lấy chi tiết sổ sách cho chế độ Theo Ngày (Day Ledger)
     let dayOrders: any[] = [];
@@ -212,7 +216,8 @@ export class AnalyticsService {
               {
                 $or: [
                   { paidAt: { $gte: startOfPeriod, $lte: endOfPeriod } },
-                  { createdAt: { $gte: startOfPeriod, $lte: endOfPeriod } },
+                  { paidAt: null, createdAt: { $gte: startOfPeriod, $lte: endOfPeriod } },
+                  { paidAt: { $exists: false }, createdAt: { $gte: startOfPeriod, $lte: endOfPeriod } },
                 ],
               },
             ],
@@ -381,7 +386,7 @@ export class AnalyticsService {
       todaySalary,
       weekSalary,
       monthSalary,
-      todayIngredientCost: totalInventoryValue,
+      todayIngredientCost: todayIngredientUsageCost > 0 ? todayIngredientUsageCost : estimatedCOGS,
       todayIngredientUsageCost,
       totalInventoryValue,
       estimatedCOGS,
@@ -407,8 +412,11 @@ export class AnalyticsService {
       if (att.totalHours && att.totalHours > 0) {
         totalHours += att.totalHours;
       } else if (att.checkIn) {
+        const maxShiftHours = att.shift === 'evening' ? 5 : 6;
         const endTime = att.checkOut ? new Date(att.checkOut).getTime() : to.getTime();
-        const durationHours = Math.max(0, (endTime - new Date(att.checkIn).getTime()) / 3600000);
+        const rawHours = Math.max(0, (endTime - new Date(att.checkIn).getTime()) / 3600000);
+        // Khống chế tối đa theo ca chuẩn nếu chưa checkout để tránh đội chi phí lương ảo
+        const durationHours = att.checkOut ? rawHours : Math.min(rawHours, maxShiftHours);
         totalHours += durationHours;
       }
     }
@@ -429,7 +437,8 @@ export class AnalyticsService {
 
   /** Tính tổng doanh thu đơn hàng đã thanh toán trong khoảng thời gian */
   private async sumRevenue(from: Date, to: Date): Promise<number> {
-    const result = await this.orderModel.aggregate([
+    // 1. Doanh thu từ các đơn hàng đã thanh toán hoàn tất (ưu tiên paidAt)
+    const fullyPaidPromise = this.orderModel.aggregate([
       {
         $match: {
           $and: [
@@ -437,7 +446,8 @@ export class AnalyticsService {
             {
               $or: [
                 { paidAt: { $gte: from, $lte: to } },
-                { createdAt: { $gte: from, $lte: to } },
+                { paidAt: null, createdAt: { $gte: from, $lte: to } },
+                { paidAt: { $exists: false }, createdAt: { $gte: from, $lte: to } },
               ],
             },
           ],
@@ -445,7 +455,30 @@ export class AnalyticsService {
       },
       { $group: { _id: null, total: { $sum: '$totalAmount' } } },
     ]);
-    return result[0]?.total ?? 0;
+
+    // 2. Doanh thu từ các lượt thanh toán chia lẻ đã xác nhận của đơn đang phục vụ (chưa đóng đơn)
+    const partialPaidPromise = this.orderModel.aggregate([
+      {
+        $match: {
+          status: { $nin: ['paid', 'cancelled'] },
+          paymentStatus: { $ne: 'paid' },
+          'partialPayments.0': { $exists: true },
+        },
+      },
+      { $unwind: '$partialPayments' },
+      {
+        $match: {
+          'partialPayments.status': 'confirmed',
+          'partialPayments.paidAt': { $gte: from, $lte: to },
+        },
+      },
+      { $group: { _id: null, total: { $sum: '$partialPayments.amount' } } },
+    ]);
+
+    const [fullyPaidRes, partialRes] = await Promise.all([fullyPaidPromise, partialPaidPromise]);
+    const fullyPaid = fullyPaidRes[0]?.total ?? 0;
+    const partial = partialRes[0]?.total ?? 0;
+    return fullyPaid + partial;
   }
 
   /** Tính tổng lương đã chi trả trong khoảng thời gian */
@@ -520,7 +553,8 @@ export class AnalyticsService {
             {
               $or: [
                 { paidAt: { $gte: startOfMonth, $lte: to } },
-                { createdAt: { $gte: startOfMonth, $lte: to } },
+                { paidAt: null, createdAt: { $gte: startOfMonth, $lte: to } },
+                { paidAt: { $exists: false }, createdAt: { $gte: startOfMonth, $lte: to } },
               ],
             },
           ],
@@ -754,9 +788,11 @@ export class AnalyticsService {
         if (a.totalHours && a.totalHours > 0) {
           hours = a.totalHours;
         } else if (a.checkIn) {
+          const maxShiftHours = a.shift === 'evening' ? 5 : 6;
           const dayEnd = new Date(year, month, day, 23, 59, 59, 999);
           const endTime = a.checkOut ? new Date(a.checkOut).getTime() : dayEnd.getTime();
-          hours = Math.max(0, (endTime - new Date(a.checkIn).getTime()) / 3600000);
+          const rawHours = Math.max(0, (endTime - new Date(a.checkIn).getTime()) / 3600000);
+          hours = a.checkOut ? rawHours : Math.min(rawHours, maxShiftHours);
         }
         salaryByDay.set(day, (salaryByDay.get(day) || 0) + hours);
       }
@@ -805,7 +841,8 @@ export class AnalyticsService {
       const exp = expensesByDay.get(day) || { cost: 0, count: 0 };
       const expenseCost = exp.cost;
 
-      const netProfit = Math.max(0, grossRevenue - salaryCost - ingredientCost - expenseCost);
+      const effectiveIngCost = ingredientCost > 0 ? ingredientCost : (grossRevenue > 0 ? Math.round(grossRevenue * 0.3) : 0);
+      const netProfit = grossRevenue - salaryCost - effectiveIngCost - expenseCost;
 
       breakdown.push({
         date: dateKey,
@@ -814,7 +851,7 @@ export class AnalyticsService {
         grossRevenue,
         ordersCount,
         salaryCost,
-        ingredientCost,
+        ingredientCost: effectiveIngCost,
         expenseCost,
         netProfit,
         expensesCount: exp.count,
@@ -838,7 +875,8 @@ export class AnalyticsService {
             {
               $or: [
                 { paidAt: { $gte: fromDate, $lte: toDate } },
-                { createdAt: { $gte: fromDate, $lte: toDate } },
+                { paidAt: null, createdAt: { $gte: fromDate, $lte: toDate } },
+                { paidAt: { $exists: false }, createdAt: { $gte: fromDate, $lte: toDate } },
               ],
             },
           ],

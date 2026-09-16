@@ -150,17 +150,18 @@ export default function LoginPage() {
   const isDark = resolvedTheme === 'dark';
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans relative overflow-y-auto overflow-x-hidden selection:bg-[#3B82F6] selection:text-white">
+    <div className="min-h-screen flex flex-col justify-between bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans relative overflow-y-auto overflow-x-hidden selection:bg-[#38BDF8] selection:text-slate-950">
       {/* Ambient background glow effects */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-blue-500/10 via-blue-500/5 to-transparent blur-3xl pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-[#38BDF8]/10 via-[#38BDF8]/5 to-transparent blur-3xl pointer-events-none" />
 
       {/* ── TOP HEADER CONTROLS ─────────────────────────────────────────── */}
       <header className="w-full relative z-20 px-4 py-4 sm:px-8 sm:py-6">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <button
             onClick={() => router.push('/')}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-[#3B82F6] dark:hover:border-[#3B82F6] hover:text-[#3B82F6] dark:hover:text-[#38BDF8] transition-all cursor-pointer active:scale-95 shadow-xs"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-[#0d1322] border border-slate-200/80 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-white/20 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer active:scale-95 shadow-2xs"
           >
+            <span className="material-symbols-outlined text-base">arrow_back</span>
             <span>{currText.backToHome}</span>
           </button>
 
@@ -177,13 +178,13 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="w-full max-w-[420px] bg-white dark:bg-[#0F172A]/90 border border-slate-200/90 dark:border-white/10 rounded-2xl p-7 sm:p-9 shadow-xl dark:shadow-2xl backdrop-blur-xl relative overflow-hidden transition-all"
+          className="w-full max-w-[420px] bg-white dark:bg-[#0d1322] border border-slate-200/80 dark:border-white/10 rounded-3xl p-7 sm:p-9 shadow-xl dark:shadow-2xl backdrop-blur-xl relative overflow-hidden transition-all"
         >
           {/* Brand Header */}
           <div className="text-center mb-8 flex flex-col items-center">
             <BrandLogo onClick={() => router.push('/')} />
             <div className="mt-4 space-y-1">
-              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight font-heading">
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight font-heading">
                 {currText.title}
               </h1>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
@@ -195,14 +196,14 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-4">
             {/* Email Field */}
             <div className="space-y-1.5 text-left">
-              <label htmlFor="email" className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+              <label htmlFor="email" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 {currText.emailLabel}
               </label>
               <div className={`border ${
                 emailError
                   ? 'border-rose-500 ring-2 ring-rose-500/15'
-                  : 'border-slate-200 dark:border-white/10'
-              } bg-slate-50/80 dark:bg-slate-900/80 rounded-xl h-11 flex items-center px-4 transition-all focus-within:border-[#3B82F6] dark:focus-within:border-[#38BDF8] focus-within:ring-2 focus-within:ring-[#3B82F6]/15 focus-within:bg-white dark:focus-within:bg-slate-900`}>
+                  : 'border-slate-200/80 dark:border-white/10'
+              } bg-slate-50/80 dark:bg-white/[0.03] rounded-2xl h-11 flex items-center px-4 transition-all focus-within:border-[#0284c7] dark:focus-within:border-[#38BDF8] focus-within:ring-2 focus-within:ring-[#38BDF8]/15 focus-within:bg-white dark:focus-within:bg-[#0d1322]`}>
                 <input
                   id="email"
                   type="email"
@@ -218,13 +219,13 @@ export default function LoginPage() {
             {/* Password Field */}
             <div className="space-y-1.5 text-left">
               <div className="flex items-center justify-between">
-                <label htmlFor="password" className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                <label htmlFor="password" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   {currText.passwordLabel}
                 </label>
                 <button
                   type="button"
                   onClick={() => setIsForgotPasswordModalOpen(true)}
-                  className="text-[11px] font-bold text-[#3B82F6] dark:text-[#38BDF8] hover:underline cursor-pointer transition-colors"
+                  className="text-[11px] font-bold text-[#0284c7] dark:text-[#38BDF8] hover:underline cursor-pointer transition-colors"
                 >
                   {currText.forgotPassword}
                 </button>
@@ -233,8 +234,8 @@ export default function LoginPage() {
               <div className={`border ${
                 passwordError
                   ? 'border-rose-500 ring-2 ring-rose-500/15'
-                  : 'border-slate-200 dark:border-white/10'
-              } bg-slate-50/80 dark:bg-slate-900/80 rounded-xl h-11 flex items-center px-4 transition-all focus-within:border-[#3B82F6] dark:focus-within:border-[#38BDF8] focus-within:ring-2 focus-within:ring-[#3B82F6]/15 focus-within:bg-white dark:focus-within:bg-slate-900`}>
+                  : 'border-slate-200/80 dark:border-white/10'
+              } bg-slate-50/80 dark:bg-white/[0.03] rounded-2xl h-11 flex items-center px-4 transition-all focus-within:border-[#0284c7] dark:focus-within:border-[#38BDF8] focus-within:ring-2 focus-within:ring-[#38BDF8]/15 focus-within:bg-white dark:focus-within:bg-[#0d1322]`}>
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -268,7 +269,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="mt-3 w-full h-11 bg-[#3B82F6] hover:bg-blue-600 text-white font-black rounded-xl shadow-md hover:shadow-lg hover:shadow-blue-500/25 active:scale-[0.98] transition-all duration-200 disabled:opacity-60 flex items-center justify-center text-xs uppercase tracking-wider font-sans cursor-pointer"
+              className="mt-3 w-full h-11 bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 font-bold rounded-2xl shadow-md hover:shadow-lg active:scale-[0.98] transition-all duration-200 disabled:opacity-60 flex items-center justify-center text-xs uppercase tracking-wider font-sans cursor-pointer"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center gap-2">

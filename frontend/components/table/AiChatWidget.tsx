@@ -248,7 +248,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
             {msg.role === 'ai' && msg.recommendedFoods && msg.recommendedFoods.length > 0 && (
               <div className="w-full max-w-[95%] space-y-2 mt-1">
                 <p className="text-[11px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center gap-1">
-                  <span className="material-symbols-outlined text-xs">restaurant_menu</span>
+                  <span className="material-symbols-outlined text-xs">menu_book</span>
                   {lang === 'en'
                     ? 'Recommended for you:'
                     : lang === 'zh'
