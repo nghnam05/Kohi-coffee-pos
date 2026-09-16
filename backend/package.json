@@ -15,6 +15,7 @@
     "seed": "node seeds/seed.js",
     "seed:today": "node seeds/seed-today.js",
     "seed:day14": "node seeds/seed-day-14.js",
+    "clean:data": "node clean_data.cjs",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
