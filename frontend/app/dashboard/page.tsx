@@ -3804,13 +3804,13 @@ export default function DashboardPage() {
 
       {/* ── COLUMN 1: LEFT SIDEBAR (bg-white / dark:bg-[#0B0F17]) ────────────────────── */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-40 w-[280px] max-w-[85vw] shrink-0 bg-white dark:bg-[#0B0F17] border-r border-slate-200 dark:border-white/10 flex flex-col justify-between h-full transition-all duration-300 ease-in-out ${isMobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'
+        className={`fixed lg:static inset-y-0 left-0 z-40 w-[275px] xl:w-[280px] 2xl:w-[290px] max-w-[85vw] shrink-0 bg-white dark:bg-[#0B0F17] border-r border-slate-200 dark:border-white/10 flex flex-col justify-between h-full transition-all duration-300 ease-in-out ${isMobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'
           }`}
         data-purpose="left-sidebar"
       >
-        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800">
           {/* Brand Header */}
-          <div className="p-6 flex items-center justify-between border-b border-slate-100 dark:border-white/10">
+          <div className="px-6 py-5 flex items-center justify-between border-b border-slate-100 dark:border-white/10">
             <BrandLogo onClick={() => router.push('/')} />
             <button
               onClick={() => setIsMobileSidebarOpen(false)}
@@ -3821,12 +3821,12 @@ export default function DashboardPage() {
           </div>
 
           {/* Navigation Links */}
-          <nav aria-label="Sidebar" className="p-3 space-y-1 font-sans">
+          <nav aria-label="Sidebar" className="px-2.5 py-2 space-y-0.5 font-sans">
             {/* Admin Grouped Navigation vs Staff Navigation */}
             {user?.role === 'admin' ? (
-              <div className="space-y-4">
+              <div className="space-y-2.5">
                 {/* ── NHÓM 1: VẬN HÀNH THỜI GIAN THỰC (OPERATIONS) ── */}
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   <div className="px-3 pb-1 flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
@@ -3840,17 +3840,17 @@ export default function DashboardPage() {
                       setActiveTab('orders');
                       setIsMobileSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center px-3 py-2.5 text-xs sm:text-sm rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'orders'
+                    className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'orders'
                         ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'orders'
+                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'orders'
                         ? 'text-[#0284c7] dark:text-[#38BDF8]'
                         : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>receipt_long</span>
                     <span className="flex-1 truncate text-left">{t.tabOrders}</span>
-                    <span className={`ml-auto inline-block py-0.5 px-2 text-[11px] rounded-full font-black flex-shrink-0 ${activeTab === 'orders'
+                    <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-black flex-shrink-0 ${activeTab === 'orders'
                         ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                       }`}>
@@ -3864,17 +3864,17 @@ export default function DashboardPage() {
                       setActiveTab('tables');
                       setIsMobileSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center px-3 py-2.5 text-xs sm:text-sm rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'tables'
+                    className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'tables'
                         ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'tables'
+                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'tables'
                         ? 'text-[#0284c7] dark:text-[#38BDF8]'
                         : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>table_restaurant</span>
                     <span className="flex-1 truncate text-left">{t.tabTables}</span>
-                    <span className={`ml-auto inline-block py-0.5 px-2 text-[11px] rounded-full font-black flex-shrink-0 ${activeTab === 'tables'
+                    <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-black flex-shrink-0 ${activeTab === 'tables'
                         ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                       }`}>
@@ -3889,17 +3889,17 @@ export default function DashboardPage() {
                       setIsMobileSidebarOpen(false);
                       if (token) fetchReservations(token);
                     }}
-                    className={`w-full flex items-center px-3 py-2.5 text-xs sm:text-sm rounded-xl group transition-all text-left cursor-pointer ${activeTab === ('reservations' as any)
+                    className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left cursor-pointer ${activeTab === ('reservations' as any)
                         ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === ('reservations' as any)
+                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === ('reservations' as any)
                         ? 'text-[#0284c7] dark:text-[#38BDF8]'
                         : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>event_available</span>
                     <span className="flex-1 truncate text-left">Quản lý bàn đã đặt</span>
-                    <span className={`ml-auto inline-block py-0.5 px-2 text-[11px] rounded-full font-black flex-shrink-0 ${activeTab === ('reservations' as any)
+                    <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-black flex-shrink-0 ${activeTab === ('reservations' as any)
                         ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                       }`}>
@@ -3909,8 +3909,8 @@ export default function DashboardPage() {
                 </div>
 
                 {/* ── NHÓM 2: QUẢN TRỊ CỬA HÀNG (STORE MANAGEMENT) ── */}
-                <div className="pt-2 border-t border-slate-100 dark:border-white/5 space-y-1">
-                  <p className="px-3 pb-1 text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                <div className="pt-1.5 border-t border-slate-100 dark:border-white/5 space-y-0.5">
+                  <p className="px-3 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
                     Quản trị cửa hàng
                   </p>
 
@@ -3920,17 +3920,17 @@ export default function DashboardPage() {
                       setActiveTab('foods');
                       setIsMobileSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center px-3 py-2.5 text-xs sm:text-sm rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'foods'
+                    className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'foods'
                         ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'foods'
+                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'foods'
                         ? 'text-[#0284c7] dark:text-[#38BDF8]'
                         : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>menu_book</span>
                     <span className="flex-1 truncate text-left">{t.tabFoods}</span>
-                    <span className={`ml-auto inline-block py-0.5 px-2 text-[11px] rounded-full font-black flex-shrink-0 ${activeTab === 'foods'
+                    <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-black flex-shrink-0 ${activeTab === 'foods'
                         ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                       }`}>
@@ -3944,12 +3944,12 @@ export default function DashboardPage() {
                       setActiveTab('inventory');
                       setIsMobileSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center px-3 py-2.5 text-xs sm:text-sm rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'inventory'
+                    className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'inventory'
                         ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'inventory'
+                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'inventory'
                         ? 'text-[#0284c7] dark:text-[#38BDF8]'
                         : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>inventory_2</span>
@@ -3962,12 +3962,12 @@ export default function DashboardPage() {
                       setActiveTab('users');
                       setIsMobileSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center px-3 py-2.5 text-xs sm:text-sm rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'users'
+                    className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'users'
                         ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'users'
+                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'users'
                         ? 'text-[#0284c7] dark:text-[#38BDF8]'
                         : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>group</span>
@@ -3980,18 +3980,18 @@ export default function DashboardPage() {
                       setActiveTab('attendance');
                       setIsMobileSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center px-3 py-2.5 text-xs sm:text-sm rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'attendance'
+                    className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'attendance'
                         ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'attendance'
+                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'attendance'
                         ? 'text-[#0284c7] dark:text-[#38BDF8]'
                         : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>schedule</span>
                     <span className="flex-1 truncate text-left">Chấm công & Bảng lương</span>
                     {shiftSwaps.filter((s) => s.status === 'pending').length > 0 && (
-                      <span className="ml-auto px-2 py-0.5 text-[10px] font-black bg-amber-500 text-white rounded-full animate-pulse shadow-xs">
+                      <span className="ml-auto px-1.5 py-0.5 text-[9.5px] font-black bg-amber-500 text-white rounded-full animate-pulse shadow-xs shrink-0">
                         {shiftSwaps.filter((s) => s.status === 'pending').length} đổi ca
                       </span>
                     )}
@@ -3999,8 +3999,8 @@ export default function DashboardPage() {
                 </div>
 
                 {/* ── NHÓM 3: TÀI CHÍNH & TIẾP THỊ (FINANCE & GROWTH) ── */}
-                <div className="pt-2 border-t border-slate-100 dark:border-white/5 space-y-1">
-                  <p className="px-3 pb-1 text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                <div className="pt-1.5 border-t border-slate-100 dark:border-white/5 space-y-0.5">
+                  <p className="px-3 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
                     Tài chính & Tiếp thị
                   </p>
 
@@ -4014,12 +4014,12 @@ export default function DashboardPage() {
                         fetchReviews(token);
                       }
                     }}
-                    className={`w-full flex items-center px-3 py-2.5 text-xs sm:text-sm rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'analytics'
+                    className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'analytics'
                         ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'analytics'
+                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'analytics'
                         ? 'text-[#0284c7] dark:text-[#38BDF8]'
                         : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>bar_chart</span>
@@ -4033,17 +4033,17 @@ export default function DashboardPage() {
                       setIsMobileSidebarOpen(false);
                       if (token) fetchCoupons(token);
                     }}
-                    className={`w-full flex items-center px-3 py-2.5 text-xs sm:text-sm rounded-xl group transition-all text-left cursor-pointer ${activeTab === ('coupons' as any)
+                    className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left cursor-pointer ${activeTab === ('coupons' as any)
                         ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === ('coupons' as any)
+                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === ('coupons' as any)
                         ? 'text-[#0284c7] dark:text-[#38BDF8]'
                         : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>local_offer</span>
                     <span className="flex-1 truncate text-left">Mã giảm giá</span>
-                    <span className={`ml-auto inline-block py-0.5 px-2 text-[11px] rounded-full font-black flex-shrink-0 ${activeTab === ('coupons' as any)
+                    <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-black flex-shrink-0 ${activeTab === ('coupons' as any)
                         ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                       }`}>
@@ -4062,14 +4062,14 @@ export default function DashboardPage() {
                     setActiveTab('orders');
                     setIsMobileSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${isStaffLocked
+                  className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left ${isStaffLocked
                     ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
                     : activeTab === 'orders'
                       ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
                       : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-normal'
                     }`}
                 >
-                  <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'orders'
+                  <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'orders'
                     ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                     : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                     }`}>
@@ -4079,7 +4079,7 @@ export default function DashboardPage() {
                   {isStaffLocked ? (
                     <span className="material-symbols-outlined text-sm text-amber-500 ml-auto">lock</span>
                   ) : (
-                    <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-extrabold font-mono flex-shrink-0 ${activeTab === 'orders'
+                    <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-extrabold font-mono flex-shrink-0 ${activeTab === 'orders'
                       ? 'bg-[#3B82F6] text-white'
                       : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                       }`}>
@@ -4098,14 +4098,14 @@ export default function DashboardPage() {
                         setActiveTab('foods');
                         setIsMobileSidebarOpen(false);
                       }}
-                      className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${isStaffLocked
+                      className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left ${isStaffLocked
                         ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
                         : activeTab === 'foods'
                           ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
                           : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-normal'
                         }`}
                     >
-                      <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'foods'
+                      <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'foods'
                         ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                         : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                         }`}>menu_book</span>
@@ -4113,7 +4113,7 @@ export default function DashboardPage() {
                       {isStaffLocked ? (
                         <span className="material-symbols-outlined text-sm text-amber-500 ml-auto">lock</span>
                       ) : (
-                        <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-extrabold font-mono flex-shrink-0 ${activeTab === 'foods'
+                        <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-extrabold font-mono flex-shrink-0 ${activeTab === 'foods'
                           ? 'bg-[#3B82F6] text-white'
                           : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                           }`}>
@@ -4129,14 +4129,14 @@ export default function DashboardPage() {
                         setActiveTab('tables');
                         setIsMobileSidebarOpen(false);
                       }}
-                      className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${isStaffLocked
+                      className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left ${isStaffLocked
                         ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
                         : activeTab === 'tables'
                           ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
                           : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-normal'
                         }`}
                     >
-                      <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'tables'
+                      <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'tables'
                         ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                         : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                         }`}>table_restaurant</span>
@@ -4144,7 +4144,7 @@ export default function DashboardPage() {
                       {isStaffLocked ? (
                         <span className="material-symbols-outlined text-sm text-amber-500 ml-auto">lock</span>
                       ) : (
-                        <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-extrabold font-mono flex-shrink-0 ${activeTab === 'tables'
+                        <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-extrabold font-mono flex-shrink-0 ${activeTab === 'tables'
                           ? 'bg-[#3B82F6] text-white'
                           : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                           }`}>
@@ -4161,14 +4161,14 @@ export default function DashboardPage() {
                         setIsMobileSidebarOpen(false);
                         if (token) fetchReservations(token);
                       }}
-                      className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${isStaffLocked
+                      className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left ${isStaffLocked
                         ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
                         : activeTab === ('reservations' as any)
                           ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
                           : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-normal'
                         }`}
                     >
-                      <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === ('reservations' as any)
+                      <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === ('reservations' as any)
                         ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                         : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                         }`}>event_available</span>
@@ -4176,7 +4176,7 @@ export default function DashboardPage() {
                       {isStaffLocked ? (
                         <span className="material-symbols-outlined text-sm text-amber-500 ml-auto">lock</span>
                       ) : (
-                        <span className={`ml-auto inline-block py-0.5 px-2 text-xs rounded-full font-extrabold font-mono flex-shrink-0 ${activeTab === ('reservations' as any)
+                        <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-extrabold font-mono flex-shrink-0 ${activeTab === ('reservations' as any)
                           ? 'bg-[#3B82F6] text-white'
                           : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                           }`}>
@@ -4193,18 +4193,18 @@ export default function DashboardPage() {
                     setActiveTab('attendance');
                     setIsMobileSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${activeTab === 'attendance'
+                  className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left ${activeTab === 'attendance'
                     ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold ring-2 ring-blue-500/40'
                     : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-normal'
                     }`}
                 >
-                  <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'attendance'
+                  <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'attendance'
                     ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                     : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                     }`}>schedule</span>
                   <span className="flex-1 truncate text-left">Chấm công ca làm</span>
                   {isStaffLocked && (
-                    <span className="ml-auto px-2 py-0.5 text-[10px] font-black bg-amber-500 text-white rounded-full animate-pulse shadow-xs">
+                    <span className="ml-auto px-1.5 py-0.5 text-[9.5px] font-black bg-amber-500 text-white rounded-full animate-pulse shadow-xs shrink-0">
                       Cần Check-in
                     </span>
                   )}
@@ -4219,17 +4219,17 @@ export default function DashboardPage() {
                       setActiveTab('inventory');
                       setIsMobileSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center px-3 py-2.5 text-sm rounded-xl group transition-all text-left ${isStaffLocked
+                    className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left ${isStaffLocked
                       ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed select-none'
                       : activeTab === 'inventory'
                         ? 'sidebar-active bg-blue-50 text-[#3B82F6] dark:bg-blue-500/15 dark:text-[#38BDF8] dark:border dark:border-blue-500/30 font-bold'
                         : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-normal'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-3 flex-shrink-0 text-xl ${activeTab === 'inventory'
+                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'inventory'
                       ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                       : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                      }`}>inventory_2</span>
+                    }`}>inventory_2</span>
                     <span className="flex-1 truncate text-left">Quản lý kho nguyên liệu</span>
                   </button>
                 )}
@@ -4239,31 +4239,36 @@ export default function DashboardPage() {
         </div>
 
         {/* Controls & Bottom User Profile */}
-        <div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-slate-200 dark:border-white/10 space-y-3 font-sans">
+        <div className="p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] border-t border-slate-200 dark:border-white/10 space-y-2 font-sans shrink-0">
           <div className="flex items-center justify-between gap-2">
             <LanguageToggleSwitch lang={lang} setLang={setLang} />
             <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
           </div>
 
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center justify-between pt-1">
             <button
               onClick={() => {
                 setIsProfileModalOpen(true);
                 setIsMobileSidebarOpen(false);
               }}
-              className="flex items-center gap-3 min-w-0 text-left hover:opacity-80 transition-opacity flex-1"
+              className="flex items-center gap-2.5 min-w-0 text-left hover:opacity-80 transition-opacity flex-1 cursor-pointer"
+              title={user?.name || 'Quản trị viên'}
             >
-              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-[#3B82F6] text-[#3B82F6] dark:text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-[#3B82F6] text-[#3B82F6] dark:text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
                 {user?.name ? user.name.charAt(0).toUpperCase() : 'N'}
               </div>
               <div className="truncate min-w-0 flex-1">
-                <p className="text-sm font-extrabold text-slate-900 dark:text-slate-100 truncate leading-tight">{user?.name || 'Nhân viên Phục vụ'}</p>
-                <p className="text-xs font-normal text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 truncate leading-tight">Sửa thông tin</p>
+                <p className="text-xs font-extrabold text-slate-900 dark:text-slate-100 truncate leading-tight" title={user?.name || 'Quản trị viên'}>
+                  {user?.name || 'Nhân viên Phục vụ'}
+                </p>
+                <p className="text-[10.5px] font-normal text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 truncate leading-tight">
+                  Sửa thông tin
+                </p>
               </div>
             </button>
             <button
               onClick={handleLogout}
-              className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors p-1.5 rounded-lg flex-shrink-0 ml-2"
+              className="text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors p-1.5 rounded-lg flex-shrink-0 ml-1 cursor-pointer"
               title="Đăng xuất"
             >
               <span className="material-symbols-outlined text-lg">logout</span>
@@ -4422,7 +4427,7 @@ export default function DashboardPage() {
                 placeholder={t.foodSearchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 sm:w-64 bg-white dark:bg-[#131929] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg px-3.5 py-2 text-xs text-[#181c23] dark:text-white placeholder-[#717785] focus:outline-none focus:border-[#0059b9] shadow-xs"
+                className="w-40 sm:w-48 md:w-56 bg-white dark:bg-[#131929] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg px-3.5 py-2 text-xs text-[#181c23] dark:text-white placeholder-[#717785] focus:outline-none focus:border-[#0059b9] shadow-xs"
               />
             )}
           </div>
@@ -4837,7 +4842,7 @@ export default function DashboardPage() {
                       )}
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {paymentHistory.map((payment) => {
                         const isSelected = selectedPaymentIds.includes(payment._id);
                         return (
@@ -4975,7 +4980,7 @@ export default function DashboardPage() {
                     }
 
                     return (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                         {filteredAllOrders.map((order) => {
                           const isSelected = selectedOrderIds.includes(order._id);
                           const invoiceCode = (order as any).invoiceCode || `HD-${order._id.slice(-6).toUpperCase()}`;
@@ -5087,7 +5092,7 @@ export default function DashboardPage() {
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t.noOrdersDesc}</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3.5 sm:gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
                     {displayedOrders.map((order) => {
                       const getOrderStatusBadge = (status: string) => {
                         switch (status) {
@@ -5480,14 +5485,14 @@ export default function DashboardPage() {
               <div className="flex-1 overflow-y-auto space-y-4 pb-32 lg:pb-10 scrollbar-thin">
                 {/* Top Toolbar: Count, View Mode Switcher, Category Manager, Add Food */}
                 {/* Top Toolbar: Count, View Mode Switcher, Category Manager, Add Food */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 bg-white dark:bg-[#111622] border border-slate-200/80 dark:border-white/[0.08] p-3.5 sm:p-4 rounded-3xl shadow-xs">
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3.5 bg-white dark:bg-[#111622] border border-slate-200/80 dark:border-white/[0.08] p-3.5 sm:p-4 rounded-3xl shadow-xs">
                   <div className="flex items-center gap-3 flex-wrap">
-                    <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300">
+                    <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
                       Tổng cộng <strong className="text-slate-900 dark:text-white font-bold">{filteredFoods.length}</strong> món ăn
                     </span>
 
                     {/* View Mode Toggle: [Lưới] và [Bảng] */}
-                    <div className="flex items-center p-1 bg-slate-100/90 dark:bg-[#090D16] rounded-xl border border-slate-200/80 dark:border-white/10 text-xs font-semibold">
+                    <div className="flex items-center p-1 bg-slate-100/90 dark:bg-[#090D16] rounded-xl border border-slate-200/80 dark:border-white/10 text-xs font-semibold shrink-0">
                       <button
                         type="button"
                         onClick={() => setFoodViewMode('grid')}
@@ -5515,7 +5520,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+                  <div className="flex items-center gap-2 w-full xl:w-auto flex-wrap sm:flex-nowrap">
                     {user?.role === 'admin' && (
                       <button
                         onClick={() => {
@@ -5523,10 +5528,10 @@ export default function DashboardPage() {
                           setCategoryForm({ name: '', icon: 'local_cafe', order: categories.length + 1, isActive: true });
                           setIsCategoryModalOpen(true);
                         }}
-                        className="px-3.5 sm:px-4 py-2.5 bg-slate-100/90 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 text-slate-800 dark:text-slate-200 font-bold text-xs sm:text-sm rounded-2xl transition-all flex items-center justify-center gap-1.5 border border-slate-200/80 dark:border-white/10 cursor-pointer active:scale-95"
+                        className="px-3.5 sm:px-4 py-2.5 bg-slate-100/90 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 text-slate-800 dark:text-slate-200 font-bold text-xs sm:text-sm rounded-2xl transition-all flex items-center justify-center gap-1.5 border border-slate-200/80 dark:border-white/10 cursor-pointer active:scale-95 whitespace-nowrap shrink-0"
                       >
                         <span className="material-symbols-outlined text-base">category</span>
-                        <span className="truncate">Quản lý Danh mục</span>
+                        <span>Quản lý Danh mục</span>
                       </button>
                     )}
                     <button
@@ -5535,11 +5540,11 @@ export default function DashboardPage() {
                         setFoodForm({ name: '', price: '', category: categories[0]?.name || 'Cà phê', description: '', image: '', isAvailable: true });
                         setIsFoodModalOpen(true);
                       }}
-                      className={`px-4 sm:px-5 py-2.5 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] hover:text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-sky-500/20 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer ${user?.role === 'admin' ? '' : 'col-span-2 sm:col-span-1'
+                      className={`px-4 sm:px-5 py-2.5 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] hover:text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-sky-500/20 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap shrink-0 ${user?.role === 'admin' ? '' : 'w-full sm:w-auto'
                         }`}
                     >
                       <span className="material-symbols-outlined text-lg">add_circle</span>
-                      <span className="truncate">Thêm món mới</span>
+                      <span>Thêm món mới</span>
                     </button>
                   </div>
                 </div>
@@ -5637,7 +5642,7 @@ export default function DashboardPage() {
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-5">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                             {group.items.map((food) => (
                               <div
                                 key={food._id}
@@ -5759,7 +5764,7 @@ export default function DashboardPage() {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                           {filteredFoods.map((food) => (
                             <div
                               key={food._id}
@@ -6166,7 +6171,7 @@ export default function DashboardPage() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                   {filteredTables.map((tbl) => {
                     const tableOrders = orders.filter(
                       (o) => (o.tableId?._id === tbl._id || (o.tableId as any) === tbl._id) && o.status !== 'paid' && o.status !== 'cancelled'
@@ -6177,7 +6182,7 @@ export default function DashboardPage() {
                     let cardBorder = 'border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-700';
                     let headerBg = 'bg-white dark:bg-slate-900/50';
                     let statusBadge = (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 whitespace-nowrap shrink-0">
                         <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                         Trống
                       </span>
@@ -6187,8 +6192,8 @@ export default function DashboardPage() {
                       cardBorder = 'border-emerald-500/40 shadow-emerald-500/5 dark:shadow-emerald-500/10';
                       headerBg = 'bg-emerald-500/10 dark:bg-emerald-950/20';
                       statusBadge = (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                          <span className="relative flex h-2 w-2">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 whitespace-nowrap shrink-0">
+                          <span className="relative flex h-2 w-2 shrink-0">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                           </span>
@@ -6199,8 +6204,8 @@ export default function DashboardPage() {
                       cardBorder = 'border-amber-500/40 shadow-amber-500/5 dark:shadow-amber-500/10';
                       headerBg = 'bg-amber-500/10 dark:bg-amber-950/20';
                       statusBadge = (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                          <span className="relative flex h-2 w-2">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 whitespace-nowrap shrink-0">
+                          <span className="relative flex h-2 w-2 shrink-0">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                           </span>
@@ -6216,13 +6221,13 @@ export default function DashboardPage() {
                       >
                         {/* Card Header */}
                         <div className="space-y-3">
-                          <div className={`p-3 rounded-xl ${headerBg} flex items-center justify-between`}>
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-9 h-9 rounded-xl bg-[#38BDF8]/10 text-[#38BDF8] border border-[#38BDF8]/20 flex items-center justify-center font-black text-sm shadow-xs select-none">
+                          <div className={`p-3 rounded-xl ${headerBg} flex items-center justify-between gap-2`}>
+                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                              <div className="w-9 h-9 rounded-xl bg-[#38BDF8]/10 text-[#38BDF8] border border-[#38BDF8]/20 flex items-center justify-center font-black text-sm shadow-xs select-none shrink-0">
                                 {(tbl.tableName || 'B').charAt(0).toUpperCase()}
                               </div>
-                              <div>
-                                <h4 className="font-extrabold text-slate-900 dark:text-white text-sm tracking-tight">{tbl.tableName}</h4>
+                              <div className="min-w-0 flex-1">
+                                <h4 className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base tracking-tight whitespace-nowrap truncate" title={tbl.tableName}>{tbl.tableName}</h4>
                                 {hasActiveOrders && (
                                   <div>
                                     <p className="text-[10.5px] font-extrabold text-slate-700 dark:text-slate-300">
@@ -6245,7 +6250,9 @@ export default function DashboardPage() {
                                 )}
                               </div>
                             </div>
-                            {statusBadge}
+                            <div className="shrink-0">
+                              {statusBadge}
+                            </div>
                           </div>
 
                           {/* Quick Status Control Buttons */}
@@ -6255,7 +6262,7 @@ export default function DashboardPage() {
                               <button
                                 type="button"
                                 onClick={() => handleQuickTableStatusUpdate(tbl._id, 'empty')}
-                                className={`py-2.5 rounded-lg text-[10.5px] font-extrabold transition-all cursor-pointer active:scale-95 ${effectiveStatus === 'empty'
+                                className={`py-2 px-1 rounded-lg text-[10px] sm:text-[10.5px] font-extrabold transition-all cursor-pointer active:scale-95 whitespace-nowrap text-center ${effectiveStatus === 'empty'
                                   ? 'bg-white dark:bg-[#1e293b] text-slate-900 dark:text-white shadow-xs font-black'
                                   : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                                   }`}
@@ -6265,7 +6272,7 @@ export default function DashboardPage() {
                               <button
                                 type="button"
                                 onClick={() => handleQuickTableStatusUpdate(tbl._id, 'serving')}
-                                className={`py-2.5 rounded-lg text-[10.5px] font-extrabold transition-all cursor-pointer active:scale-95 ${effectiveStatus === 'serving'
+                                className={`py-2 px-1 rounded-lg text-[10px] sm:text-[10.5px] font-extrabold transition-all cursor-pointer active:scale-95 whitespace-nowrap text-center ${effectiveStatus === 'serving'
                                   ? 'bg-emerald-500 text-white shadow-xs font-black'
                                   : 'text-slate-500 hover:text-emerald-500'
                                   }`}
@@ -6275,7 +6282,7 @@ export default function DashboardPage() {
                               <button
                                 type="button"
                                 onClick={() => handleQuickTableStatusUpdate(tbl._id, 'reserved')}
-                                className={`py-2.5 rounded-lg text-[10.5px] font-extrabold transition-all cursor-pointer active:scale-95 ${effectiveStatus === 'reserved'
+                                className={`py-2 px-1 rounded-lg text-[10px] sm:text-[10.5px] font-extrabold transition-all cursor-pointer active:scale-95 whitespace-nowrap text-center ${effectiveStatus === 'reserved'
                                   ? 'bg-amber-500 text-white shadow-xs font-black'
                                   : 'text-slate-500 hover:text-amber-500'
                                   }`}
@@ -6287,10 +6294,10 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Card Action Footer */}
-                        <div className="pt-3 mt-3 border-t border-slate-100 dark:border-[#1e293b] flex items-center gap-2">
+                        <div className="pt-3 mt-3 border-t border-slate-100 dark:border-[#1e293b] flex items-center gap-1.5 sm:gap-2">
                           <button
                             onClick={() => setQrTable(tbl)}
-                            className="flex-1 h-9 bg-[#38BDF8]/10 hover:bg-[#38BDF8] text-[#0284c7] dark:text-[#38BDF8] hover:text-[#090D16] dark:hover:text-[#090D16] rounded-xl text-xs font-bold transition-all flex items-center justify-center cursor-pointer active:scale-95"
+                            className="flex-1 h-9 px-2 bg-[#38BDF8]/10 hover:bg-[#38BDF8] text-[#0284c7] dark:text-[#38BDF8] hover:text-[#090D16] dark:hover:text-[#090D16] rounded-xl text-xs font-bold transition-all flex items-center justify-center cursor-pointer active:scale-95 whitespace-nowrap"
                           >
                             QR Code
                           </button>
@@ -6301,14 +6308,14 @@ export default function DashboardPage() {
                               setTableForm({ tableName: tbl.tableName || '', status: effectiveStatus || 'empty' });
                               setIsTableModalOpen(true);
                             }}
-                            className="h-9 px-3 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:text-[#38BDF8] dark:hover:text-[#38BDF8] rounded-xl transition-colors cursor-pointer text-xs font-bold active:scale-95"
+                            className="h-9 px-2.5 sm:px-3 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:text-[#38BDF8] dark:hover:text-[#38BDF8] rounded-xl transition-colors cursor-pointer text-xs font-bold active:scale-95 whitespace-nowrap shrink-0"
                           >
                             Sửa
                           </button>
 
                           <button
                             onClick={() => setTableToDelete(tbl._id)}
-                            className="h-9 px-3 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:text-rose-500 dark:hover:text-rose-500 rounded-xl transition-colors cursor-pointer text-xs font-bold active:scale-95"
+                            className="h-9 px-2.5 sm:px-3 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:text-rose-500 dark:hover:text-rose-500 rounded-xl transition-colors cursor-pointer text-xs font-bold active:scale-95 whitespace-nowrap shrink-0"
                           >
                             Xóa
                           </button>
@@ -8178,7 +8185,7 @@ export default function DashboardPage() {
                   })()}
 
                   {/* 5 Financial KPI Cards (Clean Typography - Modern Surface Tokens) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-3 sm:gap-4">
                     {/* Card 1: Gross Revenue */}
                     <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xs hover:border-emerald-500/40 transition-all group relative overflow-hidden">
                       <div className="flex items-center justify-between gap-1 flex-wrap">
@@ -8193,13 +8200,13 @@ export default function DashboardPage() {
                             {analyticsSummary.settlementStatus.isSettled ? '✓ Đã Chốt Sổ' : 'Tạm Tính'}
                           </span>
                         ) : (
-                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shrink-0">
                             Cả Tháng
                           </span>
                         )}
                       </div>
                       <div className="mt-3">
-                        <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-heading tracking-tight">
+                        <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-heading tracking-tight break-normal">
                           {formatPrice(analyticsSummary?.periodGross ?? analyticsSummary?.todayGross ?? 0)}
                         </span>
                         <p className="text-[10px] text-slate-400 mt-1 font-medium">
@@ -8221,7 +8228,7 @@ export default function DashboardPage() {
                         )}
                       </div>
                       <div className="mt-3">
-                        <span className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 font-heading tracking-tight">
+                        <span className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 font-heading tracking-tight break-normal">
                           {formatPrice(analyticsSummary?.periodSalary ?? analyticsSummary?.todaySalary ?? 0)}
                         </span>
                         <p className="text-[10px] text-slate-400 mt-1 font-medium">
@@ -8236,21 +8243,21 @@ export default function DashboardPage() {
 
                     {/* Card 3: Ingredient Costs */}
                     <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xs hover:border-sky-500/40 transition-all group relative overflow-hidden">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-1.5 flex-wrap">
                         <span className="text-slate-500 dark:text-slate-400 text-xs font-bold whitespace-nowrap">3. Tiền Nguyên Liệu</span>
-                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] border border-sky-500/20">
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] border border-sky-500/20 shrink-0">
                           Định mức kho
                         </span>
                       </div>
                       <div className="mt-3">
-                        <span className="text-xl sm:text-2xl font-black text-[#0284c7] dark:text-[#38BDF8] font-heading tracking-tight">
+                        <span className="text-xl sm:text-2xl font-black text-[#0284c7] dark:text-[#38BDF8] font-heading tracking-tight break-normal">
                           {formatPrice(analyticsSummary?.periodIngredientCost ?? 0)}
                         </span>
                         <p className="text-[10px] text-slate-400 mt-1 font-medium">
                           {analyticsPeriodMode === 'day' ? 'Tiêu hao pha chế trong ngày' : 'Tổng tiêu hao trong tháng'}
                         </p>
                         {analyticsSummary?.totalInventoryValue !== undefined && (
-                          <p className="text-[9px] text-slate-400 mt-0.5 font-medium">
+                          <p className="text-[9px] text-slate-400 mt-0.5 font-medium truncate">
                             Vốn kho hiện tại: <span className="font-bold text-slate-600 dark:text-slate-300">{formatPrice(analyticsSummary.totalInventoryValue)}</span>
                           </p>
                         )}
@@ -8259,7 +8266,7 @@ export default function DashboardPage() {
 
                     {/* Card 4: Incidental / Operating Expenses (Chi Mới) */}
                     <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xs hover:border-purple-500/40 transition-all group relative overflow-hidden">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-1.5 flex-wrap">
                         <span className="text-slate-500 dark:text-slate-400 text-xs font-bold whitespace-nowrap">4. Tiền Phát Sinh</span>
                         <button
                           onClick={() => {
@@ -8272,14 +8279,14 @@ export default function DashboardPage() {
                             });
                             setIsAddExpenseModalOpen(true);
                           }}
-                          className="px-2.5 py-1 bg-purple-500/15 hover:bg-purple-500/25 text-purple-600 dark:text-purple-400 rounded-lg transition-colors cursor-pointer text-[11px] font-black active:scale-95 border border-purple-500/20"
+                          className="px-2.5 py-1 bg-purple-500/15 hover:bg-purple-500/25 text-purple-600 dark:text-purple-400 rounded-lg transition-colors cursor-pointer text-[11px] font-black active:scale-95 border border-purple-500/20 shrink-0"
                           title="Thêm chi phí phát sinh"
                         >
                           + Thêm
                         </button>
                       </div>
                       <div className="mt-3">
-                        <span className="text-xl sm:text-2xl font-black text-purple-600 dark:text-purple-400 font-heading tracking-tight">
+                        <span className="text-xl sm:text-2xl font-black text-purple-600 dark:text-purple-400 font-heading tracking-tight break-normal">
                           {formatPrice(analyticsSummary?.periodExpenseCost ?? analyticsSummary?.todayExpenseCost ?? 0)}
                         </span>
                         <p className="text-[10px] text-slate-400 mt-1 font-medium">
@@ -8295,7 +8302,7 @@ export default function DashboardPage() {
 
                       return (
                         <div
-                          className={`bg-white dark:bg-[#111827] border p-4 sm:p-5 rounded-3xl shadow-xs transition-all group relative overflow-hidden sm:col-span-2 lg:col-span-1 ${
+                          className={`bg-white dark:bg-[#111827] border p-4 sm:p-5 rounded-3xl shadow-xs transition-all group relative overflow-hidden sm:col-span-2 lg:col-span-2 2xl:col-span-1 ${
                             isNegative
                               ? 'border-rose-500/40 dark:border-rose-500/30 hover:border-rose-500 bg-gradient-to-br from-rose-500/10 via-amber-500/5 to-transparent'
                               : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
@@ -8303,7 +8310,7 @@ export default function DashboardPage() {
                                 : 'border-emerald-500/40 dark:border-emerald-500/30 hover:border-emerald-500 bg-gradient-to-br from-emerald-500/10 via-sky-500/5 to-transparent'
                           }`}
                         >
-                          <div className="flex items-center justify-between gap-1 flex-wrap">
+                          <div className="flex items-center justify-between gap-1.5 flex-wrap">
                             <span
                               className={`text-xs font-black whitespace-nowrap ${
                                 isNegative
@@ -8331,7 +8338,7 @@ export default function DashboardPage() {
                           </div>
                           <div className="mt-3">
                             <span
-                              className={`text-xl sm:text-2xl font-black font-heading tracking-tight ${
+                              className={`text-xl sm:text-2xl font-black font-heading tracking-tight break-normal ${
                                 isNegative
                                   ? 'text-rose-600 dark:text-rose-400'
                                   : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
@@ -8358,18 +8365,18 @@ export default function DashboardPage() {
                   {analyticsPeriodMode === 'day' ? (
                     /* ── DAY LEDGER DETAILS (4 TABS) ───────────────────────── */
                     <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-4 sm:p-6 shadow-xs space-y-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-[#1e293b] pb-3">
+                      <div className="flex flex-col 2xl:flex-row 2xl:items-center justify-between gap-3 border-b border-slate-100 dark:border-[#1e293b] pb-3">
                         <div className="flex items-center gap-2">
                           <h4 className="text-sm font-black text-slate-900 dark:text-white font-heading">
                             Sổ Kê Chi Tiết Thu - Chi Trong Ngày ({analyticsSelectedDate})
                           </h4>
                         </div>
 
-                        {/* Day Ledger Tabs — Horizontal Scroll on Mobile */}
-                        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none w-full sm:w-auto p-1 bg-slate-100 dark:bg-[#0B0F17] rounded-xl border border-slate-200/60 dark:border-[#1e293b]">
+                        {/* Day Ledger Tabs — Responsive flex-wrap */}
+                        <div className="flex items-center flex-wrap gap-1.5 w-full 2xl:w-auto p-1 bg-slate-100 dark:bg-[#0B0F17] rounded-xl border border-slate-200/60 dark:border-[#1e293b]">
                           <button
                             onClick={() => { setAnalyticsDayLedgerTab('orders'); setLedgerPage(1); }}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${analyticsDayLedgerTab === 'orders'
+                            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${analyticsDayLedgerTab === 'orders'
                               ? 'bg-white dark:bg-[#1e293b] text-emerald-600 dark:text-emerald-400 shadow-xs'
                               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                               }`}
@@ -8379,7 +8386,7 @@ export default function DashboardPage() {
 
                           <button
                             onClick={() => { setAnalyticsDayLedgerTab('attendances'); setLedgerPage(1); }}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${analyticsDayLedgerTab === 'attendances'
+                            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${analyticsDayLedgerTab === 'attendances'
                               ? 'bg-white dark:bg-[#1e293b] text-amber-600 dark:text-amber-400 shadow-xs'
                               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                               }`}
@@ -8389,7 +8396,7 @@ export default function DashboardPage() {
 
                           <button
                             onClick={() => { setAnalyticsDayLedgerTab('expenses'); setLedgerPage(1); }}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${analyticsDayLedgerTab === 'expenses'
+                            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${analyticsDayLedgerTab === 'expenses'
                               ? 'bg-white dark:bg-[#1e293b] text-purple-600 dark:text-purple-400 shadow-xs'
                               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                               }`}
@@ -8399,7 +8406,7 @@ export default function DashboardPage() {
 
                           <button
                             onClick={() => { setAnalyticsDayLedgerTab('ingredients'); setLedgerPage(1); }}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${analyticsDayLedgerTab === 'ingredients'
+                            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${analyticsDayLedgerTab === 'ingredients'
                               ? 'bg-white dark:bg-[#1e293b] text-[#0284c7] dark:text-[#38BDF8] shadow-xs'
                               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                               }`}
@@ -9538,7 +9545,7 @@ export default function DashboardPage() {
 
       {/* ── COLUMN 3: RIGHT REALTIME ACTIVITY SIDEBAR (bg-slate-50 / dark:bg-[#0F172A]) ────── */}
       <aside
-        className={`fixed xl:static inset-y-0 right-0 z-40 w-[320px] sm:w-[350px] max-w-[88vw] shrink-0 bg-slate-50/95 dark:bg-[#0F172A]/90 backdrop-blur-xl border-l border-slate-200 dark:border-white/10 p-4 sm:p-5 h-screen flex flex-col overflow-y-auto transition-all duration-300 ease-in-out ${isRealtimeDrawerOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full xl:translate-x-0'
+        className={`fixed xl:static inset-y-0 right-0 z-40 w-[290px] 2xl:w-[330px] max-w-[88vw] shrink-0 bg-slate-50/95 dark:bg-[#0F172A]/90 backdrop-blur-xl border-l border-slate-200 dark:border-white/10 p-4 sm:p-5 h-screen flex flex-col overflow-y-auto transition-all duration-300 ease-in-out ${isRealtimeDrawerOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full xl:translate-x-0'
           }`}
       >
         <div className="flex justify-between items-center mb-4 border-b border-slate-200 dark:border-white/10 pb-3">

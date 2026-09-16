@@ -28,6 +28,12 @@ export class AnalyticsService {
   private foodCache: { timestamp: number; map: Map<string, any> } | null = null;
   private tableCache: { timestamp: number; map: Map<string, any> } | null = null;
 
+  public clearCache(): void {
+    this.baselineCache = null;
+    this.foodCache = null;
+    this.tableCache = null;
+  }
+
   private async getFoodMap(): Promise<Map<string, any>> {
     if (this.foodCache && Date.now() - this.foodCache.timestamp < 60000) {
       return this.foodCache.map;
@@ -99,7 +105,7 @@ export class AnalyticsService {
         usageData,
       ] = await Promise.all([
         this.sumBaselineRevenue(todayStart, startOfWeek, startOfMonth, now),
-        this.orderModel.countDocuments({ $or: [{ status: 'paid' }, { paymentStatus: 'paid' }] }),
+        this.orderModel.countDocuments({ $or: [{ status: 'paid' }, { paymentStatus: 'paid' }], isDeleted: { $ne: true } }),
         this.calculateSalaryCostForRange(todayStart, now),
         this.calculateSalaryCostForRange(startOfWeek, now),
         this.calculateSalaryCostForRange(startOfMonth, now),
@@ -213,6 +219,7 @@ export class AnalyticsService {
         ? this.orderModel.find({
             $and: [
               { $or: [{ status: 'paid' }, { paymentStatus: 'paid' }] },
+              { isDeleted: { $ne: true } },
               {
                 $or: [
                   { paidAt: { $gte: startOfPeriod, $lte: endOfPeriod } },
@@ -321,6 +328,7 @@ export class AnalyticsService {
         ? await this.orderModel.find({
             createdAt: { $gte: startOfPeriod, $lte: endOfPeriod },
             status: { $nin: ['paid', 'cancelled'] },
+            isDeleted: { $ne: true },
           }).lean().exec()
         : [];
       
@@ -443,6 +451,7 @@ export class AnalyticsService {
         $match: {
           $and: [
             { $or: [{ status: 'paid' }, { paymentStatus: 'paid' }] },
+            { isDeleted: { $ne: true } },
             {
               $or: [
                 { paidAt: { $gte: from, $lte: to } },
@@ -462,6 +471,7 @@ export class AnalyticsService {
         $match: {
           status: { $nin: ['paid', 'cancelled'] },
           paymentStatus: { $ne: 'paid' },
+          isDeleted: { $ne: true },
           'partialPayments.0': { $exists: true },
         },
       },
@@ -476,8 +486,8 @@ export class AnalyticsService {
     ]);
 
     const [fullyPaidRes, partialRes] = await Promise.all([fullyPaidPromise, partialPaidPromise]);
-    const fullyPaid = fullyPaidRes[0]?.total ?? 0;
-    const partial = partialRes[0]?.total ?? 0;
+    const fullyPaid = fullyPaidRes?.[0]?.total ?? 0;
+    const partial = partialRes?.[0]?.total ?? 0;
     return fullyPaid + partial;
   }
 
@@ -550,6 +560,7 @@ export class AnalyticsService {
         $match: {
           $and: [
             { $or: [{ status: 'paid' }, { paymentStatus: 'paid' }] },
+            { isDeleted: { $ne: true } },
             {
               $or: [
                 { paidAt: { $gte: startOfMonth, $lte: to } },
@@ -598,9 +609,9 @@ export class AnalyticsService {
     let legacyWeek = legacyToday;
     let legacyMonth = legacyToday;
     try {
-      const weekRes = await this.orderModel.aggregate([{ $match: { paidAt: { $gte: startOfWeek, $lte: to } } }]);
+      const weekRes = await this.orderModel.aggregate([{ $match: { paidAt: { $gte: startOfWeek, $lte: to }, isDeleted: { $ne: true } } }]);
       if (typeof weekRes?.[0]?.total === 'number') legacyWeek = weekRes[0].total;
-      const monthRes = await this.orderModel.aggregate([{ $match: { paidAt: { $gte: startOfMonth, $lte: to } } }]);
+      const monthRes = await this.orderModel.aggregate([{ $match: { paidAt: { $gte: startOfMonth, $lte: to }, isDeleted: { $ne: true } } }]);
       if (typeof monthRes?.[0]?.total === 'number') legacyMonth = monthRes[0].total;
     } catch (e) {}
 
@@ -708,6 +719,7 @@ export class AnalyticsService {
           {
             $and: [
               { $or: [{ status: 'paid' }, { paymentStatus: 'paid' }] },
+              { isDeleted: { $ne: true } },
               {
                 $or: [
                   { paidAt: { $gte: startOfMonth, $lte: endOfMonth } },
@@ -872,6 +884,7 @@ export class AnalyticsService {
         $match: {
           $and: [
             { $or: [{ status: 'paid' }, { paymentStatus: 'paid' }] },
+            { isDeleted: { $ne: true } },
             {
               $or: [
                 { paidAt: { $gte: fromDate, $lte: toDate } },
@@ -896,7 +909,7 @@ export class AnalyticsService {
   /** 🚀 Tối ưu hóa: Top món bán chạy - Group & Limit trước khi Lookup (tránh lookup toàn bộ items) */
   async getTopFoods(limit: number = 10): Promise<any[]> {
     return this.orderModel.aggregate([
-      { $match: { $or: [{ status: 'paid' }, { paymentStatus: 'paid' }] } },
+      { $match: { $or: [{ status: 'paid' }, { paymentStatus: 'paid' }], isDeleted: { $ne: true } } },
       { $unwind: '$items' },
       { $match: { 'items.foodId': { $ne: null } } },
       {
@@ -943,6 +956,7 @@ export class AnalyticsService {
         $match: {
           $and: [
             { $or: [{ status: 'paid' }, { paymentStatus: 'paid' }] },
+            { isDeleted: { $ne: true } },
             {
               $or: [
                 { paidAt: { $gte: day, $lte: end } },
