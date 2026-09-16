@@ -49,21 +49,21 @@
   h2,
   .font-heading {
     font-family: var(--font-inter), var(--font-heading), 'Inter', system-ui, -apple-system, sans-serif;
-    font-weight: 700;
+    font-weight: 800;
     letter-spacing: -0.02em;
   }
 
   h3,
   h4 {
     font-family: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif;
-    font-weight: 600;
+    font-weight: 800;
     letter-spacing: -0.01em;
   }
 
   h5,
   h6 {
     font-family: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif;
-    font-weight: 500;
+    font-weight: 800;
   }
 }
 

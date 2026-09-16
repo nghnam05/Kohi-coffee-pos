@@ -78,7 +78,7 @@ export class CouponsService implements OnModuleInit {
     }
 
     let discountAmount = 0;
-    if (coupon.type === 'percent') {
+    if (coupon.type === 'percent' || coupon.type === 'percentage') {
       discountAmount = Math.round((orderAmount * coupon.value) / 100);
       if (coupon.maxDiscount > 0) discountAmount = Math.min(discountAmount, coupon.maxDiscount);
     } else {

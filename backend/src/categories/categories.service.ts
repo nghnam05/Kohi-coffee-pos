@@ -45,11 +45,10 @@ export class CategoriesService {
     if (categories.length === 0) {
       // Auto seed default categories if database is empty
       const defaults = [
-        { name: 'Cà Phê', icon: 'local_cafe', order: 1 },
-        { name: 'Trà Trái Cây', icon: 'local_bar', order: 2 },
-        { name: 'Đá Xay', icon: 'icecream', order: 3 },
-        { name: 'Bánh Ngọt', icon: 'bakery_dining', order: 4 },
-        { name: 'Đồ Ăn Nhẹ', icon: 'restaurant', order: 5 },
+        { name: 'Cà phê', icon: 'local_cafe', order: 1 },
+        { name: 'Trà & Trái cây', icon: 'local_bar', order: 2 },
+        { name: 'Bánh ngọt & Pastry', icon: 'bakery_dining', order: 3 },
+        { name: 'Đá xay & Ăn vặt', icon: 'icecream', order: 4 },
       ];
       await this.categoryModel.insertMany(defaults);
       categories = await this.categoryModel

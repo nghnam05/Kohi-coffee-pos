@@ -475,13 +475,15 @@ export class SalariesService {
     await p.save();
 
     // ⚡ Khóa chống trả trùng lặp: Đánh dấu tất cả các bản ghi chấm công liên kết là đã thanh toán
-    if (p.attendanceIds && p.attendanceIds.length > 0 && typeof this.attendanceService.markPaidForPayroll === 'function') {
-      await this.attendanceService.markPaidForPayroll(p.attendanceIds, p._id);
+    if (p.attendanceIds && p.attendanceIds.length > 0 && typeof this.attendanceService?.markPaidForPayroll === 'function') {
+      try {
+        await this.attendanceService.markPaidForPayroll(p.attendanceIds, p._id);
+      } catch (err) {
+        console.error('[SalariesService] Failed to mark attendance paid:', err);
+      }
     }
 
-    if (typeof p.populate === 'function') {
-      return p.populate('userId', 'name email role assignedShift');
-    }
-    return p;
+    const updated = await this.payrollModel.findById(id).populate('userId', 'name email role assignedShift').exec();
+    return updated || p;
   }
 }

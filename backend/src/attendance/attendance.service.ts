@@ -70,14 +70,31 @@ export class AttendanceService {
       ? requestedShift
       : currentActualShift;
 
-    // Kiểm tra đã chấm công hôm nay chưa – dùng range query để tránh lỗi timezone
-    const existing = await this.attendanceModel.findOne({
+    // 1. Kiểm tra xem nhân viên có ca làm việc nào đang mở chưa checkout không
+    const activeShift = await this.attendanceModel.findOne({
+      userId,
+      $or: [{ checkOut: null }, { checkOut: { $exists: false } }],
+      checkIn: { $gte: new Date(Date.now() - 24 * 3600000) },
+    }).sort({ checkIn: -1 }).exec();
+
+    if (activeShift) {
+      throw new BadRequestException('Bạn đang có một ca làm việc chưa kết thúc. Vui lòng bấm Kết thúc ca hiện tại trước khi điểm danh ca mới.');
+    }
+
+    // 2. Kiểm tra xem nhân viên đã làm ca này trong ngày hôm nay chưa
+    const existingSameShift = await this.attendanceModel.findOne({
       userId,
       date: { $gte: startOfDay, $lte: endOfDay },
+      shift,
     }).exec();
-    if (existing) {
-      if (!existing.checkOut) throw new BadRequestException('Bạn đã bắt đầu ca làm việc hôm nay rồi.');
-      throw new BadRequestException('Bạn đã kết thúc ca làm việc hôm nay rồi.');
+
+    if (existingSameShift) {
+      const shiftLabels: Record<string, string> = {
+        morning: 'Ca Sáng',
+        afternoon: 'Ca Chiều',
+        evening: 'Ca Tối',
+      };
+      throw new BadRequestException(`Bạn đã điểm danh và hoàn tất ${shiftLabels[shift] || shift} hôm nay rồi.`);
     }
 
     const record = new this.attendanceModel({
@@ -115,11 +132,22 @@ export class AttendanceService {
     const startOfDay = vnTime.startOfDay;
     const endOfDay = vnTime.endOfDay;
 
-    const record = await this.attendanceModel.findOne({
+    // 1. Tìm bản ghi ca làm việc đang mở (chưa checkout) gần nhất trong vòng 24 giờ qua (hỗ trợ ca tối qua nửa đêm)
+    let record = await this.attendanceModel.findOne({
       userId,
-      date: { $gte: startOfDay, $lte: endOfDay },
-    }).exec();
-    if (!record) throw new NotFoundException('Bạn chưa bắt đầu ca làm việc hôm nay.');
+      $or: [{ checkOut: null }, { checkOut: { $exists: false } }],
+      checkIn: { $gte: new Date(Date.now() - 24 * 3600000) },
+    }).sort({ checkIn: -1 }).exec();
+
+    // 2. Fallback: Nếu không tìm thấy theo ca mở 24h, tìm bản ghi của ngày hôm nay
+    if (!record) {
+      record = await this.attendanceModel.findOne({
+        userId,
+        date: { $gte: startOfDay, $lte: endOfDay },
+      }).sort({ checkIn: -1 }).exec();
+    }
+
+    if (!record) throw new NotFoundException('Bạn chưa bắt đầu ca làm việc nào cần kết thúc.');
     if (record.checkOut) throw new BadRequestException('Bạn đã kết thúc ca làm việc rồi.');
 
     record.checkOut = now;

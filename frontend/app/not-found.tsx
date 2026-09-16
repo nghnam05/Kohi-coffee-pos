@@ -202,7 +202,7 @@ export default function NotFound() {
               className="group p-4 sm:p-5 rounded-2xl bg-white/70 dark:bg-[#0F172A]/70 hover:bg-white dark:hover:bg-[#0F172A] border border-slate-200/90 dark:border-white/10 hover:border-sky-400/50 dark:hover:border-sky-400/50 transition-all shadow-xs hover:shadow-md cursor-pointer backdrop-blur-md"
             >
               <div className="w-10 h-10 rounded-xl bg-sky-500/10 dark:bg-sky-400/10 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-[22px]">restaurant_menu</span>
+                <span className="material-symbols-outlined text-[22px]">menu_book</span>
               </div>
               <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white flex items-center justify-between">
                 <span>Thực đơn Kohi</span>

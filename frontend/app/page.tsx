@@ -699,7 +699,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => router.push('/login')}
-              className="inline-flex items-center justify-center px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-xs transition-all duration-150 cursor-pointer active:scale-95 whitespace-nowrap shrink-0"
+              className="inline-flex items-center justify-center px-4 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-white dark:text-slate-950 bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 shadow-xs transition-all duration-150 cursor-pointer active:scale-95 whitespace-nowrap shrink-0"
             >
               <span>{t.btnLogin || 'Nhân viên'}</span>
             </button>
@@ -715,7 +715,7 @@ export default function Home() {
           {/* Hero Section */}
           <section className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
             <div className="mb-2.5 sm:mb-3">
-              <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.24em] text-sky-600 dark:text-sky-400">
+              <span className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.24em] text-[#0284c7] dark:text-[#38BDF8]">
                 {t.heroBadge}
               </span>
             </div>
@@ -728,7 +728,7 @@ export default function Home() {
           </section>
 
           {/* Tab Navigation: Đặt Bàn vs Tra Cứu */}
-          <div className="flex justify-center border-b border-slate-200 dark:border-slate-800 mb-6 sm:mb-8">
+          <div className="flex justify-center border-b border-slate-200 dark:border-white/5 mb-6 sm:mb-8">
             <nav aria-label="Tabs" className="flex justify-center w-full max-w-md space-x-2 sm:space-x-8 -mb-px px-1">
               <button
                 type="button"
@@ -736,9 +736,9 @@ export default function Home() {
                   setActiveTab('reserve');
                   setError('');
                 }}
-                className={`flex-1 sm:flex-initial py-2.5 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-1.5 sm:gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex-1 sm:flex-initial py-2.5 sm:py-3 px-3 sm:px-5 text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-1.5 sm:gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === 'reserve'
-                    ? 'border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 translate-y-[1px]'
+                    ? 'border-slate-900 text-slate-900 dark:border-sky-400 dark:text-sky-400 translate-y-[1px]'
                     : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
@@ -751,9 +751,9 @@ export default function Home() {
                   setActiveTab('lookup');
                   setError('');
                 }}
-                className={`flex-1 sm:flex-initial py-2.5 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold inline-flex items-center justify-center gap-1.5 sm:gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex-1 sm:flex-initial py-2.5 sm:py-3 px-3 sm:px-5 text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-1.5 sm:gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === 'lookup'
-                    ? 'border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 translate-y-[1px]'
+                    ? 'border-slate-900 text-slate-900 dark:border-sky-400 dark:text-sky-400 translate-y-[1px]'
                     : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
@@ -767,9 +767,9 @@ export default function Home() {
           {activeTab === 'reserve' && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start w-full min-w-0">
               {/* LEFT COLUMN: Sơ Đồ Chọn Bàn (7 Cols) */}
-              <section className="lg:col-span-7 bg-white dark:bg-[#141D2E]/90 rounded-2xl p-4 sm:p-7 border border-slate-200/80 dark:border-slate-800 shadow-sm dark:shadow-xl backdrop-blur-sm w-full min-w-0 max-w-full box-border" data-purpose="table-selection">
+              <section className="lg:col-span-7 bg-white dark:bg-[#0d1322] rounded-3xl p-4 sm:p-7 border border-slate-200/80 dark:border-white/5 shadow-xs backdrop-blur-sm w-full min-w-0 max-w-full box-border" data-purpose="table-selection">
                 {/* Header & Filter Toolbar */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100 dark:border-white/5">
                   <div>
                     <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                       {t.selectTableLabel}
@@ -780,17 +780,17 @@ export default function Home() {
                   </div>
                   <div className="flex items-center gap-2 self-start sm:self-auto">
                     {/* Filter Segmented Control */}
-                    <div className="inline-flex rounded-lg p-1 bg-slate-100/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-xs font-semibold">
+                    <div className="inline-flex rounded-2xl p-1 bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/5 text-xs font-semibold">
                       <button
                         type="button"
                         onClick={() => {
                           setTableFilter('all');
                           setTablePage(1);
                         }}
-                        className={`px-3 py-1.5 rounded-md transition-all cursor-pointer font-bold ${
+                        className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer font-bold ${
                           tableFilter === 'all'
-                            ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-xs'
-                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                            ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-xs'
+                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                         }`}
                       >
                         {t.filterAll}
@@ -801,10 +801,10 @@ export default function Home() {
                           setTableFilter('available');
                           setTablePage(1);
                         }}
-                        className={`px-3 py-1.5 rounded-md transition-all cursor-pointer font-bold ${
+                        className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer font-bold ${
                           tableFilter === 'available'
-                            ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-xs'
-                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                            ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-xs'
+                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                         }`}
                       >
                         {t.filterAvailable}
@@ -815,16 +815,16 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={fetchTables}
-                      className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/10 transition-colors cursor-pointer shadow-2xs active:scale-95"
                     >
-                      <span className="material-symbols-outlined text-xs">sync</span>
+                      <span className="material-symbols-outlined text-sm">sync</span>
                       <span>{t.refreshMap}</span>
                     </button>
                   </div>
                 </div>
 
                 {/* Status Badges Legend */}
-                <div className="flex flex-wrap items-center gap-5 sm:gap-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-100 dark:border-slate-800/80 mb-2">
+                <div className="flex flex-wrap items-center gap-5 sm:gap-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-100 dark:border-white/5 mb-2">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20" />
                     <span>{t.tableStatusEmpty}</span>
@@ -876,19 +876,19 @@ export default function Home() {
                               setSelectedTable(tbl);
                               setError('');
                             }}
-                            className="relative bg-blue-50/70 dark:bg-blue-950/40 border-2 border-blue-500 dark:border-blue-500 rounded-xl p-3.5 flex flex-col justify-between min-h-[92px] cursor-pointer shadow-xs ring-2 ring-blue-500/20 transition-all"
+                            className="relative bg-sky-50/80 dark:bg-sky-500/10 border-2 border-[#0284c7] dark:border-[#38BDF8] rounded-2xl p-3.5 flex flex-col justify-between min-h-[96px] cursor-pointer shadow-xs ring-2 ring-sky-500/20 transition-all"
                           >
                             <div className="flex items-center justify-between">
-                              <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400" />
-                              <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                              <span className="w-2 h-2 rounded-full bg-[#0284c7] dark:bg-[#38BDF8]" />
+                              <span className="text-[10px] font-bold text-[#0284c7] dark:text-[#38BDF8]">
                                 {statusText}
                               </span>
                             </div>
                             <div className="text-center my-1">
-                              <div className="font-extrabold text-sm text-blue-600 dark:text-blue-400">
+                              <div className="font-extrabold text-sm text-[#0284c7] dark:text-[#38BDF8]">
                                 {formattedName}
                               </div>
-                              <div className="text-[11px] font-medium text-blue-500 dark:text-blue-400/80">
+                              <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
                                 {formattedFloor}
                               </div>
                             </div>
@@ -900,7 +900,7 @@ export default function Home() {
                         return (
                           <div
                             key={tbl._id}
-                            className="relative bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-xl p-3.5 flex flex-col justify-between min-h-[92px] cursor-not-allowed opacity-75 select-none text-left"
+                            className="relative bg-slate-50/70 dark:bg-white/[0.01] border border-slate-200/60 dark:border-white/5 rounded-2xl p-3.5 flex flex-col justify-between min-h-[96px] cursor-not-allowed opacity-60 select-none text-left"
                           >
                             <div className="flex items-center justify-between">
                               <span className={`w-2 h-2 rounded-full ${statusDot}`} />
@@ -928,7 +928,7 @@ export default function Home() {
                             setSelectedTable(tbl);
                             setError('');
                           }}
-                          className="relative bg-white dark:bg-[#141D2E] border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 rounded-xl p-3.5 flex flex-col justify-between min-h-[92px] cursor-pointer transition-colors shadow-2xs text-left group"
+                          className="relative bg-white dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/20 rounded-2xl p-3.5 flex flex-col justify-between min-h-[96px] cursor-pointer transition-colors shadow-2xs text-left group"
                         >
                           <div className="flex items-center justify-between">
                             <span className="w-2 h-2 rounded-full bg-emerald-500" />
@@ -937,7 +937,7 @@ export default function Home() {
                             </span>
                           </div>
                           <div className="text-center my-1">
-                            <div className="font-bold text-sm text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            <div className="font-bold text-sm text-slate-800 dark:text-slate-200 group-hover:text-[#0284c7] dark:group-hover:text-[#38BDF8] transition-colors">
                               {formattedName}
                             </div>
                             <div className="text-[11px] text-slate-400 dark:text-slate-500">
@@ -952,7 +952,7 @@ export default function Home() {
 
                 {/* Table Pagination Controls */}
                 {totalTablePages > 1 && (
-                  <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-3 sm:gap-4 pt-5 mt-4 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 select-none text-center sm:text-left">
+                  <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-3 sm:gap-4 pt-5 mt-4 border-t border-slate-100 dark:border-white/5 text-xs text-slate-500 dark:text-slate-400 select-none text-center sm:text-left">
                     <div className="text-center sm:text-left">
                       {lang === 'en' ? (
                         <>Showing <strong className="text-slate-800 dark:text-slate-200">{(currentPage - 1) * TABLES_PER_PAGE + 1} - {Math.min(currentPage * TABLES_PER_PAGE, filteredTables.length)}</strong> of <strong className="text-slate-800 dark:text-slate-200">{filteredTables.length}</strong> tables</>
@@ -968,10 +968,10 @@ export default function Home() {
                         type="button"
                         disabled={currentPage === 1}
                         onClick={() => setTablePage(p => Math.max(1, p - 1))}
-                        className={`px-3 py-1.5 rounded-lg border transition-all text-xs font-semibold ${
+                        className={`px-3.5 py-1.5 rounded-xl border transition-all text-xs font-bold ${
                           currentPage === 1
-                            ? 'border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-600 bg-slate-50 dark:bg-slate-900/50 cursor-not-allowed'
-                            : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer'
+                            ? 'border-slate-200/60 dark:border-white/5 text-slate-300 dark:text-slate-700 bg-slate-50/50 dark:bg-white/[0.01] cursor-not-allowed'
+                            : 'border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer'
                         }`}
                       >
                         &lt; {lang === 'en' ? 'Prev' : lang === 'zh' ? '上页' : 'Trước'}
@@ -982,10 +982,10 @@ export default function Home() {
                           key={pageNum}
                           type="button"
                           onClick={() => setTablePage(pageNum)}
-                          className={`w-8 h-8 rounded-lg text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${
+                          className={`w-8 h-8 rounded-xl text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${
                             pageNum === currentPage
-                              ? 'bg-blue-600 text-white shadow-xs'
-                              : 'border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                              ? 'bg-slate-900 text-white dark:bg-sky-400 dark:text-slate-950 shadow-xs'
+                              : 'border border-slate-200/80 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5'
                           }`}
                         >
                           {pageNum}
@@ -996,10 +996,10 @@ export default function Home() {
                         type="button"
                         disabled={currentPage === totalTablePages}
                         onClick={() => setTablePage(p => Math.min(totalTablePages, p + 1))}
-                        className={`px-3 py-1.5 rounded-lg border transition-all text-xs font-semibold ${
+                        className={`px-3.5 py-1.5 rounded-xl border transition-all text-xs font-bold ${
                           currentPage === totalTablePages
-                            ? 'border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-600 bg-slate-50 dark:bg-slate-900/50 cursor-not-allowed'
-                            : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer'
+                            ? 'border-slate-200/60 dark:border-white/5 text-slate-300 dark:text-slate-700 bg-slate-50/50 dark:bg-white/[0.01] cursor-not-allowed'
+                            : 'border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer'
                         }`}
                       >
                         {lang === 'en' ? 'Next' : lang === 'zh' ? '下页' : 'Sau'} &gt;
@@ -1010,8 +1010,8 @@ export default function Home() {
               </section>
 
               {/* RIGHT COLUMN: Form Nhập Thông Tin Đặt Bàn (5 Cols) */}
-              <section className="lg:col-span-5 bg-white dark:bg-[#141D2E]/90 rounded-2xl p-4 sm:p-7 border border-slate-200/80 dark:border-slate-800 shadow-sm dark:shadow-xl backdrop-blur-sm h-fit lg:sticky lg:top-24 space-y-5 w-full min-w-0 max-w-full box-border" data-purpose="reservation-form">
-                <div className="pb-5 border-b border-slate-100 dark:border-slate-800">
+              <section className="lg:col-span-5 bg-white dark:bg-[#0d1322] rounded-3xl p-4 sm:p-7 border border-slate-200/80 dark:border-white/5 shadow-xs backdrop-blur-sm h-fit lg:sticky lg:top-24 space-y-5 w-full min-w-0 max-w-full box-border" data-purpose="reservation-form">
+                <div className="pb-5 border-b border-slate-100 dark:border-white/5">
                   <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                     {t.bookingFormTitle}
                   </h2>
@@ -1021,20 +1021,20 @@ export default function Home() {
                 </div>
 
                 {/* Selected Table Banner */}
-                <div className="bg-blue-50/70 dark:bg-blue-950/50 border border-blue-100 dark:border-blue-800/60 rounded-xl p-3.5 sm:p-4 flex items-center justify-between w-full min-w-0">
+                <div className="bg-sky-50/80 dark:bg-sky-500/10 border border-sky-500/25 rounded-2xl p-3.5 sm:p-4 flex items-center justify-between w-full min-w-0">
                   <div>
-                    <span className="block text-[11px] font-bold text-blue-600 dark:text-blue-400 tracking-wider uppercase">
+                    <span className="block text-[11px] font-bold text-[#0284c7] dark:text-[#38BDF8] tracking-wider uppercase">
                       {t.selectedTableLabel}
                     </span>
-                    <span className="text-xl font-extrabold text-blue-700 dark:text-blue-300 mt-0.5 block">
+                    <span className="text-xl font-bold text-slate-900 dark:text-white mt-0.5 block">
                       {selectedTable ? formatTableName(selectedTable.tableName, lang) : t.noTableSelected}
                     </span>
                   </div>
-                  <div className="w-3.5 h-3.5 rounded-full bg-blue-600 dark:bg-blue-400 ring-4 ring-blue-100 dark:ring-blue-900/50" />
+                  <div className="w-3.5 h-3.5 rounded-full bg-[#0284c7] dark:bg-[#38BDF8] ring-4 ring-sky-500/20" />
                 </div>
 
                 {error && (
-                  <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold text-center">
+                  <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold text-center">
                     <span>{error}</span>
                   </div>
                 )}
@@ -1053,7 +1053,7 @@ export default function Home() {
                       placeholder={t.customerNamePlaceholder}
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/60 text-sm focus:bg-white dark:focus:bg-[#0F172A] focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors py-2.5 px-3.5 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-100 font-medium outline-none"
+                      className="w-full rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-50/80 dark:bg-white/[0.03] text-sm focus:bg-white dark:focus:bg-[#0d1322] focus:border-[#0284c7] dark:focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/15 transition-all py-2.5 px-3.5 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-900 dark:text-slate-100 font-medium outline-none"
                     />
                   </div>
 
@@ -1078,7 +1078,7 @@ export default function Home() {
                           if (error) setError('');
                         }
                       }}
-                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/60 text-sm focus:bg-white dark:focus:bg-[#0F172A] focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors py-2.5 px-3.5 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-100 font-medium outline-none"
+                      className="w-full rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-50/80 dark:bg-white/[0.03] text-sm focus:bg-white dark:focus:bg-[#0d1322] focus:border-[#0284c7] dark:focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/15 transition-all py-2.5 px-3.5 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-900 dark:text-slate-100 font-medium outline-none"
                     />
                   </div>
 
@@ -1096,7 +1096,7 @@ export default function Home() {
                           required
                           value={reservationTime}
                           onChange={(e) => setReservationTime(e.target.value)}
-                          className="w-full min-w-0 max-w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/60 text-xs sm:text-sm focus:bg-white dark:focus:bg-[#0F172A] focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors py-2.5 pl-3 sm:pl-3.5 pr-9 sm:pr-10 text-slate-800 dark:text-slate-100 font-medium outline-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full"
+                          className="w-full min-w-0 max-w-full rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-50/80 dark:bg-white/[0.03] text-xs sm:text-sm focus:bg-white dark:focus:bg-[#0d1322] focus:border-[#0284c7] dark:focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/15 transition-all py-2.5 pl-3 sm:pl-3.5 pr-9 sm:pr-10 text-slate-900 dark:text-slate-100 font-medium outline-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full"
                         />
                         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                           <span className="material-symbols-outlined text-base">calendar_today</span>
@@ -1117,7 +1117,7 @@ export default function Home() {
                         required
                         value={guestCount}
                         onChange={(e) => setGuestCount(Number(e.target.value))}
-                        className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/60 text-sm focus:bg-white dark:focus:bg-[#0F172A] focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors py-2.5 px-3.5 text-slate-800 dark:text-slate-100 font-medium text-center sm:text-left outline-none"
+                        className="w-full rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-50/80 dark:bg-white/[0.03] text-sm focus:bg-white dark:focus:bg-[#0d1322] focus:border-[#0284c7] dark:focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/15 transition-all py-2.5 px-3.5 text-slate-900 dark:text-slate-100 font-medium text-center sm:text-left outline-none"
                       />
                     </div>
                   </div>
@@ -1131,28 +1131,28 @@ export default function Home() {
                       <button
                         type="button"
                         onClick={() => setPresetTime(1)}
-                        className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+                        className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
                       >
                         {t.presetIn1h}
                       </button>
                       <button
                         type="button"
                         onClick={() => setPresetTime(2)}
-                        className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+                        className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
                       >
                         {t.presetIn2h}
                       </button>
                       <button
                         type="button"
                         onClick={() => setSpecificTimePreset(19, false)}
-                        className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+                        className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
                       >
                         {t.presetTonight}
                       </button>
                       <button
                         type="button"
                         onClick={() => setSpecificTimePreset(12, true)}
-                        className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+                        className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
                       >
                         {t.presetTomorrowNoon}
                       </button>
@@ -1171,7 +1171,7 @@ export default function Home() {
                       placeholder={t.notePlaceholder}
                       value={note}
                       onChange={(e) => setNote(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/60 text-sm focus:bg-white dark:focus:bg-[#0F172A] focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors p-3 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-100 resize-none outline-none"
+                      className="w-full rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-50/80 dark:bg-white/[0.03] text-sm focus:bg-white dark:focus:bg-[#0d1322] focus:border-[#0284c7] dark:focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/15 transition-all p-3.5 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-900 dark:text-slate-100 resize-none outline-none font-medium"
                     />
                   </div>
 
@@ -1180,7 +1180,7 @@ export default function Home() {
                     <button
                       type="submit"
                       disabled={isSubmitting || !selectedTable}
-                      className="w-full py-3.5 px-6 rounded-xl text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 font-bold text-sm tracking-wide shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 min-h-[44px]"
+                      className="w-full py-3.5 px-6 rounded-2xl text-white dark:text-slate-950 bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 active:scale-[0.98] font-bold text-sm tracking-wide shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 min-h-[48px]"
                     >
                       <span>{isSubmitting ? t.btnSubmitting : t.btnSubmitBooking}</span>
                       <span className="material-symbols-outlined text-base">arrow_forward</span>
@@ -1193,7 +1193,7 @@ export default function Home() {
 
           {/* TAB 2: LOOKUP & CUSTOMER CANCEL RESERVATIONS */}
           {activeTab === 'lookup' && (
-            <div className="max-w-xl mx-auto bg-white dark:bg-[#141D2E]/90 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-sm dark:shadow-xl backdrop-blur-sm transition-all font-sans">
+            <div className="max-w-xl mx-auto bg-white dark:bg-[#0d1322] border border-slate-200/80 dark:border-white/5 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs backdrop-blur-sm transition-all font-sans">
               <div className="text-center space-y-1.5">
                 <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                   {t.lookupTitle}
@@ -1204,7 +1204,7 @@ export default function Home() {
               </div>
 
               {error && (
-                <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold text-center">
+                <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold text-center">
                   <span>{error}</span>
                 </div>
               )}
@@ -1225,12 +1225,12 @@ export default function Home() {
                       if (error) setError('');
                     }
                   }}
-                  className="flex-1 bg-slate-50/50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl px-4 py-3 text-xs sm:text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors"
+                  className="flex-1 bg-slate-50/80 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/10 text-slate-900 dark:text-white rounded-2xl px-4 py-3 text-xs sm:text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#0284c7] dark:focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/15 transition-all"
                 />
                 <button
                   type="submit"
                   disabled={isSearchingLookup}
-                  className="h-11 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs sm:text-sm uppercase tracking-wider transition-all shadow-md active:scale-95 flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-50 min-h-[44px]"
+                  className="h-11 px-6 bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 font-bold rounded-2xl text-xs sm:text-sm uppercase tracking-wider transition-all shadow-md active:scale-95 flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-50 min-h-[44px]"
                 >
                   <span>{isSearchingLookup ? t.btnSearching : t.btnSearchNow}</span>
                 </button>
@@ -1239,9 +1239,9 @@ export default function Home() {
             {hasSearchedLookup && (
               <div className="space-y-4 pt-2">
                 {lookupResults.length === 0 ? (
-                  <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-white/10 rounded-xl p-6 text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                  <div className="bg-slate-50/80 dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/5 rounded-2xl p-6 text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
                     {lang === 'en' ? 'No reservation found matching phone number ' : 'Không tìm thấy đơn đặt bàn nào với số điện thoại '}
-                    <span className="font-bold text-[#3B82F6] dark:text-[#38BDF8]">{lookupPhone}</span>.
+                    <span className="font-bold text-[#0284c7] dark:text-[#38BDF8]">{lookupPhone}</span>.
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -1257,7 +1257,6 @@ export default function Home() {
                         statusBadge = 'bg-sky-500/10 text-[#0284c7] dark:text-[#38BDF8] border-sky-500/30';
                         statusLabel = lang === 'en' ? 'Confirmed' : 'Đã duyệt thành công';
                       } else if (res.status === 'arrived') {
-                        // Nếu bàn đang phục vụ -> Đang trong phiên; nếu bàn đã trống -> Đã kết thúc phiên
                         if (res.tableId?.status === 'serving' || !res.tableId?.status) {
                           statusBadge = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
                           statusLabel = lang === 'en' ? 'Arrived / In Service' : 'Khách đã đến';
@@ -1276,7 +1275,6 @@ export default function Home() {
                       const isPending = res.status === 'pending';
                       const isConfirmed = res.status === 'confirmed';
                       const isCompleted = res.status === 'completed' || (res.status === 'arrived' && res.tableId?.status === 'empty');
-                      // Chỉ cho phép vào bàn khi đơn đang phục vụ thực tế và bàn chưa bị dọn sạch
                       const canEnterTable = res.status === 'arrived' && res.tableId?.status === 'serving';
                       const targetTableId = res.tableId?._id || res.tableId;
                       const tableNameStr = formatTableName(res.tableId?.tableName, lang);
@@ -1284,34 +1282,34 @@ export default function Home() {
                       return (
                         <div
                           key={res._id}
-                          className="bg-slate-50/90 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 p-4 sm:p-5 rounded-2xl space-y-3 shadow-xs hover:border-[#38BDF8]/30 transition-all"
+                          className="bg-white dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/5 p-4 sm:p-5 rounded-2xl space-y-3 shadow-xs hover:border-[#38BDF8]/30 transition-all"
                         >
                           <div className="flex justify-between items-start">
                             <div>
-                              <h4 className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base">
+                              <h4 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
                                 {res.customerName}
                               </h4>
-                              <p className="text-xs text-[#0284c7] dark:text-[#38BDF8] font-extrabold mt-0.5">
+                              <p className="text-xs text-[#0284c7] dark:text-[#38BDF8] font-bold mt-0.5">
                                 {res.customerPhone}
                               </p>
                             </div>
-                            <span className={`px-3 py-1 rounded-full text-[11px] font-extrabold border ${statusBadge}`}>
+                            <span className={`px-3 py-1 rounded-full text-[11px] font-bold border ${statusBadge}`}>
                               {statusLabel}
                             </span>
                           </div>
 
-                          <div className="py-2.5 border-t border-b border-slate-200/80 dark:border-white/10 space-y-1.5 text-xs sm:text-sm">
+                          <div className="py-2.5 border-t border-b border-slate-100 dark:border-white/5 space-y-1.5 text-xs sm:text-sm">
                             <div className="flex justify-between">
                               <span className="text-slate-500 dark:text-slate-400 font-normal">
                                 {lang === 'en' ? 'Selected Table:' : lang === 'zh' ? '预订桌位：' : 'Bàn chọn:'}
                               </span>
-                              <span className="font-extrabold text-slate-900 dark:text-white">{tableNameStr}</span>
+                              <span className="font-bold text-slate-900 dark:text-white">{tableNameStr}</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-slate-500 dark:text-slate-400 font-normal">
                                 {lang === 'en' ? 'Reservation Time:' : lang === 'zh' ? '入座时间：' : 'Thời gian nhận bàn:'}
                               </span>
-                              <span className="font-extrabold text-slate-900 dark:text-white">
+                              <span className="font-bold text-slate-900 dark:text-white">
                                 {new Date(res.reservationTime).toLocaleString(lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'vi-VN')}
                               </span>
                             </div>
@@ -1319,17 +1317,17 @@ export default function Home() {
                               <span className="text-slate-500 dark:text-slate-400 font-normal">
                                 {lang === 'en' ? 'Guest Count:' : lang === 'zh' ? '顾客人数：' : 'Số lượng khách:'}
                               </span>
-                              <span className="font-extrabold text-slate-900 dark:text-white">
+                              <span className="font-bold text-slate-900 dark:text-white">
                                 {res.guestCount} {lang === 'en' ? 'guests' : lang === 'zh' ? '人' : 'người'}
                               </span>
                             </div>
 
                             {isConfirmed && (
-                              <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-white/10 text-xs flex justify-between items-center">
-                                <span className="font-extrabold text-slate-700 dark:text-slate-300">
+                              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/5 text-xs flex justify-between items-center">
+                                <span className="font-bold text-slate-700 dark:text-slate-300">
                                   Mã nhận bàn:
                                 </span>
-                                <span className="font-mono font-extrabold tracking-widest text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-[#090D16] px-2.5 py-1 rounded-md border border-slate-300 dark:border-slate-700">
+                                <span className="font-mono font-bold tracking-widest text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-[#090D16] px-2.5 py-1 rounded-md border border-slate-200/80 dark:border-white/10">
                                   •••• (Bảo mật - chỉ cấp 1 lần)
                                 </span>
                               </div>
@@ -1346,14 +1344,14 @@ export default function Home() {
                             <button
                               type="button"
                               onClick={() => router.push(`/table/${targetTableId}`)}
-                              className="w-full h-11 bg-[#38BDF8] hover:bg-[#0284c7] focus-visible:ring-2 focus-visible:ring-[#38BDF8] focus-visible:outline-none focus-visible:ring-offset-2 text-[#090D16] hover:text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer flex items-center justify-center min-h-[44px]"
+                              className="w-full h-11 bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 font-bold text-xs uppercase tracking-wider rounded-2xl transition-all shadow-md active:scale-[0.98] cursor-pointer flex items-center justify-center min-h-[44px]"
                             >
                               {lang === 'en' ? `GO TO TABLE ORDER (${tableNameStr})` : lang === 'zh' ? `进入桌位点餐 (${tableNameStr})` : `VÀO BÀN GỌI MÓN (${tableNameStr})`}
                             </button>
                           )}
 
                           {isCompleted && (
-                            <div className="p-3 rounded-xl bg-slate-100/90 dark:bg-slate-800/50 border border-slate-200/60 dark:border-white/5 text-xs text-slate-500 dark:text-slate-400 text-center font-normal leading-relaxed">
+                            <div className="p-3 rounded-xl bg-slate-100/70 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 text-xs text-slate-500 dark:text-slate-400 text-center font-normal leading-relaxed">
                               {lang === 'en' ? 'This reservation session has ended. Thank you for visiting KOHI Coffee!' : 'Phiên đặt bàn này đã kết thúc. Cảm ơn quý khách đã ghé thăm KOHI Coffee!'}
                             </div>
                           )}
@@ -1366,7 +1364,7 @@ export default function Home() {
                               <button
                                 type="button"
                                 onClick={() => handleCustomerCancelReservation(res._id)}
-                                className="w-full h-10 bg-rose-500/10 hover:bg-rose-500 hover:text-white focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:outline-none text-rose-500 border border-rose-500/20 text-xs font-extrabold rounded-xl transition-all flex items-center justify-center cursor-pointer active:scale-[0.98] min-h-[44px]"
+                                className="w-full h-10 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-500 border border-rose-500/20 text-xs font-bold rounded-2xl transition-all flex items-center justify-center cursor-pointer active:scale-[0.98] min-h-[44px]"
                               >
                                 {lang === 'en' ? 'CANCEL THIS RESERVATION' : lang === 'zh' ? '取消此预订' : 'HỦY ĐƠN ĐẶT BÀN NÀY'}
                               </button>
@@ -1382,14 +1380,14 @@ export default function Home() {
                                   setPinInput('');
                                   setPinError('');
                                 }}
-                                className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer flex items-center justify-center min-h-[44px]"
+                                className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider rounded-2xl transition-all shadow-md active:scale-[0.98] cursor-pointer flex items-center justify-center min-h-[44px]"
                               >
                                 <span>{lang === 'en' ? `I HAVE ARRIVED - ENTER PIN (${tableNameStr})` : `TÔI ĐÃ ĐẾN - NHẬP MÃ VÀO BÀN (${tableNameStr})`}</span>
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleCustomerCancelReservation(res._id)}
-                                className="w-full h-10 bg-rose-500/10 hover:bg-rose-500 hover:text-white focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:outline-none text-rose-500 border border-rose-500/20 text-xs font-extrabold rounded-xl transition-all flex items-center justify-center cursor-pointer active:scale-[0.98] min-h-[44px]"
+                                className="w-full h-10 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-500 border border-rose-500/20 text-xs font-bold rounded-2xl transition-all flex items-center justify-center cursor-pointer active:scale-[0.98] min-h-[44px]"
                               >
                                 {lang === 'en' ? 'CANCEL THIS RESERVATION' : lang === 'zh' ? '取消此预订' : 'HỦY ĐƠN ĐẶT BÀN NÀY'}
                               </button>

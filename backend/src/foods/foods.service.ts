@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Food, FoodDocument } from './schemas/food.schema.js';
 import { CreateFoodDto } from './dto/create-food.dto.js';
 import { UpdateFoodDto } from './dto/update-food.dto.js';
@@ -50,6 +50,9 @@ export class FoodsService {
   }
 
   async findOne(id: string): Promise<any> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException(`Không tìm thấy món / thức uống với ID: ${id}`);
+    }
     const food = await this.foodModel.findById(id).lean().exec();
     if (!food) {
       throw new NotFoundException(`Không tìm thấy món / thức uống với ID: ${id}`);
@@ -75,6 +78,9 @@ export class FoodsService {
   }
 
   async update(id: string, updateFoodDto: UpdateFoodDto): Promise<FoodDocument> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException(`Không tìm thấy món / thức uống với ID: ${id}`);
+    }
     const updatedFood = await this.foodModel
       .findByIdAndUpdate(id, updateFoodDto, { new: true })
       .exec();
@@ -87,6 +93,9 @@ export class FoodsService {
   }
 
   async remove(id: string): Promise<{ message: string }> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException(`Không tìm thấy món / thức uống với ID: ${id}`);
+    }
     const deletedFood = await this.foodModel.findByIdAndDelete(id).exec();
     if (!deletedFood) {
       throw new NotFoundException(`Không tìm thấy món / thức uống với ID: ${id}`);

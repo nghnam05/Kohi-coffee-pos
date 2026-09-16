@@ -114,7 +114,7 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             {/* Subtle Rating & Details */}
             <div className="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-400 my-0.5 font-sans">
               <span className="flex items-center gap-0.5 text-amber-500/90 dark:text-amber-400/90 font-bold">
-                <span className="material-symbols-outlined text-[13px] fill-current leading-none">star</span>
+                <span className="material-symbols-outlined text-[13px] fill-current leading-none" aria-hidden="true">star</span>
                 <span>{(food.rating || 5.0).toFixed(1)}</span>
               </span>
               {food.totalReviews !== undefined && food.totalReviews > 0 ? (
@@ -122,7 +122,7 @@ export const FoodCard: React.FC<FoodCardProps> = ({
                   ({food.totalReviews})
                 </span>
               ) : null}
-              <span className="text-slate-300 dark:text-slate-600 leading-none">•</span>
+              <span className="text-slate-300 dark:text-slate-600 leading-none" aria-hidden="true">•</span>
               <span className="font-medium text-slate-500 dark:text-slate-400 text-[11px]">
                 {lang === 'en'
                   ? `${food.soldCount || 0} ordered`
@@ -146,13 +146,14 @@ export const FoodCard: React.FC<FoodCardProps> = ({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.96 }}
               onClick={handleClick}
+              aria-label={`${quantity > 0 ? (lang === 'en' ? 'Selected' : lang === 'zh' ? '已选择' : 'Đã chọn') : (lang === 'en' ? 'Select' : lang === 'zh' ? '选择' : 'Chọn')} ${food.name}, ${formatPrice(food.price, lang)}`}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold tracking-wide flex items-center gap-1 transition-all cursor-pointer font-sans ${
                 quantity > 0
                   ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30'
                   : 'bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 shadow-xs'
               }`}
             >
-              <span className="material-symbols-outlined text-[15px]">
+              <span className="material-symbols-outlined text-[15px]" aria-hidden="true">
                 {quantity > 0 ? 'check' : 'add'}
               </span>
               <span>
@@ -222,7 +223,7 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             {/* Rating & Sold Indicator */}
             <div className="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-400 mb-1.5 font-sans flex-wrap">
               <span className="flex items-center gap-0.5 text-amber-500/90 dark:text-amber-400/90 font-bold">
-                <span className="material-symbols-outlined text-[13px] fill-current leading-none">star</span>
+                <span className="material-symbols-outlined text-[13px] fill-current leading-none" aria-hidden="true">star</span>
                 <span>{(food.rating || 5.0).toFixed(1)}</span>
               </span>
               {food.totalReviews !== undefined && food.totalReviews > 0 ? (
@@ -230,7 +231,7 @@ export const FoodCard: React.FC<FoodCardProps> = ({
                   ({food.totalReviews})
                 </span>
               ) : null}
-              <span className="text-slate-300 dark:text-slate-600 leading-none">•</span>
+              <span className="text-slate-300 dark:text-slate-600 leading-none" aria-hidden="true">•</span>
               <span className="font-medium text-slate-500 dark:text-slate-400 text-[11px]">
                 {lang === 'en'
                   ? `${food.soldCount || 0} ordered`
@@ -258,13 +259,14 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.96 }}
             onClick={handleClick}
+            aria-label={`${quantity > 0 ? (lang === 'en' ? 'Selected' : lang === 'zh' ? '已选择' : 'Đã chọn') : (lang === 'en' ? 'Select' : lang === 'zh' ? '选择' : 'Chọn')} ${food.name}, ${formatPrice(food.price, lang)}`}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold tracking-wide flex items-center gap-1 transition-all cursor-pointer font-sans ${
               quantity > 0
                 ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30'
                 : 'bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 shadow-xs'
             }`}
           >
-            <span className="material-symbols-outlined text-[15px]">
+            <span className="material-symbols-outlined text-[15px]" aria-hidden="true">
               {quantity > 0 ? 'check' : 'add'}
             </span>
             <span>

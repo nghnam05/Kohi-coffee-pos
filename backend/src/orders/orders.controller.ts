@@ -50,18 +50,18 @@ export class OrdersController {
     return this.ordersService.getPendingTransferRequests();
   }
 
-  @Post('transfer-request')
-  async requestTransfer(
-    @Body() body: { fromTableId: string; toTableId: string; customerName?: string },
-  ): Promise<any> {
-    return this.ordersService.requestTableTransfer(body.fromTableId, body.toTableId, body.customerName);
-  }
-
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin', 'waiter', 'barista', 'staff')
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<OrderDocument> {
     return this.ordersService.findOne(id);
+  }
+
+  @Post('transfer-request')
+  async requestTransfer(
+    @Body() body: { fromTableId: string; toTableId: string; customerName?: string },
+  ): Promise<any> {
+    return this.ordersService.requestTableTransfer(body.fromTableId, body.toTableId, body.customerName);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)

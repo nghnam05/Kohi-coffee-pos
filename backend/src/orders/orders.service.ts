@@ -165,7 +165,7 @@ export class OrdersService implements OnModuleInit {
 
     const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
     const sessionTime = table.currentSessionStartedAt
-      ? new Date(table.currentSessionStartedAt)
+      ? new Date(new Date(table.currentSessionStartedAt).getTime() - 60 * 1000)
       : twelveHoursAgo;
 
     const query: any = {
@@ -189,6 +189,10 @@ export class OrdersService implements OnModuleInit {
   }
 
   async updateStatus(id: string, updateOrderStatusDto: UpdateOrderStatusDto, userRole?: string): Promise<OrderDocument> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${id}`);
+    }
+
     if (userRole === 'barista' && updateOrderStatusDto.status === 'paid') {
       throw new ForbiddenException('Nhân viên pha chế không có quyền xác nhận thanh toán đơn hàng.');
     }
@@ -283,6 +287,9 @@ export class OrdersService implements OnModuleInit {
   }
 
   async cancelOrder(id: string): Promise<OrderDocument> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${id}`);
+    }
     const order = await this.orderModel.findById(id);
     if (!order) {
       throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${id}`);
@@ -692,6 +699,9 @@ export class OrdersService implements OnModuleInit {
   }
 
   async remove(id: string, userRole?: string): Promise<{ message: string }> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${id}`);
+    }
     const order = await this.orderModel.findById(id).exec();
     if (!order || (order as any).isDeleted) {
       throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${id}`);
