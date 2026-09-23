@@ -60,9 +60,16 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
         <h2 className="text-xl sm:text-2xl lg:text-[22px] xl:text-[26px] 2xl:text-[28px] font-extrabold text-slate-900 dark:text-white tracking-[-0.02em] leading-tight font-heading whitespace-nowrap">
           {t.welcome ?? (lang === 'en' ? 'What would you like today?' : lang === 'zh' ? '今天想喝点什么？' : 'Hôm nay bạn muốn dùng gì?')}
         </h2>
-        <p className="text-xs sm:text-[13px] md:text-[13.5px] font-normal text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed font-sans truncate max-w-xl">
-          {getSubtitle()}
-        </p>
+        <div className="overflow-hidden whitespace-nowrap w-full max-w-xl relative mt-0.5 select-none [mask-image:linear-gradient(to_right,transparent,black_3%,black_97%,transparent)]">
+          <div className="animate-marquee-left">
+            <span className="text-xs sm:text-[13px] md:text-[13.5px] font-normal text-slate-500 dark:text-slate-400 font-sans inline-flex items-center pr-8">
+              {getSubtitle()} <span className="mx-4 text-sky-400/60 dark:text-sky-500/60 select-none">✦</span>
+            </span>
+            <span className="text-xs sm:text-[13px] md:text-[13.5px] font-normal text-slate-500 dark:text-slate-400 font-sans inline-flex items-center pr-8" aria-hidden="true">
+              {getSubtitle()} <span className="mx-4 text-sky-400/60 dark:text-sky-500/60 select-none">✦</span>
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Header Actions */}
