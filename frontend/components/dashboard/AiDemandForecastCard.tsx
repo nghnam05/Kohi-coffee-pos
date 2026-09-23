@@ -234,40 +234,39 @@ export const AiDemandForecastCard: React.FC<AiDemandForecastCardProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Grid: 7-Day Forecast & Stockout Alerts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: 7-Day Revenue & Demand Projection */}
-        <div className="lg:col-span-2 p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#090D16] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#38BDF8] text-xl">calendar_month</span>
-                <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Dự Báo Bán Hàng 7 Ngày Tới
-                </h3>
-              </div>
-              <span className="text-xs text-slate-400 font-bold">
-                Độ tin cậy: ~90%
-              </span>
+      {/* 7-Day Revenue & Demand Projection (Full-width 7 Columns) */}
+      <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#090D16] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+        <div>
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[#38BDF8] text-xl">calendar_month</span>
+              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
+                Dự Báo Bán Hàng 7 Ngày Tới
+              </h3>
             </div>
+            <span className="text-xs text-slate-400 font-bold">
+              Độ tin cậy: ~90%
+            </span>
+          </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-3">
-              {data?.forecastDays.map((day, idx) => {
-                const isWeekend = day.dayOfWeek === 'Thứ Bảy' || day.dayOfWeek === 'Chủ Nhật';
-                return (
-                  <div
-                    key={idx}
-                    className={`p-3 sm:p-3.5 rounded-2xl border transition-all ${
-                      isWeekend
-                        ? 'bg-sky-50/50 dark:bg-sky-950/20 border-sky-200/80 dark:border-sky-800/50'
-                        : 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200/80 dark:border-slate-800/80'
-                    }`}
-                  >
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 sm:gap-3">
+            {data?.forecastDays.map((day, idx) => {
+              const isWeekend = day.dayOfWeek === 'Thứ Bảy' || day.dayOfWeek === 'Chủ Nhật';
+              return (
+                <div
+                  key={idx}
+                  className={`p-3 sm:p-3.5 rounded-2xl border transition-all flex flex-col justify-between ${
+                    isWeekend
+                      ? 'bg-sky-50/50 dark:bg-sky-950/20 border-sky-200/80 dark:border-sky-800/50 shadow-xs'
+                      : 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200/80 dark:border-slate-800/80'
+                  }`}
+                >
+                  <div>
                     <div className="flex items-center justify-between mb-1 sm:mb-1.5">
-                      <span className="text-xs font-extrabold text-slate-900 dark:text-white">
+                      <span className="text-xs font-extrabold text-slate-900 dark:text-white truncate">
                         {day.dayOfWeek}
                       </span>
-                      <span className="text-[10px] text-slate-400 font-semibold">
+                      <span className="text-[10px] text-slate-400 font-semibold shrink-0">
                         {day.date.split('-').slice(1).reverse().join('/')}
                       </span>
                     </div>
@@ -282,87 +281,90 @@ export const AiDemandForecastCard: React.FC<AiDemandForecastCardProps> = ({
                         {day.projectedOrders} đơn
                       </span>
                     </div>
-
-                    <div className="mt-1 text-[9.5px] sm:text-[10px] text-slate-400 truncate" title={day.peakHours}>
-                      Cao điểm: {day.peakHours}
-                    </div>
                   </div>
-                );
-              })}
-            </div>
-          </div>
 
-          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-            <span>Dữ liệu tự động đồng bộ theo chu kỳ 30 ngày gần nhất</span>
-            <span className="font-bold text-sky-500">Màu xanh: Ngày cao điểm cuối tuần</span>
+                  <div className="mt-2 pt-1.5 border-t border-slate-200/50 dark:border-slate-800/60 text-[10px]">
+                    <span className="text-slate-400 dark:text-slate-500 block text-[9.5px]">Cao điểm:</span>
+                    <span className="font-bold text-slate-700 dark:text-slate-300 block leading-tight mt-0.5 break-words" title={day.peakHours}>
+                      {day.peakHours}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Right 1 Col: Stockout Risk Warnings */}
-        <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#090D16] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-amber-500 text-xl">warning_amber</span>
-                <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Cảnh Báo Cạn Kho
-                </h3>
-              </div>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                {data?.stockoutWarnings.length || 0} mặt hàng
-              </span>
-            </div>
+        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <span>Dữ liệu tự động đồng bộ theo chu kỳ 30 ngày gần nhất</span>
+          <span className="font-bold text-sky-500">Màu xanh: Ngày cao điểm cuối tuần</span>
+        </div>
+      </div>
 
-            {data?.stockoutWarnings && data.stockoutWarnings.length > 0 ? (
-              <div className="space-y-3">
-                {data.stockoutWarnings.map((w, idx) => (
-                  <div
-                    key={idx}
-                    className={`p-3.5 rounded-2xl border ${
+      {/* Stockout Risk Warnings */}
+      <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#090D16] border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-amber-500 text-xl">warning_amber</span>
+            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
+              Cảnh Báo Cạn Kho
+            </h3>
+          </div>
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+            {data?.stockoutWarnings.length || 0} mặt hàng
+          </span>
+        </div>
+
+        {data?.stockoutWarnings && data.stockoutWarnings.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {data.stockoutWarnings.map((w, idx) => (
+              <div
+                key={idx}
+                className={`p-3.5 rounded-2xl border ${
+                  w.severity === 'critical'
+                    ? 'bg-rose-50/70 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/60'
+                    : 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/60'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-extrabold text-slate-900 dark:text-white">
+                    {w.ingredientName}
+                  </span>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
                       w.severity === 'critical'
-                        ? 'bg-rose-50/70 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/60'
-                        : 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/60'
+                        ? 'bg-rose-600 text-white'
+                        : 'bg-amber-500 text-slate-950'
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-extrabold text-slate-900 dark:text-white">
-                        {w.ingredientName}
-                      </span>
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                          w.severity === 'critical'
-                            ? 'bg-rose-600 text-white'
-                            : 'bg-amber-500 text-slate-950'
-                        }`}
-                      >
-                        {w.severity === 'critical' ? 'Khẩn cấp' : 'Sắp hết'}
-                      </span>
-                    </div>
+                    {w.severity === 'critical' ? 'Khẩn cấp' : 'Sắp hết'}
+                  </span>
+                </div>
 
-                    <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 mt-1">
-                      <span>Hiện còn:</span>
-                      <span className="font-extrabold">
-                        {w.currentQuantity} {w.unit}
-                      </span>
-                    </div>
+                <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 mt-1">
+                  <span>Hiện còn:</span>
+                  <span className="font-extrabold">
+                    {w.currentQuantity} {w.unit}
+                  </span>
+                </div>
 
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 leading-snug">
-                      {w.reason}
-                    </div>
-                  </div>
-                ))}
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 leading-snug">
+                  {w.reason}
+                </div>
               </div>
-            ) : (
-              <div className="p-8 text-center text-xs text-slate-400 flex flex-col items-center justify-center">
-                <span className="material-symbols-outlined text-emerald-500 text-3xl mb-2">check_circle</span>
-                <span>Tất cả nguyên liệu hiện đang ở mức an toàn cho 7 ngày tới.</span>
-              </div>
-            )}
+            ))}
           </div>
+        ) : (
+          <div className="p-6 text-center text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center gap-3 bg-slate-50/60 dark:bg-white/5 rounded-2xl border border-slate-200/60 dark:border-white/5">
+            <span className="material-symbols-outlined text-emerald-500 text-2xl shrink-0">check_circle</span>
+            <span className="font-semibold text-slate-700 dark:text-slate-200">
+              Tất cả nguyên liệu hiện đang ở mức an toàn cho 7 ngày tới. Không có nguyên liệu nào chạm ngưỡng cạn kiệt.
+            </span>
+          </div>
+        )}
 
-          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400">
-            Tự động cảnh báo khi tồn kho chạm ngưỡng tối thiểu
-          </div>
+        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400">
+          Hệ thống tự động phân tích và cảnh báo khi tồn kho chạm ngưỡng tối thiểu
         </div>
       </div>
 
