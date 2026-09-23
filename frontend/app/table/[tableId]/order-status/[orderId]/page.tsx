@@ -13,6 +13,7 @@ import { BankPayModal } from '@/components/table/BankPayModal';
 import { formatTableName } from '@/utils/format';
 import { toast } from 'react-hot-toast';
 import { LeaveTableModal } from '@/components/table/LeaveTableModal';
+import { CancelOrderModal } from '@/components/table/CancelOrderModal';
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1')
   .trim()
@@ -232,16 +233,14 @@ export default function OrderStatusPage() {
   };
 
   const [isCancellingOrder, setIsCancellingOrder] = useState(false);
+  const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
 
-  const handleCancelOrder = async () => {
+  const handleCancelOrder = async (confirmed?: boolean | React.MouseEvent) => {
     if (isCancellingOrder || !order?._id) return;
-    const confirmMsg =
-      lang === 'en'
-        ? 'Are you sure you want to cancel this order?'
-        : lang === 'zh'
-        ? '您确定要取消此订单吗？'
-        : 'Bạn có chắc chắn muốn hủy đơn hàng này không?';
-    if (!window.confirm(confirmMsg)) return;
+    if (confirmed !== true) {
+      setIsCancelConfirmOpen(true);
+      return;
+    }
 
     setIsCancellingOrder(true);
     try {
@@ -259,6 +258,7 @@ export default function OrderStatusPage() {
           : 'Đã hủy đơn hàng thành công!',
         { icon: null }
       );
+      setIsCancelConfirmOpen(false);
       setOrder((prev) => (prev ? { ...prev, status: 'cancelled' } : null));
     } catch (e) {
       toast(e instanceof Error ? e.message : 'Lỗi khi hủy đơn hàng.', { icon: null });
@@ -537,7 +537,7 @@ export default function OrderStatusPage() {
     <div className="fixed inset-0 w-full h-full flex flex-col overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300 font-sans selection:bg-[#0284c7] selection:text-white">
       {/* ── Standardized Responsive Header (Pinned Stationary) ─────────────── */}
       <header className="shrink-0 z-40 bg-[var(--bg-card)]/95 backdrop-blur-md border-b border-[var(--border-color)] transition-colors shadow-xs">
-        <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between font-sans">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between font-sans">
           <div className="flex items-center gap-2 sm:gap-3">
             <BrandLogo onClick={() => router.push(`/table/${tableId}`)} />
           </div>
@@ -555,39 +555,39 @@ export default function OrderStatusPage() {
         className="flex-1 min-h-0 overflow-y-auto overscroll-contain w-full scrollbar-thin"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        <div className="w-full max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-6 pb-32 sm:pb-12 font-sans">
+        <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-5 sm:py-8 pb-32 sm:pb-16 font-sans">
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <div className="w-9 h-9 border-4 border-[#0284c7] dark:border-[#38BDF8] border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs font-bold text-[var(--text-secondary)]">{t.loading}</p>
+          <div className="flex flex-col items-center justify-center py-24 gap-3">
+            <div className="w-10 h-10 border-4 border-[#0284c7] dark:border-[#38BDF8] border-t-transparent rounded-full animate-spin" />
+            <p className="text-xs font-extrabold text-[var(--text-secondary)]">{t.loading}</p>
           </div>
         ) : error ? (
-          <div className="text-center py-12 bg-[var(--bg-card)] rounded-2xl p-5 shadow-md border border-[var(--border-color)] max-w-md mx-auto">
-            <h2 className="text-sm font-bold text-[var(--text-primary)] mb-4">{t.error}</h2>
+          <div className="text-center py-12 bg-[var(--bg-card)] rounded-3xl p-6 shadow-xl border border-[var(--border-color)] max-w-md mx-auto">
+            <h2 className="text-sm font-extrabold text-[var(--text-primary)] mb-4">{t.error}</h2>
             <button
               onClick={() => router.push(`/table/${tableId}`)}
-              className="px-4 py-2 bg-[#0284c7] text-white font-bold rounded-xl text-xs active:scale-95 cursor-pointer"
+              className="px-5 py-2.5 bg-[#0284c7] text-white font-extrabold rounded-2xl text-xs uppercase tracking-wider active:scale-95 cursor-pointer shadow-md shadow-sky-500/20"
             >
               {t.backToMenu}
             </button>
           </div>
         ) : order ? (
-          <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-5 sm:space-y-6">
             {order.status === 'paid' ? (
               /* ── PAID STATUS VIEW ────────────────────────────────────── */
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-                <div className="lg:col-span-6 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-lg relative overflow-hidden">
+                <div className="lg:col-span-6 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-5 sm:p-7 shadow-xl shadow-black/5 dark:shadow-black/30 relative overflow-hidden">
                   <div className="text-center pb-4 border-b border-dashed border-[var(--border-color)]">
-                    <span className="inline-block px-3.5 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 rounded-full text-[11px] font-black uppercase tracking-wider mb-2">
+                    <span className="inline-block px-3.5 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 rounded-full text-[11px] font-extrabold uppercase tracking-wider mb-2">
                       ✓ ĐÃ THANH TOÁN HOÀN TẤT
                     </span>
-                    <h2 className="text-lg sm:text-xl font-black text-[var(--text-primary)] tracking-tight">HÓA ĐƠN XÁC NHẬN</h2>
-                    <p className="text-xs font-semibold text-[var(--text-secondary)] mt-0.5">
+                    <h2 className="text-xl font-extrabold text-[var(--text-primary)] tracking-tight">HÓA ĐƠN XÁC NHẬN</h2>
+                    <p className="text-xs font-normal text-[var(--text-secondary)] mt-0.5">
                       #{order._id.slice(-8).toUpperCase()} • {formatTableName(order.tableId?.tableName, lang)}
                     </p>
                   </div>
 
-                  <div className="py-3.5 space-y-2.5 border-b border-dashed border-[var(--border-color)] max-h-52 overflow-y-auto">
+                  <div className="py-4 space-y-2.5 border-b border-dashed border-[var(--border-color)] max-h-56 overflow-y-auto scrollbar-thin">
                     {order.items.map((item, idx) => {
                       const callerName = item.orderedBy || (() => {
                         if (item.note && item.note.startsWith('[')) {
@@ -599,16 +599,16 @@ export default function OrderStatusPage() {
                       return (
                         <div key={idx} className="flex justify-between items-center text-xs">
                           <div className="flex items-center gap-1.5 min-w-0 pr-2">
-                            <span className="font-semibold text-[var(--text-primary)] truncate">
-                              {item.foodId?.name} <strong className="text-[#0284c7] dark:text-[#38BDF8] ml-0.5 font-mono">x{item.quantity}</strong>
+                            <span className="font-normal text-[var(--text-primary)] truncate">
+                              {item.foodId?.name} <strong className="text-[#0284c7] dark:text-[#38BDF8] ml-0.5 font-mono font-extrabold">x{item.quantity}</strong>
                             </span>
                             {callerName && (
-                              <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 font-mono shrink-0">
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 font-mono shrink-0">
                                 {callerName}
                               </span>
                             )}
                           </div>
-                          <span className="font-bold font-mono shrink-0">{formatPrice((item.foodId?.price || 0) * item.quantity)}</span>
+                          <span className="font-extrabold font-mono shrink-0">{formatPrice((item.foodId?.price || 0) * item.quantity)}</span>
                         </div>
                       );
                     })}
@@ -616,14 +616,14 @@ export default function OrderStatusPage() {
 
                   {/* Bill Subtotal & Discount breakdown */}
                   {order.discountAmount && order.discountAmount > 0 ? (
-                    <div className="py-2.5 space-y-1.5 border-b border-dashed border-[var(--border-color)]">
-                      <div className="flex justify-between items-center text-xs text-[var(--text-secondary)] font-sans">
+                    <div className="py-3 space-y-1.5 border-b border-dashed border-[var(--border-color)]">
+                      <div className="flex justify-between items-center text-xs text-[var(--text-secondary)] font-normal">
                         <span>{lang === 'en' ? 'Subtotal' : lang === 'zh' ? '小计' : 'Tạm tính'}</span>
-                        <span className="font-mono font-semibold">
+                        <span className="font-mono font-extrabold">
                           {formatPrice(order.totalAmount + order.discountAmount)}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center text-xs text-emerald-600 dark:text-emerald-400 font-semibold font-sans">
+                      <div className="flex justify-between items-center text-xs text-emerald-600 dark:text-emerald-400 font-extrabold">
                         <span>
                           {order.couponCode === 'KOHI10'
                             ? (lang === 'en' ? 'Discount 10% (Order > 300k)' : lang === 'zh' ? '满30万立减10%' : 'Tặng mã giảm 10% (Đơn > 300k)')
@@ -634,24 +634,24 @@ export default function OrderStatusPage() {
                     </div>
                   ) : null}
 
-                  <div className="pt-3.5 flex justify-between items-center">
-                    <span className="text-xs font-bold text-[var(--text-secondary)] uppercase">{t.total}</span>
-                    <span className="text-lg sm:text-xl font-black text-emerald-500">{formatPrice(order.totalAmount)}</span>
+                  <div className="pt-4 flex justify-between items-center">
+                    <span className="text-xs font-normal text-[var(--text-secondary)] uppercase tracking-wider">{t.total}</span>
+                    <span className="text-xl sm:text-2xl font-extrabold font-mono text-emerald-500">{formatPrice(order.totalAmount)}</span>
                   </div>
 
                   {/* Voucher Notice */}
                   {((order.discountAmount && order.discountAmount > 0) || order.rewardedVoucherCode) && (
-                    <div className="mt-4 p-4 bg-gradient-to-r from-sky-500/10 via-cyan-500/10 to-blue-500/10 border border-sky-500/30 rounded-2xl space-y-2 text-center">
-                      <div className="text-xs font-black uppercase text-[#0284c7] dark:text-[#38BDF8] tracking-wider">
+                    <div className="mt-4 p-4 bg-sky-500/10 dark:bg-sky-400/10 border border-sky-500/30 rounded-2xl space-y-2 text-center">
+                      <div className="text-xs font-extrabold uppercase text-[#0284c7] dark:text-[#38BDF8] tracking-wider">
                         Ưu Đãi Đơn Hàng &gt; 300.000đ
                       </div>
-                      <p className="text-[11px] text-[var(--text-secondary)]">
+                      <p className="text-xs text-[var(--text-secondary)] font-normal">
                         {order.discountAmount && order.discountAmount > 0
                           ? 'Kohi Coffee đã tự động tặng và áp dụng ưu đãi giảm 10% trực tiếp vào hóa đơn của bạn!'
                           : 'Kohi Coffee xin dành tặng bạn Mã giảm 10% cho lần sử dụng dịch vụ tiếp theo:'}
                       </p>
                       <div className="flex items-center justify-center gap-2 pt-1">
-                        <span className="font-mono text-base sm:text-lg font-black text-[#0284c7] dark:text-[#38BDF8] bg-[var(--bg-primary)] px-3 py-1 rounded-xl border border-sky-500/30 tracking-widest">
+                        <span className="font-mono text-base sm:text-lg font-extrabold text-[#0284c7] dark:text-[#38BDF8] bg-[var(--bg-primary)] px-3 py-1 rounded-xl border border-sky-500/30 tracking-widest">
                           {order.couponCode || order.rewardedVoucherCode || 'KOHI10'}
                         </span>
                         <button
@@ -659,7 +659,7 @@ export default function OrderStatusPage() {
                             navigator.clipboard.writeText(order.couponCode || order.rewardedVoucherCode || 'KOHI10');
                             toast('Đã sao chép mã giảm giá!', { icon: null });
                           }}
-                          className="px-3 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs active:scale-95"
+                          className="px-3.5 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold text-xs uppercase rounded-xl transition-all cursor-pointer shadow-xs active:scale-95"
                         >
                           Sao chép
                         </button>
@@ -667,11 +667,11 @@ export default function OrderStatusPage() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-2.5 mt-5 pt-3.5 border-t border-[var(--border-color)]">
+                  <div className="grid grid-cols-2 gap-2.5 mt-5 pt-4 border-t border-[var(--border-color)]">
                     <button
                       onClick={handleExecuteLeaveTable}
                       disabled={isLeaving}
-                      className="py-3 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white font-bold rounded-xl text-xs uppercase tracking-wider active:scale-95 transition-all cursor-pointer text-center flex items-center justify-center gap-1.5"
+                      className="py-3 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white font-extrabold rounded-2xl text-xs uppercase tracking-wider active:scale-95 transition-all cursor-pointer text-center flex items-center justify-center gap-1.5 shadow-sm"
                     >
                       {isLeaving ? (
                         <>
@@ -684,48 +684,48 @@ export default function OrderStatusPage() {
                     </button>
                     <button
                       onClick={() => router.push(`/table/${tableId}`)}
-                      className="py-3 bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold rounded-xl text-xs uppercase tracking-wider active:scale-95 transition-all cursor-pointer text-center"
+                      className="py-3 bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold rounded-2xl text-xs uppercase tracking-wider active:scale-95 transition-all cursor-pointer text-center shadow-md shadow-sky-500/20"
                     >
                       {lang === 'en' ? 'MENU' : 'MENU HÔM NAY'}
                     </button>
                   </div>
                 </div>
 
-                <div className="lg:col-span-6 bg-[var(--bg-card)] rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-lg border border-[var(--border-color)]">
-                  <h3 className="text-sm sm:text-base font-bold text-[var(--text-primary)] mb-1">
+                <div className="lg:col-span-6 bg-[var(--bg-card)] rounded-3xl p-5 sm:p-7 shadow-xl shadow-black/5 dark:shadow-black/30 border border-[var(--border-color)]">
+                  <h3 className="text-base font-extrabold text-[var(--text-primary)] mb-1">
                     {lang === 'vi' ? 'Đánh giá trải nghiệm' : lang === 'zh' ? '评价您的体验' : 'Rate your experience'}
                   </h3>
-                  <p className="text-xs text-[var(--text-secondary)] mb-4">
+                  <p className="text-xs text-[var(--text-secondary)] mb-4 font-normal">
                     {lang === 'vi' ? 'Ý kiến của bạn giúp Kohi nâng cao chất lượng phục vụ' : 'Your feedback helps us improve'}
                   </p>
 
                   {hasReviewed ? (
-                    <div className="py-5 px-4 bg-emerald-500/10 border border-emerald-500/25 rounded-2xl text-center space-y-3.5">
+                    <div className="py-6 px-4 bg-emerald-500/10 border border-emerald-500/25 rounded-2xl text-center space-y-3.5">
                       <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center mx-auto border border-emerald-500/30">
-                        <span className="material-symbols-outlined text-2xl">verified</span>
+                        <span className="material-symbols-outlined text-2xl font-extrabold">verified</span>
                       </div>
                       <div>
-                        <h4 className="text-sm font-black text-[var(--text-primary)]">
+                        <h4 className="text-sm font-extrabold text-[var(--text-primary)]">
                           {lang === 'vi' ? 'Cảm ơn bạn đã gửi đánh giá!' : 'Thank you for your feedback!'}
                         </h4>
-                        <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                        <p className="text-xs text-[var(--text-secondary)] mt-1 font-normal">
                           {lang === 'vi' ? 'Ý kiến quý giá của bạn giúp Kohi ngày càng hoàn thiện hơn.' : 'Your review helps Kohi continually improve.'}
                         </p>
                       </div>
 
                       {/* Gamification Loyalty Voucher Banner */}
-                      <div className="p-3.5 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-500/30 rounded-xl text-left flex items-center justify-between gap-2.5">
+                      <div className="p-3.5 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-500/30 rounded-2xl text-left flex items-center justify-between gap-2.5">
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
                             <span className="material-symbols-outlined text-amber-500 text-sm">redeem</span>
-                            <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400">
                               Quà tặng tri ân
                             </span>
                           </div>
-                          <p className="text-xs font-black font-mono text-[var(--text-primary)] mt-0.5">
+                          <p className="text-xs font-extrabold font-mono text-[var(--text-primary)] mt-0.5">
                             MÃ: <span className="text-[#0284c7] dark:text-[#38BDF8]">KOHICARE10</span>
                           </p>
-                          <p className="text-[10px] text-[var(--text-secondary)]">Giảm 10% cho lần ghé tiếp theo (HSD: 30 ngày)</p>
+                          <p className="text-[10px] text-[var(--text-secondary)] font-normal">Giảm 10% cho lần ghé tiếp theo (HSD: 30 ngày)</p>
                         </div>
                         <button
                           type="button"
@@ -733,17 +733,17 @@ export default function OrderStatusPage() {
                             navigator.clipboard.writeText('KOHICARE10');
                             toast('Đã sao chép mã ưu đãi KOHICARE10!', { icon: null });
                           }}
-                          className="px-3 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold text-[10px] uppercase tracking-wider rounded-lg shadow-xs active:scale-95 transition-all cursor-pointer shrink-0"
+                          className="px-3.5 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-xs active:scale-95 transition-all cursor-pointer shrink-0"
                         >
                           Sao chép
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <div className="space-y-3.5">
+                    <div className="space-y-4">
                       {/* Interactive Star Rating with Dynamic Emotion */}
                       <div className="text-center py-1">
-                        <div className="flex gap-2 justify-center">
+                        <div className="flex gap-2.5 justify-center">
                           {[1, 2, 3, 4, 5].map((s) => (
                             <button
                               key={s}
@@ -754,7 +754,7 @@ export default function OrderStatusPage() {
                             >★</button>
                           ))}
                         </div>
-                        <p className="text-xs font-bold text-amber-600 dark:text-amber-400 mt-1">
+                        <p className="text-xs font-extrabold text-amber-600 dark:text-amber-400 mt-1.5">
                           {overallStar === 1 && 'Rất thất vọng 😞'}
                           {overallStar === 2 && 'Chưa hài lòng 🙁'}
                           {overallStar === 3 && 'Tạm ổn 😐'}
@@ -783,7 +783,7 @@ export default function OrderStatusPage() {
                                   setOverallComment((prev) => (prev ? `${prev}, ${chip}` : chip));
                                 }
                               }}
-                              className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all cursor-pointer ${
+                              className={`px-3 py-1 rounded-full text-[11px] font-extrabold border transition-all cursor-pointer ${
                                 isSelected
                                   ? 'bg-[#0284c7] text-white border-[#0284c7] shadow-xs'
                                   : 'bg-[var(--bg-primary)] hover:bg-slate-100 dark:hover:bg-slate-800 text-[var(--text-secondary)] border-[var(--border-color)]'
@@ -801,12 +801,12 @@ export default function OrderStatusPage() {
                         placeholder={lang === 'vi' ? 'Nhận xét về thức uống, không gian, thái độ phục vụ...' : 'Your comments...'}
                         rows={3}
                         maxLength={250}
-                        className="w-full text-xs bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl px-3.5 py-2.5 outline-none focus:border-[#0284c7] resize-none text-[var(--text-primary)] font-sans"
+                        className="w-full text-xs bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 outline-none focus:border-[#0284c7] resize-none text-[var(--text-primary)] font-sans"
                       />
                       <button
                         onClick={handleSubmitReview}
                         disabled={isSubmittingReview}
-                        className="w-full py-3 bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold rounded-xl text-xs uppercase disabled:opacity-50 cursor-pointer active:scale-95 transition-all shadow-md"
+                        className="w-full py-3 bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold rounded-2xl text-xs uppercase disabled:opacity-50 cursor-pointer active:scale-95 transition-all shadow-md shadow-sky-500/20"
                       >
                         {isSubmittingReview ? 'Đang gửi...' : 'Gửi đánh giá'}
                       </button>
@@ -815,39 +815,43 @@ export default function OrderStatusPage() {
                 </div>
               </div>
             ) : (
-              /* ── LIVE ORDER TRACKER (MOBILE-OPTIMIZED RESPONSIVE) ─────── */
-              <div className="space-y-4 sm:space-y-6">
+              /* ── LIVE ORDER TRACKER (RESPONSIVE MULTI-DEVICE OPTIMIZED) ─────── */
+              <div className="space-y-5 sm:space-y-6">
                 {/* Top Card: Live Progress Header & Stepper */}
-                <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-lg space-y-4 sm:space-y-6">
+                <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-5 sm:p-7 shadow-xl shadow-black/5 dark:shadow-black/30 relative overflow-hidden backdrop-blur-sm space-y-5 sm:space-y-6">
+                  {/* Subtle ambient decorative light */}
+                  <div className="absolute -top-24 -right-24 w-60 h-60 bg-sky-500/10 dark:bg-sky-400/10 rounded-full blur-3xl pointer-events-none" />
+
                   {/* Row 1: Status Title & Meta Badges */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 sm:pb-4 border-b border-[var(--border-color)]">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[var(--border-color)] relative z-10">
                     <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#0284c7] dark:bg-[#38BDF8] animate-ping inline-block" />
-                        <span className="text-[10px] sm:text-[11px] font-black text-[#0284c7] dark:text-[#38BDF8] uppercase tracking-widest font-mono">
-                          TRẠNG THÁI TRỰC TUYẾN
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 dark:bg-sky-400/10 border border-sky-500/20 text-sky-600 dark:text-[#38BDF8] text-[11px] font-extrabold uppercase tracking-wide mb-1.5">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500 dark:bg-[#38BDF8]"></span>
                         </span>
+                        <span>TRẠNG THÁI TRỰC TUYẾN</span>
                       </div>
-                      <h1 className="text-xl sm:text-2xl font-black text-[var(--text-primary)] tracking-tight">
+                      <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">
                         {(t.steps as any)[order.status]}
                       </h1>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-                      <div className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-extrabold font-mono">
-                        <span className="text-[var(--text-tertiary)] mr-1">Mã:</span>
-                        <span className="text-[#0284c7] dark:text-[#38BDF8] uppercase">#{order._id.slice(-6).toUpperCase()}</span>
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl text-xs font-normal">
+                        <span className="text-[var(--text-tertiary)]">Mã:</span>
+                        <span className="font-extrabold text-[#0284c7] dark:text-[#38BDF8] font-mono uppercase tracking-wide">#{order._id.slice(-6).toUpperCase()}</span>
                       </div>
 
-                      <div className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-bold">
-                        <span className="text-[var(--text-tertiary)] mr-1">Vị trí:</span>
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl text-xs font-normal">
+                        <span className="text-[var(--text-tertiary)]">Vị trí:</span>
                         <span className="font-extrabold text-[var(--text-primary)]">{formatTableName(order.tableId?.tableName, lang)}</span>
-                        {order.customerName && <span className="text-[var(--text-secondary)] font-normal ml-1">({order.customerName})</span>}
+                        {order.customerName && <span className="text-[var(--text-secondary)] font-normal ml-0.5">({order.customerName})</span>}
                       </div>
 
                       {order.status !== 'cancelled' && (
-                        <div className="flex items-center gap-1.5 px-3 py-1 sm:py-1.5 bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] border border-sky-500/25 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-extrabold shadow-2xs font-mono">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#0284c7] dark:bg-[#38BDF8] animate-pulse" />
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] border border-sky-500/25 rounded-2xl text-xs font-extrabold font-mono">
+                          <span className="w-2 h-2 rounded-full bg-sky-500 dark:bg-[#38BDF8] animate-pulse shrink-0" />
                           <span>
                             {order.status === 'completed'
                               ? 'Đã phục vụ tại bàn'
@@ -862,22 +866,22 @@ export default function OrderStatusPage() {
 
                   {/* Row 2: Ergonomic Adaptive Stepper */}
                   {/* Mobile Compact Progress View (sm:hidden) */}
-                  <div className="sm:hidden space-y-2 pt-1">
-                    <div className="flex items-center justify-between text-xs font-extrabold">
-                      <span className="text-[var(--text-secondary)]">Tiến trình đơn:</span>
-                      <span className="text-[#0284c7] dark:text-[#38BDF8] font-mono">
+                  <div className="sm:hidden space-y-3 pt-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[var(--text-secondary)] font-normal">Tiến trình đơn:</span>
+                      <span className="text-[#0284c7] dark:text-[#38BDF8] font-extrabold font-mono">
                         Bước {Math.max(1, currentStepIndex + 1)}/{stepsList.length}: {(t.steps as any)[order.status]}
                       </span>
                     </div>
 
-                    <div className="w-full h-2.5 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden p-0.5">
+                    <div className="w-full h-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-full overflow-hidden p-0.5">
                       <div
-                        className="h-full bg-gradient-to-r from-[#0284c7] via-cyan-400 to-emerald-500 rounded-full transition-all duration-500"
+                        className="h-full bg-gradient-to-r from-[#0284c7] via-cyan-400 to-emerald-400 rounded-full transition-all duration-500"
                         style={{ width: `${Math.min(100, Math.max(12, ((currentStepIndex + 1) / stepsList.length) * 100))}%` }}
                       />
                     </div>
 
-                    <div className="flex justify-between items-center px-1 text-[10px] text-[var(--text-tertiary)] font-bold">
+                    <div className="flex justify-between items-center px-1 text-[10px] text-[var(--text-tertiary)] font-normal">
                       <span>Đã gửi</span>
                       <span>Pha chế</span>
                       <span>Ra món</span>
@@ -886,15 +890,16 @@ export default function OrderStatusPage() {
                   </div>
 
                   {/* Desktop Full Timeline View (hidden sm:block) */}
-                  <div className="hidden sm:block pt-1">
-                    <div className="relative max-w-4xl mx-auto px-4 py-2">
+                  <div className="hidden sm:block py-2">
+                    <div className="relative max-w-3xl mx-auto px-6 py-2">
                       {/* Background connecting track line */}
-                      <div className="absolute left-8 right-8 top-5 -translate-y-1/2 h-1 bg-[var(--border-color)] z-0 rounded-full" />
-                      {/* Active progress fill line */}
-                      <div
-                        className="absolute left-8 top-5 -translate-y-1/2 h-1 bg-gradient-to-r from-[#0284c7] via-cyan-400 to-emerald-500 transition-all duration-700 z-0 rounded-full"
-                        style={{ width: `${Math.max(0, (currentStepIndex / (stepsList.length - 1)) * 92)}%` }}
-                      />
+                      <div className="absolute left-11 right-11 top-7 -translate-y-1/2 h-1 bg-[var(--border-color)] z-0 rounded-full overflow-hidden">
+                        {/* Active progress fill line */}
+                        <div
+                          className="h-full bg-gradient-to-r from-emerald-500 via-[#0284c7] to-[#38BDF8] transition-all duration-700 rounded-full"
+                          style={{ width: `${Math.max(0, (currentStepIndex / (stepsList.length - 1)) * 100)}%` }}
+                        />
+                      </div>
 
                       <div className="flex items-center justify-between relative z-10">
                         {stepsList.map((stepKey, idx) => {
@@ -905,24 +910,28 @@ export default function OrderStatusPage() {
                             <div key={stepKey} className="flex flex-col items-center shrink-0">
                               {/* Step Node Circle */}
                               <div
-                                className={`w-9 h-9 lg:w-10 lg:h-10 rounded-full flex items-center justify-center text-xs font-black transition-all ${
+                                className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-extrabold transition-all duration-300 ${
                                   isCompleted
-                                    ? 'bg-emerald-500 text-white shadow-sm'
+                                    ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20'
                                     : isCurrent
-                                    ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 ring-4 ring-[#0284c7]/30 dark:ring-sky-500/40 font-black scale-110 shadow-md'
-                                    : 'bg-[var(--bg-card)] border-2 border-[var(--border-color)] text-[var(--text-tertiary)]'
+                                    ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-[#090D16] font-extrabold ring-4 ring-sky-500/25 shadow-lg shadow-sky-500/30 scale-105'
+                                    : 'bg-[var(--bg-primary)] border-2 border-[var(--border-color)] text-[var(--text-tertiary)] font-normal'
                                 }`}
                               >
-                                {isCompleted ? '✓' : idx + 1}
+                                {isCompleted ? (
+                                  <span className="material-symbols-outlined text-base">check</span>
+                                ) : (
+                                  idx + 1
+                                )}
                               </div>
 
                               {/* Step Label */}
                               <span
-                                className={`text-xs font-bold mt-2 text-center whitespace-nowrap ${
+                                className={`text-xs mt-2.5 text-center whitespace-nowrap transition-colors ${
                                   isCurrent
-                                    ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                                    ? 'text-[#0284c7] dark:text-[#38BDF8] font-extrabold'
                                     : isCompleted
-                                    ? 'text-[var(--text-primary)] font-semibold'
+                                    ? 'text-[var(--text-primary)] font-extrabold'
                                     : 'text-[var(--text-tertiary)] font-normal'
                                 }`}
                               >
@@ -936,24 +945,27 @@ export default function OrderStatusPage() {
                   </div>
 
                   {/* Step Description Banner */}
-                  <div className="p-3 bg-gradient-to-r from-[#0284c7]/10 via-[#0284c7]/5 to-transparent border border-[#0284c7]/20 rounded-xl sm:rounded-2xl text-center">
-                    <p className="text-xs font-medium text-[var(--text-primary)]">
+                  <div className="flex items-center gap-3 p-3.5 sm:p-4 bg-sky-500/5 dark:bg-sky-500/10 border border-sky-500/20 rounded-2xl">
+                    <div className="w-8 h-8 rounded-xl bg-sky-500/15 text-[#0284c7] dark:text-[#38BDF8] flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-lg">info</span>
+                    </div>
+                    <p className="text-xs sm:text-sm font-normal text-[var(--text-secondary)] leading-relaxed">
                       {(t.stepDesc as any)[order.status]}
                     </p>
                   </div>
                 </div>
 
                 {/* Bottom Section: Responsive Grid with Split Payment Support */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
                   {/* Left Column: Order Items Details & Selection */}
-                  <div className="lg:col-span-7 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-md flex flex-col justify-between">
+                  <div className="lg:col-span-7 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5 dark:shadow-black/30 flex flex-col">
                     <div>
-                      <div className="flex items-center justify-between pb-2.5 border-b border-[var(--border-color)] mb-3">
+                      <div className="flex items-center justify-between pb-3 border-b border-[var(--border-color)] mb-4">
                         <div>
-                          <h2 className="text-xs font-black uppercase tracking-wider text-[var(--text-primary)]">
+                          <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-[var(--text-primary)]">
                             Chi tiết món ăn ({order.items.reduce((s, i) => s + i.quantity, 0)} món)
                           </h2>
-                          <p className="text-[10.5px] text-[var(--text-secondary)] mt-0.5">
+                          <p className="text-[11px] text-[var(--text-secondary)] mt-0.5 font-normal">
                             {paymentMode === 'all'
                               ? 'Đang chọn toàn bộ món chưa thanh toán'
                               : paymentMode === 'mine'
@@ -964,13 +976,13 @@ export default function OrderStatusPage() {
 
                         {/* Multi-round Switcher */}
                         {tableOrders.length > 1 && (
-                          <div className="flex items-center gap-1">
-                            <span className="text-[10px] font-bold text-[var(--text-tertiary)]">Lượt:</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[11px] font-normal text-[var(--text-tertiary)]">Lượt:</span>
                             {tableOrders.map((tOrder, idx) => (
                               <button
                                 key={tOrder._id}
                                 onClick={() => router.push(`/table/${tableId}/order-status/${tOrder._id}`)}
-                                className={`px-2 py-0.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
+                                className={`px-2.5 py-1 text-xs font-extrabold rounded-xl transition-all cursor-pointer ${
                                   tOrder._id === orderId
                                     ? 'bg-[#0284c7] text-white shadow-xs'
                                     : 'bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:bg-slate-200 dark:hover:bg-slate-800'
@@ -984,7 +996,7 @@ export default function OrderStatusPage() {
                       </div>
 
                       {/* Items List with Split Checkboxes (Selectable Card Pattern) */}
-                      <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+                      <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1 scrollbar-thin">
                         {order.items.map((item, idx) => {
                           const itemCaller = item.orderedBy || (() => {
                             if (item.note && item.note.startsWith('[')) {
@@ -1001,18 +1013,18 @@ export default function OrderStatusPage() {
                             <div
                               key={idx}
                               onClick={() => !isPaidItem && toggleItemSelection(idx)}
-                              className={`flex items-center justify-between p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border text-xs transition-all select-none ${
+                              className={`flex items-center justify-between p-3.5 rounded-2xl border text-xs transition-all select-none ${
                                 isPaidItem
                                   ? 'bg-emerald-500/5 border-emerald-500/20 opacity-75 cursor-default'
                                   : isSelected
-                                  ? 'bg-[#0284c7]/10 dark:bg-sky-500/15 border-[#0284c7] dark:border-[#38BDF8] ring-1 ring-[#0284c7]/30 shadow-sm cursor-pointer'
+                                  ? 'bg-[#0284c7]/10 dark:bg-sky-500/15 border-[#0284c7] dark:border-[#38BDF8] ring-1 ring-[#0284c7]/30 shadow-xs cursor-pointer'
                                   : 'bg-[var(--bg-primary)] border-[var(--border-color)] hover:border-[#0284c7]/40 hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer'
                               }`}
                             >
                               <div className="flex items-center gap-3 min-w-0 pr-2">
                                 {/* Selection Checkbox / Paid Badge */}
                                 {isPaidItem ? (
-                                  <span className="w-5 h-5 rounded-md bg-emerald-500 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
+                                  <span className="w-5 h-5 rounded-lg bg-emerald-500 text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-xs">
                                     ✓
                                   </span>
                                 ) : (
@@ -1027,29 +1039,29 @@ export default function OrderStatusPage() {
                                   </div>
                                 )}
 
-                                <span className="px-2 py-0.5 bg-[#0284c7]/15 text-[#0284c7] dark:text-[#38BDF8] font-black rounded-lg shrink-0 font-mono text-xs">
+                                <span className="px-2 py-0.5 bg-sky-500/15 text-[#0284c7] dark:text-[#38BDF8] font-extrabold rounded-lg shrink-0 font-mono text-xs">
                                   x{item.quantity}
                                 </span>
 
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-1.5 flex-wrap">
-                                    <p className={`font-bold text-xs sm:text-sm truncate ${isPaidItem ? 'line-through text-slate-400 dark:text-slate-500' : 'text-[var(--text-primary)]'}`}>
+                                    <p className={`font-extrabold text-xs sm:text-sm truncate ${isPaidItem ? 'line-through text-slate-400 dark:text-slate-500' : 'text-[var(--text-primary)]'}`}>
                                       {item.foodId?.name || 'Món ăn'}
                                     </p>
 
                                     {itemCaller && (
-                                      <span className="px-1.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 font-mono shrink-0">
+                                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 font-mono shrink-0">
                                         {itemCaller}
                                       </span>
                                     )}
 
                                     {isPaidItem && (
-                                      <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-mono shrink-0">
+                                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-mono shrink-0">
                                         ✓ Đã trả {item.paidBy ? `(${item.paidBy})` : ''}
                                       </span>
                                     )}
                                   </div>
-                                  {cleanNote && <p className="text-[10px] text-[var(--text-secondary)] italic truncate mt-0.5">{cleanNote}</p>}
+                                  {cleanNote && <p className="text-[11px] text-[var(--text-secondary)] italic truncate mt-0.5 font-normal">{cleanNote}</p>}
                                 </div>
                               </div>
 
@@ -1081,8 +1093,8 @@ export default function OrderStatusPage() {
 
                         if (personMap.size > 1) {
                           return (
-                            <div className="pt-2.5 mt-2.5 border-t border-dashed border-[var(--border-color)]">
-                              <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5 font-mono">
+                            <div className="pt-3 mt-3 border-t border-dashed border-[var(--border-color)]">
+                              <p className="text-[11px] font-normal uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-mono">
                                 {lang === 'en' ? 'Summary by member' : lang === 'zh' ? '同桌分账明细' : 'Tổng kết theo người gọi'}:
                               </p>
                               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -1102,21 +1114,21 @@ export default function OrderStatusPage() {
                                           .filter((i) => i !== -1);
                                         setSelectedItemIndexes(indices);
                                       }}
-                                      className={`p-2 rounded-xl border text-xs flex flex-col justify-between cursor-pointer transition-all ${
+                                      className={`p-2.5 rounded-2xl border text-xs flex flex-col justify-between cursor-pointer transition-all ${
                                         isPersonAllPaid
                                           ? 'bg-emerald-500/5 border-emerald-500/20 opacity-80'
                                           : 'bg-[var(--bg-primary)] border-[var(--border-color)] hover:border-[#0284c7]'
                                       }`}
                                     >
                                       <div className="flex items-center justify-between">
-                                        <span className="font-bold text-[var(--text-primary)] truncate">{person}</span>
+                                        <span className="font-extrabold text-[var(--text-primary)] truncate">{person}</span>
                                         {isPersonAllPaid && (
-                                          <span className="text-[9px] font-black text-emerald-500">✓ Xong</span>
+                                          <span className="text-[9px] font-extrabold text-emerald-500">✓ Xong</span>
                                         )}
                                       </div>
-                                      <div className="flex justify-between items-baseline mt-1">
-                                        <span className="text-[10px] text-[var(--text-secondary)] font-mono">{data.count} món</span>
-                                        <span className="font-mono font-bold text-sky-600 dark:text-sky-400 text-[11px]">
+                                      <div className="flex justify-between items-baseline mt-1.5">
+                                        <span className="text-[11px] text-[var(--text-secondary)] font-mono font-normal">{data.count} món</span>
+                                        <span className="font-mono font-extrabold text-sky-600 dark:text-sky-400 text-xs">
                                           {formatPrice(data.total)}
                                         </span>
                                       </div>
@@ -1132,16 +1144,16 @@ export default function OrderStatusPage() {
                     </div>
 
                     {/* Left Column Bottom Summary */}
-                    <div className="pt-3 mt-3 border-t border-[var(--border-color)] flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div className="pt-4 mt-4 border-t border-[var(--border-color)] flex flex-col sm:flex-row items-center justify-between gap-3">
                       <div className="flex items-center justify-between w-full sm:w-auto gap-3">
-                        <span className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Tổng hóa đơn bàn</span>
-                        <span className="text-lg sm:text-xl font-black text-[#0284c7] dark:text-[#38BDF8]">
+                        <span className="text-xs font-normal text-[var(--text-secondary)] uppercase tracking-wider">Tổng hóa đơn bàn</span>
+                        <span className="text-xl sm:text-2xl font-extrabold font-mono text-[#0284c7] dark:text-[#38BDF8]">
                           {formatPrice(order.totalAmount)}
                         </span>
                       </div>
 
                       {Boolean(order.paidAmount && order.paidAmount > 0) && (
-                        <div className="text-xs font-bold text-emerald-500 font-mono">
+                        <div className="text-xs font-extrabold text-emerald-500 font-mono">
                           Đã thu: {formatPrice(order.paidAmount || 0)}
                         </div>
                       )}
@@ -1149,29 +1161,29 @@ export default function OrderStatusPage() {
                   </div>
 
                   {/* Right Column: Payment Mode Switcher & Actions */}
-                  <div className="lg:col-span-5 flex flex-col justify-between gap-3 sm:gap-4">
-                    <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-lg flex flex-col justify-between h-full space-y-4">
+                  <div className="lg:col-span-5 flex flex-col gap-4">
+                    <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5 dark:shadow-black/30 flex flex-col space-y-4">
                       <div>
                         {/* Section Header */}
-                        <div className="flex items-center justify-between pb-2.5 border-b border-[var(--border-color)]">
-                          <span className="text-[10.5px] font-black uppercase tracking-wider text-[#0284c7] dark:text-sky-400 font-mono">
+                        <div className="flex items-center justify-between pb-3 border-b border-[var(--border-color)]">
+                          <span className="text-xs font-extrabold uppercase tracking-wider text-[#0284c7] dark:text-[#38BDF8] font-mono">
                             HÌNH THỨC THANH TOÁN
                           </span>
-                          <span className="text-xs font-bold text-[var(--text-secondary)]">
+                          <span className="text-xs font-extrabold text-[var(--text-secondary)]">
                             {formatTableName(order.tableId?.tableName, lang)}
                           </span>
                         </div>
 
                         {/* Split Payment Mode Switcher (Pill tabs) */}
-                        <div className="pt-3">
-                          <div className="grid grid-cols-3 p-1 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-color)] gap-1">
+                        <div className="pt-3.5">
+                          <div className="grid grid-cols-3 p-1 bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-color)] gap-1">
                             <button
                               type="button"
                               onClick={() => setPaymentMode('all')}
-                              className={`py-2 text-[11px] font-black rounded-lg transition-all cursor-pointer text-center ${
+                              className={`py-2 text-xs font-extrabold rounded-xl transition-all cursor-pointer text-center ${
                                 paymentMode === 'all'
                                   ? 'bg-[#0284c7] text-white shadow-xs'
-                                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-normal'
                               }`}
                             >
                               Bao cả bàn
@@ -1179,10 +1191,10 @@ export default function OrderStatusPage() {
                             <button
                               type="button"
                               onClick={() => setPaymentMode('mine')}
-                              className={`py-2 text-[11px] font-black rounded-lg transition-all cursor-pointer text-center ${
+                              className={`py-2 text-xs font-extrabold rounded-xl transition-all cursor-pointer text-center ${
                                 paymentMode === 'mine'
                                   ? 'bg-[#0284c7] text-white shadow-xs'
-                                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-normal'
                               }`}
                             >
                               Phần của bạn
@@ -1190,17 +1202,17 @@ export default function OrderStatusPage() {
                             <button
                               type="button"
                               onClick={() => setPaymentMode('custom')}
-                              className={`py-2 text-[11px] font-black rounded-lg transition-all cursor-pointer text-center ${
+                              className={`py-2 text-xs font-extrabold rounded-xl transition-all cursor-pointer text-center ${
                                 paymentMode === 'custom'
                                   ? 'bg-[#0284c7] text-white shadow-xs'
-                                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-normal'
                               }`}
                             >
                               Tự chọn món
                             </button>
                           </div>
 
-                          <p className="text-[10.5px] text-[var(--text-secondary)] mt-1.5 text-center font-medium">
+                          <p className="text-[11px] text-[var(--text-secondary)] mt-2 text-center font-normal">
                             {paymentMode === 'all'
                               ? 'Thanh toán toàn bộ số tiền còn lại của cả bàn'
                               : paymentMode === 'mine'
@@ -1211,10 +1223,10 @@ export default function OrderStatusPage() {
 
                         {/* Payment Progress Bar (If partial payments exist) */}
                         {Boolean(order.paidAmount && order.paidAmount > 0) && (
-                          <div className="mt-3.5 p-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] space-y-2">
-                            <div className="flex justify-between items-center text-[10.5px] font-bold">
-                              <span className="text-[var(--text-secondary)]">Tiến độ thanh toán bàn</span>
-                              <span className="text-emerald-500 font-mono">
+                          <div className="mt-4 p-3.5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] space-y-2">
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="text-[var(--text-secondary)] font-normal">Tiến độ thanh toán bàn</span>
+                              <span className="text-emerald-500 font-mono font-extrabold">
                                 {Math.round(((order.paidAmount || 0) / order.totalAmount) * 100)}%
                               </span>
                             </div>
@@ -1234,14 +1246,14 @@ export default function OrderStatusPage() {
                         )}
 
                         {/* Amount Due Banner */}
-                        <div className="mt-3.5 p-4 rounded-2xl bg-gradient-to-br from-[#0284c7]/15 via-sky-500/10 to-transparent border border-[#0284c7]/30 text-center space-y-1">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-[var(--text-secondary)] block">
+                        <div className="mt-4 p-5 rounded-2xl bg-gradient-to-br from-sky-500/15 via-sky-500/5 to-transparent border border-sky-500/25 text-center space-y-1">
+                          <span className="text-[11px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] block">
                             Số tiền thanh toán đợt này
                           </span>
-                          <div className="text-2xl sm:text-3xl font-black text-[#0284c7] dark:text-[#38BDF8] font-mono">
+                          <div className="text-3xl sm:text-4xl font-extrabold text-[#0284c7] dark:text-[#38BDF8] font-mono tracking-tight my-1">
                             {formatPrice(paymentAmountToPay)}
                           </div>
-                          <span className="text-[11px] font-semibold text-[var(--text-secondary)] block">
+                          <span className="text-xs font-normal text-[var(--text-secondary)] block">
                             {paymentMode === 'all'
                               ? `Toàn bộ bàn (${order.items.filter((i) => !i.isPaid).reduce((s, i) => s + i.quantity, 0)} món còn lại)`
                               : `${selectedItems.reduce((s, i) => s + i.quantity, 0)} món đã chọn`}
@@ -1250,14 +1262,14 @@ export default function OrderStatusPage() {
                       </div>
 
                       {/* Desktop In-Card Payment Trigger Buttons (Hidden on mobile to avoid duplication with sticky footer) */}
-                      <div className="hidden sm:block space-y-2 pt-2">
+                      <div className="hidden sm:block space-y-2.5 pt-1">
                         {order.status === 'pending' ? (
-                          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center space-y-2.5">
+                          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-center space-y-3">
                             <div className="space-y-1">
-                              <span className="text-xs font-black uppercase text-amber-600 dark:text-amber-400 block tracking-wide">
+                              <span className="text-xs font-extrabold uppercase text-amber-600 dark:text-amber-400 block tracking-wide">
                                 Đang chờ phục vụ duyệt đơn
                               </span>
-                              <p className="text-[11px] font-medium text-[var(--text-secondary)]">
+                              <p className="text-xs font-normal text-[var(--text-secondary)]">
                                 Quý khách vui lòng đợi nhân viên xác nhận đơn trước khi thực hiện thanh toán.
                               </p>
                             </div>
@@ -1265,14 +1277,14 @@ export default function OrderStatusPage() {
                               id="btn-cancel-pending-order-desktop"
                               onClick={handleCancelOrder}
                               disabled={isCancellingOrder}
-                              className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 font-bold text-xs uppercase tracking-wider rounded-xl border border-rose-500/20 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+                              className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 font-extrabold text-xs uppercase tracking-wider rounded-xl border border-rose-500/20 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
                             >
                               <span className="material-symbols-outlined text-base">close</span>
                               <span>{isCancellingOrder ? 'Đang hủy...' : 'Hủy đơn hàng này'}</span>
                             </button>
                           </div>
                         ) : isTableFullyPaid ? (
-                          <div className="py-3 text-center bg-emerald-500/15 border border-emerald-500/30 rounded-xl text-emerald-500 font-black text-xs">
+                          <div className="py-3.5 text-center bg-emerald-500/15 border border-emerald-500/30 rounded-2xl text-emerald-500 font-extrabold text-xs">
                             ✓ Bàn đã thanh toán hoàn tất
                           </div>
                         ) : (
@@ -1287,7 +1299,7 @@ export default function OrderStatusPage() {
                                 setIsBankModalOpen(true);
                               }}
                               disabled={paymentAmountToPay <= 0}
-                              className="w-full py-3.5 bg-[#0284c7] hover:bg-[#0369a1] disabled:opacity-50 text-white font-black text-xs uppercase tracking-wider rounded-xl sm:rounded-2xl shadow-md shadow-sky-500/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 text-center"
+                              className="w-full py-3.5 bg-[#0284c7] hover:bg-[#0369a1] disabled:opacity-50 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-sky-500/25 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 text-center"
                             >
                               <span className="material-symbols-outlined text-lg">qr_code_2</span>
                               <span>Chuyển khoản Ngân hàng (VietQR)</span>
@@ -1297,7 +1309,7 @@ export default function OrderStatusPage() {
                             <button
                               onClick={handleSplitCashPayment}
                               disabled={callStaffCooldown > 0 || isCallingStaff || isPayingSplitCash || paymentAmountToPay <= 0}
-                              className="w-full py-3 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 disabled:opacity-50 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-black text-xs uppercase tracking-wider rounded-xl sm:rounded-2xl shadow-xs active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 text-center"
+                              className="w-full py-3 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 disabled:opacity-50 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-xs active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 text-center"
                             >
                               <span className="material-symbols-outlined text-lg">payments</span>
                               <span>
@@ -1317,7 +1329,7 @@ export default function OrderStatusPage() {
                         <button
                           onClick={handleCallStaff}
                           disabled={callStaffCooldown > 0 || isCallingStaff}
-                          className="py-2.5 bg-[var(--bg-primary)] hover:bg-slate-200 dark:hover:bg-slate-800 text-[var(--text-primary)] font-bold rounded-xl text-xs uppercase tracking-wider transition-all active:scale-95 cursor-pointer text-center border border-[var(--border-color)] shadow-xs"
+                          className="py-2.5 bg-[var(--bg-primary)] hover:bg-slate-200 dark:hover:bg-slate-800 text-[var(--text-primary)] font-extrabold rounded-2xl text-xs uppercase tracking-wider transition-all active:scale-95 cursor-pointer text-center border border-[var(--border-color)] shadow-xs"
                         >
                           {callStaffCooldown > 0 ? `Gọi NV (${callStaffCooldown}s)` : isCallingStaff ? 'Đang gửi...' : 'Gọi nhân viên'}
                         </button>
@@ -1331,7 +1343,7 @@ export default function OrderStatusPage() {
                             handleExecuteLeaveTable();
                           }}
                           disabled={isLeaving}
-                          className="py-2.5 bg-[var(--bg-primary)] hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-50 text-[var(--text-primary)] font-bold rounded-xl text-xs uppercase tracking-wider transition-all active:scale-95 cursor-pointer text-center border border-[var(--border-color)] shadow-xs"
+                          className="py-2.5 bg-[var(--bg-primary)] hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-50 text-[var(--text-primary)] font-extrabold rounded-2xl text-xs uppercase tracking-wider transition-all active:scale-95 cursor-pointer text-center border border-[var(--border-color)] shadow-xs"
                         >
                           {isLeaving ? 'Đang rời bàn...' : 'Rời bàn'}
                         </button>
@@ -1341,12 +1353,12 @@ export default function OrderStatusPage() {
                 </div>
 
                 {/* ── Phần Quay Lại Menu Ở Cuối Trang (Desktop, Tablet, Mobile) ── */}
-                <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 transition-all">
+                <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4 transition-all">
                   <div className="min-w-0 flex-1 text-center sm:text-left">
-                    <h3 className="text-xs sm:text-sm font-black uppercase tracking-wide text-[var(--text-primary)]">
+                    <h3 className="text-xs sm:text-sm font-extrabold uppercase tracking-wide text-[var(--text-primary)]">
                       {lang === 'vi' ? 'Bạn muốn gọi thêm món?' : lang === 'zh' ? '您想加点其他饮品吗？' : 'Want to order more?'}
                     </h3>
-                    <p className="text-[11px] sm:text-xs text-[var(--text-secondary)] mt-0.5">
+                    <p className="text-xs text-[var(--text-secondary)] mt-1 font-normal">
                       {lang === 'vi'
                         ? 'Tiếp tục xem thực đơn để gọi thêm đồ uống & bánh ngọt'
                         : lang === 'zh'
@@ -1357,9 +1369,10 @@ export default function OrderStatusPage() {
 
                   <button
                     onClick={() => router.push(`/table/${tableId}`)}
-                    className="w-full sm:w-auto px-5 py-2.5 sm:py-3 bg-sky-500/10 hover:bg-sky-500/20 text-[#0284c7] dark:text-[#38BDF8] border border-sky-500/30 font-extrabold text-xs uppercase tracking-wider rounded-xl sm:rounded-2xl shadow-xs active:scale-95 transition-all cursor-pointer text-center shrink-0"
+                    className="w-full sm:w-auto px-6 py-3 bg-sky-500/10 hover:bg-sky-500/20 text-[#0284c7] dark:text-[#38BDF8] border border-sky-500/30 font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-xs active:scale-95 transition-all cursor-pointer text-center shrink-0 flex items-center justify-center gap-2"
                   >
-                    {t.backToMenu}
+                    <span className="material-symbols-outlined text-base">restaurant_menu</span>
+                    <span>{t.backToMenu}</span>
                   </button>
                 </div>
               </div>
@@ -1371,17 +1384,17 @@ export default function OrderStatusPage() {
 
       {/* Sticky Mobile Floating Action Bar (Optimized for Mobile Ergonomics) */}
       {order && order.status !== 'paid' && (
-        <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 px-3.5 py-2.5 pb-[max(0.65rem,env(safe-area-inset-bottom))] bg-[var(--bg-card)]/95 backdrop-blur-md border-t border-[var(--border-color)] shadow-2xl flex items-center justify-between gap-2.5">
+        <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-[var(--bg-card)]/95 backdrop-blur-md border-t border-[var(--border-color)] shadow-2xl flex items-center justify-between gap-3">
           {/* Left: Summary Amount */}
           <div className="flex flex-col justify-center min-w-0 pr-1 shrink-0">
-            <span className="text-[10px] uppercase font-bold text-[var(--text-secondary)] tracking-wider truncate">
+            <span className="text-[10px] uppercase font-normal text-[var(--text-secondary)] tracking-wider truncate">
               {paymentMode === 'all'
                 ? 'Toàn bộ bàn'
                 : paymentMode === 'mine'
                 ? 'Phần của bạn'
                 : `${selectedItems.reduce((s, i) => s + i.quantity, 0)} món chọn`}
             </span>
-            <span className="text-base font-black font-mono text-[#0284c7] dark:text-[#38BDF8] leading-tight truncate">
+            <span className="text-base font-extrabold font-mono text-[#0284c7] dark:text-[#38BDF8] leading-tight truncate">
               {formatPrice(paymentAmountToPay)}
             </span>
           </div>
@@ -1390,14 +1403,14 @@ export default function OrderStatusPage() {
           <div className="flex items-center gap-2 flex-1 justify-end">
             {order.status === 'pending' ? (
               <div className="flex items-center gap-2 flex-1 justify-end">
-                <div className="h-10 px-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-black flex items-center justify-center text-center flex-1 max-w-[170px] truncate">
+                <div className="h-10 px-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-extrabold flex items-center justify-center text-center flex-1 max-w-[170px] truncate">
                   <span>Chờ duyệt...</span>
                 </div>
                 <button
                   id="btn-cancel-pending-order-mobile"
                   onClick={handleCancelOrder}
                   disabled={isCancellingOrder}
-                  className="h-10 px-3 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-xl border border-rose-500/20 active:scale-95 transition-all cursor-pointer flex items-center gap-1 shrink-0 disabled:opacity-50"
+                  className="h-10 px-3 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 font-extrabold text-xs rounded-2xl border border-rose-500/20 active:scale-95 transition-all cursor-pointer flex items-center gap-1 shrink-0 disabled:opacity-50"
                 >
                   <span className="material-symbols-outlined text-base">close</span>
                   <span>{isCancellingOrder ? 'Đang hủy...' : 'Hủy đơn'}</span>
@@ -1409,7 +1422,7 @@ export default function OrderStatusPage() {
                 <button
                   onClick={handleSplitCashPayment}
                   disabled={callStaffCooldown > 0 || isCallingStaff || isPayingSplitCash || paymentAmountToPay <= 0}
-                  className="h-10 px-3 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 disabled:opacity-50 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-bold text-xs uppercase tracking-wider rounded-xl shadow-xs active:scale-95 transition-all cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap"
+                  className="h-10 px-3.5 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 disabled:opacity-50 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-xs active:scale-95 transition-all cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap"
                 >
                   <span className="material-symbols-outlined text-base">payments</span>
                   <span>{isPayingSplitCash ? 'Đang gửi...' : 'Tiền mặt'}</span>
@@ -1425,7 +1438,7 @@ export default function OrderStatusPage() {
                     setIsBankModalOpen(true);
                   }}
                   disabled={paymentAmountToPay <= 0}
-                  className="h-10 px-3.5 bg-[#0284c7] hover:bg-[#0369a1] disabled:opacity-50 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md shadow-sky-500/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5 flex-1 max-w-[170px] truncate whitespace-nowrap"
+                  className="h-10 px-3.5 bg-[#0284c7] hover:bg-[#0369a1] disabled:opacity-50 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-md shadow-sky-500/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5 flex-1 max-w-[170px] truncate whitespace-nowrap"
                 >
                   <span className="material-symbols-outlined text-base">qr_code_2</span>
                   <span>Chuyển khoản</span>
@@ -1463,6 +1476,19 @@ export default function OrderStatusPage() {
         tableName={formatTableName(order?.tableId?.tableName, lang)}
         lang={lang}
         isLeaving={isLeaving}
+      />
+
+      {/* Cancel Order Confirmation Modal */}
+      <CancelOrderModal
+        isOpen={isCancelConfirmOpen}
+        onClose={() => setIsCancelConfirmOpen(false)}
+        onConfirm={() => handleCancelOrder(true)}
+        orderCode={order?._id ? `#${order._id.slice(-6).toUpperCase()}` : ''}
+        orderTotal={order?.totalAmount}
+        itemCount={order?.items?.length}
+        tableName={formatTableName(order?.tableId?.tableName, lang)}
+        isCancelling={isCancellingOrder}
+        lang={lang}
       />
     </div>
   );

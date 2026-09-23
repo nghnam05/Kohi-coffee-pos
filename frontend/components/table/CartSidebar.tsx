@@ -453,43 +453,58 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
 
         <div className="border-t border-slate-200 dark:border-white/10 my-3" />
 
-        {/* Payment Method Selector - High Contrast, Clear Interactive State */}
-        <div className="flex gap-2" role="radiogroup" aria-label={lang === 'en' ? 'Payment method' : lang === 'zh' ? '支付方式' : 'Phương thức thanh toán'}>
+        {/* Payment Method Selector - Modern Segmented Control */}
+        <div
+          className="p-1 bg-slate-100 dark:bg-[#090D16] rounded-2xl border border-slate-200/80 dark:border-white/10 flex gap-1 font-sans shadow-inner"
+          role="radiogroup"
+          aria-label={lang === 'en' ? 'Payment method' : lang === 'zh' ? '支付方式' : 'Phương thức thanh toán'}
+        >
           <button
             type="button"
             role="radio"
             aria-checked={paymentMethod === 'cash'}
             aria-label={lang === 'en' ? 'Pay with cash' : lang === 'zh' ? '现金支付' : 'Thanh toán tiền mặt'}
             onClick={() => setPaymentMethod('cash')}
-            className={`flex-1 h-[44px] px-2 text-xs font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 transition-all font-sans cursor-pointer ${
+            className={`flex-1 h-[42px] px-3 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-[0.98] ${
               paymentMethod === 'cash'
-                ? 'bg-[#38BDF8] text-slate-950 shadow-md shadow-sky-500/20 border-2 border-sky-400'
-                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-sky-400 shadow-xs'
+                ? 'bg-sky-50 dark:bg-sky-500/15 text-[#0284c7] dark:text-[#38BDF8] border border-sky-200 dark:border-sky-500/30 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5 border border-transparent'
             }`}
           >
-            <span className="material-symbols-outlined text-base" aria-hidden="true">payments</span>
-            <span>{t.cash || (lang === 'en' ? 'Cash' : lang === 'zh' ? '现金' : 'Tiền mặt')}</span>
-            {paymentMethod === 'cash' && (
-              <span className="material-symbols-outlined text-[15px] text-slate-950 font-bold" aria-hidden="true">check_circle</span>
-            )}
+            <span
+              className={`material-symbols-outlined text-[18px] transition-transform ${
+                paymentMethod === 'cash' ? 'text-[#0284c7] dark:text-[#38BDF8] scale-105' : 'text-slate-400 dark:text-slate-500'
+              }`}
+              aria-hidden="true"
+            >
+              payments
+            </span>
+            <span className="font-sans whitespace-nowrap">{t.cash || (lang === 'en' ? 'Cash' : lang === 'zh' ? '现金' : 'Tiền mặt')}</span>
           </button>
+
           <button
             type="button"
             role="radio"
             aria-checked={paymentMethod === 'bank_transfer' || paymentMethod === 'momo'}
             aria-label={lang === 'en' ? 'Pay with bank transfer QR' : lang === 'zh' ? '银行转账扫码' : 'Thanh toán Chuyển khoản QR'}
             onClick={() => setPaymentMethod('bank_transfer')}
-            className={`flex-1 h-[44px] px-2 text-xs font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 transition-all font-sans cursor-pointer ${
+            className={`flex-1 h-[42px] px-3 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-[0.98] ${
               paymentMethod === 'bank_transfer' || paymentMethod === 'momo'
-                ? 'bg-[#38BDF8] text-slate-950 shadow-md shadow-sky-500/20 border-2 border-sky-400'
-                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-2 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-sky-400 shadow-xs'
+                ? 'bg-sky-50 dark:bg-sky-500/15 text-[#0284c7] dark:text-[#38BDF8] border border-sky-200 dark:border-sky-500/30 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5 border border-transparent'
             }`}
           >
-            <span className="material-symbols-outlined text-base" aria-hidden="true">qr_code_2</span>
-            <span>{t.bankTransfer || (lang === 'en' ? 'Bank QR' : lang === 'zh' ? '银行转账' : 'CK Ngân hàng')}</span>
-            {(paymentMethod === 'bank_transfer' || paymentMethod === 'momo') && (
-              <span className="material-symbols-outlined text-[15px] text-slate-950 font-bold" aria-hidden="true">check_circle</span>
-            )}
+            <span
+              className={`material-symbols-outlined text-[18px] transition-transform ${
+                paymentMethod === 'bank_transfer' || paymentMethod === 'momo'
+                  ? 'text-[#0284c7] dark:text-[#38BDF8] scale-105'
+                  : 'text-slate-400 dark:text-slate-500'
+              }`}
+              aria-hidden="true"
+            >
+              qr_code_2
+            </span>
+            <span className="font-sans whitespace-nowrap">{t.bankTransfer || (lang === 'en' ? 'Bank QR' : lang === 'zh' ? '银行转账' : 'CK Ngân hàng')}</span>
           </button>
         </div>
 

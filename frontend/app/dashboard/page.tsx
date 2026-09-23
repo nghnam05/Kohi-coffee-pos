@@ -190,7 +190,7 @@ const DICTIONARY = {
     staffRole: 'Staff',
     updateAccount: 'Update Account Information',
     logout: 'Log out',
-    tabOrders: 'Realtime Orders',
+    tabOrders: ' Orders',
     tabFoods: 'Menu Management',
     tabTables: 'Table Management',
     tabUsers: 'Staff Management',
@@ -2435,12 +2435,12 @@ export default function DashboardPage() {
     const cleanPrice = Number(foodForm.price);
 
     if (!cleanName || cleanName.length < 2) {
-      showToast('Vui lòng nhập tên món ăn có ít nhất 2 ký tự.', 'error');
+      showToast('Vui lòng nhập tên có ít nhất 2 ký tự.', 'error');
       return;
     }
 
     if (isNaN(cleanPrice) || cleanPrice <= 0) {
-      showToast('Giá món ăn phải là số dương hợp lệ (lớn hơn 0đ).', 'error');
+      showToast('Giá món phải là số dương hợp lệ (lớn hơn 0đ).', 'error');
       return;
     }
 
@@ -3596,193 +3596,193 @@ export default function DashboardPage() {
         className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-lg border-t border-slate-200 dark:border-white/10 h-16 pb-[env(safe-area-inset-bottom)] px-2 shadow-[0_-4px_24px_rgba(0,0,0,0.12)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.4)]"
       >
         <div className="w-full max-w-xl mx-auto flex items-center justify-around h-full">
-        {/* Tab 1: Đơn hàng / KDS */}
-        <button
-          type="button"
-          disabled={isStaffLocked}
-          onClick={() => {
-            if (isStaffLocked) return;
-            setActiveTab('orders');
-            setIsMobileSidebarOpen(false);
-          }}
-          aria-current={activeTab === 'orders' ? 'page' : undefined}
-          className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${isStaffLocked
-            ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed'
-            : activeTab === 'orders'
-              ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black cursor-pointer active:scale-95'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-normal cursor-pointer active:scale-95'
-            }`}
-        >
-          <div className="relative flex items-center justify-center">
-            <span className="material-symbols-outlined text-xl">
-              {user?.role === 'barista' ? 'coffee_maker' : 'receipt_long'}
-            </span>
-            {isStaffLocked ? (
-              <span className="material-symbols-outlined text-[10px] text-amber-500 absolute -top-1 -right-2">lock</span>
-            ) : user?.role === 'barista' ? (
-              brewingQueue.length > 0 && (
-                <span className="absolute -top-1 -right-2.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[9px] font-black bg-amber-500 text-white rounded-full shadow-xs leading-none animate-pulse">
-                  {brewingQueue.length}
-                </span>
-              )
-            ) : (
-              orders.filter((o) => o.status !== 'paid' && o.status !== 'cancelled').length > 0 && (
-                <span className="absolute -top-1 -right-2.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[9px] font-black bg-[#38BDF8] text-slate-950 rounded-full shadow-xs leading-none">
-                  {orders.filter((o) => o.status !== 'paid' && o.status !== 'cancelled').length}
-                </span>
-              )
-            )}
-          </div>
-          <span className="text-[9.5px] tracking-tight">{user?.role === 'barista' ? 'Quầy KDS' : 'Đơn hàng'}</span>
-        </button>
-
-        {/* Tab 2: Bàn (cho Admin / Waiter) HOẶC Kho hàng (cho Barista) */}
-        {user?.role === 'barista' ? (
+          {/* Tab 1: Đơn hàng / KDS */}
           <button
             type="button"
             disabled={isStaffLocked}
             onClick={() => {
               if (isStaffLocked) return;
-              setActiveTab('inventory');
+              setActiveTab('orders');
               setIsMobileSidebarOpen(false);
             }}
-            aria-current={activeTab === 'inventory' ? 'page' : undefined}
+            aria-current={activeTab === 'orders' ? 'page' : undefined}
             className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${isStaffLocked
               ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed'
-              : activeTab === 'inventory'
+              : activeTab === 'orders'
                 ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black cursor-pointer active:scale-95'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-normal cursor-pointer active:scale-95'
               }`}
           >
             <div className="relative flex items-center justify-center">
-              <span className="material-symbols-outlined text-xl">inventory_2</span>
-            </div>
-            <span className="text-[9.5px] tracking-tight">Kho hàng</span>
-          </button>
-        ) : (
-          <button
-            type="button"
-            disabled={isStaffLocked}
-            onClick={() => {
-              if (isStaffLocked) return;
-              setActiveTab('tables');
-              setIsMobileSidebarOpen(false);
-            }}
-            aria-current={activeTab === 'tables' ? 'page' : undefined}
-            className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${isStaffLocked
-              ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed'
-              : activeTab === 'tables'
-                ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black cursor-pointer active:scale-95'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-normal cursor-pointer active:scale-95'
-              }`}
-          >
-            <div className="relative flex items-center justify-center">
-              <span className="material-symbols-outlined text-xl">table_restaurant</span>
-            </div>
-            <span className="text-[9.5px] tracking-tight">Bàn</span>
-          </button>
-        )}
-
-        {/* Tab 3: Đặt bàn (cho Waiter/Staff) */}
-        {user?.role !== 'barista' && user?.role !== 'admin' && (
-          <button
-            type="button"
-            disabled={isStaffLocked}
-            onClick={() => {
-              if (isStaffLocked) return;
-              setActiveTab('reservations' as any);
-              setIsMobileSidebarOpen(false);
-              if (token) fetchReservations(token);
-            }}
-            aria-current={activeTab === ('reservations' as any) ? 'page' : undefined}
-            className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${isStaffLocked
-              ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed'
-              : activeTab === ('reservations' as any)
-                ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black cursor-pointer active:scale-95'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-normal cursor-pointer active:scale-95'
-              }`}
-          >
-            <div className="relative flex items-center justify-center">
-              <span className="material-symbols-outlined text-xl">event_available</span>
-              {reservations.filter((r) => r.status === 'pending').length > 0 && (
-                <span className="absolute -top-1 -right-2.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[9px] font-black bg-amber-500 text-white rounded-full shadow-xs leading-none animate-pulse">
-                  {reservations.filter((r) => r.status === 'pending').length}
-                </span>
+              <span className="material-symbols-outlined text-xl">
+                {user?.role === 'barista' ? 'coffee_maker' : 'receipt_long'}
+              </span>
+              {isStaffLocked ? (
+                <span className="material-symbols-outlined text-[10px] text-amber-500 absolute -top-1 -right-2">lock</span>
+              ) : user?.role === 'barista' ? (
+                brewingQueue.length > 0 && (
+                  <span className="absolute -top-1 -right-2.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[9px] font-black bg-amber-500 text-white rounded-full shadow-xs leading-none animate-pulse">
+                    {brewingQueue.length}
+                  </span>
+                )
+              ) : (
+                orders.filter((o) => o.status !== 'paid' && o.status !== 'cancelled').length > 0 && (
+                  <span className="absolute -top-1 -right-2.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[9px] font-black bg-[#38BDF8] text-slate-950 rounded-full shadow-xs leading-none">
+                    {orders.filter((o) => o.status !== 'paid' && o.status !== 'cancelled').length}
+                  </span>
+                )
               )}
             </div>
-            <span className="text-[9.5px] tracking-tight">Đặt bàn</span>
+            <span className="text-[9.5px] tracking-tight">{user?.role === 'barista' ? 'Quầy KDS' : 'Đơn hàng'}</span>
           </button>
-        )}
 
-        {/* Tab Chấm công (Điểm danh - Dành cho mọi nhân viên và quản lý) */}
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab('attendance');
-            setIsMobileSidebarOpen(false);
-          }}
-          aria-current={activeTab === 'attendance' ? 'page' : undefined}
-          className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] active:scale-95 ${activeTab === 'attendance'
-            ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black'
-            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold'
-            }`}
-        >
-          <div className="relative flex items-center justify-center">
-            <span className={`material-symbols-outlined text-xl ${isStaffLocked ? 'text-amber-500 animate-bounce' : ''}`}>schedule</span>
-            {isStaffLocked && (
-              <>
-                <span className="absolute -top-0.5 -right-1.5 w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping" />
-                <span className="absolute -top-0.5 -right-1.5 w-2.5 h-2.5 bg-amber-500 rounded-full border border-white dark:border-slate-900" />
-              </>
-            )}
-          </div>
-          <span className={`text-[9.5px] tracking-tight ${isStaffLocked ? 'font-black text-amber-600 dark:text-amber-400' : ''}`}>Điểm danh</span>
-        </button>
+          {/* Tab 2: Bàn (cho Admin / Waiter) HOẶC Kho hàng (cho Barista) */}
+          {user?.role === 'barista' ? (
+            <button
+              type="button"
+              disabled={isStaffLocked}
+              onClick={() => {
+                if (isStaffLocked) return;
+                setActiveTab('inventory');
+                setIsMobileSidebarOpen(false);
+              }}
+              aria-current={activeTab === 'inventory' ? 'page' : undefined}
+              className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${isStaffLocked
+                ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed'
+                : activeTab === 'inventory'
+                  ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black cursor-pointer active:scale-95'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-normal cursor-pointer active:scale-95'
+                }`}
+            >
+              <div className="relative flex items-center justify-center">
+                <span className="material-symbols-outlined text-xl">inventory_2</span>
+              </div>
+              <span className="text-[9.5px] tracking-tight">Kho hàng</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={isStaffLocked}
+              onClick={() => {
+                if (isStaffLocked) return;
+                setActiveTab('tables');
+                setIsMobileSidebarOpen(false);
+              }}
+              aria-current={activeTab === 'tables' ? 'page' : undefined}
+              className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${isStaffLocked
+                ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed'
+                : activeTab === 'tables'
+                  ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black cursor-pointer active:scale-95'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-normal cursor-pointer active:scale-95'
+                }`}
+            >
+              <div className="relative flex items-center justify-center">
+                <span className="material-symbols-outlined text-xl">table_restaurant</span>
+              </div>
+              <span className="text-[9.5px] tracking-tight">Bàn</span>
+            </button>
+          )}
 
-        {/* Tab Doanh thu — Admin Only (Trực quan & 1 Chạm) */}
-        {user?.role === 'admin' && (
+          {/* Tab 3: Đặt bàn (cho Waiter/Staff) */}
+          {user?.role !== 'barista' && user?.role !== 'admin' && (
+            <button
+              type="button"
+              disabled={isStaffLocked}
+              onClick={() => {
+                if (isStaffLocked) return;
+                setActiveTab('reservations' as any);
+                setIsMobileSidebarOpen(false);
+                if (token) fetchReservations(token);
+              }}
+              aria-current={activeTab === ('reservations' as any) ? 'page' : undefined}
+              className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${isStaffLocked
+                ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed'
+                : activeTab === ('reservations' as any)
+                  ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black cursor-pointer active:scale-95'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-normal cursor-pointer active:scale-95'
+                }`}
+            >
+              <div className="relative flex items-center justify-center">
+                <span className="material-symbols-outlined text-xl">event_available</span>
+                {reservations.filter((r) => r.status === 'pending').length > 0 && (
+                  <span className="absolute -top-1 -right-2.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[9px] font-black bg-amber-500 text-white rounded-full shadow-xs leading-none animate-pulse">
+                    {reservations.filter((r) => r.status === 'pending').length}
+                  </span>
+                )}
+              </div>
+              <span className="text-[9.5px] tracking-tight">Đặt bàn</span>
+            </button>
+          )}
+
+          {/* Tab Chấm công (Điểm danh - Dành cho mọi nhân viên và quản lý) */}
           <button
             type="button"
             onClick={() => {
-              setActiveTab('analytics');
+              setActiveTab('attendance');
               setIsMobileSidebarOpen(false);
-              if (token) fetchAnalytics(token, analyticsSelectedDate, analyticsSelectedMonth, analyticsPeriodMode);
             }}
-            aria-current={activeTab === 'analytics' ? 'page' : undefined}
-            className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] active:scale-95 ${activeTab === 'analytics'
+            aria-current={activeTab === 'attendance' ? 'page' : undefined}
+            className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] active:scale-95 ${activeTab === 'attendance'
               ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black'
               : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold'
               }`}
           >
             <div className="relative flex items-center justify-center">
-              <span className="material-symbols-outlined text-xl">trending_up</span>
-            </div>
-            <span className="text-[9.5px] tracking-tight">Doanh thu</span>
-          </button>
-        )}
-
-        {/* Tab Menu / Thêm — Mở Sidebar Drawer chứa toàn bộ danh mục & chức năng */}
-        <button
-          type="button"
-          onClick={() => setIsMobileSidebarOpen(true)}
-          aria-label="Mở danh mục quản trị khác"
-          className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] active:scale-95 ${isMobileSidebarOpen ||
-            (user?.role === 'admin'
-              ? ['foods', 'inventory', 'users', 'coupons', 'reservations'].includes(activeTab)
-              : ['foods'].includes(activeTab))
-            ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black'
-            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold'
-            }`}
-        >
-          <div className="relative flex items-center justify-center">
-            <span className="material-symbols-outlined text-xl">apps</span>
-            {((user?.role === 'admin' && shiftSwaps.filter((s) => s.status === 'pending').length > 0) ||
-              (user?.role !== 'barista' && reservations.filter((r) => r.status === 'pending').length > 0)) && (
-                <span className="absolute -top-1 -right-1.5 w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping" />
+              <span className={`material-symbols-outlined text-xl ${isStaffLocked ? 'text-amber-500 animate-bounce' : ''}`}>schedule</span>
+              {isStaffLocked && (
+                <>
+                  <span className="absolute -top-0.5 -right-1.5 w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping" />
+                  <span className="absolute -top-0.5 -right-1.5 w-2.5 h-2.5 bg-amber-500 rounded-full border border-white dark:border-slate-900" />
+                </>
               )}
-          </div>
-          <span className="text-[9.5px] tracking-tight">Thêm</span>
-        </button>
+            </div>
+            <span className={`text-[9.5px] tracking-tight ${isStaffLocked ? 'font-black text-amber-600 dark:text-amber-400' : ''}`}>Điểm danh</span>
+          </button>
+
+          {/* Tab Doanh thu — Admin Only (Trực quan & 1 Chạm) */}
+          {user?.role === 'admin' && (
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('analytics');
+                setIsMobileSidebarOpen(false);
+                if (token) fetchAnalytics(token, analyticsSelectedDate, analyticsSelectedMonth, analyticsPeriodMode);
+              }}
+              aria-current={activeTab === 'analytics' ? 'page' : undefined}
+              className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] active:scale-95 ${activeTab === 'analytics'
+                ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold'
+                }`}
+            >
+              <div className="relative flex items-center justify-center">
+                <span className="material-symbols-outlined text-xl">trending_up</span>
+              </div>
+              <span className="text-[9.5px] tracking-tight">Doanh thu</span>
+            </button>
+          )}
+
+          {/* Tab Menu / Thêm — Mở Sidebar Drawer chứa toàn bộ danh mục & chức năng */}
+          <button
+            type="button"
+            onClick={() => setIsMobileSidebarOpen(true)}
+            aria-label="Mở danh mục quản trị khác"
+            className={`flex-1 min-h-[48px] py-1 mx-0.5 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] active:scale-95 ${isMobileSidebarOpen ||
+              (user?.role === 'admin'
+                ? ['foods', 'inventory', 'users', 'coupons', 'reservations'].includes(activeTab)
+                : ['foods'].includes(activeTab))
+              ? 'bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] font-black'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 font-bold'
+              }`}
+          >
+            <div className="relative flex items-center justify-center">
+              <span className="material-symbols-outlined text-xl">apps</span>
+              {((user?.role === 'admin' && shiftSwaps.filter((s) => s.status === 'pending').length > 0) ||
+                (user?.role !== 'barista' && reservations.filter((r) => r.status === 'pending').length > 0)) && (
+                  <span className="absolute -top-1 -right-1.5 w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping" />
+                )}
+            </div>
+            <span className="text-[9.5px] tracking-tight">Thêm</span>
+          </button>
         </div>
       </nav>
 
@@ -3841,18 +3841,18 @@ export default function DashboardPage() {
                       setIsMobileSidebarOpen(false);
                     }}
                     className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'orders'
-                        ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
+                      ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
                     <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'orders'
-                        ? 'text-[#0284c7] dark:text-[#38BDF8]'
-                        : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
+                      ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>receipt_long</span>
                     <span className="flex-1 truncate text-left">{t.tabOrders}</span>
                     <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-black flex-shrink-0 ${activeTab === 'orders'
-                        ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                      ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                       }`}>
                       {activeOrdersList.length}
                     </span>
@@ -3865,18 +3865,18 @@ export default function DashboardPage() {
                       setIsMobileSidebarOpen(false);
                     }}
                     className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'tables'
-                        ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
+                      ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
                     <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'tables'
-                        ? 'text-[#0284c7] dark:text-[#38BDF8]'
-                        : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
+                      ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>table_restaurant</span>
                     <span className="flex-1 truncate text-left">{t.tabTables}</span>
                     <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-black flex-shrink-0 ${activeTab === 'tables'
-                        ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                      ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                       }`}>
                       {tables.length}
                     </span>
@@ -3890,18 +3890,18 @@ export default function DashboardPage() {
                       if (token) fetchReservations(token);
                     }}
                     className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left cursor-pointer ${activeTab === ('reservations' as any)
-                        ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
+                      ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
                     <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === ('reservations' as any)
-                        ? 'text-[#0284c7] dark:text-[#38BDF8]'
-                        : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
+                      ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>event_available</span>
                     <span className="flex-1 truncate text-left">Quản lý bàn đã đặt</span>
                     <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-black flex-shrink-0 ${activeTab === ('reservations' as any)
-                        ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                      ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                       }`}>
                       {reservations.length}
                     </span>
@@ -3921,18 +3921,18 @@ export default function DashboardPage() {
                       setIsMobileSidebarOpen(false);
                     }}
                     className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'foods'
-                        ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
+                      ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
                     <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'foods'
-                        ? 'text-[#0284c7] dark:text-[#38BDF8]'
-                        : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
+                      ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>menu_book</span>
                     <span className="flex-1 truncate text-left">{t.tabFoods}</span>
                     <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-black flex-shrink-0 ${activeTab === 'foods'
-                        ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                      ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                       }`}>
                       {foods.length}
                     </span>
@@ -3945,13 +3945,13 @@ export default function DashboardPage() {
                       setIsMobileSidebarOpen(false);
                     }}
                     className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'inventory'
-                        ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
+                      ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
                     <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'inventory'
-                        ? 'text-[#0284c7] dark:text-[#38BDF8]'
-                        : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
+                      ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>inventory_2</span>
                     <span className="flex-1 truncate text-left">Quản lý kho nguyên liệu</span>
                   </button>
@@ -3963,13 +3963,13 @@ export default function DashboardPage() {
                       setIsMobileSidebarOpen(false);
                     }}
                     className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'users'
-                        ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
+                      ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
                     <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'users'
-                        ? 'text-[#0284c7] dark:text-[#38BDF8]'
-                        : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
+                      ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>group</span>
                     <span className="flex-1 truncate text-left">{t.tabUsers}</span>
                   </button>
@@ -3981,13 +3981,13 @@ export default function DashboardPage() {
                       setIsMobileSidebarOpen(false);
                     }}
                     className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'attendance'
-                        ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
+                      ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
                     <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'attendance'
-                        ? 'text-[#0284c7] dark:text-[#38BDF8]'
-                        : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
+                      ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>schedule</span>
                     <span className="flex-1 truncate text-left">Chấm công & Bảng lương</span>
                     {shiftSwaps.filter((s) => s.status === 'pending').length > 0 && (
@@ -4015,13 +4015,13 @@ export default function DashboardPage() {
                       }
                     }}
                     className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left cursor-pointer ${activeTab === 'analytics'
-                        ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
+                      ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
                     <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'analytics'
-                        ? 'text-[#0284c7] dark:text-[#38BDF8]'
-                        : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
+                      ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>bar_chart</span>
                     <span className="flex-1 truncate text-left">Thống kê doanh thu</span>
                   </button>
@@ -4034,18 +4034,18 @@ export default function DashboardPage() {
                       if (token) fetchCoupons(token);
                     }}
                     className={`w-full flex items-center px-2.5 py-2 text-xs rounded-xl group transition-all text-left cursor-pointer ${activeTab === ('coupons' as any)
-                        ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
+                      ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/30 font-black shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
                     <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === ('coupons' as any)
-                        ? 'text-[#0284c7] dark:text-[#38BDF8]'
-                        : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
+                      ? 'text-[#0284c7] dark:text-[#38BDF8]'
+                      : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`}>local_offer</span>
                     <span className="flex-1 truncate text-left">Mã giảm giá</span>
                     <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-black flex-shrink-0 ${activeTab === ('coupons' as any)
-                        ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                      ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                       }`}>
                       {coupons.length}
                     </span>
@@ -4229,7 +4229,7 @@ export default function DashboardPage() {
                     <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'inventory'
                       ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                       : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                    }`}>inventory_2</span>
+                      }`}>inventory_2</span>
                     <span className="flex-1 truncate text-left">Quản lý kho nguyên liệu</span>
                   </button>
                 )}
@@ -4516,20 +4516,18 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none p-1 bg-slate-100/80 dark:bg-white/5 rounded-2xl border border-slate-200/80 dark:border-white/5">
                     <button
                       onClick={() => setOrderStatusFilter('active')}
-                      className={`h-9 sm:h-10 flex-shrink-0 flex items-center gap-2 px-3.5 sm:px-4 rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-95 ${
-                        orderStatusFilter === 'active'
-                          ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-xs border border-slate-200/60 dark:border-white/5'
-                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                      }`}
+                      className={`h-9 sm:h-10 flex-shrink-0 flex items-center gap-2 px-3.5 sm:px-4 rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-95 ${orderStatusFilter === 'active'
+                        ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-xs border border-slate-200/60 dark:border-white/5'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                        }`}
                     >
                       <span className="whitespace-nowrap">Đang xử lý</span>
                       {orders.filter((o) => ['pending', 'confirmed', 'cooking', 'ready'].includes(o.status)).length > 0 && (
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                            orderStatusFilter === 'active'
-                              ? 'bg-sky-500 text-white dark:bg-sky-400 dark:text-slate-950'
-                              : 'bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300'
-                          }`}
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${orderStatusFilter === 'active'
+                            ? 'bg-sky-500 text-white dark:bg-sky-400 dark:text-slate-950'
+                            : 'bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300'
+                            }`}
                         >
                           {orders.filter((o) => ['pending', 'confirmed', 'cooking', 'ready'].includes(o.status)).length}
                         </span>
@@ -4537,20 +4535,18 @@ export default function DashboardPage() {
                     </button>
                     <button
                       onClick={() => setOrderStatusFilter('unpaid')}
-                      className={`h-9 sm:h-10 flex-shrink-0 flex items-center gap-2 px-3.5 sm:px-4 rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-95 ${
-                        orderStatusFilter === 'unpaid'
-                          ? 'bg-white dark:bg-white/10 text-amber-600 dark:text-amber-400 shadow-xs border border-slate-200/60 dark:border-white/5'
-                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                      }`}
+                      className={`h-9 sm:h-10 flex-shrink-0 flex items-center gap-2 px-3.5 sm:px-4 rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-95 ${orderStatusFilter === 'unpaid'
+                        ? 'bg-white dark:bg-white/10 text-amber-600 dark:text-amber-400 shadow-xs border border-slate-200/60 dark:border-white/5'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                        }`}
                     >
                       <span className="whitespace-nowrap">Đang chờ thanh toán</span>
                       {orders.filter((o) => o.status === 'completed').length > 0 && (
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                            orderStatusFilter === 'unpaid'
-                              ? 'bg-amber-500 text-white'
-                              : 'bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300'
-                          }`}
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${orderStatusFilter === 'unpaid'
+                            ? 'bg-amber-500 text-white'
+                            : 'bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300'
+                            }`}
                         >
                           {orders.filter((o) => o.status === 'completed').length}
                         </span>
@@ -4558,20 +4554,18 @@ export default function DashboardPage() {
                     </button>
                     <button
                       onClick={() => setOrderStatusFilter('paid')}
-                      className={`h-9 sm:h-10 flex-shrink-0 flex items-center gap-2 px-3.5 sm:px-4 rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-95 ${
-                        orderStatusFilter === 'paid'
-                          ? 'bg-white dark:bg-white/10 text-emerald-600 dark:text-emerald-400 shadow-xs border border-slate-200/60 dark:border-white/5'
-                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                      }`}
+                      className={`h-9 sm:h-10 flex-shrink-0 flex items-center gap-2 px-3.5 sm:px-4 rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-95 ${orderStatusFilter === 'paid'
+                        ? 'bg-white dark:bg-white/10 text-emerald-600 dark:text-emerald-400 shadow-xs border border-slate-200/60 dark:border-white/5'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                        }`}
                     >
                       <span className="whitespace-nowrap">Tất cả (đã thanh toán)</span>
                       {paymentHistory.length > 0 && (
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                            orderStatusFilter === 'paid'
-                              ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
-                              : 'bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300'
-                          }`}
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${orderStatusFilter === 'paid'
+                            ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                            : 'bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300'
+                            }`}
                         >
                           {paymentHistory.length}
                         </span>
@@ -5119,15 +5113,14 @@ export default function DashboardPage() {
                       return (
                         <div
                           key={order._id}
-                          className={`bg-white dark:bg-[#0d1322] border rounded-3xl p-4 sm:p-5 shadow-xs dark:shadow-md flex flex-col justify-between transition-all duration-200 hover:shadow-lg hover:border-slate-300 dark:hover:border-white/20 ${
-                            isSelected
-                              ? 'border-[#38BDF8] ring-2 ring-[#38BDF8]/40 bg-sky-50/20 dark:bg-sky-500/5'
-                              : order.status === 'pending'
+                          className={`bg-white dark:bg-[#0d1322] border rounded-3xl p-4 sm:p-5 shadow-xs dark:shadow-md flex flex-col justify-between transition-all duration-200 hover:shadow-lg hover:border-slate-300 dark:hover:border-white/20 ${isSelected
+                            ? 'border-[#38BDF8] ring-2 ring-[#38BDF8]/40 bg-sky-50/20 dark:bg-sky-500/5'
+                            : order.status === 'pending'
                               ? 'border-amber-400/70 dark:border-amber-500/50 shadow-sm'
                               : isPaid
-                              ? 'border-emerald-500/30'
-                              : 'border-slate-200/80 dark:border-white/5'
-                          }`}
+                                ? 'border-emerald-500/30'
+                                : 'border-slate-200/80 dark:border-white/5'
+                            }`}
                         >
                           <div>
                             {/* Card Header: Checkbox + Table + Status */}
@@ -5198,13 +5191,12 @@ export default function DashboardPage() {
                                         {timeStr}
                                       </span>
                                       <span
-                                        className={`px-1.5 py-0.5 rounded-md text-[10px] font-extrabold tracking-tight ${
-                                          isOverdue
-                                            ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 animate-pulse'
-                                            : isWarning
+                                        className={`px-1.5 py-0.5 rounded-md text-[10px] font-extrabold tracking-tight ${isOverdue
+                                          ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 animate-pulse'
+                                          : isWarning
                                             ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30'
                                             : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25'
-                                        }`}
+                                          }`}
                                         title={`Thời gian từ khi đặt: ${elapsedMins} phút`}
                                       >
                                         {elapsedMins}p
@@ -5530,7 +5522,7 @@ export default function DashboardPage() {
                         }}
                         className="px-3.5 sm:px-4 py-2.5 bg-slate-100/90 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 text-slate-800 dark:text-slate-200 font-bold text-xs sm:text-sm rounded-2xl transition-all flex items-center justify-center gap-1.5 border border-slate-200/80 dark:border-white/10 cursor-pointer active:scale-95 whitespace-nowrap shrink-0"
                       >
-                        <span className="material-symbols-outlined text-base">category</span>
+                        <span className="material-symbols-outlined text-base">layers</span>
                         <span>Quản lý Danh mục</span>
                       </button>
                     )}
@@ -5906,11 +5898,10 @@ export default function DashboardPage() {
                                     e.stopPropagation();
                                     handleToggleFoodAvailability(food);
                                   }}
-                                  className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all active:scale-95 cursor-pointer select-none ${
-                                    food.isAvailable
-                                      ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25'
-                                      : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 dark:text-rose-400 border border-rose-500/25'
-                                  }`}
+                                  className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all active:scale-95 cursor-pointer select-none ${food.isAvailable
+                                    ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25'
+                                    : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 dark:text-rose-400 border border-rose-500/25'
+                                    }`}
                                   title={food.isAvailable ? 'Bấm để Tạm ngưng món nhanh' : 'Bấm để Mở bán lại nhanh'}
                                 >
                                   <span className={`w-1.5 h-1.5 rounded-full ${food.isAvailable ? 'bg-emerald-500' : 'bg-rose-500'}`} />
@@ -5999,11 +5990,10 @@ export default function DashboardPage() {
                                     handleToggleFoodAvailability(food);
                                   }}
                                   disabled={togglingFoodId === food._id}
-                                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer select-none active:scale-95 ${
-                                    food.isAvailable
-                                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/25'
-                                      : 'bg-rose-500/10 text-rose-500 dark:text-rose-400 hover:bg-rose-500/20 border border-rose-500/25'
-                                  } ${togglingFoodId === food._id ? 'opacity-50 cursor-wait' : ''}`}
+                                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer select-none active:scale-95 ${food.isAvailable
+                                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/25'
+                                    : 'bg-rose-500/10 text-rose-500 dark:text-rose-400 hover:bg-rose-500/20 border border-rose-500/25'
+                                    } ${togglingFoodId === food._id ? 'opacity-50 cursor-wait' : ''}`}
                                   title={food.isAvailable ? 'Bấm để chuyển sang Tạm ngưng' : 'Bấm để chuyển sang Đang bán'}
                                 >
                                   {togglingFoodId === food._id ? (
@@ -6867,12 +6857,11 @@ export default function DashboardPage() {
 
                                     {/* Vai trò */}
                                     <td className="py-3 px-2.5 whitespace-nowrap align-middle">
-                                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                                        wp.staffRole === 'admin' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' :
+                                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${wp.staffRole === 'admin' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' :
                                         wp.staffRole === 'barista' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20' :
-                                        isWaiter ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' :
-                                        'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-                                      }`}>
+                                          isWaiter ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' :
+                                            'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                                        }`}>
                                         <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
                                         <span>{roleLabel}</span>
                                       </span>
@@ -7152,12 +7141,11 @@ export default function DashboardPage() {
 
                                     {/* Vai trò */}
                                     <td className="py-3 px-2.5 whitespace-nowrap align-middle">
-                                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                                        hp.staffRole === 'admin' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' :
+                                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${hp.staffRole === 'admin' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' :
                                         hp.staffRole === 'barista' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20' :
-                                        isWaiter ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' :
-                                        'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-                                      }`}>
+                                          isWaiter ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' :
+                                            'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                                        }`}>
                                         <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
                                         <span>{roleLabel}</span>
                                       </span>
@@ -7707,11 +7695,10 @@ export default function DashboardPage() {
                         </div>
                         <div className="mt-1 flex items-center gap-1.5 flex-wrap">
                           {analyticsSummary?.settlementStatus ? (
-                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                              analyticsSummary.settlementStatus.isSettled 
-                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
-                                : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
-                            }`}>
+                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${analyticsSummary.settlementStatus.isSettled
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                              }`}>
                               {analyticsSummary.settlementStatus.isSettled ? '✓ Đã chốt sổ' : `Tạm tính (${analyticsSummary.settlementStatus.unpaidOrdersCount || 0} chưa thu)`}
                             </span>
                           ) : (
@@ -7745,9 +7732,8 @@ export default function DashboardPage() {
                             </div>
                             <div className="mt-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
                               <div
-                                className={`h-full rounded-full transition-all duration-500 ${
-                                  occupancyRate >= 90 ? 'bg-amber-500' : occupancyRate >= 70 ? 'bg-sky-500' : 'bg-emerald-500'
-                                }`}
+                                className={`h-full rounded-full transition-all duration-500 ${occupancyRate >= 90 ? 'bg-amber-500' : occupancyRate >= 70 ? 'bg-sky-500' : 'bg-emerald-500'
+                                  }`}
                                 style={{ width: `${Math.min(100, occupancyRate)}%` }}
                               />
                             </div>
@@ -7790,11 +7776,10 @@ export default function DashboardPage() {
                         return (
                           <div
                             onClick={() => setActiveTab('attendance')}
-                            className={`bg-white dark:bg-[#131929] border p-3 rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer group ${
-                              pendingSwapsCount > 0 
-                                ? 'border-amber-500/30 hover:border-amber-500' 
-                                : 'border-slate-200 dark:border-[#1e293b] hover:border-[#0284c7]/40 dark:hover:border-[#38BDF8]/40'
-                            }`}
+                            className={`bg-white dark:bg-[#131929] border p-3 rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer group ${pendingSwapsCount > 0
+                              ? 'border-amber-500/30 hover:border-amber-500'
+                              : 'border-slate-200 dark:border-[#1e293b] hover:border-[#0284c7]/40 dark:hover:border-[#38BDF8]/40'
+                              }`}
                             title="Bấm để xem Chấm công & Bảng lương"
                           >
                             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
@@ -8108,19 +8093,17 @@ export default function DashboardPage() {
                     return (
                       <div
                         id="smart-financial-margin-insights"
-                        className={`p-3.5 border rounded-2xl shadow-2xs transition-all ${
-                          isLoss
-                            ? 'bg-gradient-to-r from-rose-50 via-rose-50/30 to-amber-50/20 dark:from-[#211018] dark:via-[#1c0f1b] dark:to-[#18111e] border-rose-300 dark:border-rose-900/50'
-                            : 'bg-gradient-to-r from-slate-50 via-sky-50/20 to-slate-50 dark:from-[#101726] dark:via-[#0e1b2e] dark:to-[#101726] border-slate-200 dark:border-[#1e293b]'
-                        }`}
+                        className={`p-3.5 border rounded-2xl shadow-2xs transition-all ${isLoss
+                          ? 'bg-gradient-to-r from-rose-50 via-rose-50/30 to-amber-50/20 dark:from-[#211018] dark:via-[#1c0f1b] dark:to-[#18111e] border-rose-300 dark:border-rose-900/50'
+                          : 'bg-gradient-to-r from-slate-50 via-sky-50/20 to-slate-50 dark:from-[#101726] dark:via-[#0e1b2e] dark:to-[#101726] border-slate-200 dark:border-[#1e293b]'
+                          }`}
                       >
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                           <div className="flex items-center gap-2.5">
-                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                              isLoss
-                                ? 'bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-400'
-                                : 'bg-sky-500/10 border border-sky-500/20 text-sky-500'
-                            }`}>
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isLoss
+                              ? 'bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-400'
+                              : 'bg-sky-500/10 border border-sky-500/20 text-sky-500'
+                              }`}>
                               <span className="material-symbols-outlined text-lg">
                                 {isLoss ? 'warning' : 'insights'}
                               </span>
@@ -8130,15 +8113,14 @@ export default function DashboardPage() {
                                 <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
                                   Chỉ số hiệu quả tài chính & Tỷ suất sinh lời
                                 </span>
-                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                                  isLoss
-                                    ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30'
-                                    : netMarginPercent >= 50
-                                      ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                                      : netMarginPercent >= 20
-                                        ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/20'
-                                        : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20'
-                                }`}>
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${isLoss
+                                  ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30'
+                                  : netMarginPercent >= 50
+                                    ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                                    : netMarginPercent >= 20
+                                      ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/20'
+                                      : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                                  }`}>
                                   {isLoss ? `Thâm hụt: ${netMarginPercent}%` : `Biên lợi nhuận: ${netMarginPercent}%`}
                                 </span>
                               </div>
@@ -8185,53 +8167,91 @@ export default function DashboardPage() {
                   })()}
 
                   {/* 5 Financial KPI Cards (Clean Typography - Modern Surface Tokens) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-3.5">
                     {/* Card 1: Gross Revenue */}
-                    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xs hover:border-emerald-500/40 transition-all group relative overflow-hidden">
-                      <div className="flex items-center justify-between gap-1 flex-wrap">
-                        <span className="text-slate-500 dark:text-slate-400 text-xs font-bold whitespace-nowrap">1. Tổng Doanh Thu</span>
-                        {analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus ? (
-                          <span
-                            className={`text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${analyticsSummary.settlementStatus.isSettled
+                    <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-slate-800 p-3.5 sm:p-4 rounded-2xl shadow-xs hover:border-emerald-500/40 hover:shadow-emerald-500/5 transition-all group relative overflow-hidden flex flex-col justify-between min-h-[148px]">
+                      <div>
+                        {/* Top row: Icon + Status Badge */}
+                        <div className="flex items-center justify-between gap-1.5">
+                          <div className="w-7 h-7 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                            <span className="material-symbols-outlined text-[17px]">payments</span>
+                          </div>
+                          {analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus ? (
+                            <span
+                              className={`text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${analyticsSummary.settlementStatus.isSettled
                                 ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
                                 : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse'
-                              }`}
-                          >
-                            {analyticsSummary.settlementStatus.isSettled ? '✓ Đã Chốt Sổ' : 'Tạm Tính'}
+                                }`}
+                            >
+                              {analyticsSummary.settlementStatus.isSettled ? '✓ Đã Chốt Sổ' : 'Tạm Tính'}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shrink-0">
+                              Cả Tháng
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Title & Amount */}
+                        <div className="mt-2.5">
+                          <span className="text-slate-500 dark:text-slate-400 text-xs font-bold block truncate" title="1. Tổng Doanh Thu">
+                            1. Tổng Doanh Thu
                           </span>
-                        ) : (
-                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shrink-0">
-                            Cả Tháng
-                          </span>
-                        )}
+                          <div className="mt-1 text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-heading tracking-tight truncate" title={formatPrice(analyticsSummary?.periodGross ?? analyticsSummary?.todayGross ?? 0)}>
+                            {formatPrice(analyticsSummary?.periodGross ?? analyticsSummary?.todayGross ?? 0)}
+                          </div>
+                        </div>
                       </div>
-                      <div className="mt-3">
-                        <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-heading tracking-tight break-normal">
-                          {formatPrice(analyticsSummary?.periodGross ?? analyticsSummary?.todayGross ?? 0)}
-                        </span>
-                        <p className="text-[10px] text-slate-400 mt-1 font-medium">
+
+                      {/* Footer Note */}
+                      <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate" title={analyticsPeriodMode === 'day' ? (analyticsSummary?.settlementStatus?.isSettled ? 'Hóa đơn đã quyết toán đầy đủ' : 'Thu từ đơn hàng ngày này (tạm tính)') : 'Tổng thực thu toàn bộ tháng'}>
                           {analyticsPeriodMode === 'day'
-                            ? (analyticsSummary?.settlementStatus?.isSettled ? 'Hóa đơn đã quyết toán đầy đủ' : 'Thu từ đơn hàng ngày này (tạm tính)')
+                            ? (analyticsSummary?.settlementStatus?.isSettled ? 'Hóa đơn đã quyết toán đầy đủ' : 'Thu từ đơn hàng tạm tính')
                             : 'Tổng thực thu toàn bộ tháng'}
                         </p>
                       </div>
                     </div>
 
                     {/* Card 2: Salary Costs */}
-                    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xs hover:border-amber-500/40 transition-all group relative overflow-hidden">
-                      <div className="flex items-center justify-between gap-1 flex-wrap">
-                        <span className="text-slate-500 dark:text-slate-400 text-xs font-bold whitespace-nowrap">2. Chi Phí Lương</span>
-                        {analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus?.activeShiftsCount > 0 && (
-                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 shrink-0">
-                            Đang chạy ca
+                    <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-slate-800 p-3.5 sm:p-4 rounded-2xl shadow-xs hover:border-amber-500/40 hover:shadow-amber-500/5 transition-all group relative overflow-hidden flex flex-col justify-between min-h-[148px]">
+                      <div>
+                        {/* Top row: Icon + Shift Status Badge */}
+                        <div className="flex items-center justify-between gap-1.5">
+                          <div className="w-7 h-7 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                            <span className="material-symbols-outlined text-[17px]">badge</span>
+                          </div>
+                          {analyticsPeriodMode === 'day' ? (
+                            analyticsSummary?.settlementStatus?.activeShiftsCount > 0 ? (
+                              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 shrink-0">
+                                Đang chạy ca
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 shrink-0">
+                                Theo ca làm
+                              </span>
+                            )
+                          ) : (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 shrink-0">
+                              Cả Tháng
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Title & Amount */}
+                        <div className="mt-2.5">
+                          <span className="text-slate-500 dark:text-slate-400 text-xs font-bold block truncate" title="2. Chi Phí Lương">
+                            2. Chi Phí Lương
                           </span>
-                        )}
+                          <div className="mt-1 text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 font-heading tracking-tight truncate" title={formatPrice(analyticsSummary?.periodSalary ?? analyticsSummary?.todaySalary ?? 0)}>
+                            {formatPrice(analyticsSummary?.periodSalary ?? analyticsSummary?.todaySalary ?? 0)}
+                          </div>
+                        </div>
                       </div>
-                      <div className="mt-3">
-                        <span className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 font-heading tracking-tight break-normal">
-                          {formatPrice(analyticsSummary?.periodSalary ?? analyticsSummary?.todaySalary ?? 0)}
-                        </span>
-                        <p className="text-[10px] text-slate-400 mt-1 font-medium">
+
+                      {/* Footer Note */}
+                      <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate" title={analyticsPeriodMode === 'day' ? (analyticsSummary?.settlementStatus?.activeShiftsCount > 0 ? `Còn ${analyticsSummary.settlementStatus.activeShiftsCount} ca chưa checkout` : 'Lương ca làm tính theo ngày') : 'Tổng quỹ lương trong tháng'}>
                           {analyticsPeriodMode === 'day'
                             ? (analyticsSummary?.settlementStatus?.activeShiftsCount > 0
                               ? `Còn ${analyticsSummary.settlementStatus.activeShiftsCount} ca chưa checkout`
@@ -8242,54 +8262,87 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Card 3: Ingredient Costs */}
-                    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xs hover:border-sky-500/40 transition-all group relative overflow-hidden">
-                      <div className="flex items-center justify-between gap-1.5 flex-wrap">
-                        <span className="text-slate-500 dark:text-slate-400 text-xs font-bold whitespace-nowrap">3. Tiền Nguyên Liệu</span>
-                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] border border-sky-500/20 shrink-0">
-                          Định mức kho
-                        </span>
+                    <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-slate-800 p-3.5 sm:p-4 rounded-2xl shadow-xs hover:border-sky-500/40 hover:shadow-sky-500/5 transition-all group relative overflow-hidden flex flex-col justify-between min-h-[148px]">
+                      <div>
+                        {/* Top row: Icon + Stock Badge */}
+                        <div className="flex items-center justify-between gap-1.5">
+                          <div className="w-7 h-7 rounded-xl bg-sky-500/10 dark:bg-sky-500/20 text-sky-600 dark:text-[#38BDF8] flex items-center justify-center shrink-0">
+                            <span className="material-symbols-outlined text-[17px]">inventory_2</span>
+                          </div>
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] border border-sky-500/20 shrink-0">
+                            Định mức kho
+                          </span>
+                        </div>
+
+                        {/* Title & Amount */}
+                        <div className="mt-2.5">
+                          <span className="text-slate-500 dark:text-slate-400 text-xs font-bold block truncate" title="3. Tiền Nguyên Liệu">
+                            3. Tiền Nguyên Liệu
+                          </span>
+                          <div className="mt-1 text-xl sm:text-2xl font-black text-[#0284c7] dark:text-[#38BDF8] font-heading tracking-tight truncate" title={formatPrice(analyticsSummary?.periodIngredientCost ?? 0)}>
+                            {formatPrice(analyticsSummary?.periodIngredientCost ?? 0)}
+                          </div>
+                        </div>
                       </div>
-                      <div className="mt-3">
-                        <span className="text-xl sm:text-2xl font-black text-[#0284c7] dark:text-[#38BDF8] font-heading tracking-tight break-normal">
-                          {formatPrice(analyticsSummary?.periodIngredientCost ?? 0)}
-                        </span>
-                        <p className="text-[10px] text-slate-400 mt-1 font-medium">
-                          {analyticsPeriodMode === 'day' ? 'Tiêu hao pha chế trong ngày' : 'Tổng tiêu hao trong tháng'}
-                        </p>
-                        {analyticsSummary?.totalInventoryValue !== undefined && (
-                          <p className="text-[9px] text-slate-400 mt-0.5 font-medium truncate">
-                            Vốn kho hiện tại: <span className="font-bold text-slate-600 dark:text-slate-300">{formatPrice(analyticsSummary.totalInventoryValue)}</span>
-                          </p>
-                        )}
+
+                      {/* Footer Note & Stock Value */}
+                      <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                        <div className="flex items-center justify-between gap-1 text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                          <span className="truncate" title={analyticsPeriodMode === 'day' ? 'Tiêu hao pha chế trong ngày' : 'Tổng tiêu hao trong tháng'}>
+                            {analyticsPeriodMode === 'day' ? 'Tiêu hao trong ngày' : 'Tổng tiêu hao tháng'}
+                          </span>
+                          {analyticsSummary?.totalInventoryValue !== undefined && (
+                            <span
+                              className="text-[9px] font-bold text-sky-600 dark:text-[#38BDF8] bg-sky-50 dark:bg-sky-500/10 px-1.5 py-0.5 rounded shrink-0 cursor-default"
+                              title={`Vốn kho hiện tại: ${formatPrice(analyticsSummary.totalInventoryValue)}`}
+                            >
+                              Kho: {formatPrice(analyticsSummary.totalInventoryValue)}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Card 4: Incidental / Operating Expenses (Chi Mới) */}
-                    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xs hover:border-purple-500/40 transition-all group relative overflow-hidden">
-                      <div className="flex items-center justify-between gap-1.5 flex-wrap">
-                        <span className="text-slate-500 dark:text-slate-400 text-xs font-bold whitespace-nowrap">4. Tiền Phát Sinh</span>
-                        <button
-                          onClick={() => {
-                            setExpenseForm({
-                              title: '',
-                              amount: '',
-                              category: 'Vật tư & Tiện ích',
-                              note: '',
-                              date: analyticsSelectedDate,
-                            });
-                            setIsAddExpenseModalOpen(true);
-                          }}
-                          className="px-2.5 py-1 bg-purple-500/15 hover:bg-purple-500/25 text-purple-600 dark:text-purple-400 rounded-lg transition-colors cursor-pointer text-[11px] font-black active:scale-95 border border-purple-500/20 shrink-0"
-                          title="Thêm chi phí phát sinh"
-                        >
-                          + Thêm
-                        </button>
+                    {/* Card 4: Incidental / Operating Expenses */}
+                    <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-slate-800 p-3.5 sm:p-4 rounded-2xl shadow-xs hover:border-purple-500/40 hover:shadow-purple-500/5 transition-all group relative overflow-hidden flex flex-col justify-between min-h-[148px]">
+                      <div>
+                        {/* Top row: Icon + Add Expense Action */}
+                        <div className="flex items-center justify-between gap-1.5">
+                          <div className="w-7 h-7 rounded-xl bg-purple-500/10 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                            <span className="material-symbols-outlined text-[17px]">receipt_long</span>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setExpenseForm({
+                                title: '',
+                                amount: '',
+                                category: 'Vật tư & Tiện ích',
+                                note: '',
+                                date: analyticsSelectedDate,
+                              });
+                              setIsAddExpenseModalOpen(true);
+                            }}
+                            className="px-2.5 py-0.5 bg-purple-500/15 hover:bg-purple-500/25 text-purple-600 dark:text-purple-400 rounded-lg transition-colors cursor-pointer text-[10px] font-black active:scale-95 border border-purple-500/20 shrink-0 flex items-center gap-1"
+                            title="Thêm chi phí phát sinh"
+                          >
+                            <span>+ Thêm</span>
+                          </button>
+                        </div>
+
+                        {/* Title & Amount */}
+                        <div className="mt-2.5">
+                          <span className="text-slate-500 dark:text-slate-400 text-xs font-bold block truncate" title="4. Tiền Phát Sinh">
+                            4. Tiền Phát Sinh
+                          </span>
+                          <div className="mt-1 text-xl sm:text-2xl font-black text-purple-600 dark:text-purple-400 font-heading tracking-tight truncate" title={formatPrice(analyticsSummary?.periodExpenseCost ?? analyticsSummary?.todayExpenseCost ?? 0)}>
+                            {formatPrice(analyticsSummary?.periodExpenseCost ?? analyticsSummary?.todayExpenseCost ?? 0)}
+                          </div>
+                        </div>
                       </div>
-                      <div className="mt-3">
-                        <span className="text-xl sm:text-2xl font-black text-purple-600 dark:text-purple-400 font-heading tracking-tight break-normal">
-                          {formatPrice(analyticsSummary?.periodExpenseCost ?? analyticsSummary?.todayExpenseCost ?? 0)}
-                        </span>
-                        <p className="text-[10px] text-slate-400 mt-1 font-medium">
+
+                      {/* Footer Note */}
+                      <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate" title="Mua đá, sửa chữa, phụ phí vận hành...">
                           Mua đá, sửa chữa, phụ phí...
                         </p>
                       </div>
@@ -8302,58 +8355,88 @@ export default function DashboardPage() {
 
                       return (
                         <div
-                          className={`bg-white dark:bg-[#111827] border p-4 sm:p-5 rounded-3xl shadow-xs transition-all group relative overflow-hidden sm:col-span-2 lg:col-span-2 2xl:col-span-1 ${
-                            isNegative
-                              ? 'border-rose-500/40 dark:border-rose-500/30 hover:border-rose-500 bg-gradient-to-br from-rose-500/10 via-amber-500/5 to-transparent'
-                              : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
-                                ? 'border-amber-500/40 dark:border-amber-500/30 hover:border-amber-500 bg-gradient-to-br from-amber-500/10 via-sky-500/5 to-transparent'
-                                : 'border-emerald-500/40 dark:border-emerald-500/30 hover:border-emerald-500 bg-gradient-to-br from-emerald-500/10 via-sky-500/5 to-transparent'
-                          }`}
+                          className={`border p-3.5 sm:p-4 rounded-2xl shadow-xs transition-all group relative overflow-hidden flex flex-col justify-between min-h-[148px] sm:col-span-2 lg:col-span-2 xl:col-span-1 ${isNegative
+                            ? 'bg-white dark:bg-[#111827] border-rose-500/40 dark:border-rose-500/30 hover:border-rose-500 bg-gradient-to-br from-rose-500/10 via-amber-500/5 to-transparent'
+                            : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
+                              ? 'bg-white dark:bg-[#111827] border-amber-500/40 dark:border-amber-500/30 hover:border-amber-500 bg-gradient-to-br from-amber-500/10 via-sky-500/5 to-transparent'
+                              : 'bg-white dark:bg-[#111827] border-emerald-500/40 dark:border-emerald-500/30 hover:border-emerald-500 bg-gradient-to-br from-emerald-500/10 via-sky-500/5 to-transparent'
+                            }`}
                         >
-                          <div className="flex items-center justify-between gap-1.5 flex-wrap">
-                            <span
-                              className={`text-xs font-black whitespace-nowrap ${
-                                isNegative
-                                  ? 'text-rose-600 dark:text-rose-400'
-                                  : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
-                                    ? 'text-amber-600 dark:text-amber-400'
-                                    : 'text-emerald-600 dark:text-emerald-400'
-                              }`}
-                            >
-                              {isNegative ? '5. Lỗ Ròng (Thâm Hụt)' : '5. Lợi Nhuận Ròng'}
-                            </span>
-                            {analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && (
-                              <span
-                                className={`text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${
-                                  isNegative
+                          <div>
+                            {/* Top row: Icon + Net Status Badge */}
+                            <div className="flex items-center justify-between gap-1.5">
+                              <div
+                                className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 ${isNegative
+                                  ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
+                                  : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                                  }`}
+                              >
+                                <span className="material-symbols-outlined text-[17px]">
+                                  {isNegative ? 'trending_down' : 'account_balance_wallet'}
+                                </span>
+                              </div>
+                              {analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus ? (
+                                <span
+                                  className={`text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${isNegative
                                     ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30'
                                     : analyticsSummary.settlementStatus.isSettled
                                       ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
                                       : 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30'
-                                }`}
-                              >
-                                {isNegative ? 'Thâm Hụt' : analyticsSummary.settlementStatus.isSettled ? '✓ Đã Quyết Toán' : 'Chờ Chốt Ca'}
-                              </span>
-                            )}
-                          </div>
-                          <div className="mt-3">
-                            <span
-                              className={`text-xl sm:text-2xl font-black font-heading tracking-tight break-normal ${
-                                isNegative
+                                    }`}
+                                >
+                                  {isNegative ? 'Thâm Hụt' : analyticsSummary.settlementStatus.isSettled ? '✓ Đã Quyết Toán' : 'Chờ Chốt Ca'}
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shrink-0">
+                                  Lãi / Lỗ Tháng
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Title & Amount */}
+                            <div className="mt-2.5">
+                              <span
+                                className={`text-xs font-black block truncate ${isNegative
                                   ? 'text-rose-600 dark:text-rose-400'
                                   : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
                                     ? 'text-amber-600 dark:text-amber-400'
                                     : 'text-emerald-600 dark:text-emerald-400'
-                              }`}
+                                  }`}
+                                title={isNegative ? '5. Lỗ Ròng (Thâm Hụt)' : '5. Lợi Nhuận Ròng'}
+                              >
+                                {isNegative ? '5. Lỗ Ròng (Thâm Hụt)' : '5. Lợi Nhuận Ròng'}
+                              </span>
+                              <div
+                                className={`mt-1 text-xl sm:text-2xl font-black font-heading tracking-tight truncate ${isNegative
+                                  ? 'text-rose-600 dark:text-rose-400'
+                                  : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
+                                    ? 'text-amber-600 dark:text-amber-400'
+                                    : 'text-emerald-600 dark:text-emerald-400'
+                                  }`}
+                                title={formatPrice(netProfitVal)}
+                              >
+                                {formatPrice(netProfitVal)}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Footer Note */}
+                          <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                            <p
+                              className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate"
+                              title={
+                                isNegative
+                                  ? 'Chi phí trong kỳ vượt quá doanh thu'
+                                  : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
+                                    ? 'Tạm tính (Chưa chốt lương ca làm & chi phí cuối ngày)'
+                                    : 'Thu - Lương - NL - Phát sinh (Chính thức)'
+                              }
                             >
-                              {formatPrice(netProfitVal)}
-                            </span>
-                            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium">
                               {isNegative
-                                ? 'Chi phí trong kỳ vượt quá doanh thu'
+                                ? 'Chi phí vượt doanh thu'
                                 : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
-                                  ? 'Tạm tính (Chưa chốt lương ca làm & chi phí cuối ngày)'
-                                  : 'Thu - Lương - NL - Phát sinh (Chính thức)'}
+                                  ? 'Tạm tính (chờ chốt ca)'
+                                  : 'Thu trừ toàn bộ chi phí'}
                             </p>
                           </div>
                         </div>
@@ -9552,10 +9635,10 @@ export default function DashboardPage() {
           <h2 className="text-sm font-black uppercase tracking-wider text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#3B82F6] dark:bg-[#38BDF8] animate-ping" />
             {user?.role === 'admin'
-              ? 'Chấm công realtime'
+              ? 'Hoạt động'
               : user?.role === 'barista'
                 ? 'Đơn hàng chờ pha chế'
-                : 'Hoạt động realtime'}
+                : 'Hoạt động '}
           </h2>
           <button
             onClick={() => setIsRealtimeDrawerOpen(false)}
@@ -10038,7 +10121,7 @@ export default function DashboardPage() {
                 pendingTransferRequests.length === 0 &&
                 orders.filter((o) => o.paymentNotified && o.status !== 'paid').length === 0 && (
                   <div className="p-6 text-center text-slate-400 text-xs italic">
-                    Hiện chưa có hoạt động realtime nào mới.
+                    Hiện chưa có hoạt động nào mới.
                   </div>
                 )}
             </div>
@@ -10057,7 +10140,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1e293b]">
                 <div className="flex items-center gap-2.5">
                   <div className="p-2 bg-sky-500/10 text-sky-500 rounded-xl">
-                    <span className="material-symbols-outlined text-xl">category</span>
+                    <span className="material-symbols-outlined text-xl">layers</span>
                   </div>
                   <div>
                     <h3 className="text-base font-black text-slate-900 dark:text-white font-heading">Quản lý Danh mục Thực đơn</h3>
@@ -11381,46 +11464,60 @@ export default function DashboardPage() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative z-10 w-full max-w-4xl bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+              className="relative z-10 w-full max-w-4xl bg-white dark:bg-[#0d1322] border border-slate-200 dark:border-white/10 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
             >
               {/* Modal Header */}
-              <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3 shrink-0">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#38BDF8]">shopping_bag</span>
-                  <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading">
-                    Tạo Đơn Hàng Bán Mang Về (POS)
-                  </h3>
+              <div className="flex justify-between items-center border-b border-slate-200 dark:border-white/10 pb-4 shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-2xl bg-sky-500/10 dark:bg-sky-400/10 text-[#0284c7] dark:text-[#38BDF8] flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-xl">shopping_bag</span>
+                  </div>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white font-sans tracking-tight">
+                      Tạo Đơn Hàng Bán Mang Về (POS)
+                    </h3>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
+                      Thêm nhanh món và tạo đơn mang về trực tiếp
+                    </p>
+                  </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setIsTakeawayModalOpen(false)}
-                  className="text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all cursor-pointer"
                 >
-                  <span className="material-symbols-outlined">close</span>
+                  <span className="material-symbols-outlined text-lg">close</span>
                 </button>
               </div>
 
               {/* Modal Body: 2 Columns layout (Catalog Left, Cart Right) */}
-              <div className="flex-1 overflow-y-auto space-y-4 lg:space-y-0 lg:grid lg:grid-cols-12 lg:gap-4 min-h-0 pr-1">
+              <div className="flex-1 overflow-y-auto space-y-5 lg:space-y-0 lg:grid lg:grid-cols-12 lg:gap-5 min-h-0 pt-4 pr-1">
                 {/* LEFT: Food Catalog (7 cols) */}
-                <div className="lg:col-span-7 flex flex-col gap-3 lg:border-r border-slate-200 dark:border-[#1e293b] lg:pr-4 pb-4 lg:pb-0 lg:h-full lg:overflow-hidden">
+                <div className="lg:col-span-7 flex flex-col gap-3.5 lg:border-r border-slate-200 dark:border-white/10 lg:pr-5 pb-4 lg:pb-0 lg:h-full lg:overflow-hidden">
                   {/* Category Filter & Search */}
-                  <div className="flex flex-col gap-2 shrink-0">
-                    <input
-                      type="text"
-                      placeholder="Tìm kiếm món ăn, thức uống..."
-                      value={takeawaySearch}
-                      onChange={(e) => setTakeawaySearch(e.target.value)}
-                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
-                    />
+                  <div className="flex flex-col gap-2.5 shrink-0">
+                    <div className="relative">
+                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none">
+                        search
+                      </span>
+                      <input
+                        type="text"
+                        placeholder="Tìm kiếm món ăn, thức uống..."
+                        value={takeawaySearch}
+                        onChange={(e) => setTakeawaySearch(e.target.value)}
+                        className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-2xl pl-9 pr-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/30 transition-all font-normal"
+                      />
+                    </div>
 
-                    <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[11px] font-bold">
+                    <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs font-extrabold">
                       <button
                         type="button"
                         onClick={() => setTakeawayCategory('all')}
-                        className={`px-2.5 py-1 rounded-lg transition-all shrink-0 ${takeawayCategory === 'all'
-                          ? 'bg-[#38BDF8] text-[#090D16]'
-                          : 'bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300'
-                          }`}
+                        className={`px-3 py-1.5 rounded-full transition-all shrink-0 cursor-pointer ${
+                          takeawayCategory === 'all'
+                            ? 'bg-[#38BDF8] text-[#090D16] shadow-xs'
+                            : 'bg-slate-100 dark:bg-[#090D16] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white'
+                        }`}
                       >
                         Tất cả
                       </button>
@@ -11429,10 +11526,11 @@ export default function DashboardPage() {
                           key={cat}
                           type="button"
                           onClick={() => setTakeawayCategory(cat)}
-                          className={`px-2.5 py-1 rounded-lg transition-all shrink-0 ${takeawayCategory === cat
-                            ? 'bg-[#38BDF8] text-[#090D16]'
-                            : 'bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300'
-                            }`}
+                          className={`px-3 py-1.5 rounded-full transition-all shrink-0 cursor-pointer ${
+                            takeawayCategory === cat
+                              ? 'bg-[#38BDF8] text-[#090D16] shadow-xs'
+                              : 'bg-slate-100 dark:bg-[#090D16] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white'
+                          }`}
                         >
                           {cat}
                         </button>
@@ -11440,8 +11538,8 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* Food Grid Catalog */}
-                  <div className="grid grid-cols-2 gap-2 max-h-[220px] sm:max-h-[300px] lg:max-h-none lg:flex-1 overflow-y-auto pr-1 scrollbar-thin">
+                  {/* Food Grid Catalog - content-start auto-rows-max items-start prevents giant stretched cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 content-start auto-rows-max items-start max-h-[260px] sm:max-h-[340px] lg:max-h-none lg:flex-1 overflow-y-auto pr-1 scrollbar-thin">
                     {foods
                       .filter((f) => f.isAvailable !== false)
                       .filter((f) => {
@@ -11458,24 +11556,30 @@ export default function DashboardPage() {
                           <div
                             key={food._id}
                             onClick={() => addToTakeawayCart(food)}
-                            className="bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] hover:border-[#38BDF8] p-2.5 rounded-xl flex items-center gap-2.5 cursor-pointer transition-all hover:scale-[1.02] active:scale-95 group relative"
+                            className={`p-2.5 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center gap-3 select-none active:scale-95 group relative ${
+                              inCart
+                                ? 'bg-sky-500/10 dark:bg-sky-500/15 border-[#38BDF8] ring-1 ring-[#38BDF8]/30 shadow-xs'
+                                : 'bg-[#F8FAFC] dark:bg-[#090D16] border-slate-200 dark:border-white/10 hover:border-[#38BDF8] hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                            }`}
                           >
-                            <img
-                              src={food.image || 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&auto=format&fit=crop&q=80'}
-                              alt={food.name}
-                              className="w-11 h-11 rounded-lg object-cover bg-slate-200 dark:bg-slate-800 shrink-0"
-                            />
+                            <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-800 shrink-0">
+                              <img
+                                src={food.image || 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&auto=format&fit=crop&q=80'}
+                                alt={food.name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            </div>
                             <div className="min-w-0 flex-1">
-                              <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate group-hover:text-[#38BDF8]">
+                              <h4 className="text-xs font-extrabold text-slate-900 dark:text-white truncate group-hover:text-[#38BDF8] transition-colors">
                                 {food.name}
                               </h4>
-                              <p className="text-[11px] font-black text-[#0284c7] dark:text-[#38BDF8]">
+                              <p className="text-xs font-extrabold text-[#0284c7] dark:text-[#38BDF8] font-mono mt-0.5">
                                 {formatPrice(food.price)}
                               </p>
                             </div>
                             {inCart && (
-                              <span className="absolute -top-1.5 -right-1.5 bg-[#38BDF8] text-[#090D16] text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-md">
-                                {inCart.quantity}
+                              <span className="shrink-0 bg-[#38BDF8] text-[#090D16] text-[10px] font-extrabold px-1.5 py-0.5 rounded-full shadow-xs">
+                                x{inCart.quantity}
                               </span>
                             )}
                           </div>
@@ -11485,65 +11589,68 @@ export default function DashboardPage() {
                 </div>
 
                 {/* RIGHT: Takeaway Order Cart (5 cols) */}
-                <form onSubmit={handleCreateTakeawayOrder} className="lg:col-span-5 flex flex-col gap-3 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-200 dark:border-[#1e293b] lg:h-full lg:overflow-hidden">
-                  <h4 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wider flex items-center justify-between border-b border-slate-200 dark:border-[#1e293b] pb-2">
-                    <span>Giỏ hàng mang về ({takeawayCart.reduce((sum, i) => sum + i.quantity, 0)})</span>
+                <form onSubmit={handleCreateTakeawayOrder} className="lg:col-span-5 flex flex-col gap-3.5 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-200 dark:border-white/10 lg:h-full lg:overflow-hidden">
+                  <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2.5">
+                    <h4 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
+                      Giỏ hàng mang về ({takeawayCart.reduce((sum, i) => sum + i.quantity, 0)})
+                    </h4>
                     {takeawayCart.length > 0 && (
                       <button
                         type="button"
                         onClick={() => setTakeawayCart([])}
-                        className="text-[10px] text-rose-500 font-bold hover:underline"
+                        className="text-xs text-rose-500 font-extrabold hover:text-rose-600 transition-colors cursor-pointer"
                       >
                         Xóa tất cả
                       </button>
                     )}
-                  </h4>
+                  </div>
 
                   {/* Cart Items List */}
                   <div className="space-y-2 pr-1 max-h-[160px] sm:max-h-[220px] lg:max-h-none lg:flex-1 overflow-y-auto min-h-[80px] scrollbar-thin">
                     {takeawayCart.length === 0 ? (
-                      <div className="text-center py-8 text-slate-400 text-xs">
-                        <span className="material-symbols-outlined text-3xl mb-1 block">add_shopping_cart</span>
-                        Chưa chọn món nào. Nhấp vào món bên trái để thêm vào giỏ.
+                      <div className="text-center py-8 text-slate-400 text-xs flex flex-col items-center justify-center gap-1.5">
+                        <span className="material-symbols-outlined text-3xl opacity-50">shopping_cart</span>
+                        <p className="font-normal">Chưa chọn món nào.</p>
+                        <p className="text-[11px] text-slate-500 font-normal">Nhấp vào món bên trái để thêm vào giỏ.</p>
                       </div>
                     ) : (
                       takeawayCart.map((item) => (
                         <div
                           key={item.foodId}
-                          className="bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] p-2.5 rounded-xl space-y-2 text-xs"
+                          className="bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 p-2.5 rounded-2xl space-y-2 text-xs"
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <span className="font-bold text-slate-900 dark:text-white truncate flex-1">
+                            <span className="font-extrabold text-slate-900 dark:text-white truncate flex-1">
                               {item.food.name}
                             </span>
-                            <span className="font-extrabold text-[#0284c7] dark:text-[#38BDF8]">
+                            <span className="font-extrabold font-mono text-[#0284c7] dark:text-[#38BDF8]">
                               {formatPrice(item.food.price * item.quantity)}
                             </span>
                           </div>
 
-                          <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-200/60 dark:border-slate-800">
+                          <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-200/60 dark:border-white/5">
                             <input
                               type="text"
-                              placeholder="Ghi chú (Ví dụ: Ít đường, không đá...)"
+                              placeholder="Ghi chú (Ít đường, không đá...)"
                               value={item.note}
                               onChange={(e) => updateTakeawayNote(item.foodId, e.target.value)}
-                              className="flex-1 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-lg px-2 py-1 text-[11px] text-slate-900 dark:text-white focus:outline-none"
+                              className="flex-1 bg-white dark:bg-[#0d1322] border border-slate-200 dark:border-white/10 rounded-xl px-2.5 py-1 text-[11px] text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] font-normal"
                             />
-                            <div className="flex items-center gap-1 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-lg p-0.5">
+                            <div className="flex items-center gap-1 bg-white dark:bg-[#0d1322] border border-slate-200 dark:border-white/10 rounded-xl p-0.5">
                               <button
                                 type="button"
                                 onClick={() => updateTakeawayQuantity(item.foodId, -1)}
-                                className="w-5 h-5 flex items-center justify-center font-bold text-slate-500 hover:text-rose-500"
+                                className="w-5 h-5 flex items-center justify-center font-extrabold text-slate-500 hover:text-rose-500 transition-colors cursor-pointer"
                               >
                                 -
                               </button>
-                              <span className="font-bold px-1 text-slate-900 dark:text-white text-xs">
+                              <span className="font-extrabold px-1 text-slate-900 dark:text-white text-xs font-mono">
                                 {item.quantity}
                               </span>
                               <button
                                 type="button"
                                 onClick={() => updateTakeawayQuantity(item.foodId, 1)}
-                                className="w-5 h-5 flex items-center justify-center font-bold text-slate-500 hover:text-[#38BDF8]"
+                                className="w-5 h-5 flex items-center justify-center font-extrabold text-slate-500 hover:text-[#38BDF8] transition-colors cursor-pointer"
                               >
                                 +
                               </button>
@@ -11555,10 +11662,10 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Customer Info & Order Inputs */}
-                  <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-[#1e293b] text-xs shrink-0">
+                  <div className="space-y-2.5 pt-2.5 border-t border-slate-200 dark:border-white/10 text-xs shrink-0">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                        <label className="block text-[11px] font-extrabold text-slate-600 dark:text-slate-400 mb-1">
                           Tên khách hàng <span className="text-rose-500">*</span>
                         </label>
                         <input
@@ -11567,11 +11674,11 @@ export default function DashboardPage() {
                           placeholder="Tên khách nhận món..."
                           value={takeawayCustomerName}
                           onChange={(e) => setTakeawayCustomerName(e.target.value)}
-                          className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-2.5 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
+                          className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-2xl px-3 py-2 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] font-normal"
                         />
                       </div>
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                        <label className="block text-[11px] font-extrabold text-slate-600 dark:text-slate-400 mb-1">
                           Số điện thoại <span className="text-rose-500">*</span>
                         </label>
                         <input
@@ -11580,28 +11687,28 @@ export default function DashboardPage() {
                           placeholder="Ví dụ: 0987654321..."
                           value={takeawayCustomerPhone}
                           onChange={(e) => setTakeawayCustomerPhone(e.target.value)}
-                          className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-2.5 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
+                          className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-2xl px-3 py-2 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] font-normal"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                        <label className="block text-[11px] font-extrabold text-slate-600 dark:text-slate-400 mb-1">
                           Thanh toán
                         </label>
                         <select
                           value={takeawayPaymentMethod}
                           onChange={(e) => setTakeawayPaymentMethod(e.target.value as 'cash' | 'momo')}
-                          className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-2.5 py-1.5 text-slate-900 dark:text-white font-bold cursor-pointer"
+                          className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-2xl px-3 py-2 text-slate-900 dark:text-white font-extrabold cursor-pointer focus:outline-none focus:border-[#38BDF8]"
                         >
-                          <option value="cash" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold">Tiền mặt</option>
-                          <option value="momo" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold">Chuyển khoản MoMo</option>
+                          <option value="cash" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-extrabold">Tiền mặt</option>
+                          <option value="momo" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-extrabold">Chuyển khoản MoMo</option>
                         </select>
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                        <label className="block text-[11px] font-extrabold text-slate-600 dark:text-slate-400 mb-1">
                           Mã giảm giá
                         </label>
                         <input
@@ -11609,15 +11716,15 @@ export default function DashboardPage() {
                           placeholder="Mã voucher..."
                           value={takeawayCouponCode}
                           onChange={(e) => setTakeawayCouponCode(e.target.value)}
-                          className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-2.5 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
+                          className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-2xl px-3 py-2 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] font-normal"
                         />
                       </div>
                     </div>
 
                     {/* Total Amount Summary */}
-                    <div className="flex items-center justify-between py-2 border-t border-slate-200 dark:border-[#1e293b]">
+                    <div className="flex items-center justify-between py-2 border-t border-slate-200 dark:border-white/10">
                       <span className="font-extrabold text-slate-700 dark:text-slate-300">Tổng cộng tiền món:</span>
-                      <span className="text-base font-black text-[#0284c7] dark:text-[#38BDF8]">
+                      <span className="text-lg sm:text-xl font-extrabold font-mono text-[#0284c7] dark:text-[#38BDF8]">
                         {formatPrice(takeawayCart.reduce((sum, item) => sum + item.food.price * item.quantity, 0))}
                       </span>
                     </div>
@@ -11626,7 +11733,7 @@ export default function DashboardPage() {
                     <button
                       type="submit"
                       disabled={takeawayCart.length === 0 || isCreatingTakeaway}
-                      className="w-full py-3 bg-[#38BDF8] hover:bg-[#0284c7] disabled:opacity-50 text-[#090D16] font-black rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="w-full py-3.5 bg-[#38BDF8] hover:bg-sky-400 disabled:opacity-50 text-[#090D16] font-extrabold rounded-2xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
                     >
                       <span className="material-symbols-outlined text-base">check_circle</span>
                       <span>{isCreatingTakeaway ? 'Đang tạo đơn...' : 'Xác nhận tạo đơn mang về'}</span>

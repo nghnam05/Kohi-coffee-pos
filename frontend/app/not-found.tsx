@@ -230,7 +230,7 @@ export default function NotFound() {
                 </span>
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed line-clamp-2">
-                Khu vực quản lý sơ đồ bàn, đơn hàng realtime và báo cáo.
+                Khu vực quản lý sơ đồ bàn, đơn hàng và báo cáo.
               </p>
             </Link>
 

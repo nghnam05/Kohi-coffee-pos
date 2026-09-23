@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { playMomoChime } from '../../app/utils/sound';
 import { toast } from 'react-hot-toast';
+import { CancelOrderModal } from './CancelOrderModal';
 
 interface BankPayModalProps {
   isOpen: boolean;
@@ -38,10 +39,14 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
   const [hasNotified, setHasNotified] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
 
-  const handleCancelOrder = async () => {
+  const handleCancelOrder = async (confirmed?: boolean | React.MouseEvent) => {
     if (isCancelling || !orderId) return;
-    if (!window.confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')) return;
+    if (confirmed !== true) {
+      setIsCancelConfirmOpen(true);
+      return;
+    }
     setIsCancelling(true);
     try {
       const res = await fetch(`${apiBase}/orders/${orderId}/cancel`, {
@@ -53,6 +58,7 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
         throw new Error(data.message || 'Không thể hủy đơn hàng.');
       }
       toast.success('Đã hủy đơn hàng thành công!');
+      setIsCancelConfirmOpen(false);
       onClose();
     } catch (err: any) {
       toast.error(err.message || 'Lỗi khi hủy đơn hàng.');
@@ -64,15 +70,33 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
   // Bank Info (Default MB Bank, customizable via ENV)
   const bankId = process.env.NEXT_PUBLIC_BANK_ID || 'MB';
   const bankName = process.env.NEXT_PUBLIC_BANK_NAME || 'MB Bank (NHTMCP Quân Đội)';
-  const accountNo = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NO || '0123456789';
-  const accountName = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NAME || 'KOHI COFFEE';
+  const accountNo = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NO || '0336218760';
+  const accountName = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NAME || 'NGUYEN HOAI NAM';
+  const customQrImage = process.env.NEXT_PUBLIC_BANK_CUSTOM_QR_IMAGE || '/images/qr.jpg';
 
+  // Format table name cleanly to avoid duplicates like "Bàn Bàn số 1"
+  const displayTableName = tableName
+    ? tableName.replace(/^Bàn\s+Bàn\s*/i, 'Bàn ').replace(/^Table\s+Table\s*/i, 'Table ').trim()
+    : 'Bàn';
+
+  // Sanitize Vietnamese diacritics for bank transfer memo
+  const sanitizeBankMemo = (str: string) => {
+    return str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'D')
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .toUpperCase();
+  };
+
+  const memoTable = sanitizeBankMemo(displayTableName.replace(/^(Bàn|Table)\s*/i, 'BAN '));
   const shortCode = orderId ? `#${orderId.slice(-6).toUpperCase()}` : '';
   const effectivePayer = (payerName || customerName || '').trim();
-  const payerMemo = effectivePayer ? ` ${effectivePayer.replace(/[^a-zA-Z0-9]/g, '')}`.toUpperCase() : '';
-  const transferMemo = `KOHI ${tableName.replace(/\s+/g, '')} ${shortCode}${payerMemo}`.trim();
+  const payerMemo = effectivePayer ? ` ${sanitizeBankMemo(effectivePayer)}` : '';
+  const transferMemo = `KOHI ${memoTable} ${shortCode}${payerMemo}`.trim();
 
-  const qrUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${totalAmount}&addInfo=${encodeURIComponent(
+  const qrUrl = customQrImage || `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${totalAmount}&addInfo=${encodeURIComponent(
     transferMemo
   )}&accountName=${encodeURIComponent(accountName)}`;
 
@@ -81,7 +105,7 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
     if (orderStatus === 'paid' && isOpen) {
       try {
         playMomoChime();
-      } catch (e) {}
+      } catch (e) { }
       toast.success('Xác nhận đã nhận tiền! Cảm ơn quý khách.');
       onClose();
       if (onSuccess) onSuccess();
@@ -110,11 +134,11 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
 
       const body = isSplit
         ? JSON.stringify({
-            amount: totalAmount,
-            payerName: effectivePayer || 'Khách',
-            itemIndexes: selectedItemIndexes,
-            paymentMethod: 'bank_transfer',
-          })
+          amount: totalAmount,
+          payerName: effectivePayer || 'Khách',
+          itemIndexes: selectedItemIndexes,
+          paymentMethod: 'bank_transfer',
+        })
         : undefined;
 
       const res = await fetch(url, {
@@ -174,16 +198,16 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
               </div>
               <div>
                 <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#0284c7] dark:text-[#38BDF8] block font-mono">
-                  Chuyển khoản Ngân hàng (VietQR)
+                  Chuyển khoản Ngân hàng
                 </span>
-                <h3 className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-                  Thanh toán hóa đơn • {tableName}
+                <h3 className="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+                  Thanh toán hóa đơn • {displayTableName}
                 </h3>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer font-bold text-lg"
+              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer font-extrabold text-lg"
               title="Đóng"
             >
               ×
@@ -199,28 +223,25 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
                   <img
                     src={qrUrl}
                     alt="VietQR Payment Code"
-                    className="w-44 h-44 sm:w-52 sm:h-52 mx-auto object-contain rounded-xl"
+                    className="w-48 sm:w-56 h-auto max-h-60 mx-auto object-contain rounded-xl"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(
-                        `STK: ${accountNo} - NH: ${bankId} - TEN: ${accountName} - SOTIEN: ${totalAmount} - NOIDUNG: ${transferMemo}`
-                      )}`;
+                      (e.target as HTMLImageElement).src = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${totalAmount}&addInfo=${encodeURIComponent(
+                        transferMemo
+                      )}&accountName=${encodeURIComponent(accountName)}`;
                     }}
                   />
                 </div>
 
                 <div className="space-y-1 max-w-xs">
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  <p className="text-xs font-extrabold text-slate-800 dark:text-slate-200">
                     Quét bằng ứng dụng Ngân hàng
                   </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
                     Tự động điền số tài khoản, số tiền và nội dung hóa đơn chính xác 100%.
                   </p>
                 </div>
 
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-bold border border-emerald-500/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>Kết nối Realtime tự động nhận diện</span>
-                </div>
+
               </div>
 
               {/* Right Column: Order & Transfer Details (lg:col-span-7) */}
@@ -228,21 +249,21 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
                 {/* Amount Banner */}
                 <div className="p-4 bg-gradient-to-r from-sky-500/15 via-cyan-500/10 to-transparent border border-sky-500/30 rounded-2xl flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block uppercase tracking-wider">
+                    <span className="text-[10px] font-normal text-slate-500 dark:text-slate-400 block uppercase tracking-wider">
                       {selectedItemIndexes && selectedItemIndexes.length > 0
                         ? `Thanh toán phần chọn (${selectedItemIndexes.length} món)`
                         : 'Tổng tiền thanh toán'}
                     </span>
-                    <span className="text-2xl sm:text-3xl font-black text-[#0284c7] dark:text-[#38BDF8] font-mono tracking-tight">
+                    <span className="text-2xl sm:text-3xl font-extrabold text-[#0284c7] dark:text-[#38BDF8] font-mono tracking-tight">
                       {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalAmount)}
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="px-3 py-1 bg-[#38BDF8] text-slate-950 font-black text-xs rounded-xl shadow-xs font-mono inline-block">
-                      {tableName}
+                    <span className="px-3 py-1 bg-[#38BDF8] text-slate-950 font-extrabold text-xs rounded-xl shadow-xs font-mono inline-block">
+                      {displayTableName}
                     </span>
                     {shortCode && (
-                      <span className="text-[10px] font-mono text-slate-400 block mt-1">
+                      <span className="text-[10px] font-mono text-slate-400 block mt-1 font-normal">
                         Đơn: {shortCode}
                       </span>
                     )}
@@ -251,11 +272,11 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
 
                 {/* Selected Items preview */}
                 {selectedItemNames && selectedItemNames.length > 0 && (
-                  <div className="p-3 rounded-xl bg-white dark:bg-[#131929] border border-slate-200/80 dark:border-white/10 text-xs">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                  <div className="p-3 rounded-2xl bg-white dark:bg-[#131929] border border-slate-200/80 dark:border-white/10 text-xs">
+                    <span className="text-[10px] font-normal uppercase tracking-wider text-slate-400 block mb-1">
                       Món trong đợt thanh toán này:
                     </span>
-                    <p className="font-semibold text-slate-800 dark:text-slate-200 line-clamp-2 leading-relaxed">
+                    <p className="font-normal text-slate-800 dark:text-slate-200 line-clamp-2 leading-relaxed">
                       {selectedItemNames.join(', ')}
                     </p>
                   </div>
@@ -264,7 +285,7 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
                 {/* Manual Transfer Details Card */}
                 <div className="bg-white dark:bg-[#131929] rounded-2xl border border-slate-200/80 dark:border-white/10 overflow-hidden text-xs shadow-xs">
                   <div className="px-3.5 py-2.5 bg-slate-50 dark:bg-white/5 border-b border-slate-200/60 dark:border-white/10 flex items-center justify-between">
-                    <span className="text-[10.5px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                    <span className="text-[10.5px] font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                       Thông tin chuyển khoản thủ công
                     </span>
                     <button
@@ -279,19 +300,19 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
                   {showManualDetails && (
                     <div className="p-3.5 space-y-2.5">
                       <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2">
-                        <span className="text-slate-500 dark:text-slate-400 font-medium text-[11px]">Ngân hàng</span>
-                        <span className="font-bold text-slate-900 dark:text-white text-xs">{bankName}</span>
+                        <span className="text-slate-500 dark:text-slate-400 font-normal text-[11px]">Ngân hàng</span>
+                        <span className="font-extrabold text-slate-900 dark:text-white text-xs">{bankName}</span>
                       </div>
 
                       <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2">
-                        <span className="text-slate-500 dark:text-slate-400 font-medium text-[11px]">Chủ tài khoản</span>
-                        <span className="font-bold text-slate-900 dark:text-white uppercase text-xs">{accountName}</span>
+                        <span className="text-slate-500 dark:text-slate-400 font-normal text-[11px]">Chủ tài khoản</span>
+                        <span className="font-extrabold text-slate-900 dark:text-white uppercase text-xs">{accountName}</span>
                       </div>
 
                       <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2">
-                        <span className="text-slate-500 dark:text-slate-400 font-medium text-[11px]">Số tài khoản</span>
+                        <span className="text-slate-500 dark:text-slate-400 font-normal text-[11px]">Số tài khoản</span>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-black text-slate-900 dark:text-white text-sm">{accountNo}</span>
+                          <span className="font-mono font-extrabold text-slate-900 dark:text-white text-sm">{accountNo}</span>
                           <button
                             type="button"
                             onClick={() => handleCopy(accountNo, 'Số tài khoản')}
@@ -307,9 +328,9 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
                       </div>
 
                       <div className="flex items-center justify-between pt-0.5">
-                        <span className="text-slate-500 dark:text-slate-400 font-medium text-[11px]">Nội dung CK</span>
+                        <span className="text-slate-500 dark:text-slate-400 font-normal text-[11px]">Nội dung CK</span>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-black text-[#0284c7] dark:text-[#38BDF8] uppercase text-xs">
+                          <span className="font-mono font-extrabold text-[#0284c7] dark:text-[#38BDF8] uppercase text-xs">
                             {transferMemo}
                           </span>
                           <button
@@ -332,13 +353,13 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
                 {/* Status Bar */}
                 {orderStatus === 'pending' ? (
                   <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-center">
-                    <span className="text-xs font-black text-amber-600 dark:text-amber-400 block">
+                    <span className="text-xs font-extrabold text-amber-600 dark:text-amber-400 block">
                       Đơn hàng đang chờ phục vụ duyệt. Vui lòng thanh toán sau khi đơn được duyệt.
                     </span>
                   </div>
                 ) : (
                   <div className="p-3 bg-amber-500/10 border border-amber-500/25 rounded-2xl text-center">
-                    <span className="text-xs font-black text-amber-700 dark:text-amber-300 flex items-center justify-center gap-2">
+                    <span className="text-xs font-extrabold text-amber-700 dark:text-amber-300 flex items-center justify-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
                       Đang chờ Nhân viên phục vụ xác nhận tiền về...
                     </span>
@@ -355,13 +376,12 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
               type="button"
               onClick={handleNotifyPayment}
               disabled={isProcessing || hasNotified || orderStatus === 'pending'}
-              className={`w-full h-12 text-white font-black rounded-xl sm:rounded-2xl text-xs sm:text-sm uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 shadow-md ${
-                orderStatus === 'pending'
+              className={`w-full h-12 text-white font-extrabold rounded-2xl text-xs sm:text-sm uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 shadow-md ${orderStatus === 'pending'
                   ? 'bg-slate-400 dark:bg-slate-700 opacity-60 cursor-not-allowed'
                   : hasNotified
-                  ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/20'
-                  : 'bg-[#0284c7] hover:bg-[#0369a1] shadow-sky-500/20'
-              }`}
+                    ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/20'
+                    : 'bg-[#0284c7] hover:bg-[#0369a1] shadow-sky-500/20'
+                }`}
             >
               {orderStatus === 'pending' ? (
                 'Chờ phục vụ duyệt đơn...'
@@ -395,6 +415,17 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
           </div>
         </motion.div>
       </div>
+
+      {/* Cancel Order Confirmation Modal */}
+      <CancelOrderModal
+        isOpen={isCancelConfirmOpen}
+        onClose={() => setIsCancelConfirmOpen(false)}
+        onConfirm={() => handleCancelOrder(true)}
+        orderCode={shortCode}
+        orderTotal={totalAmount}
+        tableName={displayTableName}
+        isCancelling={isCancelling}
+      />
     </AnimatePresence>
   );
 };
