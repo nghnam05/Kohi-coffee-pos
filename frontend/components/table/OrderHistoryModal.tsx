@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { formatTableName } from '@/utils/format';
 import { FoodReviewModal } from './FoodReviewModal';
+import { CancelOrderModal } from './CancelOrderModal';
 
 interface Table {
   _id: string;
@@ -41,6 +42,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
   const [selectedCashOrder, setSelectedCashOrder] = useState<any | null>(null);
   const [isCallingCashStaff, setIsCallingCashStaff] = useState(false);
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+  const [orderToCancel, setOrderToCancel] = useState<any | null>(null);
 
   // Keyboard accessibility: Escape key handling
   React.useEffect(() => {
@@ -58,15 +60,12 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOrderHistoryModalOpen, selectedCashOrder, setIsOrderHistoryModalOpen]);
 
-  const handleCancelOrder = async (order: any) => {
+  const handleCancelOrder = async (order: any, confirmed = false) => {
     if (!order?._id || cancellingOrderId) return;
-    const confirmMsg =
-      lang === 'en'
-        ? 'Are you sure you want to cancel this order?'
-        : lang === 'zh'
-        ? '您确定要取消此订单吗？'
-        : 'Bạn có chắc chắn muốn hủy đơn hàng này không?';
-    if (!window.confirm(confirmMsg)) return;
+    if (!confirmed) {
+      setOrderToCancel(order);
+      return;
+    }
 
     setCancellingOrderId(order._id);
     try {
@@ -94,6 +93,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
       if (selectedCashOrder?._id === order._id) {
         setSelectedCashOrder(null);
       }
+      setOrderToCancel(null);
     } catch (err: any) {
       toast.error(err.message || (lang === 'en' ? 'Error cancelling order' : 'Lỗi khi hủy đơn hàng.'));
     } finally {
@@ -630,6 +630,23 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
         order={reviewingOrder}
         tableId={tableId}
         formatPrice={formatPrice}
+        lang={lang}
+      />
+
+      {/* Cancel Order Confirmation Modal */}
+      <CancelOrderModal
+        isOpen={Boolean(orderToCancel)}
+        onClose={() => setOrderToCancel(null)}
+        onConfirm={() => {
+          if (orderToCancel) {
+            handleCancelOrder(orderToCancel, true);
+          }
+        }}
+        orderCode={orderToCancel?._id ? `#${orderToCancel._id.slice(-6).toUpperCase()}` : ''}
+        orderTotal={orderToCancel?.totalAmount}
+        itemCount={orderToCancel?.items?.length}
+        tableName={table ? formatTableName(table.tableName, lang) : undefined}
+        isCancelling={cancellingOrderId === orderToCancel?._id}
         lang={lang}
       />
     </AnimatePresence>

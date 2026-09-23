@@ -55,40 +55,40 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
   };
 
   return (
-    <div className="px-4 md:px-6 py-2 md:py-3.5 flex justify-between items-center transition-all">
-      <div>
-        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-[30px] font-extrabold text-slate-900 dark:text-white tracking-[-0.02em] leading-tight font-heading">
+    <div className="px-4 md:px-5 xl:px-6 py-2 md:py-3.5 flex justify-between items-center transition-all gap-2">
+      <div className="min-w-0 flex-1 mr-2 sm:mr-4">
+        <h2 className="text-xl sm:text-2xl lg:text-[22px] xl:text-[26px] 2xl:text-[28px] font-extrabold text-slate-900 dark:text-white tracking-[-0.02em] leading-tight font-heading whitespace-nowrap">
           {t.welcome ?? (lang === 'en' ? 'What would you like today?' : lang === 'zh' ? '今天想喝点什么？' : 'Hôm nay bạn muốn dùng gì?')}
         </h2>
-        <p className="text-xs sm:text-[13px] md:text-[13.5px] font-normal text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed font-sans max-w-xl">
+        <p className="text-xs sm:text-[13px] md:text-[13.5px] font-normal text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed font-sans truncate max-w-xl">
           {getSubtitle()}
         </p>
       </div>
 
       {/* Header Actions */}
-      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+      <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
         {/* Desktop Voice Order Button */}
         {onOpenVoiceOrder && (
           <button
             onClick={onOpenVoiceOrder}
-            className="hidden md:flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-sky-500 dark:hover:text-[#38BDF8] hover:border-sky-500/50 transition-all shadow-xs active:scale-95 cursor-pointer font-sans group"
+            className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:text-sky-500 dark:hover:text-[#38BDF8] hover:border-sky-500/50 hover:bg-sky-50 dark:hover:bg-sky-500/10 transition-all shadow-xs active:scale-95 cursor-pointer font-sans group"
             title={lang === 'en' ? 'Voice Order' : lang === 'zh' ? '语音点单' : 'Gọi món bằng giọng nói'}
+            aria-label={lang === 'en' ? 'Voice Order' : lang === 'zh' ? '语音点单' : 'Gọi món bằng giọng nói'}
           >
-            <span className="material-symbols-outlined text-base text-[#38BDF8] group-hover:scale-110 transition-transform">mic</span>
-            <span>{lang === 'en' ? 'Voice Order' : lang === 'zh' ? '语音点单' : 'Gọi món giọng nói'}</span>
+            <span className="material-symbols-outlined text-[19px] text-[#0284c7] dark:text-[#38BDF8] group-hover:scale-110 transition-transform">mic</span>
           </button>
         )}
 
         {/* Desktop Order History Button */}
         <button
           onClick={handleOpenOrderHistory}
-          className="hidden md:flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-sky-600 dark:hover:text-sky-400 hover:border-sky-500/30 transition-all shadow-xs active:scale-95 cursor-pointer font-sans"
+          className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-sky-600 dark:hover:text-sky-400 hover:border-sky-500/30 transition-all shadow-xs active:scale-95 cursor-pointer font-sans"
           title={lang === 'en' ? 'View order history & status' : lang === 'zh' ? '查看点单记录与状态' : 'Xem lịch sử & trạng thái đơn hàng'}
         >
           <span className="material-symbols-outlined text-base text-sky-500 dark:text-sky-400">
             {activeOrders.length > 0 ? 'notifications_active' : 'notifications'}
           </span>
-          <span>{t.orderHistory || (lang === 'en' ? 'Order Status' : lang === 'zh' ? '点单状态' : 'Trạng thái đơn')}</span>
+          <span className="whitespace-nowrap">{t.orderHistory || (lang === 'en' ? 'Order Status' : lang === 'zh' ? '点单状态' : 'Trạng thái đơn')}</span>
           {activeOrders.length > 0 ? (
             <span className="bg-[#0284C7] dark:bg-sky-400 text-white dark:text-slate-950 text-[10px] font-bold px-2 py-0.5 rounded-full">
               {activeOrders.length}

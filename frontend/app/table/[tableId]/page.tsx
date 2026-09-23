@@ -1935,49 +1935,66 @@ export default function TableMenuPage() {
     <>
       {/* Realtime Kitchen Preparation Notification Toast (Top-Center Floating Banner) */}
       <AnimatePresence>
-        {kitchenNotification?.show && (
-          <motion.div
-            initial={{ y: -50, opacity: 0, scale: 0.95 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: -50, opacity: 0, scale: 0.95 }}
-            transition={{ type: 'spring', damping: 22, stiffness: 320 }}
-            className="fixed top-5 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto sm:w-[420px] max-w-[calc(100vw-2rem)] z-[100] bg-[#090D16]/95 dark:bg-[#131929]/95 text-white border border-[#38BDF8]/60 dark:border-sky-500/60 rounded-2xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-xl font-sans"
-          >
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-sky-500/20 text-[#38BDF8] flex items-center justify-center flex-shrink-0 border border-[#38BDF8]/40 shadow-inner">
-                <span className="material-symbols-outlined text-xl animate-bounce">
-                  notifications_active
-                </span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-black text-white leading-snug">
-                  {kitchenNotification.title}
-                </h4>
-                <p className="text-xs text-slate-300 mt-1 leading-relaxed font-normal">
-                  {kitchenNotification.message}
-                </p>
-                <div className="flex items-center gap-2 mt-2.5">
-                  <button
-                    onClick={() => {
-                      setKitchenNotification(null);
-                      setIsOrderHistoryModalOpen(true);
-                    }}
-                    className="px-3.5 py-1.5 bg-[#38BDF8] hover:bg-sky-400 text-slate-950 text-[11px] font-extrabold rounded-xl transition-all active:scale-95 shadow-md cursor-pointer"
-                  >
-                    Xem tiến độ chi tiết
-                  </button>
+        {kitchenNotification?.show && (() => {
+          const isCancelled =
+            kitchenNotification.title?.toLowerCase().includes('không') ||
+            kitchenNotification.title?.toLowerCase().includes('hủy') ||
+            kitchenNotification.title?.toLowerCase().includes('từ chối');
+
+          return (
+            <motion.div
+              initial={{ y: -50, opacity: 0, scale: 0.95 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: -50, opacity: 0, scale: 0.95 }}
+              transition={{ type: 'spring', damping: 22, stiffness: 320 }}
+              className={`fixed top-5 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto sm:w-[420px] max-w-[calc(100vw-2rem)] z-[100] bg-white/95 dark:bg-[#090D16]/95 text-slate-900 dark:text-white border ${
+                isCancelled
+                  ? 'border-rose-200 dark:border-rose-500/40 shadow-[0_20px_50px_rgba(244,63,94,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)]'
+                  : 'border-slate-200/90 dark:border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.12)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)]'
+              } rounded-2xl p-4 backdrop-blur-xl font-sans`}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border shadow-inner ${
+                    isCancelled
+                      ? 'bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400 border-rose-500/25'
+                      : 'bg-sky-500/10 text-[#0284c7] dark:bg-sky-500/20 dark:text-[#38BDF8] border-sky-500/25 dark:border-[#38BDF8]/40'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-xl animate-bounce">
+                    {isCancelled ? 'warning' : 'notifications_active'}
+                  </span>
                 </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-black text-slate-900 dark:text-white leading-snug">
+                    {kitchenNotification.title}
+                  </h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed font-normal">
+                    {kitchenNotification.message}
+                  </p>
+                  <div className="flex items-center gap-2 mt-2.5">
+                    <button
+                      onClick={() => {
+                        setKitchenNotification(null);
+                        setIsOrderHistoryModalOpen(true);
+                      }}
+                      className="px-3.5 py-1.5 bg-[#0284c7] hover:bg-sky-600 dark:bg-[#38BDF8] dark:hover:bg-sky-400 text-white dark:text-slate-950 text-xs font-black rounded-xl transition-all active:scale-95 shadow-xs hover:shadow-md cursor-pointer"
+                    >
+                      Xem tiến độ chi tiết
+                    </button>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setKitchenNotification(null)}
+                  className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors p-1 cursor-pointer rounded-lg hover:bg-slate-100 dark:hover:bg-white/10"
+                  title="Đóng thông báo"
+                >
+                  <span className="material-symbols-outlined text-base">close</span>
+                </button>
               </div>
-              <button
-                onClick={() => setKitchenNotification(null)}
-                className="text-slate-400 hover:text-white transition-colors p-1 cursor-pointer rounded-lg hover:bg-white/10"
-                title="Đóng thông báo"
-              >
-                <span className="material-symbols-outlined text-base">close</span>
-              </button>
-            </div>
-          </motion.div>
-        )}
+            </motion.div>
+          );
+        })()}
       </AnimatePresence>
 
       {/* Mobile Top App Bar & Menu Dropdown Overlay */}
@@ -2228,7 +2245,7 @@ export default function TableMenuPage() {
               <div
                 className={
                   viewMode === 'grid'
-                    ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 xl:gap-5 items-stretch'
+                    ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-5 items-stretch'
                     : 'flex flex-col gap-3'
                 }
               >
@@ -2252,7 +2269,7 @@ export default function TableMenuPage() {
               <div
                 className={
                   viewMode === 'grid'
-                    ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 xl:gap-5 items-stretch pb-12'
+                    ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-5 items-stretch pb-12'
                     : 'flex flex-col gap-3 pb-12'
                 }
               >
@@ -2618,7 +2635,13 @@ export default function TableMenuPage() {
           isOpen={isBankPayModalOpen}
           onClose={() => setIsBankPayModalOpen(false)}
           orderId={payModalOrder._id}
-          tableName={table?.tableName ? (lang === 'vi' ? `Bàn ${table.tableName}` : `Table ${table.tableName}`) : 'Bàn'}
+          tableName={
+            table?.tableName
+              ? table.tableName.startsWith('Bàn') || table.tableName.startsWith('Table')
+                ? table.tableName
+                : (lang === 'vi' ? `Bàn ${table.tableName}` : `Table ${table.tableName}`)
+              : 'Bàn'
+          }
           totalAmount={payModalOrder.totalAmount}
           customerName={payModalOrder.customerName}
           orderStatus={payModalOrder.status}
@@ -2637,7 +2660,7 @@ export default function TableMenuPage() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-            className="fixed bottom-3 left-3 right-3 z-40 lg:hidden pointer-events-auto"
+            className="fixed bottom-3 left-3 md:left-[272px] right-3 z-40 lg:hidden pointer-events-auto"
           >
             <div className="w-full bg-white/95 dark:bg-[#0d1322]/95 text-slate-900 dark:text-white backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-2xl p-2.5 sm:p-3 shadow-[0_10px_35px_rgba(0,0,0,0.18)] flex items-center justify-between font-sans">
               <div

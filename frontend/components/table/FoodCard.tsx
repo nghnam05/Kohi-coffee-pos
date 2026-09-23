@@ -250,8 +250,8 @@ export const FoodCard: React.FC<FoodCardProps> = ({
 
       {/* Footer Actions */}
       <div className="p-3.5 pt-0 mt-auto">
-        <div className="border-t border-slate-100 dark:border-white/10 pt-2.5 flex items-center justify-between">
-          <span className="text-[16px] sm:text-[17px] font-extrabold text-slate-900 dark:text-white tracking-tight font-sans">
+        <div className="border-t border-slate-100 dark:border-white/10 pt-2.5 flex items-center justify-between gap-2">
+          <span className="text-[15px] sm:text-[16px] font-extrabold text-slate-900 dark:text-white tracking-tight font-sans whitespace-nowrap">
             {formatPrice(food.price, lang)}
           </span>
 
@@ -260,16 +260,16 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             whileTap={{ scale: 0.96 }}
             onClick={handleClick}
             aria-label={`${quantity > 0 ? (lang === 'en' ? 'Selected' : lang === 'zh' ? '已选择' : 'Đã chọn') : (lang === 'en' ? 'Select' : lang === 'zh' ? '选择' : 'Chọn')} ${food.name}, ${formatPrice(food.price, lang)}`}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold tracking-wide flex items-center gap-1 transition-all cursor-pointer font-sans ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold tracking-wide flex items-center gap-1.5 transition-all cursor-pointer font-sans shrink-0 whitespace-nowrap ${
               quantity > 0
-                ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30'
-                : 'bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 shadow-xs'
+                ? 'bg-sky-500/15 text-sky-600 dark:text-[#38BDF8] border border-sky-500/30'
+                : 'bg-slate-900 hover:bg-slate-800 dark:bg-[#38BDF8] dark:hover:bg-sky-400 text-white dark:text-slate-950 shadow-xs'
             }`}
           >
-            <span className="material-symbols-outlined text-[15px]" aria-hidden="true">
+            <span className="material-symbols-outlined text-[15px] shrink-0" aria-hidden="true">
               {quantity > 0 ? 'check' : 'add'}
             </span>
-            <span>
+            <span className="whitespace-nowrap">
               {quantity > 0
                 ? (lang === 'en' ? `Selected (${quantity})` : lang === 'zh' ? `已选择 (${quantity})` : `Đã chọn (${quantity})`)
                 : (lang === 'en' ? 'Select' : lang === 'zh' ? '选择' : 'Chọn')}
