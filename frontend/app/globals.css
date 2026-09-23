@@ -719,4 +719,32 @@ div[data-rht-toaster] {
     right: 24px !important;
     bottom: 24px !important;
   }
-}
+}
+
+/* ── Welcome Banner Continuous Marquee (Right to Left) ───────────────────── */
+@keyframes marqueeLeft {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-left {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: marqueeLeft 20s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-left:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-left {
+    animation: none;
+  }
+}
+

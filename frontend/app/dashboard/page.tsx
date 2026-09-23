@@ -4584,7 +4584,7 @@ export default function DashboardPage() {
                         setTakeawayCouponCode('');
                         setIsTakeawayModalOpen(true);
                       }}
-                      className="h-10 sm:h-11 px-5 bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 font-bold text-xs sm:text-sm rounded-2xl shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer w-full sm:w-auto"
+                      className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
                     >
                       <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
                       <span>Tạo đơn mang về</span>
@@ -5532,10 +5532,9 @@ export default function DashboardPage() {
                         setFoodForm({ name: '', price: '', category: categories[0]?.name || 'Cà phê', description: '', image: '', isAvailable: true });
                         setIsFoodModalOpen(true);
                       }}
-                      className={`px-4 sm:px-5 py-2.5 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] hover:text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-sky-500/20 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap shrink-0 ${user?.role === 'admin' ? '' : 'w-full sm:w-auto'
-                        }`}
+                      className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-lg">add_circle</span>
+                      <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
                       <span>Thêm món mới</span>
                     </button>
                   </div>
@@ -6231,11 +6230,7 @@ export default function DashboardPage() {
                                       <span className="inline-block mt-0.5 px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded text-[9.5px] font-extrabold">
                                         Đã thanh toán hết
                                       </span>
-                                    ) : (
-                                      <span className="inline-block mt-0.5 px-1.5 py-0.5 bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30 rounded text-[9.5px] font-extrabold">
-                                        Đang làm món ({tableOrders.filter((o) => o.status !== 'paid').length})
-                                      </span>
-                                    )}
+                                    ) : null}
                                   </div>
                                 )}
                               </div>

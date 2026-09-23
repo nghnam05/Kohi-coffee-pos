@@ -722,8 +722,8 @@ export default function OrderStatusPage() {
                               Quà tặng tri ân
                             </span>
                           </div>
-                          <p className="text-xs font-extrabold font-mono text-[var(--text-primary)] mt-0.5">
-                            MÃ: <span className="text-[#0284c7] dark:text-[#38BDF8]">KOHICARE10</span>
+                          <p className="text-xs font-extrabold text-[var(--text-primary)] mt-0.5">
+                            MÃ: <span className="font-mono text-[#0284c7] dark:text-[#38BDF8]">KOHICARE10</span>
                           </p>
                           <p className="text-[10px] text-[var(--text-secondary)] font-normal">Giảm 10% cho lần ghé tiếp theo (HSD: 30 ngày)</p>
                         </div>
@@ -850,7 +850,7 @@ export default function OrderStatusPage() {
                       </div>
 
                       {order.status !== 'cancelled' && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] border border-sky-500/25 rounded-2xl text-xs font-extrabold font-mono">
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] border border-sky-500/25 rounded-2xl text-xs font-extrabold">
                           <span className="w-2 h-2 rounded-full bg-sky-500 dark:bg-[#38BDF8] animate-pulse shrink-0" />
                           <span>
                             {order.status === 'completed'
@@ -869,8 +869,8 @@ export default function OrderStatusPage() {
                   <div className="sm:hidden space-y-3 pt-1">
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-[var(--text-secondary)] font-normal">Tiến trình đơn:</span>
-                      <span className="text-[#0284c7] dark:text-[#38BDF8] font-extrabold font-mono">
-                        Bước {Math.max(1, currentStepIndex + 1)}/{stepsList.length}: {(t.steps as any)[order.status]}
+                      <span className="text-[#0284c7] dark:text-[#38BDF8] font-extrabold">
+                        Bước <span className="font-mono">{Math.max(1, currentStepIndex + 1)}/{stepsList.length}</span>: {(t.steps as any)[order.status]}
                       </span>
                     </div>
 
@@ -996,7 +996,7 @@ export default function OrderStatusPage() {
                       </div>
 
                       {/* Items List with Split Checkboxes (Selectable Card Pattern) */}
-                      <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1 scrollbar-thin">
+                      <div className="space-y-2.5 max-h-none lg:max-h-[480px] lg:overflow-y-auto pr-1 scrollbar-thin">
                         {order.items.map((item, idx) => {
                           const itemCaller = item.orderedBy || (() => {
                             if (item.note && item.note.startsWith('[')) {
@@ -1094,7 +1094,7 @@ export default function OrderStatusPage() {
                         if (personMap.size > 1) {
                           return (
                             <div className="pt-3 mt-3 border-t border-dashed border-[var(--border-color)]">
-                              <p className="text-[11px] font-normal uppercase tracking-wider text-[var(--text-secondary)] mb-2 font-mono">
+                              <p className="text-[11px] font-normal uppercase tracking-wider text-[var(--text-secondary)] mb-2">
                                 {lang === 'en' ? 'Summary by member' : lang === 'zh' ? '同桌分账明细' : 'Tổng kết theo người gọi'}:
                               </p>
                               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -1238,9 +1238,9 @@ export default function OrderStatusPage() {
                                 }}
                               />
                             </div>
-                            <div className="flex justify-between items-center text-[10px] font-mono text-[var(--text-secondary)] pt-0.5">
-                              <span>Đã thu: {formatPrice(order.paidAmount || 0)}</span>
-                              <span>Còn lại: {formatPrice(remainingTableAmount)}</span>
+                            <div className="flex justify-between items-center text-[10px] text-[var(--text-secondary)] pt-0.5">
+                              <span>Đã thu: <span className="font-mono">{formatPrice(order.paidAmount || 0)}</span></span>
+                              <span>Còn lại: <span className="font-mono">{formatPrice(remainingTableAmount)}</span></span>
                             </div>
                           </div>
                         )}
@@ -1369,9 +1369,8 @@ export default function OrderStatusPage() {
 
                   <button
                     onClick={() => router.push(`/table/${tableId}`)}
-                    className="w-full sm:w-auto px-6 py-3 bg-sky-500/10 hover:bg-sky-500/20 text-[#0284c7] dark:text-[#38BDF8] border border-sky-500/30 font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-xs active:scale-95 transition-all cursor-pointer text-center shrink-0 flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto px-6 py-3 bg-sky-500/10 hover:bg-sky-500/20 text-[#0284c7] dark:text-[#38BDF8] border border-sky-500/30 font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-xs active:scale-95 transition-all cursor-pointer text-center shrink-0 flex items-center justify-center"
                   >
-                    <span className="material-symbols-outlined text-base">restaurant_menu</span>
                     <span>{t.backToMenu}</span>
                   </button>
                 </div>
@@ -1384,7 +1383,7 @@ export default function OrderStatusPage() {
 
       {/* Sticky Mobile Floating Action Bar (Optimized for Mobile Ergonomics) */}
       {order && order.status !== 'paid' && (
-        <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-[var(--bg-card)]/95 backdrop-blur-md border-t border-[var(--border-color)] shadow-2xl flex items-center justify-between gap-3">
+        <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 px-3 py-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-[var(--bg-card)]/95 backdrop-blur-md border-t border-[var(--border-color)] shadow-2xl flex items-center justify-between gap-2">
           {/* Left: Summary Amount */}
           <div className="flex flex-col justify-center min-w-0 pr-1 shrink-0">
             <span className="text-[10px] uppercase font-normal text-[var(--text-secondary)] tracking-wider truncate">
@@ -1394,23 +1393,23 @@ export default function OrderStatusPage() {
                 ? 'Phần của bạn'
                 : `${selectedItems.reduce((s, i) => s + i.quantity, 0)} món chọn`}
             </span>
-            <span className="text-base font-extrabold font-mono text-[#0284c7] dark:text-[#38BDF8] leading-tight truncate">
+            <span className="text-sm xs:text-base font-extrabold font-mono text-[#0284c7] dark:text-[#38BDF8] leading-tight truncate">
               {formatPrice(paymentAmountToPay)}
             </span>
           </div>
 
           {/* Right: Payment Actions */}
-          <div className="flex items-center gap-2 flex-1 justify-end">
+          <div className="flex items-center gap-1.5 flex-1 justify-end min-w-0">
             {order.status === 'pending' ? (
-              <div className="flex items-center gap-2 flex-1 justify-end">
-                <div className="h-10 px-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-extrabold flex items-center justify-center text-center flex-1 max-w-[170px] truncate">
+              <div className="flex items-center gap-1.5 flex-1 justify-end">
+                <div className="h-10 px-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-extrabold flex items-center justify-center text-center flex-1 max-w-[140px] truncate">
                   <span>Chờ duyệt...</span>
                 </div>
                 <button
                   id="btn-cancel-pending-order-mobile"
                   onClick={handleCancelOrder}
                   disabled={isCancellingOrder}
-                  className="h-10 px-3 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 font-extrabold text-xs rounded-2xl border border-rose-500/20 active:scale-95 transition-all cursor-pointer flex items-center gap-1 shrink-0 disabled:opacity-50"
+                  className="h-10 px-2.5 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 font-extrabold text-xs rounded-2xl border border-rose-500/20 active:scale-95 transition-all cursor-pointer flex items-center gap-1 shrink-0 disabled:opacity-50"
                 >
                   <span className="material-symbols-outlined text-base">close</span>
                   <span>{isCancellingOrder ? 'Đang hủy...' : 'Hủy đơn'}</span>
@@ -1422,7 +1421,7 @@ export default function OrderStatusPage() {
                 <button
                   onClick={handleSplitCashPayment}
                   disabled={callStaffCooldown > 0 || isCallingStaff || isPayingSplitCash || paymentAmountToPay <= 0}
-                  className="h-10 px-3.5 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 disabled:opacity-50 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-xs active:scale-95 transition-all cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap"
+                  className="h-10 px-2.5 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 disabled:opacity-50 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-xs active:scale-95 transition-all cursor-pointer flex items-center gap-1 shrink-0 whitespace-nowrap"
                 >
                   <span className="material-symbols-outlined text-base">payments</span>
                   <span>{isPayingSplitCash ? 'Đang gửi...' : 'Tiền mặt'}</span>
@@ -1438,7 +1437,7 @@ export default function OrderStatusPage() {
                     setIsBankModalOpen(true);
                   }}
                   disabled={paymentAmountToPay <= 0}
-                  className="h-10 px-3.5 bg-[#0284c7] hover:bg-[#0369a1] disabled:opacity-50 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-md shadow-sky-500/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5 flex-1 max-w-[170px] truncate whitespace-nowrap"
+                  className="h-10 px-3 bg-[#0284c7] hover:bg-[#0369a1] disabled:opacity-50 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-md shadow-sky-500/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1 shrink-0 whitespace-nowrap"
                 >
                   <span className="material-symbols-outlined text-base">qr_code_2</span>
                   <span>Chuyển khoản</span>
