@@ -418,28 +418,28 @@ export const InventoryManagement: React.FC<InventoryManagementProps> = ({
               >
                 <div>
                   {/* Top Category & Status Header */}
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400">
+                  <div className="flex items-start justify-between gap-2.5">
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400 block truncate">
                         {item.category}
                       </span>
-                      <h3 className="text-base font-black text-slate-900 dark:text-white mt-0.5">
+                      <h3 className="text-base font-black text-slate-900 dark:text-white mt-0.5 line-clamp-2 min-h-[46px] flex items-start leading-snug">
                         {item.name}
                       </h3>
                     </div>
 
                     {/* Status Badge */}
-                    <div>
+                    <div className="shrink-0">
                       {isOut ? (
-                        <span className="px-2.5 py-1 bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-[10px] font-black tracking-wider rounded-lg uppercase">
+                        <span className="px-2.5 py-1 bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-[10px] font-black tracking-wider rounded-lg uppercase whitespace-nowrap block">
                           HẾT HÀNG
                         </span>
                       ) : isLow ? (
-                        <span className="px-2.5 py-1 bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[10px] font-black tracking-wider rounded-lg uppercase">
+                        <span className="px-2.5 py-1 bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[10px] font-black tracking-wider rounded-lg uppercase whitespace-nowrap block">
                           SẮP HẾT
                         </span>
                       ) : (
-                        <span className="px-2.5 py-1 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-black tracking-wider rounded-lg uppercase">
+                        <span className="px-2.5 py-1 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-black tracking-wider rounded-lg uppercase whitespace-nowrap block">
                           ĐỦ HÀNG
                         </span>
                       )}
