@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -110,9 +111,7 @@ export const TableClosingAlertModal: React.FC<TableClosingAlertModalProps> = ({
                   : 'bg-amber-500/15 text-amber-500 border-amber-500/30'
               }`}
             >
-              <span className="material-symbols-outlined text-2xl animate-pulse">
-                {isClosed ? 'storefront' : 'alarm'}
-              </span>
+              <AppIcon name={isClosed ? 'storefront' : 'alarm'} className="text-2xl animate-pulse" />
             </div>
 
             <div className="min-w-0 flex-1">

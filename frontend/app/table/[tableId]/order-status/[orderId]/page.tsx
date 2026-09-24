@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -702,7 +703,7 @@ export default function OrderStatusPage() {
                   {hasReviewed ? (
                     <div className="py-6 px-4 bg-emerald-500/10 border border-emerald-500/25 rounded-2xl text-center space-y-3.5">
                       <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center mx-auto border border-emerald-500/30">
-                        <span className="material-symbols-outlined text-2xl font-extrabold">verified</span>
+                        <AppIcon name="verified" className="text-2xl font-extrabold" />
                       </div>
                       <div>
                         <h4 className="text-sm font-extrabold text-[var(--text-primary)]">
@@ -717,7 +718,7 @@ export default function OrderStatusPage() {
                       <div className="p-3.5 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-500/30 rounded-2xl text-left flex items-center justify-between gap-2.5">
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className="material-symbols-outlined text-amber-500 text-sm">redeem</span>
+                            <AppIcon name="redeem" className="text-amber-500 text-sm" />
                             <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400">
                               Quà tặng tri ân
                             </span>
@@ -919,7 +920,7 @@ export default function OrderStatusPage() {
                                 }`}
                               >
                                 {isCompleted ? (
-                                  <span className="material-symbols-outlined text-base">check</span>
+                                  <AppIcon name="check" className="text-base" />
                                 ) : (
                                   idx + 1
                                 )}
@@ -947,7 +948,7 @@ export default function OrderStatusPage() {
                   {/* Step Description Banner */}
                   <div className="flex items-center gap-3 p-3.5 sm:p-4 bg-sky-500/5 dark:bg-sky-500/10 border border-sky-500/20 rounded-2xl">
                     <div className="w-8 h-8 rounded-xl bg-sky-500/15 text-[#0284c7] dark:text-[#38BDF8] flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-lg">info</span>
+                      <AppIcon name="info" className="text-lg" />
                     </div>
                     <p className="text-xs sm:text-sm font-normal text-[var(--text-secondary)] leading-relaxed">
                       {(t.stepDesc as any)[order.status]}
@@ -1279,7 +1280,7 @@ export default function OrderStatusPage() {
                               disabled={isCancellingOrder}
                               className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 font-extrabold text-xs uppercase tracking-wider rounded-xl border border-rose-500/20 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
                             >
-                              <span className="material-symbols-outlined text-base">close</span>
+                              <AppIcon name="close" className="text-base" />
                               <span>{isCancellingOrder ? 'Đang hủy...' : 'Hủy đơn hàng này'}</span>
                             </button>
                           </div>
@@ -1301,7 +1302,7 @@ export default function OrderStatusPage() {
                               disabled={paymentAmountToPay <= 0}
                               className="w-full py-3.5 bg-[#0284c7] hover:bg-[#0369a1] disabled:opacity-50 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-sky-500/25 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 text-center"
                             >
-                              <span className="material-symbols-outlined text-lg">qr_code_2</span>
+                              <AppIcon name="qr_code_2" className="text-lg" />
                               <span>Chuyển khoản Ngân hàng (VietQR)</span>
                             </button>
 
@@ -1311,7 +1312,7 @@ export default function OrderStatusPage() {
                               disabled={callStaffCooldown > 0 || isCallingStaff || isPayingSplitCash || paymentAmountToPay <= 0}
                               className="w-full py-3 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 disabled:opacity-50 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-xs active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 text-center"
                             >
-                              <span className="material-symbols-outlined text-lg">payments</span>
+                              <AppIcon name="payments" className="text-lg" />
                               <span>
                                 {isPayingSplitCash
                                   ? 'Đang gửi...'
@@ -1411,7 +1412,7 @@ export default function OrderStatusPage() {
                   disabled={isCancellingOrder}
                   className="h-10 px-2.5 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 font-extrabold text-xs rounded-2xl border border-rose-500/20 active:scale-95 transition-all cursor-pointer flex items-center gap-1 shrink-0 disabled:opacity-50"
                 >
-                  <span className="material-symbols-outlined text-base">close</span>
+                  <AppIcon name="close" className="text-base" />
                   <span>{isCancellingOrder ? 'Đang hủy...' : 'Hủy đơn'}</span>
                 </button>
               </div>
@@ -1423,7 +1424,7 @@ export default function OrderStatusPage() {
                   disabled={callStaffCooldown > 0 || isCallingStaff || isPayingSplitCash || paymentAmountToPay <= 0}
                   className="h-10 px-2.5 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 disabled:opacity-50 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-xs active:scale-95 transition-all cursor-pointer flex items-center gap-1 shrink-0 whitespace-nowrap"
                 >
-                  <span className="material-symbols-outlined text-base">payments</span>
+                  <AppIcon name="payments" className="text-base" />
                   <span>{isPayingSplitCash ? 'Đang gửi...' : 'Tiền mặt'}</span>
                 </button>
 
@@ -1439,7 +1440,7 @@ export default function OrderStatusPage() {
                   disabled={paymentAmountToPay <= 0}
                   className="h-10 px-3 bg-[#0284c7] hover:bg-[#0369a1] disabled:opacity-50 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-md shadow-sky-500/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1 shrink-0 whitespace-nowrap"
                 >
-                  <span className="material-symbols-outlined text-base">qr_code_2</span>
+                  <AppIcon name="qr_code_2" className="text-base" />
                   <span>Chuyển khoản</span>
                 </button>
               </>

@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -370,7 +371,7 @@ export default function PromotionsPage() {
                       onClick={() => handleCopyCode(coupon.code)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#38BDF8]/15 hover:bg-[#38BDF8] text-[#38BDF8] hover:text-slate-950 text-xs font-black transition-colors active:scale-95 cursor-pointer border border-[#38BDF8]/30"
                     >
-                      <span className="material-symbols-outlined text-sm">content_copy</span>
+                      <AppIcon name="content_copy" className="text-sm" />
                       <span>{t.copyCode}</span>
                     </button>
                   </div>

@@ -13,6 +13,8 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node --max-old-space-size=384 --optimize-for-size dist/main",
     "seed": "node seeds/seed.js",
+    "seed:analytics": "node seeds/seed-analytics-data.js",
+    "seed:business": "node seeds/seed-analytics-data.js",
     "seed:today": "node seeds/seed-today.js",
     "seed:day14": "node seeds/seed-day-14.js",
     "clean:data": "node clean_data.cjs",

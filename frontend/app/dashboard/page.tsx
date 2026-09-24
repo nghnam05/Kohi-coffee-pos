@@ -1,4 +1,5 @@
 'use client';
+import { DashboardIcon } from '@/components/common/DashboardIcon';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -3573,7 +3574,7 @@ export default function DashboardPage() {
             aria-label="Thông báo realtime"
             title="Xem thông báo realtime"
           >
-            <span className="material-symbols-outlined text-lg">notifications</span>
+            <DashboardIcon name="notifications" className="text-lg" />
             {(staffCalls.length > 0 || (user?.role === 'barista' && brewingQueue.length > 0) || (user?.role !== 'barista' && user?.role !== 'admin' && drinkReadyList.length > 0)) && (
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#3B82F6] dark:bg-[#38BDF8] animate-pulse" />
             )}
@@ -3585,7 +3586,7 @@ export default function DashboardPage() {
             className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-900 border border-transparent dark:border-white/10 text-gray-700 dark:text-slate-200 hover:text-[#0284c7] dark:hover:text-[#38BDF8] active:scale-95 transition-all cursor-pointer shrink-0"
             title="Menu & Tùy chọn"
           >
-            <span className="material-symbols-outlined text-xl">more_vert</span>
+            <DashboardIcon name="more_vert" className="text-xl" />
           </button>
         </div>
       </div>
@@ -3614,11 +3615,9 @@ export default function DashboardPage() {
               }`}
           >
             <div className="relative flex items-center justify-center">
-              <span className="material-symbols-outlined text-xl">
-                {user?.role === 'barista' ? 'coffee_maker' : 'receipt_long'}
-              </span>
+              <DashboardIcon name={user?.role === 'barista' ? 'coffee_maker' : 'receipt_long'} className="text-xl" />
               {isStaffLocked ? (
-                <span className="material-symbols-outlined text-[10px] text-amber-500 absolute -top-1 -right-2">lock</span>
+                <DashboardIcon name="lock" className="text-[10px] text-amber-500 absolute -top-1 -right-2" />
               ) : user?.role === 'barista' ? (
                 brewingQueue.length > 0 && (
                   <span className="absolute -top-1 -right-2.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[9px] font-black bg-amber-500 text-white rounded-full shadow-xs leading-none animate-pulse">
@@ -3655,7 +3654,7 @@ export default function DashboardPage() {
                 }`}
             >
               <div className="relative flex items-center justify-center">
-                <span className="material-symbols-outlined text-xl">inventory_2</span>
+                <DashboardIcon name="inventory_2" className="text-xl" />
               </div>
               <span className="text-[9.5px] tracking-tight">Kho hàng</span>
             </button>
@@ -3677,7 +3676,7 @@ export default function DashboardPage() {
                 }`}
             >
               <div className="relative flex items-center justify-center">
-                <span className="material-symbols-outlined text-xl">table_restaurant</span>
+                <DashboardIcon name="table_restaurant" className="text-xl" />
               </div>
               <span className="text-[9.5px] tracking-tight">Bàn</span>
             </button>
@@ -3703,7 +3702,7 @@ export default function DashboardPage() {
                 }`}
             >
               <div className="relative flex items-center justify-center">
-                <span className="material-symbols-outlined text-xl">event_available</span>
+                <DashboardIcon name="event_available" className="text-xl" />
                 {reservations.filter((r) => r.status === 'pending').length > 0 && (
                   <span className="absolute -top-1 -right-2.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[9px] font-black bg-amber-500 text-white rounded-full shadow-xs leading-none animate-pulse">
                     {reservations.filter((r) => r.status === 'pending').length}
@@ -3728,7 +3727,7 @@ export default function DashboardPage() {
               }`}
           >
             <div className="relative flex items-center justify-center">
-              <span className={`material-symbols-outlined text-xl ${isStaffLocked ? 'text-amber-500 animate-bounce' : ''}`}>schedule</span>
+              <DashboardIcon name="schedule" className={`text-xl ${isStaffLocked ? 'text-amber-500 animate-bounce' : ''}`} />
               {isStaffLocked && (
                 <>
                   <span className="absolute -top-0.5 -right-1.5 w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping" />
@@ -3755,7 +3754,7 @@ export default function DashboardPage() {
                 }`}
             >
               <div className="relative flex items-center justify-center">
-                <span className="material-symbols-outlined text-xl">trending_up</span>
+                <DashboardIcon name="trending_up" className="text-xl" />
               </div>
               <span className="text-[9.5px] tracking-tight">Doanh thu</span>
             </button>
@@ -3775,7 +3774,7 @@ export default function DashboardPage() {
               }`}
           >
             <div className="relative flex items-center justify-center">
-              <span className="material-symbols-outlined text-xl">apps</span>
+              <DashboardIcon name="apps" className="text-xl" />
               {((user?.role === 'admin' && shiftSwaps.filter((s) => s.status === 'pending').length > 0) ||
                 (user?.role !== 'barista' && reservations.filter((r) => r.status === 'pending').length > 0)) && (
                   <span className="absolute -top-1 -right-1.5 w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping" />
@@ -3816,7 +3815,7 @@ export default function DashboardPage() {
               onClick={() => setIsMobileSidebarOpen(false)}
               className="lg:hidden text-slate-400 hover:text-slate-900 dark:hover:text-white p-1 rounded-lg"
             >
-              <span className="material-symbols-outlined">close</span>
+              <DashboardIcon name="close" />
             </button>
           </div>
 
@@ -3845,10 +3844,10 @@ export default function DashboardPage() {
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'orders'
+                    <DashboardIcon name="receipt_long" className={`mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'orders'
                       ? 'text-[#0284c7] dark:text-[#38BDF8]'
                       : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                      }`}>receipt_long</span>
+                      }`} />
                     <span className="flex-1 truncate text-left">{t.tabOrders}</span>
                     <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-black flex-shrink-0 ${activeTab === 'orders'
                       ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
@@ -3869,10 +3868,10 @@ export default function DashboardPage() {
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'tables'
+                    <DashboardIcon name="table_restaurant" className={`mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'tables'
                       ? 'text-[#0284c7] dark:text-[#38BDF8]'
                       : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                      }`}>table_restaurant</span>
+                      }`} />
                     <span className="flex-1 truncate text-left">{t.tabTables}</span>
                     <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-black flex-shrink-0 ${activeTab === 'tables'
                       ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
@@ -3894,10 +3893,10 @@ export default function DashboardPage() {
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === ('reservations' as any)
+                    <DashboardIcon name="event_available" className={`mr-2.5 flex-shrink-0 text-[19px] ${activeTab === ('reservations' as any)
                       ? 'text-[#0284c7] dark:text-[#38BDF8]'
                       : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                      }`}>event_available</span>
+                      }`} />
                     <span className="flex-1 truncate text-left">Quản lý bàn đã đặt</span>
                     <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-black flex-shrink-0 ${activeTab === ('reservations' as any)
                       ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
@@ -3925,10 +3924,10 @@ export default function DashboardPage() {
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'foods'
+                    <DashboardIcon name="menu_book" className={`mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'foods'
                       ? 'text-[#0284c7] dark:text-[#38BDF8]'
                       : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                      }`}>menu_book</span>
+                      }`} />
                     <span className="flex-1 truncate text-left">{t.tabFoods}</span>
                     <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-black flex-shrink-0 ${activeTab === 'foods'
                       ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
@@ -3949,10 +3948,10 @@ export default function DashboardPage() {
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'inventory'
+                    <DashboardIcon name="inventory_2" className={`mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'inventory'
                       ? 'text-[#0284c7] dark:text-[#38BDF8]'
                       : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                      }`}>inventory_2</span>
+                      }`} />
                     <span className="flex-1 truncate text-left">Quản lý kho nguyên liệu</span>
                   </button>
 
@@ -3967,10 +3966,10 @@ export default function DashboardPage() {
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'users'
+                    <DashboardIcon name="group" className={`mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'users'
                       ? 'text-[#0284c7] dark:text-[#38BDF8]'
                       : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                      }`}>group</span>
+                      }`} />
                     <span className="flex-1 truncate text-left">{t.tabUsers}</span>
                   </button>
 
@@ -3985,10 +3984,10 @@ export default function DashboardPage() {
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'attendance'
+                    <DashboardIcon name="schedule" className={`mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'attendance'
                       ? 'text-[#0284c7] dark:text-[#38BDF8]'
                       : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                      }`}>schedule</span>
+                      }`} />
                     <span className="flex-1 truncate text-left">Chấm công & Bảng lương</span>
                     {shiftSwaps.filter((s) => s.status === 'pending').length > 0 && (
                       <span className="ml-auto px-1.5 py-0.5 text-[9.5px] font-black bg-amber-500 text-white rounded-full animate-pulse shadow-xs shrink-0">
@@ -4019,10 +4018,10 @@ export default function DashboardPage() {
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'analytics'
+                    <DashboardIcon name="bar_chart" className={`mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'analytics'
                       ? 'text-[#0284c7] dark:text-[#38BDF8]'
                       : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                      }`}>bar_chart</span>
+                      }`} />
                     <span className="flex-1 truncate text-left">Thống kê doanh thu</span>
                   </button>
 
@@ -4038,10 +4037,10 @@ export default function DashboardPage() {
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#131929] border border-transparent font-bold'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === ('coupons' as any)
+                    <DashboardIcon name="local_offer" className={`mr-2.5 flex-shrink-0 text-[19px] ${activeTab === ('coupons' as any)
                       ? 'text-[#0284c7] dark:text-[#38BDF8]'
                       : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                      }`}>local_offer</span>
+                      }`} />
                     <span className="flex-1 truncate text-left">Mã giảm giá</span>
                     <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-black flex-shrink-0 ${activeTab === ('coupons' as any)
                       ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
@@ -4069,15 +4068,13 @@ export default function DashboardPage() {
                       : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-normal'
                     }`}
                 >
-                  <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'orders'
+                  <DashboardIcon name={user?.role === 'barista' ? 'coffee_maker' : 'receipt_long'} className={`mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'orders'
                     ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                     : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                    }`}>
-                    {user?.role === 'barista' ? 'coffee_maker' : 'receipt_long'}
-                  </span>
+                    }`} />
                   <span className="flex-1 truncate text-left">{user?.role === 'barista' ? 'Quầy pha chế (KDS)' : t.tabOrders}</span>
                   {isStaffLocked ? (
-                    <span className="material-symbols-outlined text-sm text-amber-500 ml-auto">lock</span>
+                    <DashboardIcon name="lock" className="text-sm text-amber-500 ml-auto" />
                   ) : (
                     <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-extrabold font-mono flex-shrink-0 ${activeTab === 'orders'
                       ? 'bg-[#3B82F6] text-white'
@@ -4105,13 +4102,13 @@ export default function DashboardPage() {
                           : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-normal'
                         }`}
                     >
-                      <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'foods'
+                      <DashboardIcon name="menu_book" className={`mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'foods'
                         ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                         : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                        }`}>menu_book</span>
+                        }`} />
                       <span className="flex-1 truncate text-left">{t.tabFoods}</span>
                       {isStaffLocked ? (
-                        <span className="material-symbols-outlined text-sm text-amber-500 ml-auto">lock</span>
+                        <DashboardIcon name="lock" className="text-sm text-amber-500 ml-auto" />
                       ) : (
                         <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-extrabold font-mono flex-shrink-0 ${activeTab === 'foods'
                           ? 'bg-[#3B82F6] text-white'
@@ -4136,13 +4133,13 @@ export default function DashboardPage() {
                           : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-normal'
                         }`}
                     >
-                      <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'tables'
+                      <DashboardIcon name="table_restaurant" className={`mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'tables'
                         ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                         : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                        }`}>table_restaurant</span>
+                        }`} />
                       <span className="flex-1 truncate text-left">{t.tabTables}</span>
                       {isStaffLocked ? (
-                        <span className="material-symbols-outlined text-sm text-amber-500 ml-auto">lock</span>
+                        <DashboardIcon name="lock" className="text-sm text-amber-500 ml-auto" />
                       ) : (
                         <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-extrabold font-mono flex-shrink-0 ${activeTab === 'tables'
                           ? 'bg-[#3B82F6] text-white'
@@ -4168,13 +4165,13 @@ export default function DashboardPage() {
                           : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-normal'
                         }`}
                     >
-                      <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === ('reservations' as any)
+                      <DashboardIcon name="event_available" className={`mr-2.5 flex-shrink-0 text-[19px] ${activeTab === ('reservations' as any)
                         ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                         : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                        }`}>event_available</span>
+                        }`} />
                       <span className="flex-1 truncate text-left">Quản lý bàn đã đặt</span>
                       {isStaffLocked ? (
-                        <span className="material-symbols-outlined text-sm text-amber-500 ml-auto">lock</span>
+                        <DashboardIcon name="lock" className="text-sm text-amber-500 ml-auto" />
                       ) : (
                         <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-extrabold font-mono flex-shrink-0 ${activeTab === ('reservations' as any)
                           ? 'bg-[#3B82F6] text-white'
@@ -4198,10 +4195,10 @@ export default function DashboardPage() {
                     : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-normal'
                     }`}
                 >
-                  <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'attendance'
+                  <DashboardIcon name="schedule" className={`mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'attendance'
                     ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                     : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                    }`}>schedule</span>
+                    }`} />
                   <span className="flex-1 truncate text-left">Chấm công ca làm</span>
                   {isStaffLocked && (
                     <span className="ml-auto px-1.5 py-0.5 text-[9.5px] font-black bg-amber-500 text-white rounded-full animate-pulse shadow-xs shrink-0">
@@ -4226,10 +4223,10 @@ export default function DashboardPage() {
                         : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white font-normal'
                       }`}
                   >
-                    <span className={`material-symbols-outlined mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'inventory'
+                    <DashboardIcon name="inventory_2" className={`mr-2.5 flex-shrink-0 text-[19px] ${activeTab === 'inventory'
                       ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                       : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
-                      }`}>inventory_2</span>
+                      }`} />
                     <span className="flex-1 truncate text-left">Quản lý kho nguyên liệu</span>
                   </button>
                 )}
@@ -4271,7 +4268,7 @@ export default function DashboardPage() {
               className="text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors p-1.5 rounded-lg flex-shrink-0 ml-1 cursor-pointer"
               title="Đăng xuất"
             >
-              <span className="material-symbols-outlined text-lg">logout</span>
+              <DashboardIcon name="logout" className="text-lg" />
             </button>
           </div>
         </div>
@@ -4316,7 +4313,7 @@ export default function DashboardPage() {
               className="flex items-center gap-1.5 h-10 px-3.5 rounded-xl bg-slate-100 dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-extrabold text-xs cursor-pointer active:scale-95 transition-all shrink-0 shadow-xs"
               title="Làm mới dữ liệu từ Database"
             >
-              <span className="material-symbols-outlined text-lg text-[#0059b9] dark:text-[#38BDF8]">refresh</span>
+              <DashboardIcon name="refresh" className="text-lg text-[#0059b9] dark:text-[#38BDF8]" />
               <span className="hidden sm:inline">Làm mới</span>
             </button>
 
@@ -4328,7 +4325,7 @@ export default function DashboardPage() {
               title="Xem thông báo realtime"
             >
               <div className="relative flex items-center justify-center">
-                <span className="material-symbols-outlined text-lg text-[#0059b9] dark:text-[#38BDF8]">notifications</span>
+                <DashboardIcon name="notifications" className="text-lg text-[#0059b9] dark:text-[#38BDF8]" />
                 {(staffCalls.length > 0 || (user?.role === 'barista' && brewingQueue.length > 0) || (user?.role !== 'barista' && user?.role !== 'admin' && drinkReadyList.length > 0)) && (
                   <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#38BDF8] border-2 border-white dark:border-[#131929] animate-pulse" />
                 )}
@@ -4349,7 +4346,7 @@ export default function DashboardPage() {
                   }`}
                 title="Số món đang chờ pha chế"
               >
-                <span className="material-symbols-outlined text-base">coffee_maker</span>
+                <DashboardIcon name="coffee_maker" className="text-base" />
                 <span>{brewingQueue.length} món chờ pha</span>
               </button>
             )}
@@ -4365,7 +4362,7 @@ export default function DashboardPage() {
                   }`}
                 title="Đồ uống sẵn sàng trả bàn"
               >
-                <span className="material-symbols-outlined text-base">local_cafe</span>
+                <DashboardIcon name="local_cafe" className="text-base" />
                 <span>{drinkReadyList.length} món xong</span>
               </button>
             )}
@@ -4416,7 +4413,7 @@ export default function DashboardPage() {
                 className="h-10 px-3 flex items-center gap-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-black cursor-pointer active:scale-95 transition-all shrink-0 animate-pulse"
                 title="Yêu cầu đổi ca chờ Admin duyệt"
               >
-                <span className="material-symbols-outlined text-base">published_with_changes</span>
+                <DashboardIcon name="published_with_changes" className="text-base" />
                 <span>{shiftSwaps.filter((s) => s.status === 'pending').length} đổi ca</span>
               </button>
             )}
@@ -4442,7 +4439,7 @@ export default function DashboardPage() {
             {!myTodayAttendance ? (
               <>
                 <div className="w-20 h-20 rounded-3xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center mb-5 text-amber-500 shadow-inner">
-                  <span className="material-symbols-outlined text-4xl animate-bounce">lock_clock</span>
+                  <DashboardIcon name="lock_clock" className="text-4xl animate-bounce" />
                 </div>
                 <span className="px-3.5 py-1 rounded-full text-xs font-black bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 mb-3 uppercase tracking-wider">
                   Yêu cầu điểm danh ca làm
@@ -4460,13 +4457,13 @@ export default function DashboardPage() {
                       disabled={isCheckingIn}
                       className="w-full h-12 px-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-lg shadow-emerald-500/25 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      <span className="material-symbols-outlined">login</span>
+                      <DashboardIcon name="login" />
                       <span>{isCheckingIn ? 'Đang xử lý...' : 'BẮT ĐẦU CA NGAY (CHECK-IN)'}</span>
                     </button>
                   </div>
                 ) : (
                   <div className="w-full max-w-md p-4 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-rose-600 dark:text-rose-400 text-xs font-bold flex flex-col items-center gap-2 mb-2">
-                    <span className="material-symbols-outlined text-2xl text-rose-500">lock_clock</span>
+                    <DashboardIcon name="lock_clock" className="text-2xl text-rose-500" />
                     <p className="text-center leading-relaxed">
                       Hiện tại ngoài khung giờ <strong>{getShiftTimeLabel()}</strong>. Hệ thống đã khóa tính năng điểm danh. Bạn chỉ có thể điểm danh trong thời gian đăng ký ca.
                     </p>
@@ -4482,7 +4479,7 @@ export default function DashboardPage() {
             ) : (
               <>
                 <div className="w-20 h-20 rounded-3xl bg-slate-500/15 border border-slate-500/30 flex items-center justify-center mb-5 text-slate-400 shadow-inner">
-                  <span className="material-symbols-outlined text-4xl">verified_user</span>
+                  <DashboardIcon name="verified_user" className="text-4xl" />
                 </div>
                 <span className="px-3.5 py-1 rounded-full text-xs font-black bg-slate-500/15 text-slate-400 border border-slate-500/30 mb-3 uppercase tracking-wider">
                   Ca làm việc đã kết thúc
@@ -4586,7 +4583,7 @@ export default function DashboardPage() {
                       }}
                       className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
+                      <DashboardIcon name="add" className="text-lg sm:text-xl" />
                       <span>Tạo đơn mang về</span>
                     </button>
                   )}
@@ -4727,7 +4724,7 @@ export default function DashboardPage() {
                               title="Bỏ lọc ngày"
                               className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer text-xs"
                             >
-                              <span className="material-symbols-outlined text-base">close</span>
+                              <DashboardIcon name="close" className="text-base" />
                             </button>
                           )}
                         </div>
@@ -4738,7 +4735,7 @@ export default function DashboardPage() {
                     {paymentDateFilter && (
                       <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-xs text-[#38BDF8] font-bold">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="material-symbols-outlined text-base">calendar_month</span>
+                          <DashboardIcon name="calendar_month" className="text-base" />
                           <span>
                             Đang xem ngày: <strong className="font-mono text-white text-xs">{paymentDateFilter.split('-').reverse().join('/')}</strong>
                           </span>
@@ -4795,7 +4792,7 @@ export default function DashboardPage() {
                               onClick={handleDeleteBulkPayments}
                               className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-black text-xs rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
                             >
-                              <span className="material-symbols-outlined text-base">delete</span>
+                              <DashboardIcon name="delete" className="text-base" />
                               <span>Xóa {selectedPaymentIds.length} hóa đơn đã chọn</span>
                             </button>
                           </div>
@@ -4810,7 +4807,7 @@ export default function DashboardPage() {
                   paymentHistory.length === 0 ? (
                     <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-3xl p-10 sm:p-14 text-center flex flex-col items-center justify-center gap-4 max-w-xl mx-auto my-6 shadow-xs">
                       <div className="w-16 h-16 rounded-3xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 flex items-center justify-center text-slate-400">
-                        <span className="material-symbols-outlined text-3xl">receipt_long</span>
+                        <DashboardIcon name="receipt_long" className="text-3xl" />
                       </div>
                       <div className="space-y-1">
                         <p className="text-base font-black text-slate-900 dark:text-white font-heading">
@@ -5494,7 +5491,7 @@ export default function DashboardPage() {
                           }`}
                         title="Hiển thị dạng lưới"
                       >
-                        <span className="material-symbols-outlined text-[15px]">grid_view</span>
+                        <DashboardIcon name="grid_view" className="text-[15px]" />
                         <span>Lưới</span>
                       </button>
                       <button
@@ -5506,7 +5503,7 @@ export default function DashboardPage() {
                           }`}
                         title="Hiển thị dạng bảng"
                       >
-                        <span className="material-symbols-outlined text-[15px]">table_rows</span>
+                        <DashboardIcon name="table_rows" className="text-[15px]" />
                         <span>Bảng</span>
                       </button>
                     </div>
@@ -5522,7 +5519,7 @@ export default function DashboardPage() {
                         }}
                         className="px-3.5 sm:px-4 py-2.5 bg-slate-100/90 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 text-slate-800 dark:text-slate-200 font-bold text-xs sm:text-sm rounded-2xl transition-all flex items-center justify-center gap-1.5 border border-slate-200/80 dark:border-white/10 cursor-pointer active:scale-95 whitespace-nowrap shrink-0"
                       >
-                        <span className="material-symbols-outlined text-base">layers</span>
+                        <DashboardIcon name="layers" className="text-base" />
                         <span>Quản lý Danh mục</span>
                       </button>
                     )}
@@ -5534,7 +5531,7 @@ export default function DashboardPage() {
                       }}
                       className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
+                      <DashboardIcon name="add" className="text-lg sm:text-xl" />
                       <span>Thêm món mới</span>
                     </button>
                   </div>
@@ -5593,9 +5590,7 @@ export default function DashboardPage() {
                 {/* Empty State */}
                 {filteredFoods.length === 0 ? (
                   <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3">
-                    <span className="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600">
-                      search_off
-                    </span>
+                    <DashboardIcon name="search_off" className="text-5xl text-slate-300 dark:text-slate-600" />
                     <p className="font-extrabold text-sm text-slate-700 dark:text-slate-300">
                       Không tìm thấy món ăn nào phù hợp
                     </p>
@@ -5650,7 +5645,7 @@ export default function DashboardPage() {
                                       />
                                     ) : (
                                       <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-1.5">
-                                        <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600">local_cafe</span>
+                                        <DashboardIcon name="local_cafe" className="text-4xl text-slate-300 dark:text-slate-600" />
                                         <span className="text-xs font-medium text-slate-400">Chưa có ảnh</span>
                                       </div>
                                     )}
@@ -5725,14 +5720,14 @@ export default function DashboardPage() {
                                       className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-sky-500/15 text-slate-600 dark:text-slate-300 hover:text-[#38BDF8] border border-slate-200/60 dark:border-white/10 transition-all flex items-center justify-center cursor-pointer active:scale-90"
                                       title="Chỉnh sửa món"
                                     >
-                                      <span className="material-symbols-outlined text-[17px]">edit</span>
+                                      <DashboardIcon name="edit" className="text-[17px]" />
                                     </button>
                                     <button
                                       onClick={() => setFoodToDelete(food._id)}
                                       className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-rose-500/15 text-slate-600 dark:text-slate-300 hover:text-rose-500 border border-slate-200/60 dark:border-white/10 transition-all flex items-center justify-center cursor-pointer active:scale-90"
                                       title="Xóa món"
                                     >
-                                      <span className="material-symbols-outlined text-[17px]">delete</span>
+                                      <DashboardIcon name="delete" className="text-[17px]" />
                                     </button>
                                   </div>
                                 </div>
@@ -5772,7 +5767,7 @@ export default function DashboardPage() {
                                     />
                                   ) : (
                                     <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-1.5">
-                                      <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600">local_cafe</span>
+                                      <DashboardIcon name="local_cafe" className="text-4xl text-slate-300 dark:text-slate-600" />
                                       <span className="text-xs font-medium text-slate-400">Chưa có ảnh</span>
                                     </div>
                                   )}
@@ -5847,14 +5842,14 @@ export default function DashboardPage() {
                                     className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-sky-500/15 text-slate-600 dark:text-slate-300 hover:text-[#38BDF8] border border-slate-200/60 dark:border-white/10 transition-all flex items-center justify-center cursor-pointer active:scale-90"
                                     title="Chỉnh sửa món"
                                   >
-                                    <span className="material-symbols-outlined text-[17px]">edit</span>
+                                    <DashboardIcon name="edit" className="text-[17px]" />
                                   </button>
                                   <button
                                     onClick={() => setFoodToDelete(food._id)}
                                     className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-rose-500/15 text-slate-600 dark:text-slate-300 hover:text-rose-500 border border-slate-200/60 dark:border-white/10 transition-all flex items-center justify-center cursor-pointer active:scale-90"
                                     title="Xóa món"
                                   >
-                                    <span className="material-symbols-outlined text-[17px]">delete</span>
+                                    <DashboardIcon name="delete" className="text-[17px]" />
                                   </button>
                                 </div>
                               </div>
@@ -5883,7 +5878,7 @@ export default function DashboardPage() {
                               />
                             ) : (
                               <div className="w-13 h-13 rounded-xl bg-slate-100 dark:bg-white/5 shrink-0 flex items-center justify-center text-slate-400 border border-slate-200/50 dark:border-white/5">
-                                <span className="material-symbols-outlined text-xl">restaurant</span>
+                                <DashboardIcon name="restaurant" className="text-xl" />
                               </div>
                             )}
                             <div className="min-w-0">
@@ -5927,14 +5922,14 @@ export default function DashboardPage() {
                               className="w-9 h-9 rounded-xl bg-slate-100/80 dark:bg-white/5 hover:bg-sky-500/10 text-slate-500 dark:text-slate-400 hover:text-sky-500 border border-slate-200/50 dark:border-white/5 transition-all flex items-center justify-center cursor-pointer active:scale-95"
                               title="Chỉnh sửa món"
                             >
-                              <span className="material-symbols-outlined text-[17px]">edit</span>
+                              <DashboardIcon name="edit" className="text-[17px]" />
                             </button>
                             <button
                               onClick={() => setFoodToDelete(food._id)}
                               className="w-9 h-9 rounded-xl bg-slate-100/80 dark:bg-white/5 hover:bg-rose-500/10 text-slate-500 dark:text-slate-400 hover:text-rose-500 border border-slate-200/50 dark:border-white/5 transition-all flex items-center justify-center cursor-pointer active:scale-95"
                               title="Xóa món"
                             >
-                              <span className="material-symbols-outlined text-[17px]">delete</span>
+                              <DashboardIcon name="delete" className="text-[17px]" />
                             </button>
                           </div>
                         </div>
@@ -5965,7 +5960,7 @@ export default function DashboardPage() {
                                   />
                                 ) : (
                                   <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 border border-slate-200/50 dark:border-white/5">
-                                    <span className="material-symbols-outlined text-lg">restaurant</span>
+                                    <DashboardIcon name="restaurant" className="text-lg" />
                                   </div>
                                 )}
                                 <div>
@@ -6021,14 +6016,14 @@ export default function DashboardPage() {
                                     className="w-8 h-8 rounded-lg bg-slate-100/70 dark:bg-white/5 hover:bg-sky-500/10 text-slate-500 dark:text-slate-400 hover:text-sky-500 transition-all flex items-center justify-center cursor-pointer active:scale-90"
                                     title="Chỉnh sửa món"
                                   >
-                                    <span className="material-symbols-outlined text-[16px]">edit</span>
+                                    <DashboardIcon name="edit" className="text-[16px]" />
                                   </button>
                                   <button
                                     onClick={() => setFoodToDelete(food._id)}
                                     className="w-8 h-8 rounded-lg bg-slate-100/70 dark:bg-white/5 hover:bg-rose-500/10 text-slate-500 dark:text-slate-400 hover:text-rose-500 transition-all flex items-center justify-center cursor-pointer active:scale-90"
                                     title="Xóa món"
                                   >
-                                    <span className="material-symbols-outlined text-[16px]">delete</span>
+                                    <DashboardIcon name="delete" className="text-[16px]" />
                                   </button>
                                 </div>
                               </td>
@@ -6105,7 +6100,7 @@ export default function DashboardPage() {
                     }}
                     className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
+                    <DashboardIcon name="add" className="text-lg sm:text-xl" />
                     <span>Thêm bàn mới</span>
                   </button>
                 </div>
@@ -6325,7 +6320,7 @@ export default function DashboardPage() {
                     }}
                     className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
+                    <DashboardIcon name="add" className="text-lg sm:text-xl" />
                     <span>Thêm nhân viên mới</span>
                   </button>
                 </div>
@@ -6352,7 +6347,7 @@ export default function DashboardPage() {
                           className="p-2 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 rounded-xl hover:text-[#38BDF8] transition-colors"
                           title="Sửa nhân viên"
                         >
-                          <span className="material-symbols-outlined text-base">edit</span>
+                          <DashboardIcon name="edit" className="text-base" />
                         </button>
                         {u.email !== 'admin@kohi.vn' && (
                           <button
@@ -6360,7 +6355,7 @@ export default function DashboardPage() {
                             className="p-2 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 rounded-xl hover:text-red-500 transition-colors"
                             title="Xóa nhân viên"
                           >
-                            <span className="material-symbols-outlined text-base">delete</span>
+                            <DashboardIcon name="delete" className="text-base" />
                           </button>
                         )}
                       </div>
@@ -6396,7 +6391,7 @@ export default function DashboardPage() {
                               if (s === 'morning') {
                                 return (
                                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
-                                    <span className="material-symbols-outlined text-xs">wb_sunny</span>
+                                    <DashboardIcon name="wb_sunny" className="text-xs" />
                                     <span>Ca Sáng (06h-12h)</span>
                                   </span>
                                 );
@@ -6404,14 +6399,14 @@ export default function DashboardPage() {
                               if (s === 'afternoon') {
                                 return (
                                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                                    <span className="material-symbols-outlined text-xs">light_mode</span>
+                                    <DashboardIcon name="light_mode" className="text-xs" />
                                     <span>Ca Chiều (12h-18h)</span>
                                   </span>
                                 );
                               }
                               return (
                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-                                  <span className="material-symbols-outlined text-xs">dark_mode</span>
+                                  <DashboardIcon name="dark_mode" className="text-xs" />
                                   <span>Ca Tối (18h-23h)</span>
                                 </span>
                               );
@@ -6427,7 +6422,7 @@ export default function DashboardPage() {
                               className="p-1.5 text-slate-400 hover:text-[#38BDF8] transition-colors"
                               title="Sửa nhân viên"
                             >
-                              <span className="material-symbols-outlined text-base">edit</span>
+                              <DashboardIcon name="edit" className="text-base" />
                             </button>
                             {u.email !== 'admin@kohi.vn' && (
                               <button
@@ -6435,7 +6430,7 @@ export default function DashboardPage() {
                                 className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
                                 title="Xóa nhân viên"
                               >
-                                <span className="material-symbols-outlined text-base">delete</span>
+                                <DashboardIcon name="delete" className="text-base" />
                               </button>
                             )}
                           </td>
@@ -6571,7 +6566,7 @@ export default function DashboardPage() {
                         </div>
                         {!isCheckedIn && !isCheckedOut && !isCurrentTimeInShift() && (
                           <div className="p-2.5 bg-rose-500/15 border border-rose-500/30 rounded-xl text-rose-300 text-xs font-bold flex items-center gap-2">
-                            <span className="material-symbols-outlined text-base text-rose-400 shrink-0">lock_clock</span>
+                            <DashboardIcon name="lock_clock" className="text-base text-rose-400 shrink-0" />
                             <span>Hiện tại ngoài khung giờ <strong>{getShiftTimeLabel()}</strong>. Hệ thống đã khóa tính năng điểm danh.</span>
                           </div>
                         )}
@@ -6693,7 +6688,7 @@ export default function DashboardPage() {
                             <div key={wp.key} className="bg-white dark:bg-[#131929] rounded-2xl shadow-xs overflow-hidden border border-slate-200/80 dark:border-[#1e293b] p-4 space-y-3">
                               <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-[#1e293b] pb-2">
                                 <span className="text-xs font-black text-amber-600 dark:text-amber-400 flex items-center gap-1 font-mono">
-                                  <span className="material-symbols-outlined text-sm">calendar_month</span>
+                                  <DashboardIcon name="calendar_month" className="text-sm" />
                                   {wp.weekLabel}
                                 </span>
                                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${roleColor}`}>
@@ -6747,7 +6742,7 @@ export default function DashboardPage() {
                                       onClick={() => handleOpenSalaryConfig({ _id: wp.staffId, name: wp.staffName, role: wp.staffRole })}
                                       className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-9 px-3 bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
                                     >
-                                      <span className="material-symbols-outlined text-sm text-slate-400">tune</span>
+                                      <DashboardIcon name="tune" className="text-sm text-slate-400" />
                                       <span>Cấu hình</span>
                                     </button>
                                     {wp.unpaidSalary > 0 ? (
@@ -6771,7 +6766,7 @@ export default function DashboardPage() {
                                         }
                                         className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-9 px-3.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
                                       >
-                                        <span className="material-symbols-outlined text-sm">payments</span>
+                                        <DashboardIcon name="payments" className="text-sm" />
                                         <span>Chi trả</span>
                                       </button>
                                     ) : (
@@ -6826,7 +6821,7 @@ export default function DashboardPage() {
                                     {/* Tuần làm việc */}
                                     <td className="py-3 px-3.5 whitespace-nowrap align-middle">
                                       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-mono font-bold text-xs">
-                                        <span className="material-symbols-outlined text-sm text-amber-500 shrink-0">calendar_month</span>
+                                        <DashboardIcon name="calendar_month" className="text-sm text-amber-500 shrink-0" />
                                         <span>{wp.weekLabel}</span>
                                       </div>
                                     </td>
@@ -6922,7 +6917,7 @@ export default function DashboardPage() {
                                             className="whitespace-nowrap inline-flex items-center justify-center gap-1 h-7.5 px-2.5 rounded-xl bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-[11px] border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
                                             title="Cấu hình mức lương & phụ cấp"
                                           >
-                                            <span className="material-symbols-outlined text-sm text-slate-400">tune</span>
+                                            <DashboardIcon name="tune" className="text-sm text-slate-400" />
                                             <span>Cấu hình</span>
                                           </button>
                                           {wp.unpaidSalary > 0 ? (
@@ -6947,7 +6942,7 @@ export default function DashboardPage() {
                                               className="whitespace-nowrap inline-flex items-center justify-center gap-1 h-7.5 px-3 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-[11px] shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
                                               title="Thực hiện chi trả lương tuần"
                                             >
-                                              <span className="material-symbols-outlined text-sm">payments</span>
+                                              <DashboardIcon name="payments" className="text-sm" />
                                               <span>Chi trả</span>
                                             </button>
                                           ) : (
@@ -7042,7 +7037,7 @@ export default function DashboardPage() {
                                       onClick={() => handleOpenSalaryConfig({ _id: hp.staffId, name: hp.staffName, role: hp.staffRole })}
                                       className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-9 px-3 bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
                                     >
-                                      <span className="material-symbols-outlined text-sm text-slate-400">tune</span>
+                                      <DashboardIcon name="tune" className="text-sm text-slate-400" />
                                       <span>Cấu hình</span>
                                     </button>
                                     {hp.unpaidSalary > 0 ? (
@@ -7064,7 +7059,7 @@ export default function DashboardPage() {
                                         }
                                         className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-9 px-3.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
                                       >
-                                        <span className="material-symbols-outlined text-sm">payments</span>
+                                        <DashboardIcon name="payments" className="text-sm" />
                                         <span>Chi trả</span>
                                       </button>
                                     ) : (
@@ -7188,7 +7183,7 @@ export default function DashboardPage() {
                                             className="whitespace-nowrap inline-flex items-center justify-center gap-1 h-7.5 px-2.5 rounded-xl bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-[11px] border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
                                             title="Cấu hình mức lương & phụ cấp"
                                           >
-                                            <span className="material-symbols-outlined text-sm text-slate-400">tune</span>
+                                            <DashboardIcon name="tune" className="text-sm text-slate-400" />
                                             <span>Cấu hình</span>
                                           </button>
                                           {hp.unpaidSalary > 0 ? (
@@ -7211,7 +7206,7 @@ export default function DashboardPage() {
                                               className="whitespace-nowrap inline-flex items-center justify-center gap-1 h-7.5 px-3 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-[11px] shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
                                               title="Thực hiện chi trả lương theo giờ"
                                             >
-                                              <span className="material-symbols-outlined text-sm">payments</span>
+                                              <DashboardIcon name="payments" className="text-sm" />
                                               <span>Chi trả</span>
                                             </button>
                                           ) : (
@@ -7671,7 +7666,7 @@ export default function DashboardPage() {
                       className="text-[10px] font-bold text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors flex items-center gap-1 cursor-pointer"
                     >
                       <span>{isCommandBarCollapsed ? 'Mở rộng' : 'Thu gọn'}</span>
-                      <span className="material-symbols-outlined text-sm">{isCommandBarCollapsed ? 'expand_more' : 'expand_less'}</span>
+                      <DashboardIcon name={isCommandBarCollapsed ? 'expand_more' : 'expand_less'} className="text-sm" />
                     </button>
                   </div>
 
@@ -7683,7 +7678,7 @@ export default function DashboardPage() {
                       >
                         <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
                           <span className="text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-400">Doanh thu hôm nay</span>
-                          <span className="material-symbols-outlined text-base text-emerald-500">payments</span>
+                          <DashboardIcon name="payments" className="text-base text-emerald-500" />
                         </div>
                         <div className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
                           {formatPrice(analyticsSummary?.periodGross ?? analyticsSummary?.todayGross ?? paymentHistory.reduce((s, p) => s + (p.totalAmount || 0), 0))}
@@ -7715,7 +7710,7 @@ export default function DashboardPage() {
                           >
                             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
                               <span className="text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-400">Công suất bàn</span>
-                              <span className="material-symbols-outlined text-base text-sky-500 group-hover:scale-110 transition-transform">table_restaurant</span>
+                              <DashboardIcon name="table_restaurant" className="text-base text-sky-500 group-hover:scale-110 transition-transform" />
                             </div>
                             <div className="flex items-baseline gap-1.5">
                               <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
@@ -7748,7 +7743,7 @@ export default function DashboardPage() {
                           >
                             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
                               <span className="text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-400">Đang phục vụ</span>
-                              <span className="material-symbols-outlined text-base text-amber-500 group-hover:scale-110 transition-transform">soup_kitchen</span>
+                              <DashboardIcon name="soup_kitchen" className="text-base text-amber-500 group-hover:scale-110 transition-transform" />
                             </div>
                             <div className="flex items-baseline gap-1.5">
                               <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
@@ -7779,7 +7774,7 @@ export default function DashboardPage() {
                           >
                             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
                               <span className="text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-400">Nhân sự trực ca</span>
-                              <span className="material-symbols-outlined text-base text-indigo-500 group-hover:scale-110 transition-transform">badge</span>
+                              <DashboardIcon name="badge" className="text-base text-indigo-500 group-hover:scale-110 transition-transform" />
                             </div>
                             <div className="flex items-baseline gap-1.5">
                               <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
@@ -8099,9 +8094,7 @@ export default function DashboardPage() {
                               ? 'bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-400'
                               : 'bg-sky-500/10 border border-sky-500/20 text-sky-500'
                               }`}>
-                              <span className="material-symbols-outlined text-lg">
-                                {isLoss ? 'warning' : 'insights'}
-                              </span>
+                              <DashboardIcon name={isLoss ? 'warning' : 'insights'} className="text-lg" />
                             </div>
                             <div>
                               <div className="flex items-center gap-2 flex-wrap">
@@ -8169,7 +8162,7 @@ export default function DashboardPage() {
                         {/* Top row: Icon + Status Badge */}
                         <div className="flex items-center justify-between gap-1.5">
                           <div className="w-7 h-7 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                            <span className="material-symbols-outlined text-[17px]">payments</span>
+                            <DashboardIcon name="payments" className="text-[17px]" />
                           </div>
                           {analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus ? (
                             <span
@@ -8214,7 +8207,7 @@ export default function DashboardPage() {
                         {/* Top row: Icon + Shift Status Badge */}
                         <div className="flex items-center justify-between gap-1.5">
                           <div className="w-7 h-7 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                            <span className="material-symbols-outlined text-[17px]">badge</span>
+                            <DashboardIcon name="badge" className="text-[17px]" />
                           </div>
                           {analyticsPeriodMode === 'day' ? (
                             analyticsSummary?.settlementStatus?.activeShiftsCount > 0 ? (
@@ -8262,7 +8255,7 @@ export default function DashboardPage() {
                         {/* Top row: Icon + Stock Badge */}
                         <div className="flex items-center justify-between gap-1.5">
                           <div className="w-7 h-7 rounded-xl bg-sky-500/10 dark:bg-sky-500/20 text-sky-600 dark:text-[#38BDF8] flex items-center justify-center shrink-0">
-                            <span className="material-symbols-outlined text-[17px]">inventory_2</span>
+                            <DashboardIcon name="inventory_2" className="text-[17px]" />
                           </div>
                           <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] border border-sky-500/20 shrink-0">
                             Định mức kho
@@ -8304,7 +8297,7 @@ export default function DashboardPage() {
                         {/* Top row: Icon + Add Expense Action */}
                         <div className="flex items-center justify-between gap-1.5">
                           <div className="w-7 h-7 rounded-xl bg-purple-500/10 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
-                            <span className="material-symbols-outlined text-[17px]">receipt_long</span>
+                            <DashboardIcon name="receipt_long" className="text-[17px]" />
                           </div>
                           <button
                             onClick={() => {
@@ -8366,9 +8359,7 @@ export default function DashboardPage() {
                                   : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
                                   }`}
                               >
-                                <span className="material-symbols-outlined text-[17px]">
-                                  {isNegative ? 'trending_down' : 'account_balance_wallet'}
-                                </span>
+                                <DashboardIcon name={isNegative ? 'trending_down' : 'account_balance_wallet'} className="text-[17px]" />
                               </div>
                               {analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus ? (
                                 <span
@@ -8520,7 +8511,7 @@ export default function DashboardPage() {
                               <div className="overflow-x-auto">
                                 {(!currentLedgerList || currentLedgerList.length === 0) ? (
                                   <div className="py-12 text-center text-slate-400 text-xs">
-                                    <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">receipt</span>
+                                    <DashboardIcon name="receipt" className="text-4xl text-slate-300 dark:text-slate-600 mb-2 block" />
                                     Không có đơn hàng nào đã thanh toán trong ngày này.
                                   </div>
                                 ) : (
@@ -8579,7 +8570,7 @@ export default function DashboardPage() {
                               <div className="overflow-x-auto">
                                 {(!currentLedgerList || currentLedgerList.length === 0) ? (
                                   <div className="py-12 text-center text-slate-400 text-xs">
-                                    <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">badge</span>
+                                    <DashboardIcon name="badge" className="text-4xl text-slate-300 dark:text-slate-600 mb-2 block" />
                                     Không có ca làm việc nào được ghi nhận trong ngày này.
                                   </div>
                                 ) : (
@@ -8657,7 +8648,7 @@ export default function DashboardPage() {
                                 <div className="overflow-x-auto">
                                   {(!currentLedgerList || currentLedgerList.length === 0) ? (
                                     <div className="py-12 text-center text-slate-400 text-xs">
-                                      <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">receipt_long</span>
+                                      <DashboardIcon name="receipt_long" className="text-4xl text-slate-300 dark:text-slate-600 mb-2 block" />
                                       Chưa có khoản chi phát sinh nào trong ngày này.
                                     </div>
                                   ) : (
@@ -8694,7 +8685,7 @@ export default function DashboardPage() {
                                                 className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
                                                 title="Xóa khoản chi này"
                                               >
-                                                <span className="material-symbols-outlined text-base">delete</span>
+                                                <DashboardIcon name="delete" className="text-base" />
                                               </button>
                                             </td>
                                           </tr>
@@ -8721,7 +8712,7 @@ export default function DashboardPage() {
                                 <div className="overflow-x-auto">
                                   {(!currentLedgerList || currentLedgerList.length === 0) ? (
                                     <div className="py-12 text-center text-slate-400 text-xs">
-                                      <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">inventory_2</span>
+                                      <DashboardIcon name="inventory_2" className="text-4xl text-slate-300 dark:text-slate-600 mb-2 block" />
                                       Chưa có ghi nhận tiêu hao nguyên liệu nào trong ngày này.
                                     </div>
                                   ) : (
@@ -8786,7 +8777,7 @@ export default function DashboardPage() {
                                       className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200 dark:border-[#1e293b] bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1e293b] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-xs font-bold transition-all flex items-center gap-1"
                                       title="Trang trước"
                                     >
-                                      <span className="material-symbols-outlined text-sm">chevron_left</span>
+                                      <DashboardIcon name="chevron_left" className="text-sm" />
                                       <span className="hidden sm:inline">Trước</span>
                                     </button>
 
@@ -8827,7 +8818,7 @@ export default function DashboardPage() {
                                       title="Trang sau"
                                     >
                                       <span className="hidden sm:inline">Sau</span>
-                                      <span className="material-symbols-outlined text-sm">chevron_right</span>
+                                      <DashboardIcon name="chevron_right" className="text-sm" />
                                     </button>
                                   </div>
                                 )}
@@ -8968,7 +8959,7 @@ export default function DashboardPage() {
                   <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl shadow-xs">
                     <span className="text-slate-500 dark:text-slate-400 text-xs font-normal uppercase tracking-wider block">Đánh giá trung bình</span>
                     <span className="text-xl sm:text-2xl font-black text-amber-500 dark:text-amber-400 mt-1 flex items-center gap-1 font-heading">
-                      <span className="material-symbols-outlined text-amber-500 text-lg sm:text-xl">star</span>
+                      <DashboardIcon name="star" className="text-amber-500 text-lg sm:text-xl" />
                       <span>{avgStar} / 5.0</span>
                     </span>
                     <span className="text-[10px] text-slate-500 block mt-1">
@@ -8990,7 +8981,7 @@ export default function DashboardPage() {
                   <div className="lg:col-span-2 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-4 sm:p-5 space-y-4 shadow-xs">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                       <h3 className="text-sm font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[#0284c7] dark:text-[#38BDF8] text-base">show_chart</span>
+                        <DashboardIcon name="show_chart" className="text-[#0284c7] dark:text-[#38BDF8] text-base" />
                         <span>Biểu đồ Xu hướng Doanh thu theo Ngày</span>
                       </h3>
                       <span className="text-[11px] text-slate-500 dark:text-slate-400">Tự động vẽ từ MongoDB</span>
@@ -9003,7 +8994,7 @@ export default function DashboardPage() {
                   {/* Chart 3: Top 5 Selling Foods Doughnut */}
                   <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-5 space-y-4 shadow-xs">
                     <h3 className="text-sm font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
-                      <span className="material-symbols-outlined text-amber-500 dark:text-amber-400 text-base">pie_chart</span>
+                      <DashboardIcon name="pie_chart" className="text-amber-500 dark:text-amber-400 text-base" />
                       <span>Cơ cấu Top Món bán chạy</span>
                     </h3>
                     <div className="h-52 sm:h-64">
@@ -9020,7 +9011,7 @@ export default function DashboardPage() {
                 <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-5 space-y-4 shadow-xs">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
-                      <span className="material-symbols-outlined text-emerald-600 dark:text-emerald-400 text-base">bar_chart</span>
+                      <DashboardIcon name="bar_chart" className="text-emerald-600 dark:text-emerald-400 text-base" />
                       <span>So sánh Cấu trúc Doanh thu, Chi phí Lương & Lợi nhuận Ròng</span>
                     </h3>
                   </div>
@@ -9033,7 +9024,7 @@ export default function DashboardPage() {
                 <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-4 sm:p-5 space-y-4 shadow-xs">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[#0284c7] dark:text-[#38BDF8] text-lg">local_fire_department</span>
+                      <DashboardIcon name="local_fire_department" className="text-[#0284c7] dark:text-[#38BDF8] text-lg" />
                       <span>Top Các món được bán nhiều nhất từ Database</span>
                     </h3>
                     <span className="self-start sm:self-auto bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] px-3 py-1 rounded-full text-xs font-bold shrink-0">
@@ -9112,14 +9103,14 @@ export default function DashboardPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
-                        <span className="material-symbols-outlined text-amber-500 dark:text-amber-400 text-lg">star</span>
+                        <DashboardIcon name="star" className="text-amber-500 dark:text-amber-400 text-lg" />
                         <span>Đánh giá & Phản hồi từ Khách hàng</span>
                       </h3>
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Ý kiến đóng góp trực tiếp từ khách hàng quét QR tại bàn</p>
                     </div>
                     <div className="self-start sm:self-auto flex items-center gap-2 bg-slate-100 dark:bg-[#1e293b] px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0">
                       <span className="text-amber-500 dark:text-amber-400 font-black text-sm flex items-center gap-1">
-                        <span className="material-symbols-outlined text-base">star</span>
+                        <DashboardIcon name="star" className="text-base" />
                         <span>{avgStar}</span>
                       </span>
                       <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">({reviews.length} đánh giá)</span>
@@ -9144,7 +9135,7 @@ export default function DashboardPage() {
                               </div>
                               <div className="text-amber-500 dark:text-amber-400 text-xs mt-1 flex items-center">
                                 {Array.from({ length: rev.serviceStar || 5 }).map((_, idx) => (
-                                  <span key={idx} className="material-symbols-outlined text-sm">star</span>
+                                  <DashboardIcon name="star" key={idx} className="text-sm" />
                                 ))}
                               </div>
                             </div>
@@ -9154,7 +9145,7 @@ export default function DashboardPage() {
                               className="text-slate-400 hover:text-red-500 p-1"
                               title="Xóa đánh giá"
                             >
-                              <span className="material-symbols-outlined text-sm">delete</span>
+                              <DashboardIcon name="delete" className="text-sm" />
                             </button>
                           </div>
 
@@ -9200,7 +9191,7 @@ export default function DashboardPage() {
                     }}
                     className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
+                    <DashboardIcon name="add" className="text-lg sm:text-xl" />
                     <span>Tạo mã mới</span>
                   </button>
                 </div>
@@ -9301,14 +9292,14 @@ export default function DashboardPage() {
                               className="p-1.5 text-slate-400 hover:text-[#38BDF8] transition-colors"
                               title="Sửa mã"
                             >
-                              <span className="material-symbols-outlined text-base">edit</span>
+                              <DashboardIcon name="edit" className="text-base" />
                             </button>
                             <button
                               onClick={() => handleDeleteCoupon(c._id)}
                               className="p-1.5 text-slate-400 hover:text-rose-500 transition-colors"
                               title="Xóa mã"
                             >
-                              <span className="material-symbols-outlined text-base">delete</span>
+                              <DashboardIcon name="delete" className="text-base" />
                             </button>
                           </div>
                         </div>
@@ -9511,7 +9502,7 @@ export default function DashboardPage() {
                                 className="p-2 text-slate-400 hover:text-rose-500 transition-colors flex items-center justify-center cursor-pointer shrink-0 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 ml-auto"
                                 title="Xóa đơn đặt bàn"
                               >
-                                <span className="material-symbols-outlined text-base">delete</span>
+                                <DashboardIcon name="delete" className="text-base" />
                               </button>
                             </div>
                           </div>
@@ -9528,7 +9519,7 @@ export default function DashboardPage() {
                       <div className="flex justify-between items-start">
                         <div className="space-y-1">
                           <h4 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2 font-heading">
-                            <span className="material-symbols-outlined text-amber-500">info</span>
+                            <DashboardIcon name="info" className="text-amber-500" />
                             <span>Bàn Hiện Đang Có Khách Ngồi</span>
                           </h4>
                           <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -9541,7 +9532,7 @@ export default function DashboardPage() {
                           onClick={() => setStaffOccupiedReservation(null)}
                           className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white"
                         >
-                          <span className="material-symbols-outlined text-lg">close</span>
+                          <DashboardIcon name="close" className="text-lg" />
                         </button>
                       </div>
 
@@ -9576,9 +9567,7 @@ export default function DashboardPage() {
                                     Sức chứa: {tbl.capacity || 2} người
                                   </div>
                                 </div>
-                                <span className="material-symbols-outlined text-sm text-[#0284c7] dark:text-[#38BDF8]">
-                                  login
-                                </span>
+                                <DashboardIcon name="login" className="text-sm text-[#0284c7] dark:text-[#38BDF8]" />
                               </button>
                             ))}
                           </div>
@@ -9639,7 +9628,7 @@ export default function DashboardPage() {
             onClick={() => setIsRealtimeDrawerOpen(false)}
             className="xl:hidden text-slate-400 hover:text-slate-900 dark:hover:text-white p-1 rounded-lg"
           >
-            <span className="material-symbols-outlined text-lg">close</span>
+            <DashboardIcon name="close" className="text-lg" />
           </button>
         </div>
 
@@ -10135,7 +10124,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1e293b]">
                 <div className="flex items-center gap-2.5">
                   <div className="p-2 bg-sky-500/10 text-sky-500 rounded-xl">
-                    <span className="material-symbols-outlined text-xl">layers</span>
+                    <DashboardIcon name="layers" className="text-xl" />
                   </div>
                   <div>
                     <h3 className="text-base font-black text-slate-900 dark:text-white font-heading">Quản lý Danh mục Thực đơn</h3>
@@ -10143,7 +10132,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <button onClick={() => setIsCategoryModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
-                  <span className="material-symbols-outlined">close</span>
+                  <DashboardIcon name="close" />
                 </button>
               </div>
 
@@ -10197,7 +10186,7 @@ export default function DashboardPage() {
                     type="submit"
                     className="px-4 py-2 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
                   >
-                    <span className="material-symbols-outlined text-base">check_circle</span>
+                    <DashboardIcon name="check_circle" className="text-base" />
                     <span>{editingCategory ? 'Lưu cập nhật' : 'Tạo danh mục'}</span>
                   </button>
                 </div>
@@ -10223,9 +10212,7 @@ export default function DashboardPage() {
                             {isImg ? (
                               <img src={cat.icon} alt={cat.name} className="w-5 h-5 object-contain" />
                             ) : (
-                              <span className="material-symbols-outlined text-lg">
-                                {isValidIcon ? cat.icon : 'category'}
-                              </span>
+                              <DashboardIcon name={isValidIcon ? cat.icon : 'category'} className="text-lg" />
                             )}
                           </div>
                           <div className="truncate">
@@ -10251,14 +10238,14 @@ export default function DashboardPage() {
                             className="p-2 text-slate-400 hover:text-[#38BDF8] transition-colors cursor-pointer"
                             title="Chỉnh sửa"
                           >
-                            <span className="material-symbols-outlined text-base">edit</span>
+                            <DashboardIcon name="edit" className="text-base" />
                           </button>
                           <button
                             onClick={() => handleDeleteCategory(cat._id)}
                             className="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
                             title="Xóa danh mục"
                           >
-                            <span className="material-symbols-outlined text-base">delete</span>
+                            <DashboardIcon name="delete" className="text-base" />
                           </button>
                         </div>
                       </div>
@@ -10280,7 +10267,7 @@ export default function DashboardPage() {
               <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white font-heading">{editingFood ? t.modalFoodTitleEdit : t.modalFoodTitleAdd}</h3>
                 <button onClick={() => setIsFoodModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
-                  <span className="material-symbols-outlined">close</span>
+                  <DashboardIcon name="close" />
                 </button>
               </div>
 
@@ -10315,12 +10302,12 @@ export default function DashboardPage() {
                   const isMilkTea = foodForm.category?.toLowerCase().includes('trà sữa') || foodForm.category?.toLowerCase().includes('milk tea');
                   return isMilkTea ? (
                     <div className="p-3 bg-[#0059b9]/10 border border-[#0059b9]/30 rounded-lg text-[11.5px] text-[#0059b9] font-bold flex items-center gap-2">
-                      <span className="material-symbols-outlined text-base">local_drink</span>
+                      <DashboardIcon name="local_drink" className="text-base" />
                       <span>Danh mục Trà Sữa: Món ăn này sẽ hỗ trợ chọn Topping (Trân châu, thạch, pudding...) khi khách hàng đặt món.</span>
                     </div>
                   ) : (
                     <div className="p-3 bg-[#f1f3fe] dark:bg-[#1e293b]/60 border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg text-[11.5px] text-[#414754] dark:text-slate-400 font-medium flex items-center gap-2">
-                      <span className="material-symbols-outlined text-base">info</span>
+                      <DashboardIcon name="info" className="text-base" />
                       <span>Danh mục món ăn/thức uống này KHÔNG hỗ trợ Topping. Khách hàng chỉ chọn Size & Ghi chú.</span>
                     </div>
                   );
@@ -10382,7 +10369,7 @@ export default function DashboardPage() {
                 </div>
 
                 <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
-                  <span className="material-symbols-outlined text-base">check_circle</span>
+                  <DashboardIcon name="check_circle" className="text-base" />
                   <span>{t.modalFoodSave}</span>
                 </button>
               </form>
@@ -10400,7 +10387,7 @@ export default function DashboardPage() {
               <div className="flex justify-between items-center border-b border-[#c1c6d6] dark:border-[#1e293b] pb-3">
                 <h3 className="text-lg font-bold text-[#181c23] dark:text-white font-heading">{editingTable ? t.modalTableTitleEdit : t.modalTableTitleAdd}</h3>
                 <button onClick={() => setIsTableModalOpen(false)} className="text-[#717785] hover:text-[#181c23] dark:hover:text-white cursor-pointer">
-                  <span className="material-symbols-outlined">close</span>
+                  <DashboardIcon name="close" />
                 </button>
               </div>
 
@@ -10433,7 +10420,7 @@ export default function DashboardPage() {
                 </div>
 
                 <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
-                  <span className="material-symbols-outlined text-base">check_circle</span>
+                  <DashboardIcon name="check_circle" className="text-base" />
                   <span>{t.modalFoodSave}</span>
                 </button>
               </form>
@@ -10451,7 +10438,7 @@ export default function DashboardPage() {
               <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3">
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading">Gửi Yêu Cầu Đổi Ca Làm</h3>
                 <button onClick={() => setIsShiftSwapModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
-                  <span className="material-symbols-outlined">close</span>
+                  <DashboardIcon name="close" />
                 </button>
               </div>
 
@@ -10494,7 +10481,7 @@ export default function DashboardPage() {
                 </div>
 
                 <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
-                  <span className="material-symbols-outlined text-base">send</span>
+                  <DashboardIcon name="send" className="text-base" />
                   <span>Gửi Yêu Cầu Cho Admin Duyệt</span>
                 </button>
               </form>
@@ -10512,7 +10499,7 @@ export default function DashboardPage() {
               <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3 print:hidden">
                 <h3 className="text-base font-bold text-slate-900 dark:text-white font-heading">Mã QR Đặt Món — {qrTable.tableName}</h3>
                 <button onClick={() => setQrTable(null)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
-                  <span className="material-symbols-outlined">close</span>
+                  <DashboardIcon name="close" />
                 </button>
               </div>
 
@@ -10570,14 +10557,14 @@ export default function DashboardPage() {
                     }}
                     className="flex-1 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-xl font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all border border-amber-500/30"
                   >
-                    <span className="material-symbols-outlined text-base">sync</span>
+                    <DashboardIcon name="sync" className="text-base" />
                     <span>Đổi mã QR mới</span>
                   </button>
                   <button
                     onClick={() => window.print()}
                     className="flex-1 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-md"
                   >
-                    <span className="material-symbols-outlined text-base">print</span>
+                    <DashboardIcon name="print" className="text-base" />
                     <span>In QR Code</span>
                   </button>
                 </div>
@@ -10615,7 +10602,7 @@ export default function DashboardPage() {
               <div className="flex items-start justify-between gap-3 relative">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center shrink-0 shadow-inner">
-                    <span className="material-symbols-outlined text-xl">cleaning_services</span>
+                    <DashboardIcon name="cleaning_services" className="text-xl" />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
@@ -10638,13 +10625,13 @@ export default function DashboardPage() {
                   onClick={() => setConfirmClearTableModal(null)}
                   className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/5 transition-colors cursor-pointer disabled:opacity-40 shrink-0"
                 >
-                  <span className="material-symbols-outlined text-lg">close</span>
+                  <DashboardIcon name="close" className="text-lg" />
                 </button>
               </div>
 
               {/* Minimalist Notice */}
               <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 text-[12px] text-slate-300 flex items-start gap-2.5 leading-relaxed">
-                <span className="material-symbols-outlined text-rose-400 text-base shrink-0 mt-0.5">info</span>
+                <DashboardIcon name="info" className="text-rose-400 text-base shrink-0 mt-0.5" />
                 <span>
                   Hệ thống sẽ <span className="text-rose-400 font-semibold">tự động hủy</span> các đơn chưa hoàn tất, xóa phiên của khách và đưa bàn về trạng thái trống.
                 </span>
@@ -10724,7 +10711,7 @@ export default function DashboardPage() {
                     </>
                   ) : (
                     <>
-                      <span className="material-symbols-outlined text-[16px]">done</span>
+                      <DashboardIcon name="done" className="text-[16px]" />
                       <span>Xác nhận về Trống</span>
                     </>
                   )}
@@ -10744,7 +10731,7 @@ export default function DashboardPage() {
               <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white font-heading">{editingUser ? t.modalUserTitleEdit : t.modalUserTitleAdd}</h3>
                 <button onClick={() => setIsUserModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
-                  <span className="material-symbols-outlined">close</span>
+                  <DashboardIcon name="close" />
                 </button>
               </div>
 
@@ -10783,7 +10770,7 @@ export default function DashboardPage() {
                 </div>
 
                 <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
-                  <span className="material-symbols-outlined text-base">check_circle</span>
+                  <DashboardIcon name="check_circle" className="text-base" />
                   <span>{t.modalFoodSave}</span>
                 </button>
               </form>
@@ -10801,7 +10788,7 @@ export default function DashboardPage() {
               <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white font-heading">Cập Nhật Giờ Chấm Công</h3>
                 <button onClick={() => setIsAttendanceModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
-                  <span className="material-symbols-outlined">close</span>
+                  <DashboardIcon name="close" />
                 </button>
               </div>
 
@@ -10840,7 +10827,7 @@ export default function DashboardPage() {
                 </div>
 
                 <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
-                  <span className="material-symbols-outlined text-base">check_circle</span>
+                  <DashboardIcon name="check_circle" className="text-base" />
                   <span>Lưu thay đổi chấm công</span>
                 </button>
               </form>
@@ -11206,7 +11193,7 @@ export default function DashboardPage() {
               <div className="flex justify-between items-center pb-1">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-2xl bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-[#0284c7] dark:text-[#38BDF8] shadow-xs">
-                    <span className="material-symbols-outlined text-xl">group</span>
+                    <DashboardIcon name="group" className="text-xl" />
                   </div>
                   <div>
                     <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading leading-tight tracking-tight">
@@ -11222,7 +11209,7 @@ export default function DashboardPage() {
                   className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/60 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer"
                   title="Đóng"
                 >
-                  <span className="material-symbols-outlined text-lg">close</span>
+                  <DashboardIcon name="close" className="text-lg" />
                 </button>
               </div>
 
@@ -11272,9 +11259,7 @@ export default function DashboardPage() {
                     <span className="text-rose-500 font-bold">*</span>
                   </label>
                   <div className="group relative flex items-center rounded-2xl bg-white dark:bg-[#070A10] border border-slate-200 dark:border-slate-800/90 focus-within:border-[#0284c7] dark:focus-within:border-[#38BDF8] focus-within:ring-4 focus-within:ring-cyan-500/10 transition-all shadow-xs">
-                    <span className="material-symbols-outlined text-slate-400 group-focus-within:text-[#0284c7] dark:group-focus-within:text-[#38BDF8] pl-3.5 text-lg transition-colors pointer-events-none">
-                      person
-                    </span>
+                    <DashboardIcon name="person" className="text-slate-400 group-focus-within:text-[#0284c7] dark:group-focus-within:text-[#38BDF8] pl-3.5 text-lg transition-colors pointer-events-none" />
                     <input
                       type="text"
                       required
@@ -11293,9 +11278,7 @@ export default function DashboardPage() {
                     <span className="text-rose-500 font-bold">*</span>
                   </label>
                   <div className="group relative flex items-center rounded-2xl bg-white dark:bg-[#070A10] border border-slate-200 dark:border-slate-800/90 focus-within:border-[#0284c7] dark:focus-within:border-[#38BDF8] focus-within:ring-4 focus-within:ring-cyan-500/10 transition-all shadow-xs">
-                    <span className="material-symbols-outlined text-slate-400 group-focus-within:text-[#0284c7] dark:group-focus-within:text-[#38BDF8] pl-3.5 text-lg transition-colors pointer-events-none">
-                      mail
-                    </span>
+                    <DashboardIcon name="mail" className="text-slate-400 group-focus-within:text-[#0284c7] dark:group-focus-within:text-[#38BDF8] pl-3.5 text-lg transition-colors pointer-events-none" />
                     <input
                       type="email"
                       required
@@ -11316,9 +11299,7 @@ export default function DashboardPage() {
                     <span className="text-[10.5px] text-slate-400 font-medium">Tùy chọn</span>
                   </div>
                   <div className="group relative flex items-center rounded-2xl bg-white dark:bg-[#070A10] border border-slate-200 dark:border-slate-800/90 focus-within:border-[#0284c7] dark:focus-within:border-[#38BDF8] focus-within:ring-4 focus-within:ring-cyan-500/10 transition-all shadow-xs">
-                    <span className="material-symbols-outlined text-slate-400 group-focus-within:text-[#0284c7] dark:group-focus-within:text-[#38BDF8] pl-3.5 text-lg transition-colors pointer-events-none">
-                      lock
-                    </span>
+                    <DashboardIcon name="lock" className="text-slate-400 group-focus-within:text-[#0284c7] dark:group-focus-within:text-[#38BDF8] pl-3.5 text-lg transition-colors pointer-events-none" />
                     <input
                       type="password"
                       value={profilePassword}
@@ -11328,7 +11309,7 @@ export default function DashboardPage() {
                     />
                   </div>
                   <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5 flex items-center gap-1 font-medium">
-                    <span className="material-symbols-outlined text-sm text-slate-400">info</span>
+                    <DashboardIcon name="info" className="text-sm text-slate-400" />
                     Mật khẩu phải có tối thiểu 6 ký tự.
                   </p>
                 </div>
@@ -11435,7 +11416,7 @@ export default function DashboardPage() {
                   onClick={handlePrintInvoice}
                   className="flex-1 py-2.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-black rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
                 >
-                  <span className="material-symbols-outlined text-base">print</span>
+                  <DashboardIcon name="print" className="text-base" />
                   <span>{t.invoicePrintBtn}</span>
                 </button>
               </div>
@@ -11465,7 +11446,7 @@ export default function DashboardPage() {
               <div className="flex justify-between items-center border-b border-slate-200 dark:border-white/10 pb-4 shrink-0">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-2xl bg-sky-500/10 dark:bg-sky-400/10 text-[#0284c7] dark:text-[#38BDF8] flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-xl">shopping_bag</span>
+                    <DashboardIcon name="shopping_bag" className="text-xl" />
                   </div>
                   <div>
                     <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white font-sans tracking-tight">
@@ -11481,7 +11462,7 @@ export default function DashboardPage() {
                   onClick={() => setIsTakeawayModalOpen(false)}
                   className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-lg">close</span>
+                  <DashboardIcon name="close" className="text-lg" />
                 </button>
               </div>
 
@@ -11492,9 +11473,7 @@ export default function DashboardPage() {
                   {/* Category Filter & Search */}
                   <div className="flex flex-col gap-2.5 shrink-0">
                     <div className="relative">
-                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none">
-                        search
-                      </span>
+                      <DashboardIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none" />
                       <input
                         type="text"
                         placeholder="Tìm kiếm món ăn, thức uống..."
@@ -11604,7 +11583,7 @@ export default function DashboardPage() {
                   <div className="space-y-2 pr-1 max-h-[160px] sm:max-h-[220px] lg:max-h-none lg:flex-1 overflow-y-auto min-h-[80px] scrollbar-thin">
                     {takeawayCart.length === 0 ? (
                       <div className="text-center py-8 text-slate-400 text-xs flex flex-col items-center justify-center gap-1.5">
-                        <span className="material-symbols-outlined text-3xl opacity-50">shopping_cart</span>
+                        <DashboardIcon name="shopping_cart" className="text-3xl opacity-50" />
                         <p className="font-normal">Chưa chọn món nào.</p>
                         <p className="text-[11px] text-slate-500 font-normal">Nhấp vào món bên trái để thêm vào giỏ.</p>
                       </div>
@@ -11730,7 +11709,7 @@ export default function DashboardPage() {
                       disabled={takeawayCart.length === 0 || isCreatingTakeaway}
                       className="w-full py-3.5 bg-[#38BDF8] hover:bg-sky-400 disabled:opacity-50 text-[#090D16] font-extrabold rounded-2xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
                     >
-                      <span className="material-symbols-outlined text-base">check_circle</span>
+                      <DashboardIcon name="check_circle" className="text-base" />
                       <span>{isCreatingTakeaway ? 'Đang tạo đơn...' : 'Xác nhận tạo đơn mang về'}</span>
                     </button>
                   </div>
@@ -11763,7 +11742,7 @@ export default function DashboardPage() {
                   {editingCoupon ? 'Cập nhật mã giảm giá' : 'Tạo mã giảm giá mới'}
                 </h3>
                 <button onClick={() => setIsCouponModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
-                  <span className="material-symbols-outlined">close</span>
+                  <DashboardIcon name="close" />
                 </button>
               </div>
 
@@ -11997,7 +11976,7 @@ export default function DashboardPage() {
                   onClick={() => window.print()}
                   className="flex-1 py-2.5 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] rounded-xl text-xs font-black transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-base">print</span>
+                  <DashboardIcon name="print" className="text-base" />
                   <span>In Hóa Đơn</span>
                 </button>
               </div>
@@ -12053,7 +12032,7 @@ export default function DashboardPage() {
                   onClick={() => setIsProfileModalOpen(false)}
                   className="w-7 h-7 rounded-full bg-slate-100 dark:bg-[#181B21] text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-base">close</span>
+                  <DashboardIcon name="close" className="text-base" />
                 </button>
               </div>
 
@@ -12145,7 +12124,7 @@ export default function DashboardPage() {
                   }}
                   className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-600 dark:bg-rose-500/15 dark:hover:bg-rose-600 text-rose-600 dark:text-rose-400 hover:text-white dark:hover:text-white border border-rose-500/30 text-xs font-black rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                 >
-                  <span className="material-symbols-outlined text-base">logout</span>
+                  <DashboardIcon name="logout" className="text-base" />
                   <span>Đăng Xuất Tài Khoản</span>
                 </button>
               </div>
@@ -12183,7 +12162,7 @@ export default function DashboardPage() {
                   onClick={() => setIsAddExpenseModalOpen(false)}
                   className="w-7 h-7 rounded-full bg-slate-100 dark:bg-[#181B21] text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-base">close</span>
+                  <DashboardIcon name="close" className="text-base" />
                 </button>
               </div>
 

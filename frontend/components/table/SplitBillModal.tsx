@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -251,7 +252,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
           <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-4 mb-3 shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/20">
-                <span className="material-symbols-outlined text-xl">payments</span>
+                <AppIcon name="payments" className="text-xl" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-[var(--text-primary)] leading-tight">
@@ -267,14 +268,14 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
               onClick={onClose}
               className="w-8 h-8 rounded-full bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-color)] flex items-center justify-center transition-colors cursor-pointer"
             >
-              <span className="material-symbols-outlined text-base">close</span>
+              <AppIcon name="close" className="text-base" />
             </button>
           </div>
 
           {/* Kitchen Order Status Warning Banner if not ready */}
           {!isReadyForPayment && (
             <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-start gap-2.5 text-xs text-amber-500 mb-3 shrink-0">
-              <span className="material-symbols-outlined text-lg shrink-0 mt-0.5">hourglass_top</span>
+              <AppIcon name="hourglass_top" className="text-lg shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold block">Đơn hàng đang được Bếp / Barista chế biến</span>
                 <span className="text-[11px] opacity-90 leading-tight block mt-0.5">
@@ -287,7 +288,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
           {/* Cash Payment Notice Box on Customer Side (No button when cash) */}
           {!isMomo && (
             <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-start gap-3 text-xs text-amber-500 mb-3 shrink-0">
-              <span className="material-symbols-outlined text-xl shrink-0 mt-0.5">payments</span>
+              <AppIcon name="payments" className="text-xl shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold block text-amber-500">Thanh toán bằng Tiền Mặt</span>
                 <span className="text-[11px] text-[var(--text-secondary)] opacity-90 leading-relaxed block mt-0.5">
@@ -307,7 +308,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
                   : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
-              <span className="material-symbols-outlined text-base">person</span>
+              <AppIcon name="person" className="text-base" />
               <span className="truncate">Theo người</span>
             </button>
             <button
@@ -318,7 +319,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
                   : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
-              <span className="material-symbols-outlined text-base">receipt_long</span>
+              <AppIcon name="receipt_long" className="text-base" />
               <span className="truncate">Tất cả</span>
             </button>
             <button
@@ -329,7 +330,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
                   : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
-              <span className="material-symbols-outlined text-base">group</span>
+              <AppIcon name="group" className="text-base" />
               <span className="truncate">Chia đều</span>
             </button>
             <button
@@ -340,7 +341,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
                   : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
-              <span className="material-symbols-outlined text-base">checklist</span>
+              <AppIcon name="checklist" className="text-base" />
               <span className="truncate">Tự chọn</span>
             </button>
           </div>
@@ -374,9 +375,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
                             <span className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs ${
                               isPaid ? 'bg-emerald-500 text-white' : 'bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]'
                             }`}>
-                              <span className="material-symbols-outlined text-sm">
-                                {isPaid ? 'check' : 'person'}
-                              </span>
+                              <AppIcon name={isPaid ? 'check' : 'person'} className="text-sm" />
                             </span>
                             <span className="text-xs font-bold text-[var(--text-primary)]">
                               {name}
@@ -386,7 +385,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
                           <div className="flex items-center gap-2">
                             {isPaid ? (
                               <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 rounded-lg text-xs font-extrabold flex items-center gap-1">
-                                <span className="material-symbols-outlined text-sm">check_circle</span>
+                                <AppIcon name="check_circle" className="text-sm" />
                                 Đã thanh toán
                               </span>
                             ) : (
@@ -425,7 +424,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
                               disabled
                               className="w-full py-2 bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 rounded-lg text-xs font-extrabold flex items-center justify-center gap-1.5 opacity-90 cursor-default"
                             >
-                              <span className="material-symbols-outlined text-base">verified</span>
+                              <AppIcon name="verified" className="text-base" />
                               <span>Thành viên này đã hoàn tất thanh toán</span>
                             </button>
                           ) : (
@@ -439,9 +438,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
                                     : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border-emerald-500/30 cursor-pointer active:scale-95'
                                 }`}
                               >
-                                <span className="material-symbols-outlined text-base">
-                                  {!isReadyForPayment ? 'hourglass_empty' : 'qr_code_2'}
-                                </span>
+                                <AppIcon name={!isReadyForPayment ? 'hourglass_empty' : 'qr_code_2'} className="text-base" />
                                 <span>
                                   {!isReadyForPayment
                                     ? 'Bếp đang làm...'
@@ -458,7 +455,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
                                     : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border-amber-500/30 cursor-pointer active:scale-95'
                                 }`}
                               >
-                                <span className="material-symbols-outlined text-base">payments</span>
+                                <AppIcon name="payments" className="text-base" />
                                 <span>Tiền mặt</span>
                               </button>
                             </>
@@ -485,7 +482,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
                       </p>
                     </div>
                     <span className="px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-500 text-xs font-bold border border-emerald-500/20 flex items-center gap-1">
-                      <span className="material-symbols-outlined text-sm">receipt_long</span>
+                      <AppIcon name="receipt_long" className="text-sm" />
                       {activeOrders.length} đợt gọi
                     </span>
                   </div>
@@ -496,7 +493,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
                       <div key={o._id || idx} className="p-3 rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] text-xs space-y-1.5">
                         <div className="flex justify-between font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-1">
                           <span className="flex items-center gap-1">
-                            <span className="material-symbols-outlined text-sm text-[var(--brand-primary)]">label</span>
+                            <AppIcon name="label" className="text-sm text-[var(--brand-primary)]" />
                             Đợt #{idx + 1} ({o.customerName || 'Khách tại bàn'})
                           </span>
                           <span className="text-[var(--brand-primary)] font-extrabold">{formatPrice(o.totalAmount || 0, lang)}</span>
@@ -527,9 +524,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
                           : 'bg-emerald-500 hover:bg-emerald-600 cursor-pointer'
                       }`}
                     >
-                      <span className="material-symbols-outlined text-lg">
-                        {!isReadyForPayment ? 'hourglass_empty' : 'qr_code_scanner'}
-                      </span>
+                      <AppIcon name={!isReadyForPayment ? 'hourglass_empty' : 'qr_code_scanner'} className="text-lg" />
                       <span>
                         {!isReadyForPayment
                           ? 'Chờ Bếp hoàn tất ra món mới được thanh toán'
@@ -592,9 +587,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
                           : 'bg-emerald-500 hover:bg-emerald-600 text-white cursor-pointer'
                       }`}
                     >
-                      <span className="material-symbols-outlined text-base">
-                        {!isReadyForPayment ? 'hourglass_empty' : 'qr_code_scanner'}
-                      </span>
+                      <AppIcon name={!isReadyForPayment ? 'hourglass_empty' : 'qr_code_scanner'} className="text-base" />
                       <span>
                         {!isReadyForPayment
                           ? 'Chờ Bếp hoàn tất món ăn mới được thanh toán'
@@ -664,9 +657,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
                           : 'bg-emerald-500 hover:bg-emerald-600 cursor-pointer'
                       }`}
                     >
-                      <span className="material-symbols-outlined text-base">
-                        {!isReadyForPayment ? 'hourglass_empty' : 'qr_code_2'}
-                      </span>
+                      <AppIcon name={!isReadyForPayment ? 'hourglass_empty' : 'qr_code_2'} className="text-base" />
                       <span>
                         {!isReadyForPayment ? 'Chờ Bếp hoàn tất' : 'Tạo QR MoMo'}
                       </span>
@@ -681,14 +672,14 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
               <div className="p-4 border rounded-xl text-center space-y-3 my-2 animate-fadeIn bg-emerald-500/10 border-emerald-500/30">
                 <div className="flex justify-between items-center border-b pb-2 border-emerald-500/20">
                   <span className="text-xs font-bold flex items-center gap-1.5 text-emerald-500">
-                    <span className="material-symbols-outlined text-base">qr_code_scanner</span>
+                    <AppIcon name="qr_code_scanner" className="text-base" />
                     Mã QR MoMo / Chuyển khoản — {activePaymentData.name}
                   </span>
                   <button
                     onClick={() => setActivePaymentData(null)}
                     className="text-xs text-gray-400 hover:text-gray-600 font-bold flex items-center gap-0.5 cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-sm">close</span>
+                    <AppIcon name="close" className="text-sm" />
                     <span>Đóng</span>
                   </button>
                 </div>
@@ -719,14 +710,14 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
               <div className="p-4 border rounded-xl text-center space-y-3 my-2 animate-fadeIn bg-amber-500/10 border-amber-500/30 text-amber-500">
                 <div className="flex justify-between items-center border-b pb-2 border-amber-500/20">
                   <span className="text-xs font-bold flex items-center gap-1.5 text-amber-500">
-                    <span className="material-symbols-outlined text-base">payments</span>
+                    <AppIcon name="payments" className="text-base" />
                     Thanh toán Tiền mặt — {activePaymentData.name}
                   </span>
                   <button
                     onClick={() => setActivePaymentData(null)}
                     className="text-xs text-amber-500/70 hover:text-amber-500 font-bold flex items-center gap-0.5 cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-sm">close</span>
+                    <AppIcon name="close" className="text-sm" />
                     <span>Đóng</span>
                   </button>
                 </div>
@@ -749,7 +740,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
               onClick={handleCopyBreakdown}
               className="flex-1 py-2.5 bg-[var(--bg-primary)] hover:bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--brand-primary)] rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95"
             >
-              <span className="material-symbols-outlined text-base">content_copy</span>
+              <AppIcon name="content_copy" className="text-base" />
               <span>{copiedText ? 'Đã sao chép tin nhắn!' : 'Sao chép chi tiết Zalo / Mess'}</span>
             </button>
 

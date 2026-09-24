@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -210,7 +211,7 @@ export const VoiceOrderModal: React.FC<VoiceOrderModalProps> = ({
           <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200/80 dark:border-white/10 bg-white/95 dark:bg-[#090D16]/95 backdrop-blur-md shrink-0">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-9 h-9 rounded-2xl bg-sky-500/10 dark:bg-sky-500/20 text-[#0284c7] dark:text-[#38BDF8] flex items-center justify-center border border-sky-500/20 dark:border-[#38BDF8]/30 shrink-0">
-                <span className="material-symbols-outlined text-lg">auto_awesome</span>
+                <AppIcon name="auto_awesome" className="text-lg" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
@@ -232,7 +233,7 @@ export const VoiceOrderModal: React.FC<VoiceOrderModalProps> = ({
               className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/60 dark:hover:bg-slate-800 transition-colors shrink-0 cursor-pointer border border-slate-200/60 dark:border-slate-700/60"
               title="Đóng"
             >
-              <span className="material-symbols-outlined text-base">close</span>
+              <AppIcon name="close" className="text-base" />
             </button>
           </div>
 
@@ -273,18 +274,14 @@ export const VoiceOrderModal: React.FC<VoiceOrderModalProps> = ({
               >
                 {isListening ? (
                   <div className="flex flex-col items-center justify-center gap-1">
-                    <span className="material-symbols-outlined text-2xl text-white dark:text-slate-950">
-                      graphic_eq
-                    </span>
+                    <AppIcon name="graphic_eq" className="text-2xl text-white dark:text-slate-950" />
                     <span className="text-[10px] font-extrabold tracking-wider uppercase text-white dark:text-slate-950">
                       DỪNG
                     </span>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center">
-                    <span className="material-symbols-outlined text-2xl sm:text-3xl text-[#0284c7] dark:text-[#38BDF8]">
-                      mic
-                    </span>
+                    <AppIcon name="mic" className="text-2xl sm:text-3xl text-[#0284c7] dark:text-[#38BDF8]" />
                     <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight mt-0.5">
                       CHẠM ĐỂ NÓI
                     </span>
@@ -297,9 +294,7 @@ export const VoiceOrderModal: React.FC<VoiceOrderModalProps> = ({
             <div className="text-center mb-3 sm:mb-4 w-full">
               {isParsing ? (
                 <div className="flex items-center justify-center gap-2 py-1 text-xs sm:text-sm font-extrabold text-[#0284c7] dark:text-[#38BDF8]">
-                  <span className="material-symbols-outlined text-lg animate-spin">
-                    progress_activity
-                  </span>
+                  <AppIcon name="progress_activity" className="text-lg animate-spin" />
                   <span>Kohi AI đang bóc tách món ăn...</span>
                 </div>
               ) : isListening ? (
@@ -329,7 +324,7 @@ export const VoiceOrderModal: React.FC<VoiceOrderModalProps> = ({
                     onClick={() => stopListeningAndParse()}
                     className="mt-2.5 inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-[#0284c7] hover:bg-sky-600 dark:bg-[#38BDF8] dark:hover:bg-sky-400 text-white dark:text-slate-950 text-xs font-black shadow-md active:scale-95 transition-all cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-base">stop_circle</span>
+                    <AppIcon name="stop_circle" className="text-base" />
                     <span>Nói Xong (Dừng & Phân tích)</span>
                   </button>
                 </div>
@@ -383,7 +378,7 @@ export const VoiceOrderModal: React.FC<VoiceOrderModalProps> = ({
                 {/* Takeaway Badge */}
                 {parsedResult.isTakeaway && (
                   <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[11px] font-extrabold tracking-wider">
-                    <span className="material-symbols-outlined text-sm">takeout_dining</span>
+                    <AppIcon name="takeout_dining" className="text-sm" />
                     <span>ĐƠN HÀNG MANG VỀ</span>
                   </div>
                 )}
@@ -443,9 +438,7 @@ export const VoiceOrderModal: React.FC<VoiceOrderModalProps> = ({
                               Xem chi tiết
                             </span>
                           </div>
-                          <span className="material-symbols-outlined text-slate-400 group-hover:text-[#0284c7] dark:group-hover:text-[#38BDF8] text-sm transition-colors">
-                            chevron_right
-                          </span>
+                          <AppIcon name="chevron_right" className="text-slate-400 group-hover:text-[#0284c7] dark:group-hover:text-[#38BDF8] text-sm transition-colors" />
                         </div>
                       </div>
                     ))}
@@ -466,7 +459,7 @@ export const VoiceOrderModal: React.FC<VoiceOrderModalProps> = ({
               onClick={startListening}
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:text-[#0284c7] dark:hover:text-white hover:border-[#0284c7] dark:hover:border-[#38BDF8] hover:bg-white dark:hover:bg-slate-800/60 text-xs font-extrabold transition-all shrink-0 active:scale-95 shadow-2xs"
             >
-              <span className="material-symbols-outlined text-base">replay</span>
+              <AppIcon name="replay" className="text-base" />
               <span>Nói Lại</span>
             </button>
 
@@ -478,7 +471,7 @@ export const VoiceOrderModal: React.FC<VoiceOrderModalProps> = ({
                   disabled={isParsing}
                   className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#0284c7] hover:bg-sky-600 dark:bg-[#38BDF8] dark:hover:bg-sky-400 text-white dark:text-slate-950 font-extrabold text-xs shadow-md transition-all active:scale-95 shrink-0"
                 >
-                  <span className="material-symbols-outlined text-base">stop_circle</span>
+                  <AppIcon name="stop_circle" className="text-base" />
                   <span>Nói Xong</span>
                 </button>
               )}
@@ -497,7 +490,7 @@ export const VoiceOrderModal: React.FC<VoiceOrderModalProps> = ({
                   onClick={handleConfirmAdd}
                   className="flex items-center justify-center gap-1.5 flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-[#0284c7] hover:bg-sky-600 dark:bg-[#38BDF8] dark:hover:bg-sky-400 text-white dark:text-slate-950 font-extrabold text-xs shadow-md transition-all active:scale-95 text-center truncate"
                 >
-                  <span className="material-symbols-outlined text-base">shopping_bag</span>
+                  <AppIcon name="shopping_bag" className="text-base" />
                   <span>Thêm Vào Giỏ Hàng</span>
                 </button>
               )}

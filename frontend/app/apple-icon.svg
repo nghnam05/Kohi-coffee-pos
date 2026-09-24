@@ -1,0 +1,26 @@
+<svg viewBox="0 0 40 40" width="40" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="kStem" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+    <linearGradient id="kUpper" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="60%" stop-color="#BAE6FD" />
+      <stop offset="100%" stop-color="#FFFFFF" />
+    </linearGradient>
+    <linearGradient id="kLower" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#0369A1" />
+    </linearGradient>
+    <filter id="kGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="1.2" flood-color="#38BDF8" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  <!-- Vertical Pillar -->
+  <rect x="7" y="6" width="6" height="28" rx="3" fill="url(#kStem)" filter="url(#kGlow)"/>
+  <!-- Upper Diagonal Arm -->
+  <path d="M16 20.5 L26.8 8.2 C27.7 7.2 29.3 7.3 30.2 8.3 C31 9.3 30.9 10.8 29.9 11.8 L19.8 23.5 Z" fill="url(#kUpper)"/>
+  <!-- Lower Diagonal Leg -->
+  <path d="M15.5 17.5 L27.2 32.2 C28.1 33.3 29.7 33.4 30.7 32.4 C31.7 31.4 31.6 29.8 30.5 28.7 L19.8 15 Z" fill="url(#kLower)"/>
+</svg>

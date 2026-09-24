@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React from 'react';
 import Image from 'next/image';
@@ -57,6 +58,10 @@ export const FoodCard: React.FC<FoodCardProps> = ({
   const isAboveFold = index !== undefined && index < 6;
   const isPriority = index !== undefined && index < 4;
 
+  if (food.isAvailable === false || food.available === false) {
+    return null;
+  }
+
   const handleClick = () => {
     onSelectFood(food, quantity > 0 ? quantity : 1, cartItemNote);
   };
@@ -66,9 +71,8 @@ export const FoodCard: React.FC<FoodCardProps> = ({
   if (viewMode === 'list') {
     return (
       <motion.article
-        initial={isAboveFold ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
-        {...(isAboveFold ? {} : { whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '-20px' } })}
-        transition={{ duration: 0.25, ease: 'easeOut' }}
+        initial={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
         whileHover={{ y: -2 }}
         whileTap={{ scale: 0.99 }}
         className="bg-white dark:bg-[#131926] border border-slate-200/70 dark:border-white/10 rounded-2xl shadow-xs hover:shadow-md transition-all duration-200 p-3 sm:p-3.5 flex items-center gap-3.5 group cursor-pointer"
@@ -83,6 +87,7 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             alt={food.name}
             fill
             priority={isPriority}
+            unoptimized={Boolean(food.image?.startsWith('data:') || food.image?.startsWith('blob:'))}
             sizes="(max-width: 640px) 96px, 120px"
             className="object-cover group-hover:scale-[1.03] transition-transform duration-300 ease-out relative z-0"
           />
@@ -114,7 +119,7 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             {/* Subtle Rating & Details */}
             <div className="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-400 my-0.5 font-sans">
               <span className="flex items-center gap-0.5 text-amber-500/90 dark:text-amber-400/90 font-bold">
-                <span className="material-symbols-outlined text-[13px] fill-current leading-none" aria-hidden="true">star</span>
+                <AppIcon name="star" className="text-[13px] fill-current leading-none" aria-hidden="true" />
                 <span>{(food.rating || 5.0).toFixed(1)}</span>
               </span>
               {food.totalReviews !== undefined && food.totalReviews > 0 ? (
@@ -128,7 +133,7 @@ export const FoodCard: React.FC<FoodCardProps> = ({
                   ? `${food.soldCount || 0} ordered`
                   : lang === 'zh'
                   ? `已售 ${food.soldCount || 0}`
-                  : `Đã gọi ${food.soldCount || 0}`}
+                  : ` ${food.soldCount || 0}  lượt gọi`}
               </span>
             </div>
 
@@ -138,28 +143,26 @@ export const FoodCard: React.FC<FoodCardProps> = ({
           </div>
 
           <div className="flex items-center justify-between mt-1 pt-0.5">
-            <span className="text-[15px] sm:text-[16px] font-extrabold text-slate-900 dark:text-white font-sans tracking-tight">
+            <span className="text-[16px] sm:text-[17px] font-extrabold text-[#0284c7] dark:text-[#38BDF8] font-sans tracking-tight">
               {formatPrice(food.price, lang)}
             </span>
 
             <motion.button
-              whileHover={{ scale: 1.02 }}
+              whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.96 }}
               onClick={handleClick}
-              aria-label={`${quantity > 0 ? (lang === 'en' ? 'Selected' : lang === 'zh' ? '已选择' : 'Đã chọn') : (lang === 'en' ? 'Select' : lang === 'zh' ? '选择' : 'Chọn')} ${food.name}, ${formatPrice(food.price, lang)}`}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold tracking-wide flex items-center gap-1 transition-all cursor-pointer font-sans ${
+              aria-label={`${quantity > 0 ? (lang === 'en' ? 'Added' : lang === 'zh' ? '已添加' : 'Đã thêm') : (lang === 'en' ? 'Add' : lang === 'zh' ? '添加' : 'Thêm')} ${food.name}, ${formatPrice(food.price, lang)}`}
+              className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-[13px] font-extrabold tracking-wide flex items-center gap-1.5 transition-all cursor-pointer font-sans min-h-[38px] sm:min-h-[42px] ${
                 quantity > 0
-                  ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30'
-                  : 'bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 shadow-xs'
+                  ? 'bg-sky-500/20 text-[#0284c7] dark:text-[#38BDF8] border-2 border-[#38BDF8]/60 shadow-xs'
+                  : 'bg-sky-500 hover:bg-sky-600 dark:bg-sky-500 dark:hover:bg-sky-400 text-white shadow-sm hover:shadow-md hover:shadow-sky-500/25'
               }`}
             >
-              <span className="material-symbols-outlined text-[15px]" aria-hidden="true">
-                {quantity > 0 ? 'check' : 'add'}
-              </span>
-              <span>
+              <AppIcon name={quantity > 0 ? 'check' : 'add'} className="text-[16px] sm:text-[17px] text-white" aria-hidden="true" />
+              <span className="text-white">
                 {quantity > 0
-                  ? (lang === 'en' ? `Selected (${quantity})` : lang === 'zh' ? `已选择 (${quantity})` : `Đã chọn (${quantity})`)
-                  : (lang === 'en' ? 'Select' : lang === 'zh' ? '选择' : 'Chọn')}
+                  ? (lang === 'en' ? `Added (${quantity})` : lang === 'zh' ? `已添加 (${quantity})` : `Đã thêm (${quantity})`)
+                  : (lang === 'en' ? 'Add' : lang === 'zh' ? '添加' : 'Thêm')}
               </span>
             </motion.button>
           </div>
@@ -171,9 +174,8 @@ export const FoodCard: React.FC<FoodCardProps> = ({
   // Grid View
   return (
     <motion.article
-      initial={isAboveFold ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-      {...(isAboveFold ? {} : { whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '-30px' } })}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
+      initial={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
       whileHover={{ y: -3 }}
       whileTap={{ scale: 0.985 }}
       className="bg-white dark:bg-[#131926] border border-slate-200/70 dark:border-white/10 rounded-2xl shadow-xs hover:shadow-md transition-all duration-200 overflow-hidden group flex flex-col justify-between h-full cursor-pointer"
@@ -189,6 +191,7 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             alt={food.name}
             fill
             priority={isPriority}
+            unoptimized={Boolean(food.image?.startsWith('data:') || food.image?.startsWith('blob:'))}
             className="object-cover group-hover:scale-[1.03] transition-transform duration-300 ease-out relative z-0"
             sizes="(max-width: 768px) 100vw, 350px"
           />
@@ -223,7 +226,7 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             {/* Rating & Sold Indicator */}
             <div className="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-400 mb-1.5 font-sans flex-wrap">
               <span className="flex items-center gap-0.5 text-amber-500/90 dark:text-amber-400/90 font-bold">
-                <span className="material-symbols-outlined text-[13px] fill-current leading-none" aria-hidden="true">star</span>
+                <AppIcon name="star" className="text-[13px] fill-current leading-none" aria-hidden="true" />
                 <span>{(food.rating || 5.0).toFixed(1)}</span>
               </span>
               {food.totalReviews !== undefined && food.totalReviews > 0 ? (
@@ -237,7 +240,7 @@ export const FoodCard: React.FC<FoodCardProps> = ({
                   ? `${food.soldCount || 0} ordered`
                   : lang === 'zh'
                   ? `已售 ${food.soldCount || 0}`
-                  : `Đã gọi ${food.soldCount || 0}`}
+                  : `Lượt gọi ${food.soldCount || 0}`}
               </span>
             </div>
 
@@ -251,28 +254,26 @@ export const FoodCard: React.FC<FoodCardProps> = ({
       {/* Footer Actions */}
       <div className="p-3.5 pt-0 mt-auto">
         <div className="border-t border-slate-100 dark:border-white/10 pt-2.5 flex items-center justify-between gap-2">
-          <span className="text-[15px] sm:text-[16px] font-extrabold text-slate-900 dark:text-white tracking-tight font-sans whitespace-nowrap">
+          <span className="text-[16px] sm:text-[17px] font-extrabold text-[#0284c7] dark:text-[#38BDF8] tracking-tight font-sans whitespace-nowrap">
             {formatPrice(food.price, lang)}
           </span>
 
           <motion.button
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.96 }}
             onClick={handleClick}
-            aria-label={`${quantity > 0 ? (lang === 'en' ? 'Selected' : lang === 'zh' ? '已选择' : 'Đã chọn') : (lang === 'en' ? 'Select' : lang === 'zh' ? '选择' : 'Chọn')} ${food.name}, ${formatPrice(food.price, lang)}`}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold tracking-wide flex items-center gap-1.5 transition-all cursor-pointer font-sans shrink-0 whitespace-nowrap ${
+            aria-label={`${quantity > 0 ? (lang === 'en' ? 'Added' : lang === 'zh' ? '已添加' : 'Đã thêm') : (lang === 'en' ? 'Add' : lang === 'zh' ? '添加' : 'Thêm')} ${food.name}, ${formatPrice(food.price, lang)}`}
+            className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-[13px] font-extrabold tracking-wide flex items-center gap-1.5 transition-all cursor-pointer font-sans shrink-0 whitespace-nowrap min-h-[38px] sm:min-h-[42px] ${
               quantity > 0
-                ? 'bg-sky-500/15 text-sky-600 dark:text-[#38BDF8] border border-sky-500/30'
-                : 'bg-slate-900 hover:bg-slate-800 dark:bg-[#38BDF8] dark:hover:bg-sky-400 text-white dark:text-slate-950 shadow-xs'
+                ? 'bg-sky-500/20 text-[#0284c7] dark:text-[#38BDF8] border-2 border-[#38BDF8]/60 shadow-xs'
+                : 'bg-sky-500 hover:bg-sky-600 dark:bg-sky-500 dark:hover:bg-sky-400 text-white shadow-sm hover:shadow-md hover:shadow-sky-500/25'
             }`}
           >
-            <span className="material-symbols-outlined text-[15px] shrink-0" aria-hidden="true">
-              {quantity > 0 ? 'check' : 'add'}
-            </span>
-            <span className="whitespace-nowrap">
+            <AppIcon name={quantity > 0 ? 'check' : 'add'} className="text-[16px] sm:text-[17px] shrink-0 text-white" aria-hidden="true" />
+            <span className="whitespace-nowrap text-white">
               {quantity > 0
-                ? (lang === 'en' ? `Selected (${quantity})` : lang === 'zh' ? `已选择 (${quantity})` : `Đã chọn (${quantity})`)
-                : (lang === 'en' ? 'Select' : lang === 'zh' ? '选择' : 'Chọn')}
+                ? (lang === 'en' ? `Added (${quantity})` : lang === 'zh' ? `已添加 (${quantity})` : `Đã thêm (${quantity})`)
+                : (lang === 'en' ? 'Add' : lang === 'zh' ? '添加' : 'Thêm')}
             </span>
           </motion.button>
         </div>

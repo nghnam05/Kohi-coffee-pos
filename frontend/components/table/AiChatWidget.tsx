@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React, { useState, useRef } from 'react';
 
@@ -148,7 +149,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
       <div className="px-4 py-3 sm:py-3.5 bg-slate-50 dark:bg-slate-900/80 border-b border-slate-200 dark:border-white/10 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#090D16] to-[#1E293B] text-[#38BDF8] flex items-center justify-center border border-[#38BDF8]/40 shadow-xs">
-            <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+            <AppIcon name="auto_awesome" className="text-[18px]" />
           </div>
           <div>
             <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white leading-tight">
@@ -173,7 +174,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
           className="w-8 h-8 rounded-full bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white flex items-center justify-center border border-slate-200 dark:border-white/10 transition-all active:scale-95 cursor-pointer shadow-2xs"
           title={lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng'}
         >
-          <span className="material-symbols-outlined text-base">close</span>
+          <AppIcon name="close" className="text-base" />
         </button>
       </div>
 
@@ -184,7 +185,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
           <div className="py-2 space-y-4">
             <div className="text-center px-2 py-3 bg-gradient-to-b from-blue-500/5 to-transparent rounded-2xl border border-blue-500/10">
               <div className="w-10 h-10 mx-auto rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-2 shadow-xs">
-                <span className="material-symbols-outlined text-xl">auto_awesome</span>
+                <AppIcon name="auto_awesome" className="text-xl" />
               </div>
               <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">
                 {lang === 'en'
@@ -207,7 +208,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
               {currentCategories.map((group, gIdx) => (
                 <div key={gIdx} className="space-y-1.5">
                   <div className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 px-1">
-                    <span className="material-symbols-outlined text-xs">{group.icon}</span>
+                    <AppIcon name={group.icon} className="text-xs" />
                     <span>{group.categoryName}</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -248,7 +249,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
             {msg.role === 'ai' && msg.recommendedFoods && msg.recommendedFoods.length > 0 && (
               <div className="w-full max-w-[95%] space-y-2 mt-1">
                 <p className="text-[11px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center gap-1">
-                  <span className="material-symbols-outlined text-xs">menu_book</span>
+                  <AppIcon name="menu_book" className="text-xs" />
                   {lang === 'en'
                     ? 'Recommended for you:'
                     : lang === 'zh'
@@ -280,9 +281,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
                           onClick={() => onAddToCart(food)}
                           className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1 transition-all active:scale-95 shadow-xs cursor-pointer shrink-0"
                         >
-                          <span className="material-symbols-outlined text-sm">
-                            add_shopping_cart
-                          </span>
+                          <AppIcon name="add_shopping_cart" className="text-sm" />
                           <span>{lang === 'en' ? 'Add' : lang === 'zh' ? '加购' : 'Thêm'}</span>
                         </button>
                       )}
@@ -342,9 +341,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
           }`}
           title={isListeningVoice ? 'Đang lắng nghe... Bấm để dừng' : 'Nói để đặt câu hỏi'}
         >
-          <span className="material-symbols-outlined text-base">
-            {isListeningVoice ? 'graphic_eq' : 'mic'}
-          </span>
+          <AppIcon name={isListeningVoice ? 'graphic_eq' : 'mic'} className="text-base" />
         </button>
         <button
           type="button"
@@ -353,7 +350,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
           className="w-10 h-10 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 text-white flex items-center justify-center transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-blue-500/20 cursor-pointer shrink-0"
           title={lang === 'en' ? 'Send' : lang === 'zh' ? '发送' : 'Gửi'}
         >
-          <span className="material-symbols-outlined text-base">send</span>
+          <AppIcon name="send" className="text-base" />
         </button>
       </div>
 
@@ -436,9 +433,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
           aria-label="Tư vấn chọn món & Hỗ trợ"
         >
           <div className="relative flex items-center justify-center pointer-events-none">
-            <span className="material-symbols-outlined text-[20px] md:text-[22px] text-sky-400 group-hover:scale-105 transition-transform select-none">
-              chat_bubble
-            </span>
+            <AppIcon name="chat_bubble" className="text-[20px] md:text-[22px] text-sky-400 group-hover:scale-105 transition-transform select-none" />
           </div>
         </motion.button>
       </div>

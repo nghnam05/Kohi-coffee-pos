@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -54,7 +55,7 @@ export default function NotFound() {
               href="/"
               className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-white/10 transition-all cursor-pointer shadow-xs active:scale-95"
             >
-              <span className="material-symbols-outlined text-[18px]">home</span>
+              <AppIcon name="home" className="text-[18px]" />
               <span className="hidden xs:inline">Trang chủ</span>
             </Link>
           </div>
@@ -123,9 +124,7 @@ export default function NotFound() {
                 </div>
 
                 {/* Coffee Icon */}
-                <span className="material-symbols-outlined text-[52px] sm:text-[72px] text-sky-500 dark:text-sky-400 drop-shadow-md">
-                  local_cafe
-                </span>
+                <AppIcon name="local_cafe" className="text-[52px] sm:text-[72px] text-sky-500 dark:text-sky-400 drop-shadow-md" />
 
                 {/* Tiny Floating Coffee Bean Accent */}
                 <motion.div
@@ -137,7 +136,7 @@ export default function NotFound() {
                   className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-sky-500 text-white flex items-center justify-center shadow-md text-xs font-bold"
                   title="Kohi Coffee"
                 >
-                  <span className="material-symbols-outlined text-[14px]">search_off</span>
+                  <AppIcon name="search_off" className="text-[14px]" />
                 </motion.div>
               </div>
             </motion.div>
@@ -174,7 +173,7 @@ export default function NotFound() {
               href="/"
               className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-extrabold text-sm sm:text-base shadow-lg shadow-sky-500/25 active:scale-[0.98] transition-all cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[20px]">storefront</span>
+              <AppIcon name="storefront" className="text-[20px]" />
               <span>Trở về Trang chủ</span>
             </Link>
 
@@ -184,7 +183,7 @@ export default function NotFound() {
               onClick={() => router.back()}
               className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-white hover:bg-slate-50 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-slate-800 dark:text-slate-100 font-bold text-sm sm:text-base border border-slate-200 dark:border-white/10 shadow-sm active:scale-[0.98] transition-all cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+              <AppIcon name="arrow_back" className="text-[20px]" />
               <span>Quay lại trang trước</span>
             </button>
           </motion.div>
@@ -202,13 +201,11 @@ export default function NotFound() {
               className="group p-4 sm:p-5 rounded-2xl bg-white/70 dark:bg-[#0F172A]/70 hover:bg-white dark:hover:bg-[#0F172A] border border-slate-200/90 dark:border-white/10 hover:border-sky-400/50 dark:hover:border-sky-400/50 transition-all shadow-xs hover:shadow-md cursor-pointer backdrop-blur-md"
             >
               <div className="w-10 h-10 rounded-xl bg-sky-500/10 dark:bg-sky-400/10 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-[22px]">menu_book</span>
+                <AppIcon name="menu_book" className="text-[22px]" />
               </div>
               <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white flex items-center justify-between">
                 <span>Thực đơn Kohi</span>
-                <span className="material-symbols-outlined text-sm text-slate-400 group-hover:translate-x-1 transition-transform">
-                  arrow_forward
-                </span>
+                <AppIcon name="arrow_forward" className="text-sm text-slate-400 group-hover:translate-x-1 transition-transform" />
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed line-clamp-2">
                 Cà phê đặc sản, trà trái cây và bánh tươi chuẩn vị Nhật.
@@ -221,13 +218,11 @@ export default function NotFound() {
               className="group p-4 sm:p-5 rounded-2xl bg-white/70 dark:bg-[#0F172A]/70 hover:bg-white dark:hover:bg-[#0F172A] border border-slate-200/90 dark:border-white/10 hover:border-sky-400/50 dark:hover:border-sky-400/50 transition-all shadow-xs hover:shadow-md cursor-pointer backdrop-blur-md"
             >
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 dark:bg-emerald-400/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-[22px]">dashboard</span>
+                <AppIcon name="dashboard" className="text-[22px]" />
               </div>
               <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white flex items-center justify-between">
                 <span>Bàn & POS</span>
-                <span className="material-symbols-outlined text-sm text-slate-400 group-hover:translate-x-1 transition-transform">
-                  arrow_forward
-                </span>
+                <AppIcon name="arrow_forward" className="text-sm text-slate-400 group-hover:translate-x-1 transition-transform" />
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed line-clamp-2">
                 Khu vực quản lý sơ đồ bàn, đơn hàng và báo cáo.
@@ -240,13 +235,11 @@ export default function NotFound() {
               className="group p-4 sm:p-5 rounded-2xl bg-white/70 dark:bg-[#0F172A]/70 hover:bg-white dark:hover:bg-[#0F172A] border border-slate-200/90 dark:border-white/10 hover:border-sky-400/50 dark:hover:border-sky-400/50 transition-all shadow-xs hover:shadow-md cursor-pointer backdrop-blur-md"
             >
               <div className="w-10 h-10 rounded-xl bg-purple-500/10 dark:bg-purple-400/10 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-[22px]">contact_support</span>
+                <AppIcon name="contact_support" className="text-[22px]" />
               </div>
               <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white flex items-center justify-between">
                 <span>Hỗ trợ & Liên hệ</span>
-                <span className="material-symbols-outlined text-sm text-slate-400 group-hover:translate-x-1 transition-transform">
-                  arrow_forward
-                </span>
+                <AppIcon name="arrow_forward" className="text-sm text-slate-400 group-hover:translate-x-1 transition-transform" />
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed line-clamp-2">
                 Giải đáp thắc mắc, phản hồi chất lượng phục vụ 24/7.

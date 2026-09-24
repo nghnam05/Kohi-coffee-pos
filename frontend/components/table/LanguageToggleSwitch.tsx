@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React, { useId, useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -80,13 +81,9 @@ export const LanguageToggleSwitch: React.FC<LanguageToggleSwitchProps> = ({
           <span className="text-[11px] font-semibold text-[#0284c7] dark:text-[#38BDF8] tracking-tight">
             {currentItem.label}
           </span>
-          <span
-            className={`material-symbols-outlined text-[15px] text-slate-400 dark:text-slate-400 transition-transform duration-200 leading-none ${
+          <AppIcon name="expand_more" className={`text-[15px] text-slate-400 dark:text-slate-400 transition-transform duration-200 leading-none ${
               isOpen ? 'rotate-180 text-[#0284c7] dark:text-[#38BDF8]' : ''
-            }`}
-          >
-            expand_more
-          </span>
+            }`} />
         </button>
 
         <AnimatePresence>
@@ -134,9 +131,7 @@ export const LanguageToggleSwitch: React.FC<LanguageToggleSwitchProps> = ({
                       <span>{item.title}</span>
                     </div>
                     {isActive && (
-                      <span className="material-symbols-outlined text-[16px] text-[#0284c7] dark:text-[#38BDF8] leading-none">
-                        check
-                      </span>
+                      <AppIcon name="check" className="text-[16px] text-[#0284c7] dark:text-[#38BDF8] leading-none" />
                     )}
                   </button>
                 );

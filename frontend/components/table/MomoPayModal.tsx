@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -127,7 +128,7 @@ export const MomoPayModal: React.FC<MomoPayModalProps> = ({
               aria-label="Đóng cửa sổ thanh toán"
               className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 text-white flex items-center justify-center transition-colors cursor-pointer disabled:opacity-30"
             >
-              <span className="material-symbols-outlined text-base">close</span>
+              <AppIcon name="close" className="text-base" />
             </button>
 
             <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mx-auto mb-2 shadow-lg shadow-pink-900/30">
@@ -154,7 +155,7 @@ export const MomoPayModal: React.FC<MomoPayModalProps> = ({
                 className="py-8 text-center space-y-3"
               >
                 <div className="w-20 h-20 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto border-2 border-emerald-500/30 shadow-xl animate-bounce">
-                  <span className="material-symbols-outlined text-5xl">check_circle</span>
+                  <AppIcon name="check_circle" className="text-5xl" />
                 </div>
                 <h4 className="text-xl font-black text-emerald-500 tracking-tight">THANH TOÁN THÀNH CÔNG!</h4>
                 <p className="text-xs text-slate-600 dark:text-slate-300 font-medium max-w-xs mx-auto">
@@ -215,7 +216,7 @@ export const MomoPayModal: React.FC<MomoPayModalProps> = ({
                   rel="noreferrer"
                   className="w-full py-2.5 bg-pink-100 hover:bg-pink-200 dark:bg-pink-950/40 dark:hover:bg-pink-950/60 text-[#D82D8B] dark:text-pink-300 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 border border-pink-300 dark:border-pink-800/50 transition-colors"
                 >
-                  <span className="material-symbols-outlined text-base">open_in_new</span>
+                  <AppIcon name="open_in_new" className="text-base" />
                   <span>Mở ứng dụng Ví MoMo trên máy này</span>
                 </a>
 
@@ -256,7 +257,7 @@ export const MomoPayModal: React.FC<MomoPayModalProps> = ({
                     </>
                   ) : (
                     <>
-                      <span className="material-symbols-outlined text-lg">bolt</span>
+                      <AppIcon name="bolt" className="text-lg" />
                       <span>Giả lập Khách Thanh Toán MoMo (Kích hoạt IPN)</span>
                     </>
                   )}

@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -72,7 +73,7 @@ export const CustomerNotificationModal: React.FC<CustomerNotificationModalProps>
             <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800/80 shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-2xl bg-[#3AA6FF]/10 text-[#3AA6FF] flex items-center justify-center font-bold">
-                  <span className="material-symbols-outlined text-xl">notifications</span>
+                  <AppIcon name="notifications" className="text-xl" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -96,7 +97,7 @@ export const CustomerNotificationModal: React.FC<CustomerNotificationModalProps>
                 className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
                 title="Đóng"
               >
-                <span className="material-symbols-outlined text-lg">close</span>
+                <AppIcon name="close" className="text-lg" />
               </button>
             </div>
 
@@ -124,9 +125,7 @@ export const CustomerNotificationModal: React.FC<CustomerNotificationModalProps>
               {notifications.length === 0 ? (
                 <div className="py-12 flex flex-col items-center justify-center text-center text-slate-400 dark:text-slate-500 space-y-2">
                   <div className="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800/60 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-3xl text-slate-300 dark:text-slate-600">
-                      notifications_off
-                    </span>
+                    <AppIcon name="notifications_off" className="text-3xl text-slate-300 dark:text-slate-600" />
                   </div>
                   <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
                     {lang === 'en' ? 'No notifications yet' : lang === 'zh' ? '暂无通知' : 'Chưa có thông báo nào'}
@@ -157,7 +156,7 @@ export const CustomerNotificationModal: React.FC<CustomerNotificationModalProps>
                       )}
                       <div className="flex items-start gap-3">
                         <div className={`w-9 h-9 rounded-xl ${style.color} flex items-center justify-center shrink-0 mt-0.5`}>
-                          <span className="material-symbols-outlined text-lg">{style.icon}</span>
+                          <AppIcon name={style.icon} className="text-lg" />
                         </div>
                         <div className="flex-1 min-w-0 pr-4">
                           <div className="flex items-center justify-between gap-2">

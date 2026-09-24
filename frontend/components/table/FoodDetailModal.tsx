@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React, { useEffect } from 'react';
 import Image from 'next/image';
@@ -234,12 +235,12 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                   title={lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng'}
                   aria-label={lang === 'en' ? 'Close food details' : lang === 'zh' ? '关闭详情' : 'Đóng chi tiết món'}
                 >
-                  <span className="material-symbols-outlined text-lg" aria-hidden="true">close</span>
+                  <AppIcon name="close" className="text-lg" aria-hidden="true" />
                 </button>
 
                 {/* Zoom Pill Button */}
                 <div className="absolute bottom-3 right-3 z-20 px-3 py-1.5 rounded-full bg-slate-950/80 border border-white/20 text-white text-[10px] font-extrabold flex items-center gap-1.5 backdrop-blur-md shadow-lg transition-transform group-hover:scale-105 active:scale-95" aria-hidden="true">
-                  <span className="material-symbols-outlined text-xs text-[#38BDF8]">zoom_in</span>
+                  <AppIcon name="zoom_in" className="text-xs text-[#38BDF8]" />
                   <span>{lang === 'en' ? 'Full View' : lang === 'zh' ? '全屏大图' : 'Xem full ảnh'}</span>
                 </div>
               </div>
@@ -257,7 +258,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                   title={lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng'}
                   aria-label={lang === 'en' ? 'Close food details' : lang === 'zh' ? '关闭详情' : 'Đóng chi tiết món'}
                 >
-                  <span className="material-symbols-outlined text-lg" aria-hidden="true">close</span>
+                  <AppIcon name="close" className="text-lg" aria-hidden="true" />
                 </button>
 
                 {/* Scrollable Details Body */}
@@ -278,7 +279,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                         {/* Social Proof: Rating & Sold Count */}
                         <div className="flex items-center gap-2 mt-2 text-xs text-slate-500 dark:text-slate-400 font-sans flex-wrap">
                           <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 px-2 py-0.5 rounded-lg font-bold" aria-label={`Đánh giá ${(selectedFood.rating || 5.0).toFixed(1)} trên 5 sao`}>
-                            <span className="material-symbols-outlined text-xs fill-current leading-none" aria-hidden="true">star</span>
+                            <AppIcon name="star" className="text-xs fill-current leading-none" aria-hidden="true" />
                             <span>{(selectedFood.rating || 5.0).toFixed(1)}</span>
                           </span>
                           {selectedFood.totalReviews !== undefined && selectedFood.totalReviews > 0 ? (
@@ -288,7 +289,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                           ) : null}
                           <span className="text-slate-300 dark:text-slate-700 leading-none" aria-hidden="true">•</span>
                           <span className="inline-flex items-center gap-1 bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/25 px-2 py-0.5 rounded-lg font-medium text-[11px]">
-                            <span className="material-symbols-outlined text-xs" aria-hidden="true">local_fire_department</span>
+                            <AppIcon name="local_fire_department" className="text-xs" aria-hidden="true" />
                             <span>
                               {lang === 'en'
                                 ? `${selectedFood.soldCount || 0} sold`
@@ -323,9 +324,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                         className="inline-flex items-center gap-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-[#0284c7] dark:text-[#38BDF8] border border-sky-500/25 rounded-full px-3 py-1 text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-2xs group focus-visible:ring-2 focus-visible:ring-sky-500"
                         aria-label={lang === 'en' ? `Ask AI about ${selectedFood.name}` : `Hỏi AI về món ${selectedFood.name}`}
                       >
-                        <span className="material-symbols-outlined text-sm group-hover:rotate-12 transition-transform" aria-hidden="true">
-                          auto_awesome
-                        </span>
+                        <AppIcon name="auto_awesome" className="text-sm group-hover:rotate-12 transition-transform" aria-hidden="true" />
                         <span>
                           {lang === 'en'
                             ? 'Ask AI about this item'
@@ -425,9 +424,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                               }`}
                             >
                               <div className="flex items-center gap-2 truncate mr-1">
-                                <span className="material-symbols-outlined text-base text-slate-400 dark:text-slate-500">
-                                  {ADDON_ICONS[addonName] || 'local_offer'}
-                                </span>
+                                <AppIcon name={ADDON_ICONS[addonName] || 'local_offer'} className="text-base text-slate-400 dark:text-slate-500" />
                                 <span className="truncate">{addonName}</span>
                               </div>
                               <span className="font-bold text-[11px] shrink-0 font-mono">
@@ -503,7 +500,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                   {foodReviews.length > 0 && (
                     <div className="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200/80 dark:border-white/10">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-[#0284c7] dark:text-[#38BDF8] mb-1 flex items-center gap-1 font-sans">
-                        <span className="material-symbols-outlined text-xs" aria-hidden="true">star</span>
+                        <AppIcon name="star" className="text-xs" aria-hidden="true" />
                         {lang === 'en' ? 'Featured Review' : lang === 'zh' ? '精选评价' : 'Đánh giá nổi bật'}
                       </p>
                       <p className="text-xs text-slate-600 dark:text-slate-400 italic">
@@ -524,7 +521,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                       className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors active:scale-90 cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-500"
                       title={lang === 'en' ? 'Decrease' : lang === 'zh' ? '减少' : 'Giảm số lượng'}
                     >
-                      <span className="material-symbols-outlined text-base" aria-hidden="true">remove</span>
+                      <AppIcon name="remove" className="text-base" aria-hidden="true" />
                     </button>
                     <span
                       className="text-base font-bold text-slate-900 dark:text-white w-7 text-center select-none font-mono"
@@ -541,7 +538,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                       className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors active:scale-90 cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-500"
                       title={lang === 'en' ? 'Increase' : lang === 'zh' ? '增加' : 'Tăng số lượng'}
                     >
-                      <span className="material-symbols-outlined text-base" aria-hidden="true">add</span>
+                      <AppIcon name="add" className="text-base" aria-hidden="true" />
                     </button>
                   </div>
 
@@ -587,7 +584,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                 className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 text-white backdrop-blur-md transition-all active:scale-95 cursor-pointer border border-white/25 shadow-2xl"
                 title={lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng xem ảnh'}
               >
-                <span className="material-symbols-outlined text-lg">close</span>
+                <AppIcon name="close" className="text-lg" />
                 <span className="text-xs font-black uppercase tracking-wider">
                   {lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng'}
                 </span>
@@ -642,9 +639,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
             >
               <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/60">
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#0284c7] dark:text-[#38BDF8] text-lg">
-                    auto_awesome
-                  </span>
+                  <AppIcon name="auto_awesome" className="text-[#0284c7] dark:text-[#38BDF8] text-lg" />
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
                     {lang === 'en'
                       ? `Ask AI about ${selectedFood.name}`
@@ -659,7 +654,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                   className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:text-slate-300 flex items-center justify-center border border-slate-200 dark:border-slate-700 cursor-pointer"
                   title={lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng'}
                 >
-                  <span className="material-symbols-outlined text-sm">close</span>
+                  <AppIcon name="close" className="text-sm" />
                 </button>
               </div>
 

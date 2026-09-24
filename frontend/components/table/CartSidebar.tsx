@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React from 'react';
 import Image from 'next/image';
@@ -195,7 +196,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                   className="object-cover"
                 />
               ) : (
-                <span className="material-symbols-outlined text-slate-400 text-lg">local_cafe</span>
+                <AppIcon name="local_cafe" className="text-slate-400 text-lg" />
               )}
             </div>
 
@@ -260,7 +261,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
         {cart.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-6 text-center gap-2">
             <div className="w-12 h-12 rounded-2xl bg-sky-500/10 dark:bg-sky-500/20 text-sky-500 flex items-center justify-center">
-              <span className="material-symbols-outlined text-2xl">local_cafe</span>
+              <AppIcon name="local_cafe" className="text-2xl" />
             </div>
             <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
               {t.emptyCart}
@@ -309,13 +310,13 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
           <div className="pt-2 border-t border-slate-200 dark:border-white/10">
             <p className="text-[10px] font-semibold uppercase tracking-[0.04em] text-amber-500 dark:text-amber-400 mb-2 flex items-center justify-between">
               <span className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-xs">recommend</span>
+                <AppIcon name="recommend" className="text-xs" />
                 <span>{t.suggestedForYou || (lang === 'en' ? 'Recommended For You' : lang === 'zh' ? '猜你喜欢' : 'Gợi ý món nên thử')}</span>
               </span>
             </p>
             <div className="space-y-2">
               {foods
-                .filter((f) => !cartMap.has(f._id))
+                .filter((f) => f.isAvailable !== false && (f as any).available !== false && !cartMap.has(f._id))
                 .slice(0, cart.length === 0 ? 3 : 2)
                 .map((recomFood) => (
                   <div
@@ -324,22 +325,28 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-950 relative flex-shrink-0">
-                        <Image src={recomFood.image} alt={recomFood.name} fill className="object-cover" />
+                        <Image
+                          src={recomFood.image}
+                          alt={recomFood.name}
+                          fill
+                          unoptimized={Boolean(recomFood.image?.startsWith('data:') || recomFood.image?.startsWith('blob:'))}
+                          className="object-cover"
+                        />
                       </div>
                       <div className="min-w-0">
                         <p className="text-xs font-medium text-slate-900 dark:text-white truncate">
                           {recomFood.name}
                         </p>
-                        <p className="text-[12px] font-bold text-[#0284c7] dark:text-sky-400">
+                        <p className="text-[13px] font-extrabold text-[#0284c7] dark:text-[#38BDF8] font-sans tracking-tight">
                           {formatPrice(recomFood.price, lang)}
                         </p>
                       </div>
                     </div>
                     <button
                       onClick={() => handleIncrease(recomFood)}
-                      className="px-2.5 py-1 bg-sky-500/15 dark:bg-sky-500/20 hover:bg-[#38BDF8] text-sky-600 dark:text-sky-400 hover:text-slate-950 dark:hover:text-slate-950 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1 flex-shrink-0 active:scale-95 cursor-pointer shadow-2xs"
+                      className="px-3.5 py-1.5 bg-sky-500 hover:bg-sky-600 dark:bg-sky-500 dark:hover:bg-sky-400 text-white rounded-xl text-xs font-extrabold transition-all flex items-center gap-1 flex-shrink-0 active:scale-95 cursor-pointer shadow-xs hover:shadow-md hover:shadow-sky-500/25 min-h-[32px]"
                     >
-                      <span>+ {t.addItem || (lang === 'en' ? 'Add' : lang === 'zh' ? '添加' : 'Thêm')}</span>
+                      <span className="text-white">+ {t.addItem || (lang === 'en' ? 'Add' : lang === 'zh' ? '添加' : 'Thêm')}</span>
                     </button>
                   </div>
                 ))}
@@ -355,7 +362,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
       return (
         <div className="flex-shrink-0 p-3.5 bg-slate-50/80 dark:bg-[#0B0F17]/90 border-t border-slate-200 dark:border-white/10 font-sans pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <div className="flex items-center gap-2.5 p-3 rounded-xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-xs text-left">
-            <span className="material-symbols-outlined text-2xl text-sky-500 shrink-0">shopping_bag</span>
+            <AppIcon name="shopping_bag" className="text-2xl text-sky-500 shrink-0" />
             <div className="min-w-0">
               <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                 {lang === 'en' ? 'Table Cart is Empty' : lang === 'zh' ? '本桌购物车暂无商品' : 'Giỏ hàng bàn chưa có món'}
@@ -384,7 +391,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
         {/* Auto 10% Voucher Banner when >= 300k */}
         {isAutoDiscountApplied && (
           <div className="mb-2.5 p-2.5 rounded-xl bg-gradient-to-r from-sky-500/15 via-blue-500/15 to-indigo-500/15 border border-sky-500/30 text-sky-700 dark:text-sky-300 text-xs font-semibold flex items-center gap-2">
-            <span className="material-symbols-outlined text-base text-sky-500 shrink-0">redeem</span>
+            <AppIcon name="redeem" className="text-base text-sky-500 shrink-0" />
             <span className="leading-snug">
               {lang === 'en'
                 ? 'Orders > 300k get 10% OFF automatically applied to bill!'
@@ -471,14 +478,10 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5 border border-transparent'
             }`}
           >
-            <span
-              className={`material-symbols-outlined text-[18px] transition-transform ${
+            <AppIcon name="payments" className={`text-[18px] transition-transform ${
                 paymentMethod === 'cash' ? 'text-[#0284c7] dark:text-[#38BDF8] scale-105' : 'text-slate-400 dark:text-slate-500'
               }`}
-              aria-hidden="true"
-            >
-              payments
-            </span>
+              aria-hidden="true" />
             <span className="font-sans whitespace-nowrap">{t.cash || (lang === 'en' ? 'Cash' : lang === 'zh' ? '现金' : 'Tiền mặt')}</span>
           </button>
 
@@ -494,16 +497,12 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5 border border-transparent'
             }`}
           >
-            <span
-              className={`material-symbols-outlined text-[18px] transition-transform ${
+            <AppIcon name="qr_code_2" className={`text-[18px] transition-transform ${
                 paymentMethod === 'bank_transfer' || paymentMethod === 'momo'
                   ? 'text-[#0284c7] dark:text-[#38BDF8] scale-105'
                   : 'text-slate-400 dark:text-slate-500'
               }`}
-              aria-hidden="true"
-            >
-              qr_code_2
-            </span>
+              aria-hidden="true" />
             <span className="font-sans whitespace-nowrap">{t.bankTransfer || (lang === 'en' ? 'Bank QR' : lang === 'zh' ? '银行转账' : 'CK Ngân hàng')}</span>
           </button>
         </div>
@@ -641,7 +640,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                   title={lang === 'en' ? 'Close cart' : lang === 'zh' ? '关闭购物车' : 'Đóng giỏ hàng'}
                   aria-label={lang === 'en' ? 'Close cart' : lang === 'zh' ? '关闭购物车' : 'Đóng giỏ hàng'}
                 >
-                  <span className="material-symbols-outlined text-lg" aria-hidden="true">close</span>
+                  <AppIcon name="close" className="text-lg" aria-hidden="true" />
                 </button>
               </div>
 

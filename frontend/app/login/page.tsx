@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -161,7 +162,7 @@ export default function LoginPage() {
             onClick={() => router.push('/')}
             className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-[#0d1322] border border-slate-200/80 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-white/20 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer active:scale-95 shadow-2xs"
           >
-            <span className="material-symbols-outlined text-base">arrow_back</span>
+            <AppIcon name="arrow_back" className="text-base" />
             <span>{currText.backToHome}</span>
           </button>
 
@@ -250,9 +251,7 @@ export default function LoginPage() {
                   className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors focus:outline-none cursor-pointer shrink-0 ml-2 flex items-center justify-center"
                   title={showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
                 >
-                  <span className="material-symbols-outlined text-[18px]">
-                    {showPassword ? 'visibility_off' : 'visibility'}
-                  </span>
+                  <AppIcon name={showPassword ? 'visibility_off' : 'visibility'} className="text-[18px]" />
                 </button>
               </div>
               {passwordError && <p className="text-[11px] text-rose-500 font-semibold ml-1">{passwordError}</p>}

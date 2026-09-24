@@ -747,4 +747,31 @@ div[data-rht-toaster] {
     animation: none;
   }
 }
+
+/* ── Visible & Tactile Horizontal Scrollbar ───────────────────────────────── */
+.custom-horizontal-scrollbar {
+  overflow-x: auto !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #38bdf8 rgba(148, 163, 184, 0.2) !important;
+}
+
+.custom-horizontal-scrollbar::-webkit-scrollbar {
+  height: 8px !important;
+  display: block !important;
+}
+
+.custom-horizontal-scrollbar::-webkit-scrollbar-track {
+  background: rgba(148, 163, 184, 0.15) !important;
+  border-radius: 9999px !important;
+}
+
+.custom-horizontal-scrollbar::-webkit-scrollbar-thumb {
+  background: #38bdf8 !important;
+  border-radius: 9999px !important;
+}
+
+.custom-horizontal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #0284c7 !important;
+}
+
 

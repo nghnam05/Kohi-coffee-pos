@@ -27,6 +27,13 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "KOHI Coffee & Pastry - Order QR & Booking",
   description: "QR Order & Online Reservation System for KOHI Coffee & Specialty Drinks",
+  icons: {
+    icon: [
+      { url: "/k-monogram.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/k-monogram.svg",
+    apple: "/k-monogram.svg",
+  },
 };
 
 export const viewport: Viewport = {
@@ -57,6 +64,9 @@ export default function RootLayout({
       )}
     >
       <head>
+        <link rel="icon" type="image/svg+xml" href="/k-monogram.svg" />
+        <link rel="shortcut icon" href="/k-monogram.svg" />
+        <link rel="apple-touch-icon" href="/k-monogram.svg" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link

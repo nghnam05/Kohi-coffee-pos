@@ -1,6 +1,7 @@
 'use client';
+import { DashboardIcon } from '@/components/common/DashboardIcon';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1')
@@ -60,6 +61,79 @@ export const AiDemandForecastCard: React.FC<AiDemandForecastCardProps> = ({
   const [isApplying, setIsApplying] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Horizontal Scroll & Drag-to-scroll controls for 7-day forecast
+  const forecastScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+  const isDraggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const scrollLeftStartRef = useRef(0);
+
+  const checkScroll = useCallback(() => {
+    const el = forecastScrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 5);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 5);
+  }, []);
+
+  const handleScrollNav = (direction: 'left' | 'right') => {
+    const el = forecastScrollRef.current;
+    if (!el) return;
+    const scrollAmount = direction === 'left' ? -220 : 220;
+    el.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    setTimeout(checkScroll, 350);
+  };
+
+  // Convert mouse wheel into horizontal scroll when hovering over the cards
+  useEffect(() => {
+    const el = forecastScrollRef.current;
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      if (e.deltaY === 0) return;
+      const canLeft = el.scrollLeft > 0;
+      const canRight = el.scrollLeft < el.scrollWidth - el.clientWidth - 2;
+
+      if ((e.deltaY > 0 && canRight) || (e.deltaY < 0 && canLeft)) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+        checkScroll();
+      }
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    el.addEventListener('scroll', checkScroll, { passive: true });
+    checkScroll();
+
+    return () => {
+      el.removeEventListener('wheel', onWheel);
+      el.removeEventListener('scroll', checkScroll);
+    };
+  }, [data, checkScroll]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const el = forecastScrollRef.current;
+    if (!el) return;
+    isDraggingRef.current = true;
+    startXRef.current = e.pageX - el.offsetLeft;
+    scrollLeftStartRef.current = el.scrollLeft;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDraggingRef.current) return;
+    const el = forecastScrollRef.current;
+    if (!el) return;
+    e.preventDefault();
+    const x = e.pageX - el.offsetLeft;
+    const walk = (x - startXRef.current) * 1.5;
+    el.scrollLeft = scrollLeftStartRef.current - walk;
+    checkScroll();
+  };
+
+  const handleMouseUpOrLeave = () => {
+    isDraggingRef.current = false;
+  };
 
   const fetchForecast = useCallback(async () => {
     if (!token) return;
@@ -132,9 +206,7 @@ export const AiDemandForecastCard: React.FC<AiDemandForecastCardProps> = ({
   if (loading && !data) {
     return (
       <div className="p-8 rounded-3xl bg-white dark:bg-[#090D16] border border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center min-h-[220px]">
-        <span className="material-symbols-outlined text-3xl text-[#38BDF8] animate-spin mb-3">
-          rotate_right
-        </span>
+        <DashboardIcon name="rotate_right" className="text-3xl text-[#38BDF8] animate-spin mb-3" />
         <p className="text-xs font-extrabold text-slate-600 dark:text-slate-300">
           Kohi AI đang phân tích chuỗi thời gian 30 ngày & tính toán dự báo...
         </p>
@@ -151,7 +223,7 @@ export const AiDemandForecastCard: React.FC<AiDemandForecastCardProps> = ({
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#38BDF8]/20 border border-[#38BDF8]/40 flex items-center justify-center text-[#38BDF8] shrink-0">
-              <span className="material-symbols-outlined text-2xl">auto_graph</span>
+              <DashboardIcon name="auto_graph" className="text-2xl" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
@@ -173,9 +245,7 @@ export const AiDemandForecastCard: React.FC<AiDemandForecastCardProps> = ({
             disabled={loading}
             className="w-full sm:w-auto justify-center px-4 py-2.5 rounded-xl sm:rounded-2xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-xs font-extrabold text-slate-200 flex items-center gap-2 transition-colors active:scale-95 cursor-pointer"
           >
-            <span className={`material-symbols-outlined text-sm ${loading ? 'animate-spin' : ''}`}>
-              sync
-            </span>
+            <DashboardIcon name="sync" className={`text-sm ${loading ? 'animate-spin' : ''}`} />
             <span>Cập nhật dự báo</span>
           </button>
         </div>
@@ -184,7 +254,7 @@ export const AiDemandForecastCard: React.FC<AiDemandForecastCardProps> = ({
         {data?.summary && (
           <div className="relative z-10 mt-4 p-4 rounded-2xl bg-white/5 border border-white/10 text-xs leading-relaxed text-slate-300 font-medium">
             <div className="flex items-center gap-2 text-[#38BDF8] font-extrabold mb-1">
-              <span className="material-symbols-outlined text-base">insights</span>
+              <DashboardIcon name="insights" className="text-base" />
               <span>Đánh giá từ Trí tuệ nhân tạo:</span>
             </div>
             {data.summary}
@@ -202,14 +272,14 @@ export const AiDemandForecastCard: React.FC<AiDemandForecastCardProps> = ({
             className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center justify-between"
           >
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-base">check_circle</span>
+              <DashboardIcon name="check_circle" className="text-base" />
               <span>{successMsg}</span>
             </div>
             <button
               onClick={() => setSuccessMsg(null)}
               className="text-emerald-500 hover:text-emerald-700"
             >
-              <span className="material-symbols-outlined text-sm">close</span>
+              <DashboardIcon name="close" className="text-sm" />
             </button>
           </motion.div>
         )}
@@ -221,14 +291,14 @@ export const AiDemandForecastCard: React.FC<AiDemandForecastCardProps> = ({
             className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center justify-between"
           >
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-base">error_outline</span>
+              <DashboardIcon name="error_outline" className="text-base" />
               <span>{errorMsg}</span>
             </div>
             <button
               onClick={() => setErrorMsg(null)}
               className="text-rose-500 hover:text-rose-700"
             >
-              <span className="material-symbols-outlined text-sm">close</span>
+              <DashboardIcon name="close" className="text-sm" />
             </button>
           </motion.div>
         )}
@@ -239,43 +309,79 @@ export const AiDemandForecastCard: React.FC<AiDemandForecastCardProps> = ({
         <div>
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[#38BDF8] text-xl">calendar_month</span>
+              <DashboardIcon name="calendar_month" className="text-[#38BDF8] text-xl" />
               <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
                 Dự Báo Bán Hàng 7 Ngày Tới
               </h3>
             </div>
-            <span className="text-xs text-slate-400 font-bold">
-              Độ tin cậy: ~90%
-            </span>
+            <div className="flex items-center gap-2.5">
+              <span className="text-xs text-slate-400 font-bold hidden sm:inline">
+                Độ tin cậy: ~90%
+              </span>
+              {/* Horizontal Scroll Navigation Buttons */}
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200 dark:border-white/10 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => handleScrollNav('left')}
+                  disabled={!canScrollLeft}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 hover:text-sky-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer shadow-2xs active:scale-95"
+                  title="Cuộn sang trái"
+                  aria-label="Cuộn sang trái"
+                >
+                  <DashboardIcon name="chevron_left" className="text-base" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleScrollNav('right')}
+                  disabled={!canScrollRight}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 hover:text-sky-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer shadow-2xs active:scale-95"
+                  title="Cuộn sang phải"
+                  aria-label="Cuộn sang phải"
+                >
+                  <DashboardIcon name="chevron_right" className="text-base" />
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 sm:gap-3">
+          <div
+            ref={forecastScrollRef}
+            data-lenis-prevent
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUpOrLeave}
+            onMouseLeave={handleMouseUpOrLeave}
+            className="custom-horizontal-scrollbar flex gap-3 overflow-x-auto pb-3.5 pt-1 -mx-1 px-1 touch-pan-x overscroll-x-contain cursor-grab active:cursor-grabbing select-none"
+            style={{
+              WebkitOverflowScrolling: 'touch',
+            }}
+          >
             {data?.forecastDays.map((day, idx) => {
               const isWeekend = day.dayOfWeek === 'Thứ Bảy' || day.dayOfWeek === 'Chủ Nhật';
               return (
                 <div
                   key={idx}
-                  className={`p-3 sm:p-3.5 rounded-2xl border transition-all flex flex-col justify-between ${
+                  className={`w-[165px] sm:w-[175px] min-w-[165px] sm:min-w-[175px] shrink-0 p-3.5 rounded-2xl border transition-all flex flex-col justify-between shadow-xs ${
                     isWeekend
-                      ? 'bg-sky-50/50 dark:bg-sky-950/20 border-sky-200/80 dark:border-sky-800/50 shadow-xs'
-                      : 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200/80 dark:border-slate-800/80'
+                      ? 'bg-sky-50/70 dark:bg-sky-950/30 border-sky-300/80 dark:border-sky-800/60 shadow-sky-500/10'
+                      : 'bg-slate-50/90 dark:bg-slate-900/50 border-slate-200/80 dark:border-slate-800/80'
                   }`}
                 >
                   <div>
-                    <div className="flex items-center justify-between mb-1 sm:mb-1.5">
-                      <span className="text-xs font-extrabold text-slate-900 dark:text-white truncate">
+                    <div className="flex items-center justify-between gap-1 mb-2">
+                      <span className="text-[13px] font-extrabold text-slate-900 dark:text-white whitespace-nowrap">
                         {day.dayOfWeek}
                       </span>
-                      <span className="text-[10px] text-slate-400 font-semibold shrink-0">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold shrink-0">
                         {day.date.split('-').slice(1).reverse().join('/')}
                       </span>
                     </div>
 
-                    <div className="text-sm sm:text-base font-extrabold text-[#38BDF8] tracking-tight">
+                    <div className="text-base font-extrabold text-[#38BDF8] tracking-tight">
                       {day.projectedRevenue.toLocaleString('vi-VN')} đ
                     </div>
 
-                    <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 sm:mt-2 pt-1.5 sm:pt-2 border-t border-slate-200/60 dark:border-slate-800/60">
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 mt-2 pt-2 border-t border-slate-200/70 dark:border-slate-800/70">
                       <span>Dự kiến:</span>
                       <span className="font-extrabold text-slate-700 dark:text-slate-300">
                         {day.projectedOrders} đơn
@@ -283,9 +389,9 @@ export const AiDemandForecastCard: React.FC<AiDemandForecastCardProps> = ({
                     </div>
                   </div>
 
-                  <div className="mt-2 pt-1.5 border-t border-slate-200/50 dark:border-slate-800/60 text-[10px]">
-                    <span className="text-slate-400 dark:text-slate-500 block text-[9.5px]">Cao điểm:</span>
-                    <span className="font-bold text-slate-700 dark:text-slate-300 block leading-tight mt-0.5 break-words" title={day.peakHours}>
+                  <div className="mt-2.5 pt-2 border-t border-slate-200/60 dark:border-slate-800/70 text-[10.5px]">
+                    <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-medium">Cao điểm:</span>
+                    <span className="font-bold text-slate-700 dark:text-slate-300 block leading-tight mt-0.5 whitespace-normal" title={day.peakHours}>
                       {day.peakHours}
                     </span>
                   </div>
@@ -305,7 +411,7 @@ export const AiDemandForecastCard: React.FC<AiDemandForecastCardProps> = ({
       <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#090D16] border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-amber-500 text-xl">warning_amber</span>
+            <DashboardIcon name="warning_amber" className="text-amber-500 text-xl" />
             <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
               Cảnh Báo Cạn Kho
             </h3>
@@ -356,7 +462,7 @@ export const AiDemandForecastCard: React.FC<AiDemandForecastCardProps> = ({
           </div>
         ) : (
           <div className="p-6 text-center text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center gap-3 bg-slate-50/60 dark:bg-white/5 rounded-2xl border border-slate-200/60 dark:border-white/5">
-            <span className="material-symbols-outlined text-emerald-500 text-2xl shrink-0">check_circle</span>
+            <DashboardIcon name="check_circle" className="text-emerald-500 text-2xl shrink-0" />
             <span className="font-semibold text-slate-700 dark:text-slate-200">
               Tất cả nguyên liệu hiện đang ở mức an toàn cho 7 ngày tới. Không có nguyên liệu nào chạm ngưỡng cạn kiệt.
             </span>
@@ -374,7 +480,7 @@ export const AiDemandForecastCard: React.FC<AiDemandForecastCardProps> = ({
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
             <div>
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#38BDF8] text-xl">inventory_2</span>
+                <DashboardIcon name="inventory_2" className="text-[#38BDF8] text-xl" />
                 <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
                   Kế Hoạch Nhập Hàng Đề Xuất Bởi AI (Smart Restock Advice)
                 </h3>
@@ -389,9 +495,7 @@ export const AiDemandForecastCard: React.FC<AiDemandForecastCardProps> = ({
               disabled={isApplying}
               className="w-full sm:w-auto justify-center px-5 py-2.5 rounded-xl sm:rounded-2xl bg-[#38BDF8] hover:bg-sky-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-sky-500/20 flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
             >
-              <span className={`material-symbols-outlined text-base ${isApplying ? 'animate-spin' : ''}`}>
-                {isApplying ? 'rotate_right' : 'task_alt'}
-              </span>
+              <DashboardIcon name={isApplying ? 'rotate_right' : 'task_alt'} className={`text-base ${isApplying ? 'animate-spin' : ''}`} />
               <span>
                 {isApplying ? 'Đang cập nhật kho...' : 'Nhập Kho Theo Đề Xuất (1-Click)'}
               </span>

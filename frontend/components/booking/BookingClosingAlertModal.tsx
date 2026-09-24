@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -94,7 +95,7 @@ export const BookingClosingAlertModal: React.FC<BookingClosingAlertModalProps> =
           {/* Header */}
           <div className="flex items-start gap-4 mb-5">
             <div className="w-12 h-12 rounded-2xl bg-amber-500/15 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30 shadow-inner">
-              <span className="material-symbols-outlined text-2xl animate-pulse">schedule</span>
+              <AppIcon name="schedule" className="text-2xl animate-pulse" />
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight leading-snug font-heading">
