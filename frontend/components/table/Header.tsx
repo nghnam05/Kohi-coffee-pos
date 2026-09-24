@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -90,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({
             className="relative w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 flex items-center justify-center shadow-xs active:scale-95 transition-all cursor-pointer"
             title="Xem danh sách thông báo"
           >
-            <span className="material-symbols-outlined text-xl">notifications</span>
+            <AppIcon name="notifications" className="text-xl" />
             {unreadNotificationCount > 0 && (
               <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-black bg-[#3B82F6] text-white rounded-full shadow-xs leading-none animate-pulse">
                 {unreadNotificationCount}
@@ -109,9 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
             title="Danh mục tùy chọn"
           >
-            <span className="material-symbols-outlined text-2xl transition-transform duration-200">
-              {isFloatingPopupOpen ? 'close' : 'more_vert'}
-            </span>
+            <AppIcon name={isFloatingPopupOpen ? 'close' : 'more_vert'} className="text-2xl transition-transform duration-200" />
 
             {/* Notification Dot Badge */}
             {!isFloatingPopupOpen && (totalQuantity > 0 || activeOrders.length > 0) && (
@@ -179,7 +178,7 @@ export const Header: React.FC<HeaderProps> = ({
                     className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer"
                     title={lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng'}
                   >
-                    <span className="material-symbols-outlined text-lg">close</span>
+                    <AppIcon name="close" className="text-lg" />
                   </button>
                 </div>
               </div>
@@ -203,7 +202,7 @@ export const Header: React.FC<HeaderProps> = ({
                     }}
                     className="px-3 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold transition-all active:scale-95 shadow-xs cursor-pointer flex items-center gap-1 shrink-0 ml-2"
                   >
-                    <span className="material-symbols-outlined text-sm">edit</span>
+                    <AppIcon name="edit" className="text-sm" />
                     <span>{customerName ? (lang === 'en' ? 'Edit' : 'Đổi tên') : (lang === 'en' ? 'Enter' : 'Nhập tên')}</span>
                   </button>
                 )}

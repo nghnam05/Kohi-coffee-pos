@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -194,7 +195,7 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
           <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200/80 dark:border-white/10 flex items-center justify-between bg-white dark:bg-[#0E121B] shrink-0">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-[#0284c7] dark:text-[#38BDF8]">
-                <span className="material-symbols-outlined text-lg">qr_code_scanner</span>
+                <AppIcon name="qr_code_scanner" className="text-lg" />
               </div>
               <div>
                 <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#0284c7] dark:text-[#38BDF8] block font-mono">
@@ -319,9 +320,7 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
                             className="h-8 px-3 bg-slate-100 hover:bg-[#0284c7] dark:bg-slate-800 dark:hover:bg-[#38BDF8] text-slate-700 hover:text-white dark:text-slate-300 dark:hover:text-slate-950 font-extrabold rounded-lg text-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1 shrink-0"
                             title="Sao chép số tài khoản"
                           >
-                            <span className="material-symbols-outlined text-sm">
-                              {copiedField === 'Số tài khoản' ? 'check' : 'content_copy'}
-                            </span>
+                            <AppIcon name={copiedField === 'Số tài khoản' ? 'check' : 'content_copy'} className="text-sm" />
                             <span>{copiedField === 'Số tài khoản' ? 'Đã chép' : 'Sao chép'}</span>
                           </button>
                         </div>
@@ -339,9 +338,7 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
                             className="h-8 px-3 bg-slate-100 hover:bg-[#0284c7] dark:bg-slate-800 dark:hover:bg-[#38BDF8] text-slate-700 hover:text-white dark:text-slate-300 dark:hover:text-slate-950 font-extrabold rounded-lg text-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1 shrink-0"
                             title="Sao chép nội dung chuyển khoản"
                           >
-                            <span className="material-symbols-outlined text-sm">
-                              {copiedField === 'Nội dung' ? 'check' : 'content_copy'}
-                            </span>
+                            <AppIcon name={copiedField === 'Nội dung' ? 'check' : 'content_copy'} className="text-sm" />
                             <span>{copiedField === 'Nội dung' ? 'Đã chép' : 'Sao chép'}</span>
                           </button>
                         </div>
@@ -394,7 +391,7 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-lg">check_circle</span>
+                  <AppIcon name="check_circle" className="text-lg" />
                   <span>Xác nhận Đã chuyển khoản</span>
                 </>
               )}
@@ -408,7 +405,7 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
                 disabled={isCancelling}
                 className="w-full h-10 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 font-extrabold rounded-xl text-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 border border-rose-500/20 disabled:opacity-50"
               >
-                <span className="material-symbols-outlined text-base">close</span>
+                <AppIcon name="close" className="text-base" />
                 <span>{isCancelling ? 'Đang hủy đơn...' : 'Hủy đơn hàng này'}</span>
               </button>
             )}

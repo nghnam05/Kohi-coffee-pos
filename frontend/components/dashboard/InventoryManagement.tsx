@@ -1,4 +1,5 @@
 'use client';
+import { DashboardIcon } from '@/components/common/DashboardIcon';
 
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
@@ -294,7 +295,7 @@ export const InventoryManagement: React.FC<InventoryManagementProps> = ({
             onClick={() => setShowAddModal(true)}
             className="px-4 sm:px-5 py-2.5 bg-[#3B82F6] hover:bg-blue-600 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-blue-500/20 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
+            <DashboardIcon name="add" className="text-lg sm:text-xl" />
             <span>Thêm nguyên liệu mới</span>
           </button>
         )}

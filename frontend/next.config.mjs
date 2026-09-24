@@ -33,6 +33,14 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  async rewrites() {
+    return [
+      {
+        source: '/favicon.ico',
+        destination: '/k-monogram.svg',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

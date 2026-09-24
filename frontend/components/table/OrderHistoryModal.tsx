@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -192,7 +193,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                 title={lang === 'en' ? 'Close order history' : lang === 'zh' ? '关闭订单历史' : 'Đóng lịch sử đơn hàng'}
                 aria-label={lang === 'en' ? 'Close order history' : lang === 'zh' ? '关闭订单历史' : 'Đóng lịch sử đơn hàng'}
               >
-                <span className="material-symbols-outlined text-lg" aria-hidden="true">close</span>
+                <AppIcon name="close" className="text-lg" aria-hidden="true" />
               </button>
             </div>
 
@@ -337,7 +338,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                               }}
                               className="h-8 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer inline-flex items-center gap-1.5 font-sans"
                             >
-                              <span className="material-symbols-outlined text-[15px]">schedule</span>
+                              <AppIcon name="schedule" className="text-[15px]" />
                               <span>{lang === 'en' ? 'Track' : lang === 'zh' ? '进度' : 'Theo dõi tiến độ'}</span>
                             </button>
 
@@ -355,7 +356,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                                     className="h-8 px-2.5 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer inline-flex items-center gap-1 font-sans border border-rose-500/20 disabled:opacity-50"
                                     title={lang === 'en' ? 'Cancel this order' : 'Hủy đơn hàng này'}
                                   >
-                                    <span className="material-symbols-outlined text-[15px]">close</span>
+                                    <AppIcon name="close" className="text-[15px]" />
                                     <span>{cancellingOrderId === order._id ? (lang === 'en' ? 'Cancelling...' : 'Đang hủy...') : (lang === 'en' ? 'Cancel' : lang === 'zh' ? '取消' : 'Hủy')}</span>
                                   </button>
                                 </div>
@@ -379,9 +380,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                                       : 'bg-[#3B82F6] hover:bg-blue-600'
                                   }`}
                                 >
-                                  <span className="material-symbols-outlined text-[15px]">
-                                    {order.paymentMethod === 'cash' ? 'payments' : 'qr_code_2'}
-                                  </span>
+                                  <AppIcon name={order.paymentMethod === 'cash' ? 'payments' : 'qr_code_2'} className="text-[15px]" />
                                   <span>
                                     {order.paymentMethod === 'cash'
                                       ? (lang === 'en' ? 'Pay Cash' : lang === 'zh' ? '现金支付' : 'Tiền mặt')
@@ -397,7 +396,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                                 onClick={() => setReviewingOrder(order)}
                                 className="h-8 px-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer inline-flex items-center gap-1.5 font-sans border border-amber-500/20"
                               >
-                                <span className="material-symbols-outlined text-[15px]">star</span>
+                                <AppIcon name="star" className="text-[15px]" />
                                 <span>{lang === 'en' ? 'Review' : lang === 'zh' ? '评价' : 'Đánh giá'}</span>
                               </button>
                             )}
@@ -432,7 +431,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                   if (isAllPaid) {
                     return (
                       <span className="px-3.5 py-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-bold border border-emerald-500/20 font-sans inline-flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-[15px]">check_circle</span>
+                        <AppIcon name="check_circle" className="text-[15px]" />
                         {lang === 'en' ? 'All Paid' : lang === 'zh' ? '已全额结账' : 'Đã thanh toán đủ'}
                       </span>
                     );
@@ -459,9 +458,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                           isCash ? 'bg-amber-600 hover:bg-amber-700' : 'bg-[#3B82F6] hover:bg-blue-600'
                         }`}
                       >
-                        <span className="material-symbols-outlined text-base">
-                          {isCash ? 'payments' : 'qr_code_2'}
-                        </span>
+                        <AppIcon name={isCash ? 'payments' : 'qr_code_2'} className="text-base" />
                         <span>
                           {isCash
                             ? (lang === 'en' ? 'Pay Cash' : lang === 'zh' ? '现金支付' : 'Thanh toán Tiền mặt')
@@ -511,7 +508,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
               <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10">
                 <div className="flex items-center gap-2.5">
                   <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center" aria-hidden="true">
-                    <span className="material-symbols-outlined text-xl">payments</span>
+                    <AppIcon name="payments" className="text-xl" />
                   </div>
                   <div>
                     <h4 id="cash-guidance-title" className="text-sm font-bold text-slate-900 dark:text-white">
@@ -544,7 +541,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
               {/* Status & Instructions */}
               <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300 space-y-1">
                 <p className="font-semibold flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-base">info</span>
+                  <AppIcon name="info" className="text-base" />
                   <span>
                     {selectedCashOrder.status === 'pending'
                       ? (lang === 'en' ? 'Order is pending approval' : 'Đơn hàng đang chờ duyệt')
@@ -570,7 +567,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                     disabled={cancellingOrderId === selectedCashOrder._id}
                     className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 border border-rose-500/20 disabled:opacity-50"
                   >
-                    <span className="material-symbols-outlined text-base">close</span>
+                    <AppIcon name="close" className="text-base" />
                     <span>
                       {cancellingOrderId === selectedCashOrder._id
                         ? (lang === 'en' ? 'Cancelling...' : 'Đang hủy đơn...')
@@ -584,7 +581,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                   disabled={isCallingCashStaff}
                   className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
                 >
-                  <span className="material-symbols-outlined text-base">notifications_active</span>
+                  <AppIcon name="notifications_active" className="text-base" />
                   <span>
                     {isCallingCashStaff
                       ? (lang === 'en' ? 'Sending...' : 'Đang gửi...')
@@ -602,7 +599,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                   }}
                   className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 border border-slate-200 dark:border-white/10"
                 >
-                  <span className="material-symbols-outlined text-base">qr_code_2</span>
+                  <AppIcon name="qr_code_2" className="text-base" />
                   <span>{lang === 'en' ? 'Switch to VietQR bank transfer' : 'Đổi sang Chuyển khoản VietQR'}</span>
                 </button>
 

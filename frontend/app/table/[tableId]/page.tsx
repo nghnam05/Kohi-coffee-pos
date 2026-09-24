@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -1819,6 +1820,7 @@ export default function TableMenuPage() {
   const categoryCountMap = useMemo(() => {
     const map = new Map<string, number>();
     foods.forEach((f) => {
+      if (f.isAvailable === false || (f as any).available === false) return;
       const rawCat = f.category;
       const normKey = normalizeCategoryKey(rawCat);
       map.set(rawCat, (map.get(rawCat) || 0) + 1);
@@ -1852,6 +1854,8 @@ export default function TableMenuPage() {
   const filteredFoods = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return foods.filter((f) => {
+      if (f.isAvailable === false || (f as any).available === false) return false;
+
       const matchesCategory = !activeCategory || f.category === activeCategory;
       if (!q) return matchesCategory;
 
@@ -1889,7 +1893,8 @@ export default function TableMenuPage() {
 
   const suggestedFoods = useMemo(() => {
     if (!foods || foods.length === 0) return [];
-    return [...foods]
+    return foods
+      .filter((f) => f.isAvailable !== false && (f as any).available !== false)
       .sort((a, b) => ((b.soldCount || 0) + (b.rating || 0) * 50) - ((a.soldCount || 0) + (a.rating || 0) * 50))
       .slice(0, 6);
   }, [foods]);
@@ -1900,7 +1905,7 @@ export default function TableMenuPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-[#FFFFFF] dark:bg-[#090D16] p-8 text-center font-sans text-[#1C1008] dark:text-[#F5EFE6]">
         <div className="w-20 h-20 bg-[#3AA6FF]/10 dark:bg-[#5B9EFF]/15 text-[#3AA6FF] dark:text-[#5B9EFF] border border-[#3AA6FF]/40 rounded-full flex items-center justify-center text-4xl shadow-[0_0_20px_rgba(58,166,255,0.2)] animate-bounce">
-          <span className="material-symbols-outlined text-4xl">warning</span>
+          <AppIcon name="warning" className="text-4xl" />
         </div>
         <div>
           <h2 className="text-xl font-extrabold">{lang === 'vi' ? 'Có lỗi xảy ra' : 'An error occurred'}</h2>
@@ -1961,9 +1966,7 @@ export default function TableMenuPage() {
                       : 'bg-sky-500/10 text-[#0284c7] dark:bg-sky-500/20 dark:text-[#38BDF8] border-sky-500/25 dark:border-[#38BDF8]/40'
                   }`}
                 >
-                  <span className="material-symbols-outlined text-xl animate-bounce">
-                    {isCancelled ? 'warning' : 'notifications_active'}
-                  </span>
+                  <AppIcon name={isCancelled ? 'warning' : 'notifications_active'} className="text-xl animate-bounce" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="text-sm font-black text-slate-900 dark:text-white leading-snug">
@@ -1989,7 +1992,7 @@ export default function TableMenuPage() {
                   className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors p-1 cursor-pointer rounded-lg hover:bg-slate-100 dark:hover:bg-white/10"
                   title="Đóng thông báo"
                 >
-                  <span className="material-symbols-outlined text-base">close</span>
+                  <AppIcon name="close" className="text-base" />
                 </button>
               </div>
             </motion.div>
@@ -2150,9 +2153,7 @@ export default function TableMenuPage() {
             {/* Mobile Search Bar Row (Clean, Full-width, Integrated Voice & View Filter) */}
             <div className="px-4 pt-2.5 pb-2 flex items-center gap-2 md:hidden flex-shrink-0">
               <div className="relative flex-1">
-                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">
-                  search
-                </span>
+                <AppIcon name="search" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none" />
                 <input
                   type="text"
                   placeholder={t.searchPlaceholder}
@@ -2167,7 +2168,7 @@ export default function TableMenuPage() {
                     className="w-7 h-7 rounded-lg text-blue-600 dark:text-sky-400 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors flex items-center justify-center cursor-pointer active:scale-95"
                     title="Gọi món giọng nói"
                   >
-                    <span className="material-symbols-outlined text-[19px]">mic</span>
+                    <AppIcon name="mic" className="text-[19px]" />
                   </button>
                   <button
                     type="button"
@@ -2175,7 +2176,7 @@ export default function TableMenuPage() {
                     className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors flex items-center justify-center cursor-pointer active:scale-95"
                     title={viewMode === 'list' ? 'Chế độ xem dạng lưới' : 'Chế độ xem danh sách'}
                   >
-                    <span className="material-symbols-outlined text-[19px]">tune</span>
+                    <AppIcon name="tune" className="text-[19px]" />
                   </button>
                 </div>
               </div>
@@ -2205,7 +2206,7 @@ export default function TableMenuPage() {
               >
                 <span>{lang === 'en' ? 'All' : lang === 'zh' ? '全部' : 'Tất cả'}</span>
                 <span className={`ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${activeCategory === '' ? 'bg-white/20 dark:bg-slate-950/20 text-white dark:text-slate-950' : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400'}`}>
-                  {foods.length}
+                  {foods.filter((f) => f.isAvailable !== false && (f as any).available !== false).length}
                 </span>
               </button>
               {categories.map((cat) => {
@@ -2258,9 +2259,7 @@ export default function TableMenuPage() {
               </div>
             ) : filteredFoods.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-3 py-16 text-center flex-1">
-                <span className="material-symbols-outlined text-5xl text-[var(--text-secondary)]">
-                  local_cafe
-                </span>
+                <AppIcon name="local_cafe" className="text-5xl text-[var(--text-secondary)]" />
                 <p className="text-sm font-semibold text-[var(--text-secondary)]">
                   {t.emptyCart}
                 </p>
@@ -2305,7 +2304,7 @@ export default function TableMenuPage() {
                 <div className="flex items-center justify-between mb-3 px-1">
                   <div className="flex items-center gap-2">
                     <div className="w-7 h-7 rounded-lg bg-amber-500/15 text-amber-500 dark:text-amber-400 flex items-center justify-center border border-amber-500/25 shadow-2xs">
-                      <span className="material-symbols-outlined text-[17px]">auto_awesome</span>
+                      <AppIcon name="auto_awesome" className="text-[17px]" />
                     </div>
                     <div>
                       <h3 className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight font-sans">
@@ -2352,7 +2351,7 @@ export default function TableMenuPage() {
                               sizes="145px"
                             />
                             <div className="absolute top-1.5 left-1.5 bg-black/65 backdrop-blur-xs text-amber-400 px-1.5 py-0.5 rounded-md text-[9.5px] font-bold flex items-center gap-0.5">
-                              <span className="material-symbols-outlined text-[11px] fill-current">star</span>
+                              <AppIcon name="star" className="text-[11px] fill-current" />
                               <span>{(sFood.rating || 5.0).toFixed(1)}</span>
                             </div>
                           </div>
@@ -2371,14 +2370,12 @@ export default function TableMenuPage() {
                             type="button"
                             className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
                               quantity > 0
-                                ? 'bg-sky-500/20 text-sky-600 dark:text-sky-400 border border-sky-500/30'
-                                : 'bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 shadow-xs'
+                                ? 'bg-sky-500/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#38BDF8]/60 shadow-xs'
+                                : 'bg-[#38BDF8] hover:bg-sky-400 text-slate-950 font-bold shadow-xs'
                             }`}
                             title={lang === 'en' ? 'Select' : lang === 'zh' ? '选择' : 'Chọn'}
                           >
-                            <span className="material-symbols-outlined text-sm font-bold">
-                              {quantity > 0 ? 'check' : 'add'}
-                            </span>
+                            <AppIcon name={quantity > 0 ? 'check' : 'add'} className="text-sm font-bold" />
                           </button>
                         </div>
                       </div>
@@ -2599,7 +2596,7 @@ export default function TableMenuPage() {
               className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-6 shadow-2xl text-center space-y-4 my-auto"
             >
               <div className="w-16 h-16 mx-auto rounded-3xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center shadow-md animate-pulse">
-                <span className="material-symbols-outlined text-3xl">cleaning_services</span>
+                <AppIcon name="cleaning_services" className="text-3xl" />
               </div>
 
               <div className="space-y-1.5">
@@ -2621,7 +2618,7 @@ export default function TableMenuPage() {
                 onClick={handleImmediateExit}
                 className="w-full py-3 bg-[#38BDF8] hover:bg-[#0284c7] text-white font-black text-xs rounded-2xl shadow-lg shadow-sky-500/25 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
               >
-                <span className="material-symbols-outlined text-base">home</span>
+                <AppIcon name="home" className="text-base" />
                 <span>Về trang chủ ngay</span>
               </button>
             </motion.div>
@@ -2668,7 +2665,7 @@ export default function TableMenuPage() {
                 className="flex items-center gap-2.5 min-w-0 cursor-pointer flex-1 mr-2"
               >
                 <div className="relative w-11 h-11 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-white/10 text-slate-700 dark:text-slate-200">
-                  <span className="material-symbols-outlined text-2xl">local_mall</span>
+                  <AppIcon name="local_mall" className="text-2xl" />
                   {totalQuantity > 0 && (
                     <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 text-[10px] font-black flex items-center justify-center shadow-xs leading-none">
                       {totalQuantity}
@@ -2690,7 +2687,7 @@ export default function TableMenuPage() {
                   onClick={() => setIsCartOpen(true)}
                   className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 font-bold text-xs sm:text-[13px] flex items-center gap-1.5 shrink-0 shadow-md active:scale-95 transition-all cursor-pointer font-sans"
                 >
-                  <span className="material-symbols-outlined text-base">check_circle</span>
+                  <AppIcon name="check_circle" className="text-base" />
                   <span>{lang === 'en' ? 'Submit table order' : lang === 'zh' ? '发送点单请求' : 'Gửi yêu cầu gọi món'}</span>
                 </button>
               ) : (
@@ -2700,7 +2697,7 @@ export default function TableMenuPage() {
                   }}
                   className="px-3.5 sm:px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 font-bold text-xs sm:text-[13px] flex items-center gap-1.5 shrink-0 border border-slate-200/60 dark:border-white/10 cursor-pointer font-sans"
                 >
-                  <span className="material-symbols-outlined text-base text-slate-400">check_circle</span>
+                  <AppIcon name="check_circle" className="text-base text-slate-400" />
                   <span>{lang === 'en' ? 'Submit table order' : lang === 'zh' ? '发送点单请求' : 'Gửi yêu cầu gọi món'}</span>
                 </button>
               )}

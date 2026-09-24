@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -69,13 +70,13 @@ export const TableQRModal: React.FC<TableQRModalProps> = ({
               className="absolute top-4 right-4 z-30 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
               title={lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng'}
             >
-              <span className="material-symbols-outlined text-lg">close</span>
+              <AppIcon name="close" className="text-lg" />
             </button>
 
             <div className="p-6 sm:p-7 flex flex-col items-center text-center">
               {/* Header Badge */}
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#3AA6FF]/10 text-[#3AA6FF] text-xs font-bold uppercase tracking-wider mb-2">
-                <span className="material-symbols-outlined text-sm">qr_code_2</span>
+                <AppIcon name="qr_code_2" className="text-sm" />
                 <span>{lang === 'en' ? 'Table Location QR' : lang === 'zh' ? '桌位二维码' : 'Mã QR Vị trí Bàn'}</span>
               </div>
 
@@ -118,9 +119,7 @@ export const TableQRModal: React.FC<TableQRModalProps> = ({
                   onClick={handleCopy}
                   className="w-full py-3 px-4 bg-[#3AA6FF] hover:bg-[#2892eb] text-white text-xs font-bold rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer font-sans"
                 >
-                  <span className="material-symbols-outlined text-base">
-                    {copied ? 'check' : 'content_copy'}
-                  </span>
+                  <AppIcon name={copied ? 'check' : 'content_copy'} className="text-base" />
                   <span>
                     {copied
                       ? (lang === 'en' ? 'Link Copied!' : lang === 'zh' ? '已复制链接！' : 'Đã sao chép liên kết!')

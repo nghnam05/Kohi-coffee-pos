@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -171,7 +172,7 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
           <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3 mb-4 shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center border border-amber-500/20">
-                <span className="material-symbols-outlined text-xl">star</span>
+                <AppIcon name="star" className="text-xl" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-[var(--text-primary)] leading-tight">
@@ -187,14 +188,14 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
               onClick={onClose}
               className="w-8 h-8 rounded-full bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-color)] flex items-center justify-center transition-colors cursor-pointer"
             >
-              <span className="material-symbols-outlined text-base">close</span>
+              <AppIcon name="close" className="text-base" />
             </button>
           </div>
 
           {isSubmittedSuccess ? (
             <div className="py-6 text-center space-y-4">
               <div className="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto border border-emerald-500/30 shadow-xs">
-                <span className="material-symbols-outlined text-3xl">task_alt</span>
+                <AppIcon name="task_alt" className="text-3xl" />
               </div>
               <div className="space-y-1">
                 <h4 className="text-base font-bold text-[var(--text-primary)]">
@@ -213,7 +214,7 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
               <div className="p-4 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-500/30 rounded-2xl text-left space-y-2.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-amber-500 text-base">redeem</span>
+                    <AppIcon name="redeem" className="text-amber-500 text-base" />
                     <span className="text-[11px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 font-mono">
                       {lang === 'en' ? 'Loyalty Gift Voucher' : lang === 'zh' ? '感恩回馈礼券' : 'Quà tặng tri ân Kohi'}
                     </span>
@@ -233,7 +234,7 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
                     onClick={handleCopyVoucher}
                     className="px-3 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold text-[11px] uppercase tracking-wider rounded-lg shadow-xs active:scale-95 transition-all cursor-pointer flex items-center gap-1 shrink-0"
                   >
-                    <span className="material-symbols-outlined text-sm">{copiedVoucher ? 'check' : 'content_copy'}</span>
+                    <AppIcon name={copiedVoucher ? 'check' : 'content_copy'} className="text-sm" />
                     <span>{copiedVoucher ? 'Đã chép' : 'Sao chép'}</span>
                   </button>
                 </div>
@@ -269,11 +270,9 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
                       onClick={() => setOverallStar(s)}
                       className="p-1 transition-transform active:scale-95 hover:scale-110 cursor-pointer"
                     >
-                      <span className={`material-symbols-outlined text-3xl ${
+                      <AppIcon name="star" className={`text-3xl ${
                         s <= overallStar ? 'text-amber-400 fill-current' : 'text-gray-300 dark:text-gray-600'
-                      }`}>
-                        star
-                      </span>
+                      }`} />
                     </button>
                   ))}
                 </div>
@@ -331,7 +330,7 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
                           />
                         ) : (
                           <div className="w-10 h-10 rounded-lg bg-[#0284c7]/10 text-[#0284c7] flex items-center justify-center shrink-0 border border-[#0284c7]/20">
-                            <span className="material-symbols-outlined text-base">local_cafe</span>
+                            <AppIcon name="local_cafe" className="text-base" />
                           </div>
                         )}
                         <div className="truncate">
@@ -352,11 +351,9 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
                             onClick={() => handleStarClick(foodId, s)}
                             className="p-0.5 cursor-pointer hover:scale-110 transition-transform"
                           >
-                            <span className={`material-symbols-outlined text-xl ${
+                            <AppIcon name="star" className={`text-xl ${
                               s <= currentStar ? 'text-amber-400' : 'text-gray-300 dark:text-gray-600'
-                            }`}>
-                              star
-                            </span>
+                            }`} />
                           </button>
                         ))}
                       </div>
@@ -393,7 +390,7 @@ export const FoodReviewModal: React.FC<FoodReviewModalProps> = ({
                   isSubmitting ? 'opacity-70 cursor-not-allowed' : 'active:scale-95'
                 }`}
               >
-                <span className="material-symbols-outlined text-base">send</span>
+                <AppIcon name="send" className="text-base" />
                 <span>
                   {isSubmitting
                     ? (lang === 'en' ? 'Submitting...' : lang === 'zh' ? '正在提交...' : 'Đang gửi đánh giá...')

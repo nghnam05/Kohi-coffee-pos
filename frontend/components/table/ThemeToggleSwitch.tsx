@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React, { useId, useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -65,20 +66,12 @@ export const ThemeToggleSwitch: React.FC<ThemeToggleSwitchProps> = ({
           aria-label="Chuyển đổi giao diện Sáng / Tối"
           title="Chuyển đổi giao diện"
         >
-          <span
-            className={`material-symbols-outlined text-[17px] leading-none ${
+          <AppIcon name={!isDark ? 'light_mode' : 'dark_mode'} className={`text-[17px] leading-none ${
               !isDark ? 'text-amber-500' : 'text-sky-400'
-            }`}
-          >
-            {!isDark ? 'light_mode' : 'dark_mode'}
-          </span>
-          <span
-            className={`material-symbols-outlined text-[15px] text-slate-400 dark:text-slate-400 transition-transform duration-200 leading-none ${
+            }`} />
+          <AppIcon name="expand_more" className={`text-[15px] text-slate-400 dark:text-slate-400 transition-transform duration-200 leading-none ${
               isOpen ? 'rotate-180 text-[#0284c7] dark:text-[#38BDF8]' : ''
-            }`}
-          >
-            expand_more
-          </span>
+            }`} />
         </button>
 
         <AnimatePresence>
@@ -111,15 +104,11 @@ export const ThemeToggleSwitch: React.FC<ThemeToggleSwitchProps> = ({
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px] text-amber-500 leading-none">
-                    light_mode
-                  </span>
+                  <AppIcon name="light_mode" className="text-[17px] text-amber-500 leading-none" />
                   <span>Giao diện Sáng</span>
                 </div>
                 {!isDark && (
-                  <span className="material-symbols-outlined text-[16px] text-amber-600 dark:text-amber-400 leading-none">
-                    check
-                  </span>
+                  <AppIcon name="check" className="text-[16px] text-amber-600 dark:text-amber-400 leading-none" />
                 )}
               </button>
 
@@ -139,15 +128,11 @@ export const ThemeToggleSwitch: React.FC<ThemeToggleSwitchProps> = ({
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px] text-sky-400 leading-none">
-                    dark_mode
-                  </span>
+                  <AppIcon name="dark_mode" className="text-[17px] text-sky-400 leading-none" />
                   <span>Giao diện Tối</span>
                 </div>
                 {isDark && (
-                  <span className="material-symbols-outlined text-[16px] text-[#0284c7] dark:text-[#38BDF8] leading-none">
-                    check
-                  </span>
+                  <AppIcon name="check" className="text-[16px] text-[#0284c7] dark:text-[#38BDF8] leading-none" />
                 )}
               </button>
             </motion.div>
@@ -181,9 +166,7 @@ export const ThemeToggleSwitch: React.FC<ThemeToggleSwitchProps> = ({
               className="absolute inset-0 bg-white rounded-lg shadow-sm border border-amber-300/80"
             />
           )}
-          <span className="material-symbols-outlined text-[17px] relative z-10 leading-none">
-            light_mode
-          </span>
+          <AppIcon name="light_mode" className="text-[17px] relative z-10 leading-none" />
         </button>
 
         {/* Dark mode option */}
@@ -206,9 +189,7 @@ export const ThemeToggleSwitch: React.FC<ThemeToggleSwitchProps> = ({
               className="absolute inset-0 bg-slate-750 dark:bg-slate-700/95 rounded-lg shadow-sm border border-sky-400/50 shadow-[0_0_10px_rgba(56,189,248,0.25)]"
             />
           )}
-          <span className="material-symbols-outlined text-[17px] relative z-10 leading-none">
-            dark_mode
-          </span>
+          <AppIcon name="dark_mode" className="text-[17px] relative z-10 leading-none" />
         </button>
       </div>
     </>

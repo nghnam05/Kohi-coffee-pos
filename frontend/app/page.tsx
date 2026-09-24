@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -742,7 +743,7 @@ export default function Home() {
                     : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
-                <span className="material-symbols-outlined text-base sm:text-lg shrink-0">calendar_month</span>
+                <AppIcon name="calendar_month" className="text-base sm:text-lg shrink-0" />
                 <span className="whitespace-nowrap">{t.btnBookTab}</span>
               </button>
               <button
@@ -757,7 +758,7 @@ export default function Home() {
                     : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
-                <span className="material-symbols-outlined text-base sm:text-lg shrink-0">search</span>
+                <AppIcon name="search" className="text-base sm:text-lg shrink-0" />
                 <span className="whitespace-nowrap">{t.btnLookupTab}</span>
               </button>
             </nav>
@@ -817,7 +818,7 @@ export default function Home() {
                       onClick={fetchTables}
                       className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/10 transition-colors cursor-pointer shadow-2xs active:scale-95"
                     >
-                      <span className="material-symbols-outlined text-sm">sync</span>
+                      <AppIcon name="sync" className="text-sm" />
                       <span>{t.refreshMap}</span>
                     </button>
                   </div>
@@ -1099,7 +1100,7 @@ export default function Home() {
                           className="w-full min-w-0 max-w-full rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-50/80 dark:bg-white/[0.03] text-xs sm:text-sm focus:bg-white dark:focus:bg-[#0d1322] focus:border-[#0284c7] dark:focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/15 transition-all py-2.5 pl-3 sm:pl-3.5 pr-9 sm:pr-10 text-slate-900 dark:text-slate-100 font-medium outline-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full"
                         />
                         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-                          <span className="material-symbols-outlined text-base">calendar_today</span>
+                          <AppIcon name="calendar_today" className="text-base" />
                         </div>
                       </div>
                     </div>
@@ -1183,7 +1184,7 @@ export default function Home() {
                       className="w-full py-3.5 px-6 rounded-2xl text-white dark:text-slate-950 bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 active:scale-[0.98] font-bold text-sm tracking-wide shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 min-h-[48px]"
                     >
                       <span>{isSubmitting ? t.btnSubmitting : t.btnSubmitBooking}</span>
-                      <span className="material-symbols-outlined text-base">arrow_forward</span>
+                      <AppIcon name="arrow_forward" className="text-base" />
                     </button>
                   </div>
                 </form>

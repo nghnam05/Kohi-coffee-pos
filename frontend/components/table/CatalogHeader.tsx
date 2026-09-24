@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React from 'react';
 
@@ -47,7 +48,7 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
     }
     return customerName ? (
       <>
-        Chào mừng <span className="font-bold text-slate-900 dark:text-white">{customerName}</span>, chúc bạn một ngày an yên và thưởng thức trọn vị cà phê.
+        Chào mừng&nbsp;<span className="font-bold text-slate-900 dark:text-white">{customerName}</span>, chúc bạn một ngày an yên và thưởng thức trọn vị cà phê.
       </>
     ) : (
       'Cà phê rang xay thủ công & Bánh ngọt tươi mới mỗi ngày.'
@@ -82,7 +83,7 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
             title={lang === 'en' ? 'Voice Order' : lang === 'zh' ? '语音点单' : 'Gọi món bằng giọng nói'}
             aria-label={lang === 'en' ? 'Voice Order' : lang === 'zh' ? '语音点单' : 'Gọi món bằng giọng nói'}
           >
-            <span className="material-symbols-outlined text-[19px] text-[#0284c7] dark:text-[#38BDF8] group-hover:scale-110 transition-transform">mic</span>
+            <AppIcon name="mic" className="text-[19px] text-[#0284c7] dark:text-[#38BDF8] group-hover:scale-110 transition-transform" />
           </button>
         )}
 
@@ -92,9 +93,7 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
           className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-sky-600 dark:hover:text-sky-400 hover:border-sky-500/30 transition-all shadow-xs active:scale-95 cursor-pointer font-sans"
           title={lang === 'en' ? 'View order history & status' : lang === 'zh' ? '查看点单记录与状态' : 'Xem lịch sử & trạng thái đơn hàng'}
         >
-          <span className="material-symbols-outlined text-base text-sky-500 dark:text-sky-400">
-            {activeOrders.length > 0 ? 'notifications_active' : 'notifications'}
-          </span>
+          <AppIcon name={activeOrders.length > 0 ? 'notifications_active' : 'notifications'} className="text-base text-sky-500 dark:text-sky-400" />
           <span className="whitespace-nowrap">{t.orderHistory || (lang === 'en' ? 'Order Status' : lang === 'zh' ? '点单状态' : 'Trạng thái đơn')}</span>
           {activeOrders.length > 0 ? (
             <span className="bg-[#0284C7] dark:bg-sky-400 text-white dark:text-slate-950 text-[10px] font-bold px-2 py-0.5 rounded-full">
@@ -112,26 +111,24 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
           <button
             type="button"
             onClick={() => setViewMode('grid')}
-            className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-              viewMode === 'grid'
+            className={`p-1.5 rounded-lg transition-all cursor-pointer ${viewMode === 'grid'
                 ? 'bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 shadow-xs'
                 : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-            }`}
+              }`}
             title="Lưới"
           >
-            <span className="material-symbols-outlined text-lg leading-none block">grid_view</span>
+            <AppIcon name="grid_view" className="text-lg leading-none block" />
           </button>
           <button
             type="button"
             onClick={() => setViewMode('list')}
-            className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-              viewMode === 'list'
+            className={`p-1.5 rounded-lg transition-all cursor-pointer ${viewMode === 'list'
                 ? 'bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 shadow-xs'
                 : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-            }`}
+              }`}
             title="Danh sách"
           >
-            <span className="material-symbols-outlined text-lg leading-none block">view_list</span>
+            <AppIcon name="view_list" className="text-lg leading-none block" />
           </button>
         </div>
       </div>

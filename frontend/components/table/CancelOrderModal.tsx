@@ -1,4 +1,5 @@
 'use client';
+import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -61,9 +62,7 @@ export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
 
             {/* Warning Icon Badge */}
             <div className="relative mx-auto w-14 h-14 rounded-2xl bg-rose-500/10 dark:bg-rose-500/15 border border-rose-500/25 flex items-center justify-center text-rose-500 shadow-inner mb-3.5">
-              <span className="material-symbols-outlined text-3xl animate-pulse">
-                warning
-              </span>
+              <AppIcon name="warning" className="text-3xl animate-pulse" />
             </div>
 
             {/* Title */}
@@ -140,7 +139,7 @@ export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
                   </>
                 ) : (
                   <>
-                    <span className="material-symbols-outlined text-[15px]">close</span>
+                    <AppIcon name="close" className="text-[15px]" />
                     <span>{lang === 'en' ? 'Cancel Order' : lang === 'zh' ? '确认取消' : 'Hủy đơn'}</span>
                   </>
                 )}
