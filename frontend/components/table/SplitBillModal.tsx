@@ -3,6 +3,8 @@ import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { InlineAlert } from '@/components/ui/InlineAlert';
 
 interface Table {
   _id: string;
@@ -266,7 +268,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
 
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-color)] flex items-center justify-center transition-colors cursor-pointer"
+              className="w-9 h-9 min-h-[36px] rounded-full bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-color)] flex items-center justify-center transition-colors cursor-pointer"
             >
               <AppIcon name="close" className="text-base" />
             </button>
@@ -274,76 +276,43 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
 
           {/* Kitchen Order Status Warning Banner if not ready */}
           {!isReadyForPayment && (
-            <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-start gap-2.5 text-xs text-amber-500 mb-3 shrink-0">
-              <AppIcon name="hourglass_top" className="text-lg shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold block">Đơn hàng đang được Bếp / Barista chế biến</span>
-                <span className="text-[11px] opacity-90 leading-tight block mt-0.5">
-                  Bạn có thể tính tiền riêng từng người, chia đều hoặc sao chép nội dung Zalo / Mess bên dưới để chuyển khoản trước hoặc sau khi món ra xong.
-                </span>
-              </div>
+            <div className="mb-3 shrink-0">
+              <InlineAlert
+                severity="warning"
+                title="Đơn hàng đang được Bếp / Barista chế biến"
+              >
+                Bạn có thể tính tiền riêng từng người, chia đều hoặc sao chép nội dung Zalo / Mess bên dưới để chuyển khoản trước hoặc sau khi món ra xong.
+              </InlineAlert>
             </div>
           )}
 
           {/* Cash Payment Notice Box on Customer Side (No button when cash) */}
           {!isMomo && (
-            <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-start gap-3 text-xs text-amber-500 mb-3 shrink-0">
-              <AppIcon name="payments" className="text-xl shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold block text-amber-500">Thanh toán bằng Tiền Mặt</span>
-                <span className="text-[11px] text-[var(--text-secondary)] opacity-90 leading-relaxed block mt-0.5">
-                  Đơn hàng đăng ký thanh toán bằng <strong>Tiền mặt</strong>. Vui lòng thanh toán trực tiếp tại quầy thu ngân cho nhân viên để hoàn tất.
-                </span>
-              </div>
+            <div className="mb-3 shrink-0">
+              <InlineAlert
+                severity="warning"
+                title="Thanh toán bằng Tiền Mặt"
+              >
+                Đơn hàng đăng ký thanh toán bằng <strong>Tiền mặt</strong>. Vui lòng thanh toán trực tiếp tại quầy thu ngân cho nhân viên để hoàn tất.
+              </InlineAlert>
             </div>
           )}
 
-          {/* Mode Selector Tabs */}
-          <div className="grid grid-cols-4 gap-1.5 bg-[var(--bg-primary)] p-1.5 rounded-xl border border-[var(--border-color)] mb-4 shrink-0 text-xs font-bold">
-            <button
-              onClick={() => setSplitMode('by_member')}
-              className={`py-2 px-1.5 rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer ${
-                splitMode === 'by_member'
-                  ? 'bg-[var(--brand-primary)] text-white shadow-md'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-              }`}
-            >
-              <AppIcon name="person" className="text-base" />
-              <span className="truncate">Theo người</span>
-            </button>
-            <button
-              onClick={() => setSplitMode('all')}
-              className={`py-2 px-1.5 rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer ${
-                splitMode === 'all'
-                  ? 'bg-[var(--brand-primary)] text-white shadow-md'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-              }`}
-            >
-              <AppIcon name="receipt_long" className="text-base" />
-              <span className="truncate">Tất cả</span>
-            </button>
-            <button
-              onClick={() => setSplitMode('equal')}
-              className={`py-2 px-1.5 rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer ${
-                splitMode === 'equal'
-                  ? 'bg-[var(--brand-primary)] text-white shadow-md'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-              }`}
-            >
-              <AppIcon name="group" className="text-base" />
-              <span className="truncate">Chia đều</span>
-            </button>
-            <button
-              onClick={() => setSplitMode('custom')}
-              className={`py-2 px-1.5 rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer ${
-                splitMode === 'custom'
-                  ? 'bg-[var(--brand-primary)] text-white shadow-md'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-              }`}
-            >
-              <AppIcon name="checklist" className="text-base" />
-              <span className="truncate">Tự chọn</span>
-            </button>
+          {/* Mode Selector Tabs (SegmentedControl) */}
+          <div className="mb-4 shrink-0">
+            <SegmentedControl<'by_member' | 'all' | 'equal' | 'custom'>
+              id="split-bill-mode-segmented"
+              value={splitMode}
+              onChange={(mode) => setSplitMode(mode)}
+              options={[
+                { value: 'by_member', label: 'Theo người', icon: <AppIcon name="person" className="text-sm" /> },
+                { value: 'all', label: 'Tất cả', icon: <AppIcon name="receipt_long" className="text-sm" /> },
+                { value: 'equal', label: 'Chia đều', icon: <AppIcon name="group" className="text-sm" /> },
+                { value: 'custom', label: 'Tự chọn', icon: <AppIcon name="checklist" className="text-sm" /> },
+              ]}
+              fullWidth
+              size="sm"
+            />
           </div>
 
           {/* Modal Content Body */}
@@ -432,7 +401,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
                               <button
                                 disabled={!isReadyForPayment}
                                 onClick={() => handleInitiatePayment(name, data.total, 'momo')}
-                                className={`flex-1 py-2 border rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                                className={`flex-1 min-h-[40px] py-2 px-3 border rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                                   !isReadyForPayment
                                     ? 'bg-gray-500/10 text-gray-400 border-gray-500/20 cursor-not-allowed opacity-60'
                                     : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border-emerald-500/30 cursor-pointer active:scale-95'
@@ -449,7 +418,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
                               <button
                                 disabled={!isReadyForPayment}
                                 onClick={() => handleInitiatePayment(name, data.total, 'cash')}
-                                className={`px-3 py-2 border rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-all ${
+                                className={`min-h-[40px] px-3.5 py-2 border rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-all ${
                                   !isReadyForPayment
                                     ? 'bg-gray-500/10 text-gray-400 border-gray-500/20 cursor-not-allowed opacity-60'
                                     : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border-amber-500/30 cursor-pointer active:scale-95'
@@ -738,7 +707,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
           <div className="pt-4 border-t border-[var(--border-color)] mt-4 flex items-center justify-between shrink-0 gap-3">
             <button
               onClick={handleCopyBreakdown}
-              className="flex-1 py-2.5 bg-[var(--bg-primary)] hover:bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--brand-primary)] rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95"
+              className="flex-1 min-h-[44px] py-2.5 px-3 bg-[var(--bg-primary)] hover:bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--brand-primary)] rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95"
             >
               <AppIcon name="content_copy" className="text-base" />
               <span>{copiedText ? 'Đã sao chép tin nhắn!' : 'Sao chép chi tiết Zalo / Mess'}</span>
@@ -746,7 +715,7 @@ export const SplitBillModal: React.FC<SplitBillModalProps> = ({
 
             <button
               onClick={onClose}
-              className="px-5 py-2.5 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md transition-all active:scale-95 cursor-pointer"
+              className="min-h-[44px] px-5 py-2.5 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md transition-all active:scale-95 cursor-pointer"
             >
               Đóng
             </button>

@@ -15,6 +15,9 @@ import { formatTableName } from '@/utils/format';
 import { toast } from 'react-hot-toast';
 import { LeaveTableModal } from '@/components/table/LeaveTableModal';
 import { CancelOrderModal } from '@/components/table/CancelOrderModal';
+import { StatusDot } from '@/components/ui/StatusDot';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { InlineAlert } from '@/components/ui/InlineAlert';
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1')
   .trim()
@@ -826,11 +829,8 @@ export default function OrderStatusPage() {
                   {/* Row 1: Status Title & Meta Badges */}
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[var(--border-color)] relative z-10">
                     <div>
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 dark:bg-sky-400/10 border border-sky-500/20 text-sky-600 dark:text-[#38BDF8] text-[11px] font-extrabold uppercase tracking-wide mb-1.5">
-                        <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500 dark:bg-[#38BDF8]"></span>
-                        </span>
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-sky-500/10 dark:bg-sky-400/10 border border-sky-500/20 text-sky-600 dark:text-[#38BDF8] text-[11px] font-extrabold uppercase tracking-wide mb-1.5">
+                        <StatusDot status="serving" ping size="sm" />
                         <span>TRẠNG THÁI TRỰC TUYẾN</span>
                       </div>
                       <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">
@@ -852,7 +852,7 @@ export default function OrderStatusPage() {
 
                       {order.status !== 'cancelled' && (
                         <div className="flex items-center gap-2 px-3 py-1.5 bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] border border-sky-500/25 rounded-2xl text-xs font-extrabold">
-                          <span className="w-2 h-2 rounded-full bg-sky-500 dark:bg-[#38BDF8] animate-pulse shrink-0" />
+                          <StatusDot status={order.status === 'completed' ? 'available' : 'serving'} ping={order.status !== 'completed'} size="sm" />
                           <span>
                             {order.status === 'completed'
                               ? 'Đã phục vụ tại bàn'
@@ -1175,43 +1175,30 @@ export default function OrderStatusPage() {
                           </span>
                         </div>
 
-                        {/* Split Payment Mode Switcher (Pill tabs) */}
+                        {/* Split Payment Mode Switcher (SegmentedControl) */}
                         <div className="pt-3.5">
-                          <div className="grid grid-cols-3 p-1 bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-color)] gap-1">
-                            <button
-                              type="button"
-                              onClick={() => setPaymentMode('all')}
-                              className={`py-2 text-xs font-extrabold rounded-xl transition-all cursor-pointer text-center ${
-                                paymentMode === 'all'
-                                  ? 'bg-[#0284c7] text-white shadow-xs'
-                                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-normal'
-                              }`}
-                            >
-                              Bao cả bàn
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setPaymentMode('mine')}
-                              className={`py-2 text-xs font-extrabold rounded-xl transition-all cursor-pointer text-center ${
-                                paymentMode === 'mine'
-                                  ? 'bg-[#0284c7] text-white shadow-xs'
-                                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-normal'
-                              }`}
-                            >
-                              Phần của bạn
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setPaymentMode('custom')}
-                              className={`py-2 text-xs font-extrabold rounded-xl transition-all cursor-pointer text-center ${
-                                paymentMode === 'custom'
-                                  ? 'bg-[#0284c7] text-white shadow-xs'
-                                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-normal'
-                              }`}
-                            >
-                              Tự chọn món
-                            </button>
-                          </div>
+                          <SegmentedControl<'all' | 'mine' | 'custom'>
+                            id="order-payment-mode-segmented"
+                            value={paymentMode}
+                            onChange={(mode) => setPaymentMode(mode)}
+                            options={[
+                              {
+                                value: 'all',
+                                label: lang === 'en' ? 'Whole table' : lang === 'zh' ? '全桌买单' : 'Bao cả bàn',
+                              },
+                              {
+                                value: 'mine',
+                                label: lang === 'en' ? 'My items' : lang === 'zh' ? '自己部分' : 'Phần của bạn',
+                              },
+                              {
+                                value: 'custom',
+                                label: lang === 'en' ? 'Custom' : lang === 'zh' ? '自选菜品' : 'Tự chọn món',
+                              },
+                            ]}
+                            fullWidth
+                            size="sm"
+                            itemClassName="px-1 sm:px-2 py-2 text-[11px] sm:text-xs font-black tracking-tight"
+                          />
 
                           <p className="text-[11px] text-[var(--text-secondary)] mt-2 text-center font-normal">
                             {paymentMode === 'all'
@@ -1265,29 +1252,30 @@ export default function OrderStatusPage() {
                       {/* Desktop In-Card Payment Trigger Buttons (Hidden on mobile to avoid duplication with sticky footer) */}
                       <div className="hidden sm:block space-y-2.5 pt-1">
                         {order.status === 'pending' ? (
-                          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-center space-y-3">
-                            <div className="space-y-1">
-                              <span className="text-xs font-extrabold uppercase text-amber-600 dark:text-amber-400 block tracking-wide">
-                                Đang chờ phục vụ duyệt đơn
-                              </span>
-                              <p className="text-xs font-normal text-[var(--text-secondary)]">
-                                Quý khách vui lòng đợi nhân viên xác nhận đơn trước khi thực hiện thanh toán.
-                              </p>
-                            </div>
+                          <div className="space-y-3">
+                            <InlineAlert
+                              severity="warning"
+                              title="Đang chờ phục vụ duyệt đơn"
+                            >
+                              Quý khách vui lòng đợi nhân viên xác nhận đơn trước khi thực hiện thanh toán.
+                            </InlineAlert>
                             <button
                               id="btn-cancel-pending-order-desktop"
                               onClick={handleCancelOrder}
                               disabled={isCancellingOrder}
-                              className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 font-extrabold text-xs uppercase tracking-wider rounded-xl border border-rose-500/20 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+                              className="w-full min-h-[44px] py-2.5 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 font-extrabold text-xs uppercase tracking-wider rounded-2xl border border-rose-500/20 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
                             >
                               <AppIcon name="close" className="text-base" />
                               <span>{isCancellingOrder ? 'Đang hủy...' : 'Hủy đơn hàng này'}</span>
                             </button>
                           </div>
                         ) : isTableFullyPaid ? (
-                          <div className="py-3.5 text-center bg-emerald-500/15 border border-emerald-500/30 rounded-2xl text-emerald-500 font-extrabold text-xs">
-                            ✓ Bàn đã thanh toán hoàn tất
-                          </div>
+                          <InlineAlert
+                            severity="success"
+                            title="Bàn đã thanh toán hoàn tất"
+                          >
+                            Cảm ơn quý khách đã thưởng thức tại Kohi Coffee! Hẹn gặp lại quý khách lần sau.
+                          </InlineAlert>
                         ) : (
                           <>
                             {/* Bank / VietQR button (Primary Solid High-Emphasis) */}
@@ -1300,7 +1288,7 @@ export default function OrderStatusPage() {
                                 setIsBankModalOpen(true);
                               }}
                               disabled={paymentAmountToPay <= 0}
-                              className="w-full py-3.5 bg-[#0284c7] hover:bg-[#0369a1] disabled:opacity-50 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-sky-500/25 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 text-center"
+                              className="w-full min-h-[48px] py-3.5 bg-[#0284c7] hover:bg-[#0369a1] disabled:opacity-50 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-sky-500/25 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 text-center"
                             >
                               <AppIcon name="qr_code_2" className="text-lg" />
                               <span>Chuyển khoản Ngân hàng (VietQR)</span>
@@ -1310,7 +1298,7 @@ export default function OrderStatusPage() {
                             <button
                               onClick={handleSplitCashPayment}
                               disabled={callStaffCooldown > 0 || isCallingStaff || isPayingSplitCash || paymentAmountToPay <= 0}
-                              className="w-full py-3 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 disabled:opacity-50 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-xs active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 text-center"
+                              className="w-full min-h-[46px] py-3 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 disabled:opacity-50 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-xs active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 text-center"
                             >
                               <AppIcon name="payments" className="text-lg" />
                               <span>
@@ -1330,7 +1318,7 @@ export default function OrderStatusPage() {
                         <button
                           onClick={handleCallStaff}
                           disabled={callStaffCooldown > 0 || isCallingStaff}
-                          className="py-2.5 bg-[var(--bg-primary)] hover:bg-slate-200 dark:hover:bg-slate-800 text-[var(--text-primary)] font-extrabold rounded-2xl text-xs uppercase tracking-wider transition-all active:scale-95 cursor-pointer text-center border border-[var(--border-color)] shadow-xs"
+                          className="min-h-[44px] py-2.5 bg-[var(--bg-primary)] hover:bg-slate-200 dark:hover:bg-slate-800 text-[var(--text-primary)] font-extrabold rounded-2xl text-xs uppercase tracking-wider transition-all active:scale-95 cursor-pointer text-center border border-[var(--border-color)] shadow-xs"
                         >
                           {callStaffCooldown > 0 ? `Gọi NV (${callStaffCooldown}s)` : isCallingStaff ? 'Đang gửi...' : 'Gọi nhân viên'}
                         </button>
@@ -1344,7 +1332,7 @@ export default function OrderStatusPage() {
                             handleExecuteLeaveTable();
                           }}
                           disabled={isLeaving}
-                          className="py-2.5 bg-[var(--bg-primary)] hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-50 text-[var(--text-primary)] font-extrabold rounded-2xl text-xs uppercase tracking-wider transition-all active:scale-95 cursor-pointer text-center border border-[var(--border-color)] shadow-xs"
+                          className="min-h-[44px] py-2.5 bg-[var(--bg-primary)] hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-50 text-[var(--text-primary)] font-extrabold rounded-2xl text-xs uppercase tracking-wider transition-all active:scale-95 cursor-pointer text-center border border-[var(--border-color)] shadow-xs"
                         >
                           {isLeaving ? 'Đang rời bàn...' : 'Rời bàn'}
                         </button>
@@ -1422,7 +1410,7 @@ export default function OrderStatusPage() {
                 <button
                   onClick={handleSplitCashPayment}
                   disabled={callStaffCooldown > 0 || isCallingStaff || isPayingSplitCash || paymentAmountToPay <= 0}
-                  className="h-10 px-2.5 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 disabled:opacity-50 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-xs active:scale-95 transition-all cursor-pointer flex items-center gap-1 shrink-0 whitespace-nowrap"
+                  className="min-h-[44px] h-11 px-3 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 disabled:opacity-50 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-xs active:scale-95 transition-all cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap"
                 >
                   <AppIcon name="payments" className="text-base" />
                   <span>{isPayingSplitCash ? 'Đang gửi...' : 'Tiền mặt'}</span>
@@ -1438,7 +1426,7 @@ export default function OrderStatusPage() {
                     setIsBankModalOpen(true);
                   }}
                   disabled={paymentAmountToPay <= 0}
-                  className="h-10 px-3 bg-[#0284c7] hover:bg-[#0369a1] disabled:opacity-50 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-md shadow-sky-500/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1 shrink-0 whitespace-nowrap"
+                  className="min-h-[44px] h-11 px-3.5 bg-[#0284c7] hover:bg-[#0369a1] disabled:opacity-50 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-md shadow-sky-500/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap"
                 >
                   <AppIcon name="qr_code_2" className="text-base" />
                   <span>Chuyển khoản</span>

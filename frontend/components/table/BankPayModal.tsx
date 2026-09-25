@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { playMomoChime } from '../../app/utils/sound';
 import { toast } from 'react-hot-toast';
 import { CancelOrderModal } from './CancelOrderModal';
+import { InlineAlert } from '@/components/ui/InlineAlert';
+import { StatusDot } from '@/components/ui/StatusDot';
 
 interface BankPayModalProps {
   isOpen: boolean;
@@ -208,7 +210,7 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer font-extrabold text-lg"
+              className="w-9 h-9 min-h-[36px] rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer font-extrabold text-lg"
               title="Đóng"
             >
               ×
@@ -317,7 +319,7 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
                           <button
                             type="button"
                             onClick={() => handleCopy(accountNo, 'Số tài khoản')}
-                            className="h-8 px-3 bg-slate-100 hover:bg-[#0284c7] dark:bg-slate-800 dark:hover:bg-[#38BDF8] text-slate-700 hover:text-white dark:text-slate-300 dark:hover:text-slate-950 font-extrabold rounded-lg text-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1 shrink-0"
+                            className="min-h-[38px] h-9 px-3.5 bg-slate-100 hover:bg-[#0284c7] dark:bg-slate-800 dark:hover:bg-[#38BDF8] text-slate-700 hover:text-white dark:text-slate-300 dark:hover:text-slate-950 font-extrabold rounded-xl text-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"
                             title="Sao chép số tài khoản"
                           >
                             <AppIcon name={copiedField === 'Số tài khoản' ? 'check' : 'content_copy'} className="text-sm" />
@@ -335,7 +337,7 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
                           <button
                             type="button"
                             onClick={() => handleCopy(transferMemo, 'Nội dung')}
-                            className="h-8 px-3 bg-slate-100 hover:bg-[#0284c7] dark:bg-slate-800 dark:hover:bg-[#38BDF8] text-slate-700 hover:text-white dark:text-slate-300 dark:hover:text-slate-950 font-extrabold rounded-lg text-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1 shrink-0"
+                            className="min-h-[38px] h-9 px-3.5 bg-slate-100 hover:bg-[#0284c7] dark:bg-slate-800 dark:hover:bg-[#38BDF8] text-slate-700 hover:text-white dark:text-slate-300 dark:hover:text-slate-950 font-extrabold rounded-xl text-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 shrink-0"
                             title="Sao chép nội dung chuyển khoản"
                           >
                             <AppIcon name={copiedField === 'Nội dung' ? 'check' : 'content_copy'} className="text-sm" />
@@ -349,18 +351,22 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
 
                 {/* Status Bar */}
                 {orderStatus === 'pending' ? (
-                  <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-center">
-                    <span className="text-xs font-extrabold text-amber-600 dark:text-amber-400 block">
-                      Đơn hàng đang chờ phục vụ duyệt. Vui lòng thanh toán sau khi đơn được duyệt.
-                    </span>
-                  </div>
+                  <InlineAlert
+                    severity="warning"
+                    title="Chờ phục vụ duyệt đơn"
+                  >
+                    Đơn hàng đang chờ phục vụ duyệt. Quý khách vui lòng chuyển khoản sau khi đơn được xác nhận.
+                  </InlineAlert>
                 ) : (
-                  <div className="p-3 bg-amber-500/10 border border-amber-500/25 rounded-2xl text-center">
-                    <span className="text-xs font-extrabold text-amber-700 dark:text-amber-300 flex items-center justify-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-                      Đang chờ Nhân viên phục vụ xác nhận tiền về...
-                    </span>
-                  </div>
+                  <InlineAlert
+                    severity="info"
+                    title="Chờ nhân viên xác nhận"
+                  >
+                    <div className="flex items-center gap-2">
+                      <StatusDot status="warning" ping size="sm" />
+                      <span>Hệ thống đang chờ Nhân viên phục vụ kiểm tra và xác nhận thanh toán...</span>
+                    </div>
+                  </InlineAlert>
                 )}
               </div>
             </div>
@@ -403,7 +409,7 @@ export const BankPayModal: React.FC<BankPayModalProps> = ({
                 type="button"
                 onClick={handleCancelOrder}
                 disabled={isCancelling}
-                className="w-full h-10 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 font-extrabold rounded-xl text-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 border border-rose-500/20 disabled:opacity-50"
+                className="w-full min-h-[44px] h-11 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 font-extrabold rounded-2xl text-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 border border-rose-500/20 disabled:opacity-50"
               >
                 <AppIcon name="close" className="text-base" />
                 <span>{isCancelling ? 'Đang hủy đơn...' : 'Hủy đơn hàng này'}</span>

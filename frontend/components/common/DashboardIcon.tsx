@@ -116,6 +116,7 @@ const ICON_MAP: Record<string, any> = {
   view_list: LucideIcons.List,
   warning: LucideIcons.AlertTriangle,
   warning_amber: LucideIcons.AlertTriangle,
+  users: LucideIcons.Users,
   wb_sunny: LucideIcons.SunMedium,
   wifi: LucideIcons.Wifi,
 };

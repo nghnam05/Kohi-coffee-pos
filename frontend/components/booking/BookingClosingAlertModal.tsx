@@ -83,6 +83,9 @@ export const BookingClosingAlertModal: React.FC<BookingClosingAlertModalProps> =
 
         {/* Modal Card */}
         <motion.div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="closing-alert-title"
           initial={{ scale: 0.95, opacity: 0, y: 15 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 15 }}
@@ -98,7 +101,7 @@ export const BookingClosingAlertModal: React.FC<BookingClosingAlertModalProps> =
               <AppIcon name="schedule" className="text-2xl animate-pulse" />
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight leading-snug font-heading">
+              <h3 id="closing-alert-title" className="text-lg font-black text-slate-900 dark:text-white tracking-tight leading-snug font-heading">
                 {content.title}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-normal">
@@ -148,7 +151,7 @@ export const BookingClosingAlertModal: React.FC<BookingClosingAlertModalProps> =
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 h-11 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+              className="flex-1 min-h-[46px] rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer active:scale-95 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
             >
               {content.btnChangeTime}
             </button>
@@ -157,7 +160,7 @@ export const BookingClosingAlertModal: React.FC<BookingClosingAlertModalProps> =
               type="button"
               onClick={onConfirm}
               disabled={isSubmitting}
-              className="flex-1 h-11 rounded-xl bg-[#38BDF8] hover:bg-sky-400 text-slate-950 font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-sky-500/20 active:scale-95 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1"
+              className="flex-1 min-h-[46px] rounded-xl bg-[#38BDF8] hover:bg-sky-400 text-slate-950 font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-sky-500/20 active:scale-95 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
             >
               {isSubmitting ? content.btnSubmitting : content.btnProceed}
             </button>

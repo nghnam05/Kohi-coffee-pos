@@ -27,11 +27,14 @@ export class AnalyticsService {
   private baselineCache: { timestamp: number; data: any } | null = null;
   private foodCache: { timestamp: number; map: Map<string, any> } | null = null;
   private tableCache: { timestamp: number; map: Map<string, any> } | null = null;
+  private summaryCache = new Map<string, { timestamp: number; data: any }>();
+  private readonly SUMMARY_CACHE_TTL = 15000; // 15 seconds cache
 
   public clearCache(): void {
     this.baselineCache = null;
     this.foodCache = null;
     this.tableCache = null;
+    this.summaryCache.clear();
   }
 
   private async getFoodMap(): Promise<Map<string, any>> {
@@ -80,6 +83,12 @@ export class AnalyticsService {
    * Nguyên liệu: Khi giảm (tiêu hao/xuất kho) thì cộng dồn giá trị giảm vào phần nguyên liệu ngày đó.
    */
   async getSummary(dateStr?: string, monthStr?: string): Promise<any> {
+    const cacheKey = `${dateStr || ''}_${monthStr || ''}`;
+    const cached = this.summaryCache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp) < this.SUMMARY_CACHE_TTL) {
+      return cached.data;
+    }
+
     const now = new Date();
     const vnNow = getVietnamTime(now);
     const todayStart = vnNow.startOfDay;
@@ -361,7 +370,7 @@ export class AnalyticsService {
       statusText: isSettled ? 'Đã quyết toán toàn bộ' : 'Chưa quyết toán (Đang trong ngày / Chưa chốt ca)',
     };
 
-    return {
+    const summaryResult = {
       // Chỉ số kỳ được chọn
       periodType,
       selectedDate,
@@ -405,6 +414,9 @@ export class AnalyticsService {
       month: monthNetProfit,
       totalOrders,
     };
+
+    this.summaryCache.set(cacheKey, { timestamp: Date.now(), data: summaryResult });
+    return summaryResult;
   }
 
   /** Tính chi phí lương cho khoảng thời gian bất kỳ */
