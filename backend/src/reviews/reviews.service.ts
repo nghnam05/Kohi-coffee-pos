@@ -154,12 +154,12 @@ export class ReviewsService implements OnModuleInit {
   async getAiReviewInsights(): Promise<AiReviewInsightItem[]> {
     const reviews = await this.reviewModel
       .find()
-      .populate('ratings.foodId', 'name')
+      .populate('ratings.foodId', 'name category')
       .lean()
       .exec();
 
     // Group low rating feedback by food item
-    const foodMap = new Map<string, { foodId: string; foodName: string; stars: number[]; comments: string[] }>();
+    const foodMap = new Map<string, { foodId: string; foodName: string; category?: string; stars: number[]; comments: string[] }>();
 
     for (const r of reviews) {
       if (r.ratings && r.ratings.length > 0) {
@@ -168,9 +168,10 @@ export class ReviewsService implements OnModuleInit {
             const f = rt.foodId as any;
             const foodId = f?._id ? f._id.toString() : (rt.foodId ? rt.foodId.toString() : 'unknown');
             const foodName = f?.name || 'Món ăn';
+            const category = f?.category || '';
             
             if (!foodMap.has(foodId)) {
-              foodMap.set(foodId, { foodId, foodName, stars: [], comments: [] });
+              foodMap.set(foodId, { foodId, foodName, category, stars: [], comments: [] });
             }
             const item = foodMap.get(foodId)!;
             item.stars.push(rt.star);
@@ -183,7 +184,7 @@ export class ReviewsService implements OnModuleInit {
       if (r.overallStar <= 3 && r.overallComment && r.overallComment.trim()) {
         // General store comment for low rating
         if (!foodMap.has('general')) {
-          foodMap.set('general', { foodId: 'general', foodName: 'Chất lượng phục vụ chung', stars: [], comments: [] });
+          foodMap.set('general', { foodId: 'general', foodName: 'Chất lượng phục vụ chung', category: 'Dịch vụ', stars: [], comments: [] });
         }
         const genItem = foodMap.get('general')!;
         genItem.stars.push(r.overallStar);
@@ -210,18 +211,35 @@ export class ReviewsService implements OnModuleInit {
       const avg = val.stars.reduce((a, b) => a + b, 0) / val.stars.length;
       const roundedAvg = Math.round(avg * 10) / 10;
       const summaryText = val.comments.join('; ') || 'Khách hàng đánh giá sao thấp nhưng không để lại ghi chú.';
-      
-      // Fallback heuristics
-      let suggestedSolution = 'Kiểm tra quy trình định lượng nguyên liệu và nhắc nhở nhân viên pha chế tuân thủ công thức chuẩn.';
       const lowerSum = summaryText.toLowerCase();
-      if (lowerSum.includes('ngọt') || lowerSum.includes('chè')) {
-        suggestedSolution = 'Nên giảm 10ml sữa đặc hoặc syrup đường trong công thức chuẩn. Kiểm tra ly đong định lượng jigger của nhân viên pha chế.';
-      } else if (lowerSum.includes('đắng') || lowerSum.includes('cháy')) {
-        suggestedSolution = 'Kiểm tra cỡ xay hạt cà phê và thời gian chiết xuất espresso để tránh bị khét đắng.';
-      } else if (lowerSum.includes('nhạt') || lowerSum.includes('đá')) {
-        suggestedSolution = 'Giảm lượng đá viên hoặc điều chỉnh tăng định lượng cốt cà phê / trà đậm đà hơn.';
-      } else if (lowerSum.includes('khô') || lowerSum.includes('nguội')) {
-        suggestedSolution = 'Hâm nóng lại bánh trước khi phục vụ và kiểm tra thời gian bảo quản bánh nướng trong ngày.';
+
+      // Phân loại chính xác: Bánh ngọt / Pastry vs Đồ uống
+      const isBakery = (val.category && (val.category.toLowerCase().includes('bánh') || val.category.toLowerCase().includes('pastry'))) ||
+        /bánh|donut|macaron|tart|cheesecake|croissant|tiramisu/i.test(val.foodName);
+
+      let suggestedSolution = 'Kiểm tra quy trình định lượng nguyên liệu và nhắc nhở nhân viên tuân thủ công thức chuẩn.';
+
+      if (isBakery) {
+        if (lowerSum.includes('ngọt') || lowerSum.includes('chè')) {
+          suggestedSolution = 'Nên giảm 10-15% hàm lượng đường trong kem phủ và nhân bánh; cân bằng vị ngọt thanh tự nhiên.';
+        } else if (lowerSum.includes('khô') || lowerSum.includes('cứng') || lowerSum.includes('nguội')) {
+          suggestedSolution = 'Bọc màng thực phẩm chuyên dụng khi trưng bày tủ mát; hâm nóng lại bánh ở 150°C trong 2 phút trước khi mang ra cho khách.';
+        } else if (lowerSum.includes('bở') || lowerSum.includes('chảy') || lowerSum.includes('mềm nhũn')) {
+          suggestedSolution = 'Kiểm tra nhiệt độ tủ mát trưng bày (duy trì 2-6°C) để giữ kết cấu kem và phom bánh ổn định.';
+        } else {
+          suggestedSolution = 'Kiểm tra hạn sử dụng trong ngày của mẻ bánh nướng và độ mềm xốp của cốt bánh trước khi phục vụ.';
+        }
+      } else {
+        // Đồ uống & Trà / Cà phê
+        if (lowerSum.includes('ngọt') || lowerSum.includes('chè')) {
+          suggestedSolution = 'Nên giảm 10ml sữa đặc hoặc syrup đường trong công thức chuẩn. Kiểm tra ly đong định lượng jigger của nhân viên pha chế.';
+        } else if (lowerSum.includes('đắng') || lowerSum.includes('cháy')) {
+          suggestedSolution = 'Kiểm tra cỡ xay hạt cà phê và thời gian chiết xuất espresso để tránh bị khét đắng.';
+        } else if (lowerSum.includes('nhạt') || lowerSum.includes('đá') || lowerSum.includes('loãng')) {
+          suggestedSolution = 'Giảm lượng đá viên hoặc điều chỉnh tăng định lượng cốt cà phê / trà đậm đà hơn.';
+        } else {
+          suggestedSolution = 'Kiểm tra quy trình định lượng nguyên liệu và nhắc nhở nhân viên pha chế tuân thủ công thức chuẩn.';
+        }
       }
 
       fallbackInsights.push({
@@ -233,7 +251,7 @@ export class ReviewsService implements OnModuleInit {
         aiSuggestedSolution: this.cleanEmoji(suggestedSolution),
       });
 
-      promptDataLines.push(`- ${val.foodName} (${val.stars.length} lượt đánh giá thấp, trung bình ${roundedAvg} sao): các phản hồi là "${summaryText}"`);
+      promptDataLines.push(`- ${val.foodName} [Loại: ${isBakery ? 'Bánh ngọt/Pastry' : 'Đồ uống'}] (${val.stars.length} lượt đánh giá thấp, trung bình ${roundedAvg} sao): các phản hồi là "${summaryText}"`);
     }
 
     // Call Gemini AI for dynamic insights
@@ -244,7 +262,8 @@ Nhiệm vụ: Phân tích các phản hồi đánh giá 1-3 sao dưới đây c�
 
 QUY TẮC BẮT BUỘC:
 1. TUYỆT ĐỐI KHÔNG DÙNG BẤT KỲ BIỂU TƯỢNG CẢM XÚC (EMOJI HOẶC ICON) NÀO TRONG PHẢN HỒI.
-2. Trả về định dạng JSON duy nhất là một mảng danh sách đối tượng:
+2. PHÂN LOẠI CHÍNH XÁC: Với món [Bánh ngọt/Pastry], giải pháp PHẢI liên quan đến làm bánh (độ ngọt nhân kem, độ ẩm xốp, bảo quản tủ mát, hâm nóng trước khi phục vụ). TUYỆT ĐỐI KHÔNG ĐƯA RA GIẢI PHÁP VỀ ĐÁ VIÊN HAY CỐT CÀ PHÊ/TRÀ CHO BÁNH!
+3. Trả về định dạng JSON duy nhất là một mảng danh sách đối tượng:
 [
   {
     "foodName": "Tên món",

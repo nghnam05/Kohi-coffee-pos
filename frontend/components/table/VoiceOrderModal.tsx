@@ -488,7 +488,7 @@ export const VoiceOrderModal: React.FC<VoiceOrderModalProps> = ({
                 <button
                   type="button"
                   onClick={handleConfirmAdd}
-                  className="flex items-center justify-center gap-1.5 flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-[#0284c7] hover:bg-sky-600 dark:bg-[#38BDF8] dark:hover:bg-sky-400 text-white dark:text-slate-950 font-extrabold text-xs shadow-md transition-all active:scale-95 text-center truncate"
+                  className="flex items-center justify-center gap-1.5 flex-1 sm:flex-initial px-5 py-2.5 min-h-[44px] rounded-xl bg-[#38BDF8] hover:bg-sky-400 text-[#090D16] font-black text-xs uppercase tracking-wider shadow-lg shadow-sky-500/25 transition-all active:scale-95 text-center truncate cursor-pointer"
                 >
                   <AppIcon name="shopping_bag" className="text-base" />
                   <span>Thêm Vào Giỏ Hàng</span>

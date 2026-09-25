@@ -1,9 +1,10 @@
 'use client';
-import { AppIcon } from '@/components/common/DashboardIcon';
 
 import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { AppIcon } from '@/components/common/DashboardIcon';
+import { StatusDot } from '@/components/ui/StatusDot';
 
 export interface Food {
   _id: string;
@@ -39,10 +40,9 @@ interface FoodCardProps {
 }
 
 /**
- * Minimalist Artisan FoodCard inspired by % Arabica and Blue Bottle aesthetics:
- * - Focuses on appetizing product photography
- * - Muted, elegant typography without visual badge clutter
- * - Calm, tactile interactions with generous whitespace
+ * FoodCard — NameThatUI Pattern: /web/card & /web/status-dot
+ * Specification: Standard Card structure with Media header, Tags, Content, and Footer Action.
+ * Adheres strictly to Logic Immutability (preserves onSelectFood, handleClick, quantity, formatPrice).
  */
 export const FoodCard: React.FC<FoodCardProps> = ({
   food,
@@ -68,6 +68,7 @@ export const FoodCard: React.FC<FoodCardProps> = ({
 
   const isBestSeller = index === 0 || index === 1 || (index !== undefined && index % 5 === 0);
 
+  // NameThatUI Card: List View
   if (viewMode === 'list') {
     return (
       <motion.article
@@ -75,12 +76,12 @@ export const FoodCard: React.FC<FoodCardProps> = ({
         transition={{ duration: 0.2, ease: 'easeOut' }}
         whileHover={{ y: -2 }}
         whileTap={{ scale: 0.99 }}
-        className="bg-white dark:bg-[#131926] border border-slate-200/70 dark:border-white/10 rounded-2xl shadow-xs hover:shadow-md transition-all duration-200 p-3 sm:p-3.5 flex items-center gap-3.5 group cursor-pointer"
+        className="bg-white dark:bg-[#090D16] border border-slate-200/80 dark:border-white/10 rounded-2xl shadow-xs hover:shadow-md hover:border-[#38BDF8]/40 dark:hover:border-[#38BDF8]/50 transition-all duration-200 p-3 sm:p-3.5 flex items-center gap-3.5 group cursor-pointer"
       >
-        {/* Product Photo */}
+        {/* Media Container */}
         <div
           onClick={handleClick}
-          className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden relative bg-slate-100 dark:bg-[#0E131F] cursor-pointer flex-shrink-0 border border-slate-100 dark:border-white/5"
+          className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden relative bg-slate-100 dark:bg-black cursor-pointer shrink-0 border border-slate-100 dark:border-white/5"
         >
           <Image
             src={food.image}
@@ -93,42 +94,44 @@ export const FoodCard: React.FC<FoodCardProps> = ({
           />
         </div>
 
+        {/* Card Body */}
         <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch py-0.5">
           <div>
-            {/* Subtle Minimalist Tags */}
+            {/* Category & Status Tags */}
             <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
-              <span className="inline-flex items-center text-[10px] font-medium tracking-wide px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300">
+              <span className="inline-flex items-center text-[10px] font-normal tracking-wide px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300">
                 {translateCategory(food.category)}
               </span>
               {isBestSeller && (
-                <span className="inline-flex items-center text-[10px] font-medium tracking-wide px-2 py-0.5 rounded-md bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-500/20">
+                <span className="inline-flex items-center gap-1 text-[10px] font-extrabold tracking-wide px-2 py-0.5 rounded-md bg-sky-50 dark:bg-sky-950/50 text-[#38BDF8] border border-[#38BDF8]/30">
+                  <StatusDot status="serving" size="sm" ping={false} />
                   {lang === 'en' ? 'Signature' : lang === 'zh' ? '招牌' : 'Đặc trưng'}
                 </span>
               )}
             </div>
 
-            {/* Food Title */}
+            {/* Title */}
             <h3
               onClick={handleClick}
-              className="text-[15px] sm:text-base font-bold text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors leading-snug line-clamp-1 cursor-pointer font-sans"
+              className="text-[15px] sm:text-base font-extrabold text-slate-900 dark:text-white group-hover:text-[#38BDF8] transition-colors leading-snug line-clamp-1 cursor-pointer font-sans"
               title={food.name}
             >
               {food.name}
             </h3>
 
-            {/* Subtle Rating & Details */}
+            {/* Rating & Sold Indicator */}
             <div className="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-400 my-0.5 font-sans">
-              <span className="flex items-center gap-0.5 text-amber-500/90 dark:text-amber-400/90 font-bold">
+              <span className="flex items-center gap-0.5 text-amber-400 font-extrabold">
                 <AppIcon name="star" className="text-[13px] fill-current leading-none" aria-hidden="true" />
                 <span>{(food.rating || 5.0).toFixed(1)}</span>
               </span>
               {food.totalReviews !== undefined && food.totalReviews > 0 ? (
-                <span className="text-slate-400 dark:text-slate-500 text-[10px]">
+                <span className="text-slate-400 dark:text-slate-500 text-[10px] font-normal">
                   ({food.totalReviews})
                 </span>
               ) : null}
               <span className="text-slate-300 dark:text-slate-600 leading-none" aria-hidden="true">•</span>
-              <span className="font-medium text-slate-500 dark:text-slate-400 text-[11px]">
+              <span className="font-normal text-slate-500 dark:text-slate-400 text-[11px]">
                 {lang === 'en'
                   ? `${food.soldCount || 0} ordered`
                   : lang === 'zh'
@@ -142,8 +145,9 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             </p>
           </div>
 
+          {/* Footer Action */}
           <div className="flex items-center justify-between mt-1 pt-0.5">
-            <span className="text-[16px] sm:text-[17px] font-extrabold text-[#0284c7] dark:text-[#38BDF8] font-sans tracking-tight">
+            <span className="text-[16px] sm:text-[17px] font-extrabold text-slate-900 dark:text-white font-sans tracking-tight">
               {formatPrice(food.price, lang)}
             </span>
 
@@ -154,12 +158,12 @@ export const FoodCard: React.FC<FoodCardProps> = ({
               aria-label={`${quantity > 0 ? (lang === 'en' ? 'Added' : lang === 'zh' ? '已添加' : 'Đã thêm') : (lang === 'en' ? 'Add' : lang === 'zh' ? '添加' : 'Thêm')} ${food.name}, ${formatPrice(food.price, lang)}`}
               className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-[13px] font-extrabold tracking-wide flex items-center gap-1.5 transition-all cursor-pointer font-sans min-h-[38px] sm:min-h-[42px] ${
                 quantity > 0
-                  ? 'bg-sky-500/20 text-[#0284c7] dark:text-[#38BDF8] border-2 border-[#38BDF8]/60 shadow-xs'
-                  : 'bg-sky-500 hover:bg-sky-600 dark:bg-sky-500 dark:hover:bg-sky-400 text-white shadow-sm hover:shadow-md hover:shadow-sky-500/25'
+                  ? 'bg-sky-500/20 text-[#38BDF8] border-2 border-[#38BDF8]/60 shadow-xs'
+                  : 'bg-sky-500 hover:bg-sky-400 text-white shadow-sm hover:shadow-md hover:shadow-sky-500/25'
               }`}
             >
               <AppIcon name={quantity > 0 ? 'check' : 'add'} className="text-[16px] sm:text-[17px] text-white" aria-hidden="true" />
-              <span className="text-white">
+              <span className={quantity > 0 ? 'text-[#38BDF8]' : 'text-white'}>
                 {quantity > 0
                   ? (lang === 'en' ? `Added (${quantity})` : lang === 'zh' ? `已添加 (${quantity})` : `Đã thêm (${quantity})`)
                   : (lang === 'en' ? 'Add' : lang === 'zh' ? '添加' : 'Thêm')}
@@ -171,20 +175,20 @@ export const FoodCard: React.FC<FoodCardProps> = ({
     );
   }
 
-  // Grid View
+  // NameThatUI Card: Grid View
   return (
     <motion.article
       initial={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
       whileHover={{ y: -3 }}
       whileTap={{ scale: 0.985 }}
-      className="bg-white dark:bg-[#131926] border border-slate-200/70 dark:border-white/10 rounded-2xl shadow-xs hover:shadow-md transition-all duration-200 overflow-hidden group flex flex-col justify-between h-full cursor-pointer"
+      className="bg-white dark:bg-[#090D16] border border-slate-200/80 dark:border-white/10 rounded-2xl shadow-xs hover:shadow-md hover:border-[#38BDF8]/40 dark:hover:border-[#38BDF8]/50 transition-all duration-200 overflow-hidden group flex flex-col justify-between h-full cursor-pointer"
     >
       <div className="flex-1 flex flex-col">
-        {/* Appetizing Product Image */}
+        {/* Media Container */}
         <div
           onClick={handleClick}
-          className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100 dark:bg-[#0E131F] cursor-pointer flex-shrink-0 group"
+          className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100 dark:bg-black cursor-pointer shrink-0 group"
         >
           <Image
             src={food.image}
@@ -198,26 +202,28 @@ export const FoodCard: React.FC<FoodCardProps> = ({
 
           {/* Clean Category Badge */}
           <div className="absolute top-2.5 right-2.5 z-10">
-            <span className="inline-flex items-center text-[10px] font-medium tracking-wide px-2 py-0.5 rounded-md bg-white/90 dark:bg-[#0E131F]/90 text-slate-700 dark:text-slate-200 backdrop-blur-xs border border-slate-200/50 dark:border-white/10 shadow-2xs">
+            <span className="inline-flex items-center text-[10px] font-normal tracking-wide px-2 py-0.5 rounded-md bg-white/90 dark:bg-[#090D16]/90 text-slate-700 dark:text-slate-200 backdrop-blur-xs border border-slate-200/50 dark:border-white/10 shadow-2xs">
               {translateCategory(food.category)}
             </span>
           </div>
 
+          {/* Best Seller Badge with StatusDot Presence */}
           {isBestSeller && (
             <div className="absolute top-2.5 left-2.5 z-10">
-              <span className="inline-flex items-center text-[10px] font-semibold tracking-wide px-2 py-0.5 rounded-md bg-sky-50/95 dark:bg-sky-950/90 text-sky-700 dark:text-sky-300 border border-sky-400/20 backdrop-blur-xs shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold tracking-wide px-2 py-0.5 rounded-md bg-sky-50/95 dark:bg-[#090D16]/95 text-[#38BDF8] border border-[#38BDF8]/30 backdrop-blur-xs shadow-2xs">
+                <StatusDot status="serving" size="sm" ping={false} />
                 {lang === 'en' ? 'Signature' : lang === 'zh' ? '招牌' : 'Đặc trưng'}
               </span>
             </div>
           )}
         </div>
 
-        {/* Card Content */}
+        {/* Card Body Content */}
         <div className="p-3.5 flex-1 flex flex-col justify-between">
           <div>
             <h3
               onClick={handleClick}
-              className="text-[15px] font-bold text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors leading-snug line-clamp-1 mb-1 cursor-pointer font-sans"
+              className="text-[15px] font-extrabold text-slate-900 dark:text-white group-hover:text-[#38BDF8] transition-colors leading-snug line-clamp-1 mb-1 cursor-pointer font-sans"
               title={food.name}
             >
               {food.name}
@@ -225,17 +231,17 @@ export const FoodCard: React.FC<FoodCardProps> = ({
 
             {/* Rating & Sold Indicator */}
             <div className="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-400 mb-1.5 font-sans flex-wrap">
-              <span className="flex items-center gap-0.5 text-amber-500/90 dark:text-amber-400/90 font-bold">
+              <span className="flex items-center gap-0.5 text-amber-400 font-extrabold">
                 <AppIcon name="star" className="text-[13px] fill-current leading-none" aria-hidden="true" />
                 <span>{(food.rating || 5.0).toFixed(1)}</span>
               </span>
               {food.totalReviews !== undefined && food.totalReviews > 0 ? (
-                <span className="text-slate-400 dark:text-slate-500 text-[10px]">
+                <span className="text-slate-400 dark:text-slate-500 text-[10px] font-normal">
                   ({food.totalReviews})
                 </span>
               ) : null}
               <span className="text-slate-300 dark:text-slate-600 leading-none" aria-hidden="true">•</span>
-              <span className="font-medium text-slate-500 dark:text-slate-400 text-[11px]">
+              <span className="font-normal text-slate-500 dark:text-slate-400 text-[11px]">
                 {lang === 'en'
                   ? `${food.soldCount || 0} ordered`
                   : lang === 'zh'
@@ -251,10 +257,10 @@ export const FoodCard: React.FC<FoodCardProps> = ({
         </div>
       </div>
 
-      {/* Footer Actions */}
+      {/* Footer Action */}
       <div className="p-3.5 pt-0 mt-auto">
         <div className="border-t border-slate-100 dark:border-white/10 pt-2.5 flex items-center justify-between gap-2">
-          <span className="text-[16px] sm:text-[17px] font-extrabold text-[#0284c7] dark:text-[#38BDF8] tracking-tight font-sans whitespace-nowrap">
+          <span className="text-[16px] sm:text-[17px] font-extrabold text-slate-900 dark:text-white tracking-tight font-sans whitespace-nowrap">
             {formatPrice(food.price, lang)}
           </span>
 
@@ -265,12 +271,12 @@ export const FoodCard: React.FC<FoodCardProps> = ({
             aria-label={`${quantity > 0 ? (lang === 'en' ? 'Added' : lang === 'zh' ? '已添加' : 'Đã thêm') : (lang === 'en' ? 'Add' : lang === 'zh' ? '添加' : 'Thêm')} ${food.name}, ${formatPrice(food.price, lang)}`}
             className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-[13px] font-extrabold tracking-wide flex items-center gap-1.5 transition-all cursor-pointer font-sans shrink-0 whitespace-nowrap min-h-[38px] sm:min-h-[42px] ${
               quantity > 0
-                ? 'bg-sky-500/20 text-[#0284c7] dark:text-[#38BDF8] border-2 border-[#38BDF8]/60 shadow-xs'
-                : 'bg-sky-500 hover:bg-sky-600 dark:bg-sky-500 dark:hover:bg-sky-400 text-white shadow-sm hover:shadow-md hover:shadow-sky-500/25'
+                ? 'bg-sky-500/20 text-[#38BDF8] border-2 border-[#38BDF8]/60 shadow-xs'
+                : 'bg-sky-500 hover:bg-sky-400 text-white shadow-sm hover:shadow-md hover:shadow-sky-500/25'
             }`}
           >
             <AppIcon name={quantity > 0 ? 'check' : 'add'} className="text-[16px] sm:text-[17px] shrink-0 text-white" aria-hidden="true" />
-            <span className="whitespace-nowrap text-white">
+            <span className={`whitespace-nowrap ${quantity > 0 ? 'text-[#38BDF8]' : 'text-white'}`}>
               {quantity > 0
                 ? (lang === 'en' ? `Added (${quantity})` : lang === 'zh' ? `已添加 (${quantity})` : `Đã thêm (${quantity})`)
                 : (lang === 'en' ? 'Add' : lang === 'zh' ? '添加' : 'Thêm')}

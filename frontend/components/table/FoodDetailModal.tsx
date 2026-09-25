@@ -4,6 +4,9 @@ import { AppIcon } from '@/components/common/DashboardIcon';
 import React, { useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ChatBubble } from '@/components/ui/ChatBubble';
+import { ChoiceChips } from '@/components/ui/ChoiceChips';
+import { FormField } from '@/components/ui/FormField';
 
 interface Food {
   _id: string;
@@ -321,11 +324,11 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                             );
                           }
                         }}
-                        className="inline-flex items-center gap-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-[#0284c7] dark:text-[#38BDF8] border border-sky-500/25 rounded-full px-3 py-1 text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-2xs group focus-visible:ring-2 focus-visible:ring-sky-500"
+                        className="inline-flex items-center gap-1.5 bg-[#38BDF8]/15 hover:bg-[#38BDF8]/25 text-[#0284c7] dark:text-[#38BDF8] border border-[#38BDF8]/35 rounded-full px-3.5 py-1.5 text-xs font-black transition-all active:scale-95 cursor-pointer shadow-2xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
                         aria-label={lang === 'en' ? `Ask AI about ${selectedFood.name}` : `Hỏi AI về món ${selectedFood.name}`}
                       >
-                        <AppIcon name="auto_awesome" className="text-sm group-hover:rotate-12 transition-transform" aria-hidden="true" />
-                        <span>
+                        <AppIcon name="auto_awesome" className="text-sm text-[#38BDF8] group-hover:rotate-12 transition-transform" aria-hidden="true" />
+                        <span className="font-extrabold font-sans">
                           {lang === 'en'
                             ? 'Ask AI about this item'
                             : lang === 'zh'
@@ -371,13 +374,13 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                             aria-checked={isActive}
                             aria-label={`Size ${sz}, ${sizeSub}, ${formatPrice(sizeUnitPrice, lang)}`}
                             onClick={() => setSelectedSize(sz)}
-                            className={`py-3 px-2 rounded-2xl border transition-all duration-150 active:scale-95 cursor-pointer text-center relative flex flex-col items-center justify-center focus-visible:ring-2 focus-visible:ring-sky-500 ${
+                            className={`min-h-[58px] sm:min-h-[64px] py-2.5 sm:py-3 px-2 rounded-2xl border transition-all duration-150 active:scale-95 cursor-pointer text-center relative flex flex-col items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${
                               isActive
-                                ? 'border-[#38BDF8] bg-sky-500/10 dark:bg-sky-500/15 shadow-sm ring-1 ring-[#38BDF8]'
-                                : 'border-slate-200/80 dark:border-white/5 bg-slate-50 dark:bg-slate-900/60 hover:border-slate-300 dark:hover:border-white/15'
+                                ? 'border-[#38BDF8] bg-[#38BDF8]/15 shadow-xs ring-2 ring-[#38BDF8]/30 font-bold'
+                                : 'border-slate-200/80 dark:border-white/10 bg-slate-50/80 dark:bg-white/[0.03] hover:border-slate-300 dark:hover:border-white/20'
                             }`}
                           >
-                            <span className={`text-xs font-bold ${isActive ? 'text-[#0284c7] dark:text-[#38BDF8]' : 'text-slate-800 dark:text-slate-200'}`}>
+                            <span className={`text-xs font-black ${isActive ? 'text-[#0284c7] dark:text-[#38BDF8]' : 'text-slate-800 dark:text-slate-200'}`}>
                               Size {sz}
                             </span>
                             <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">
@@ -399,7 +402,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                         <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 font-sans">
                           {lang === 'en' ? 'Toppings / Add-ons' : lang === 'zh' ? '配料 / 加料' : 'Topping / Món kèm'}
                         </label>
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-[10px] font-bold text-[#0284c7] dark:text-[#38BDF8]">
                           {selectedAddons.length > 0 ? `+${selectedAddons.length}` : (lang === 'en' ? 'Optional' : lang === 'zh' ? '可选' : 'Tùy chọn')}
                         </span>
                       </div>
@@ -410,6 +413,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                             <button
                               key={addonName}
                               type="button"
+                              aria-pressed={isSelected}
                               onClick={() => {
                                 setSelectedAddons((prev) =>
                                   isSelected
@@ -417,17 +421,17 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                                     : [...prev, addonName]
                                 );
                               }}
-                              className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-bold border flex items-center justify-between transition-all cursor-pointer ${
+                              className={`w-full min-h-[46px] px-3.5 py-2.5 rounded-2xl text-xs font-bold border flex items-center justify-between transition-all cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${
                                 isSelected
-                                  ? 'bg-sky-500/15 border-sky-500 text-[#0284c7] dark:text-[#38BDF8] shadow-2xs'
-                                  : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-white/5 text-slate-700 dark:text-slate-300 hover:border-sky-400/50'
+                                  ? 'bg-[#38BDF8]/15 border-[#38BDF8] text-[#0284c7] dark:text-[#38BDF8] shadow-xs ring-1 ring-[#38BDF8]/30'
+                                  : 'bg-slate-50/80 dark:bg-white/[0.03] border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-white/20'
                               }`}
                             >
                               <div className="flex items-center gap-2 truncate mr-1">
-                                <AppIcon name={ADDON_ICONS[addonName] || 'local_offer'} className="text-base text-slate-400 dark:text-slate-500" />
+                                <AppIcon name={ADDON_ICONS[addonName] || 'local_offer'} className="text-base text-[#38BDF8]" />
                                 <span className="truncate">{addonName}</span>
                               </div>
-                              <span className="font-bold text-[11px] shrink-0 font-mono">
+                              <span className="font-extrabold text-[11px] shrink-0 font-mono">
                                 +{formatPrice(ADDON_PRICES[addonName] ?? 0, lang)}
                               </span>
                             </button>
@@ -437,57 +441,53 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                     </div>
                   )}
 
-                  {/* Special Instructions & 1-Tap Quick Chips */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 font-sans">
-                        {lang === 'en' ? 'Special Instructions' : lang === 'zh' ? '口味备注' : 'Ghi chú cho Barista'}
-                      </label>
-                      <span className="text-[10px] font-medium text-slate-400 font-mono">
-                        {modalNote.length}/200
-                      </span>
-                    </div>
+                  {/* Special Instructions & 1-Tap Quick Chips (FormField + ChoiceChips) */}
+                  <FormField
+                    label={lang === 'en' ? 'Special Instructions' : lang === 'zh' ? '口味备注' : 'Ghi chú cho Barista'}
+                    helperText={`${modalNote.length}/200`}
+                  >
+                    <div className="space-y-2 w-full">
+                      {/* Quick-Note Chips */}
+                      <div className="flex flex-wrap gap-1.5" role="group" aria-label="Gợi ý ghi chú nhanh">
+                        {currentQuickNotes.map((note) => {
+                          const isSelected = modalNote.includes(note);
+                          return (
+                            <button
+                              key={note}
+                              type="button"
+                              aria-pressed={isSelected}
+                              aria-label={`${isSelected ? 'Bỏ chọn' : 'Chọn'} ${note}`}
+                              onClick={() => handleToggleQuickNote(note)}
+                              className={`min-h-[34px] px-3 py-1.5 rounded-full text-xs font-bold border transition-all active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${
+                                isSelected
+                                  ? 'bg-slate-900 text-white dark:bg-sky-400 dark:text-slate-950 border-transparent shadow-xs'
+                                  : 'bg-slate-100/90 dark:bg-white/[0.04] text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-white/10 hover:border-[#38BDF8]/50'
+                              }`}
+                            >
+                              {isSelected ? `✓ ${note}` : `+ ${note}`}
+                            </button>
+                          );
+                        })}
+                      </div>
 
-                    {/* Quick-Note Chips */}
-                    <div className="flex flex-wrap gap-1.5 mb-2">
-                      {currentQuickNotes.map((note) => {
-                        const isSelected = modalNote.includes(note);
-                        return (
-                          <button
-                            key={note}
-                            type="button"
-                            aria-pressed={isSelected}
-                            aria-label={`${isSelected ? 'Bỏ chọn' : 'Chọn'} ${note}`}
-                            onClick={() => handleToggleQuickNote(note)}
-                            className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-all active:scale-95 cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-500 ${
-                              isSelected
-                                ? 'bg-slate-900 text-white dark:bg-sky-400 dark:text-slate-950 border-transparent shadow-2xs'
-                                : 'bg-slate-100 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-white/10 hover:border-sky-400/50'
-                            }`}
-                          >
-                            {isSelected ? `✓ ${note}` : `+ ${note}`}
-                          </button>
-                        );
-                      })}
+                      {/* Custom Input */}
+                      <input
+                        type="text"
+                        maxLength={200}
+                        aria-label={lang === 'en' ? 'Custom note for barista' : 'Ghi chú cho Barista'}
+                        placeholder={
+                          lang === 'en'
+                            ? 'e.g. less sugar, less ice...'
+                            : lang === 'zh'
+                            ? '例如：微糖、少冰、不加奶...'
+                            : 'Ví dụ: ít đường, ít đá, không sữa...'
+                        }
+                        value={modalNote}
+                        onChange={(e) => setModalNote(e.target.value.slice(0, 200))}
+                        className="w-full h-11 bg-slate-50/80 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/10 rounded-2xl px-4 text-base sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:bg-white dark:focus:bg-[#0d1322] focus:border-[#0284c7] dark:focus:border-[#38BDF8] focus-visible:ring-2 focus-visible:ring-[#38BDF8]/20 transition-all font-sans"
+                      />
                     </div>
-
-                    {/* Custom Input */}
-                    <input
-                      type="text"
-                      maxLength={200}
-                      aria-label={lang === 'en' ? 'Custom note for barista' : 'Ghi chú cho Barista'}
-                      placeholder={
-                        lang === 'en'
-                           ? 'e.g. less sugar, less ice...'
-                          : lang === 'zh'
-                          ? '例如：微糖、少冰、不加奶...'
-                          : 'Ví dụ: ít đường, ít đá, không sữa...'
-                      }
-                      value={modalNote}
-                      onChange={(e) => setModalNote(e.target.value.slice(0, 200))}
-                      className="w-full bg-slate-50 dark:bg-slate-900/80 border border-slate-200/80 dark:border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-sky-500 focus-visible:ring-2 focus-visible:ring-sky-500 transition-all font-sans"
-                    />
-                  </div>
+                  </FormField>
 
                   {/* Featured Review */}
                   {selectedFood &&
@@ -511,20 +511,20 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                 </div>
 
                 {/* Sticky Bottom Action Bar */}
-                <div className="p-3.5 sm:p-4 border-t border-slate-200/80 dark:border-white/10 bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-md flex items-center justify-between gap-3 sticky bottom-0 z-20 font-sans">
+                <div className="p-3.5 sm:p-4 border-t border-slate-200/80 dark:border-white/10 bg-white/95 dark:bg-[#090D16]/95 backdrop-blur-md flex items-center justify-between gap-3 sticky bottom-0 z-20 font-sans">
                   {/* Quantity Stepper */}
                   <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-2xl p-1 shadow-2xs">
                     <button
                       type="button"
                       onClick={() => setModalQuantity((q) => Math.max(1, q - 1))}
                       aria-label={lang === 'en' ? 'Decrease quantity' : 'Giảm số lượng'}
-                      className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors active:scale-90 cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-500"
+                      className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors active:scale-90 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
                       title={lang === 'en' ? 'Decrease' : lang === 'zh' ? '减少' : 'Giảm số lượng'}
                     >
                       <AppIcon name="remove" className="text-base" aria-hidden="true" />
                     </button>
                     <span
-                      className="text-base font-bold text-slate-900 dark:text-white w-7 text-center select-none font-mono"
+                      className="text-base font-extrabold text-slate-900 dark:text-white w-7 text-center select-none font-mono"
                       role="status"
                       aria-live="polite"
                       aria-label={`${lang === 'en' ? 'Quantity' : 'Số lượng'}: ${modalQuantity}`}
@@ -535,7 +535,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                       type="button"
                       onClick={() => setModalQuantity((q) => q + 1)}
                       aria-label={lang === 'en' ? 'Increase quantity' : 'Tăng số lượng'}
-                      className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors active:scale-90 cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-500"
+                      className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors active:scale-90 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
                       title={lang === 'en' ? 'Increase' : lang === 'zh' ? '增加' : 'Tăng số lượng'}
                     >
                       <AppIcon name="add" className="text-base" aria-hidden="true" />
@@ -547,12 +547,12 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                     type="button"
                     onClick={handleAddFromModal}
                     aria-label={`${lang === 'en' ? 'Add to cart' : 'Thêm vào giỏ hàng'}: ${selectedFood.name}, ${modalQuantity} ${lang === 'en' ? 'item' : 'món'}, ${formatPrice(currentTotalPrice, lang)}`}
-                    className="flex-1 py-3.5 px-4 sm:px-5 rounded-2xl bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-wider shadow-md active:scale-[0.98] transition-all flex items-center justify-between cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-500"
+                    className="flex-1 min-h-[50px] py-3.5 px-4 sm:px-5 rounded-2xl bg-sky-500 hover:bg-sky-400 text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-sky-500/25 active:scale-[0.98] transition-all flex items-center justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
                   >
-                    <span className="truncate mr-2 font-sans">
+                    <span className="truncate mr-2 font-sans font-black text-white">
                       {lang === 'en' ? 'ADD TO CART' : lang === 'zh' ? '加入购物车' : 'THÊM VÀO GIỎ'}
                     </span>
-                    <span className="font-bold bg-white/20 dark:bg-slate-950/20 px-2.5 py-1 rounded-xl text-xs sm:text-sm whitespace-nowrap font-mono">
+                    <span className="font-black bg-white/20 text-white px-3 py-1 rounded-xl text-xs sm:text-sm whitespace-nowrap font-mono">
                       {formatPrice(currentTotalPrice, lang)}
                     </span>
                   </button>
@@ -690,38 +690,30 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
               </div>
 
               {/* Message log */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-none">
+              <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-none">
                 {modalAiMessages.map((msg, i) => (
-                  <div
+                  <ChatBubble
                     key={i}
-                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    sender={msg.role === 'user' ? 'user' : 'assistant'}
                   >
-                    <div
-                      className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed ${
-                        msg.role === 'user'
-                          ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 font-semibold shadow-xs'
-                          : 'bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-slate-900 dark:text-white shadow-xs'
-                      }`}
-                    >
-                      {msg.text}
-                    </div>
-                  </div>
+                    {msg.text}
+                  </ChatBubble>
                 ))}
                 {isModalAiThinking && (
-                  <div className="flex justify-start">
-                    <div className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 text-xs p-3 rounded-2xl animate-pulse">
+                  <ChatBubble sender="assistant">
+                    <span className="animate-pulse">
                       {lang === 'en'
                         ? `Kohi AI is analyzing ${selectedFood.name}...`
                         : lang === 'zh'
                         ? `Kohi AI 正在分析 ${selectedFood.name}...`
                         : `Kohi AI đang phân tích về món ${selectedFood.name}...`}
-                    </div>
-                  </div>
+                    </span>
+                  </ChatBubble>
                 )}
               </div>
 
               {/* Chat Input */}
-              <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 flex gap-2">
+              <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 flex items-center gap-2">
                 <input
                   type="text"
                   value={modalAiInput}
@@ -734,13 +726,13 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                       ? `输入关于 ${selectedFood.name} 的问题...`
                       : `Đặt câu hỏi về ${selectedFood.name}...`
                   }
-                  className="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:border-[#0284c7]"
+                  className="flex-1 h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 text-base sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:border-[#38BDF8] focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
                 />
                 <button
                   type="button"
                   onClick={() => handleSendModalAiMessage()}
                   disabled={!modalAiInput.trim() || isModalAiThinking}
-                  className="bg-[#0284c7] hover:bg-[#0369a1] text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-colors disabled:opacity-50 cursor-pointer"
+                  className="h-11 min-h-[44px] bg-sky-500 hover:bg-sky-400 text-white px-5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all disabled:opacity-40 cursor-pointer flex items-center justify-center shrink-0 active:scale-95 shadow-md shadow-sky-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
                 >
                   {lang === 'en' ? 'Send' : lang === 'zh' ? '发送' : 'Gửi'}
                 </button>

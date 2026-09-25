@@ -16,6 +16,7 @@ import { FoodCard } from '@/components/table/FoodCard';
 import { CartSidebar } from '@/components/table/CartSidebar';
 import { FoodDetailModal } from '@/components/table/FoodDetailModal';
 import { NamePromptModal } from '@/components/table/NamePromptModal';
+import { TableMembersBar } from '@/components/table/TableMembersBar';
 import type { NotificationItem } from '@/components/table/CustomerNotificationModal';
 import { checkCurrentStoreClosingStatus, CurrentClosingCheck } from '@/utils/storeHours';
 import dynamic from 'next/dynamic';
@@ -2087,68 +2088,21 @@ export default function TableMenuPage() {
               onOpenVoiceOrder={() => setIsVoiceOrderOpen(true)}
             />
 
-            {/* Realtime Table Members Bar */}
-            <div className="px-4 md:px-6 py-2 border-t border-slate-100 dark:border-white/5 flex items-center justify-between gap-2 text-xs bg-slate-50/70 dark:bg-[#0F172A]/50">
-              <div className="flex items-center gap-2 flex-wrap min-w-0">
-                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0">
-                  {lang === 'en' ? 'Table Members' : lang === 'zh' ? '同桌成员' : 'CÙNG BÀN'} ({tableMembers.length > 0 ? tableMembers.length : 1}):
-                </span>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {tableMembers.length > 0 ? (
-                    tableMembers.map((member) => {
-                      const isMe = member.deviceId === myDeviceId || (customerName && member.name === customerName);
-                      return (
-                        <button
-                          key={member.deviceId}
-                          onClick={() => {
-                            if (isMe) {
-                              setNameInput(customerName);
-                              setIsNamePromptOpen(true);
-                            }
-                          }}
-                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all flex items-center gap-1.5 ${
-                            isMe
-                              ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 hover:bg-sky-500/25 cursor-pointer shadow-xs'
-                              : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10'
-                          }`}
-                          title={isMe ? (lang === 'en' ? 'Click to change your name' : 'Bấm để đổi tên hiển thị') : undefined}
-                        >
-                          <span className={`w-1.5 h-1.5 rounded-full ${isMe ? 'bg-sky-500' : 'bg-slate-400'} shrink-0`} />
-                          <span>
-                            {isMe
-                              ? (customerName ? `${customerName} (${lang === 'en' ? 'You' : 'Bạn'})` : (lang === 'en' ? '+ Enter your name' : '+ Nhập tên của bạn'))
-                              : (member.name || 'Khách')}
-                          </span>
-                        </button>
-                      );
-                    })
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setNameInput(customerName);
-                        setIsNamePromptOpen(true);
-                      }}
-                      className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 hover:bg-sky-500/25 cursor-pointer flex items-center gap-1.5 shadow-xs"
-                      title={lang === 'en' ? 'Click to enter your name' : 'Bấm để nhập tên của bạn'}
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
-                      <span>{customerName ? `${customerName} (${lang === 'en' ? 'You' : 'Bạn'})` : (lang === 'en' ? '+ Enter your name' : '+ Nhập tên của bạn')}</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Group Cart Brief Indicator */}
-              <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 hidden sm:block">
-                {cart.length > 0 ? (
-                  <span>
-                    Giỏ chung: <strong className="text-sky-600 dark:text-sky-400 font-bold">{totalQuantity} món</strong> • {formatPrice(totalAmount, lang)}
-                  </span>
-                ) : (
-                  <span>Chưa có món trong giỏ chung</span>
-                )}
-              </div>
-            </div>
+            {/* Realtime Table Members Bar with Avatar Group (Facepile Stack from NameThatUI) */}
+            <TableMembersBar
+              tableMembers={tableMembers}
+              myDeviceId={myDeviceId}
+              customerName={customerName}
+              onEditName={() => {
+                setNameInput(customerName);
+                setIsNamePromptOpen(true);
+              }}
+              cart={cart}
+              totalQuantity={totalQuantity}
+              totalAmount={totalAmount}
+              formatPrice={formatPrice}
+              lang={lang}
+            />
 
             {/* Mobile Search Bar Row (Clean, Full-width, Integrated Voice & View Filter) */}
             <div className="px-4 pt-2.5 pb-2 flex items-center gap-2 md:hidden flex-shrink-0">
@@ -2238,7 +2192,7 @@ export default function TableMenuPage() {
           {/* Scrollable Food Items Catalog (Only dishes scroll vertically!) */}
           <div
             data-lenis-prevent
-            className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 md:px-6 pt-3.5 pb-28 md:pb-12 scrollbar-thin"
+            className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 md:px-6 pt-3.5 pb-28 md:pb-28 lg:pb-12 scrollbar-thin"
             style={{ WebkitOverflowScrolling: 'touch' }}
           >
             {/* Food Grid / List */}
@@ -2303,7 +2257,7 @@ export default function TableMenuPage() {
               <div className="md:hidden mt-3 mb-5">
                 <div className="flex items-center justify-between mb-3 px-1">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-amber-500/15 text-amber-500 dark:text-amber-400 flex items-center justify-center border border-amber-500/25 shadow-2xs">
+                    <div className="w-7 h-7 rounded-lg bg-sky-500/15 text-[#38BDF8] flex items-center justify-center border border-[#38BDF8]/25 shadow-2xs">
                       <AppIcon name="auto_awesome" className="text-[17px]" />
                     </div>
                     <div>
@@ -2355,6 +2309,11 @@ export default function TableMenuPage() {
                               <span>{(sFood.rating || 5.0).toFixed(1)}</span>
                             </div>
                           </div>
+                          <div className="flex items-center gap-1 mb-1">
+                            <span className="inline-flex items-center text-[9.5px] font-normal tracking-wide px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300">
+                              {translateCategory(sFood.category)}
+                            </span>
+                          </div>
                           <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate font-sans" title={sFood.name}>
                             {sFood.name}
                           </h4>
@@ -2363,19 +2322,19 @@ export default function TableMenuPage() {
                           </p>
                         </div>
                         <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100 dark:border-white/5">
-                          <span className="text-xs font-extrabold text-[#0284c7] dark:text-[#38BDF8] font-mono">
+                          <span className="text-xs sm:text-[13px] font-extrabold text-slate-900 dark:text-white font-sans tracking-tight">
                             {formatPrice(sFood.price, lang)}
                           </span>
                           <button
                             type="button"
-                            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
+                            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center transition-all cursor-pointer active:scale-95 ${
                               quantity > 0
-                                ? 'bg-sky-500/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#38BDF8]/60 shadow-xs'
-                                : 'bg-[#38BDF8] hover:bg-sky-400 text-slate-950 font-bold shadow-xs'
+                                ? 'bg-sky-500/20 text-[#38BDF8] border border-[#38BDF8]/60 shadow-xs'
+                                : 'bg-sky-500 hover:bg-sky-400 text-white font-black shadow-xs shadow-sky-500/20'
                             }`}
                             title={lang === 'en' ? 'Select' : lang === 'zh' ? '选择' : 'Chọn'}
                           >
-                            <AppIcon name={quantity > 0 ? 'check' : 'add'} className="text-sm font-bold" />
+                            <AppIcon name={quantity > 0 ? 'check' : 'add'} className={`text-base font-black ${quantity > 0 ? 'text-[#38BDF8]' : 'text-white'}`} />
                           </button>
                         </div>
                       </div>
@@ -2657,7 +2616,7 @@ export default function TableMenuPage() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-            className="fixed bottom-3 left-3 md:left-[272px] right-3 z-40 lg:hidden pointer-events-auto"
+            className="fixed bottom-3 left-3 md:left-[236px] lg:left-[272px] right-3 z-40 lg:hidden pointer-events-auto"
           >
             <div className="w-full bg-white/95 dark:bg-[#0d1322]/95 text-slate-900 dark:text-white backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-2xl p-2.5 sm:p-3 shadow-[0_10px_35px_rgba(0,0,0,0.18)] flex items-center justify-between font-sans">
               <div
@@ -2685,9 +2644,9 @@ export default function TableMenuPage() {
               {cart.length > 0 ? (
                 <button
                   onClick={() => setIsCartOpen(true)}
-                  className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 font-bold text-xs sm:text-[13px] flex items-center gap-1.5 shrink-0 shadow-md active:scale-95 transition-all cursor-pointer font-sans"
+                  className="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-extrabold text-xs sm:text-[13px] flex items-center gap-1.5 shrink-0 shadow-md shadow-sky-500/25 active:scale-95 transition-all cursor-pointer font-sans"
                 >
-                  <AppIcon name="check_circle" className="text-base" />
+                  <AppIcon name="check_circle" className="text-base text-white" />
                   <span>{lang === 'en' ? 'Submit table order' : lang === 'zh' ? '发送点单请求' : 'Gửi yêu cầu gọi món'}</span>
                 </button>
               ) : (

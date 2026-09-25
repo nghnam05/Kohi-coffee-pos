@@ -1,9 +1,8 @@
 'use client';
 import { AppIcon } from '@/components/common/DashboardIcon';
-
 import React, { useState, useRef } from 'react';
-
 import { motion, AnimatePresence } from 'framer-motion';
+import { ChatBubble } from '@/components/ui/ChatBubble';
 
 export interface AiMessage {
   role: 'user' | 'ai';
@@ -183,8 +182,8 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
         {/* Zero-state: Welcome & Categorized Taste Chips */}
         {aiMessages.length === 0 && (
           <div className="py-2 space-y-4">
-            <div className="text-center px-2 py-3 bg-gradient-to-b from-blue-500/5 to-transparent rounded-2xl border border-blue-500/10">
-              <div className="w-10 h-10 mx-auto rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-2 shadow-xs">
+            <div className="text-center px-2 py-3 bg-gradient-to-b from-sky-500/10 to-transparent rounded-2xl border border-sky-500/20">
+              <div className="w-10 h-10 mx-auto rounded-full bg-sky-500/15 text-[#38BDF8] flex items-center justify-center mb-2 shadow-xs border border-sky-500/30">
                 <AppIcon name="auto_awesome" className="text-xl" />
               </div>
               <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">
@@ -217,7 +216,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
                         key={cIdx}
                         type="button"
                         onClick={() => handleSendAiMessage(chip)}
-                        className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900/80 hover:bg-blue-500/10 hover:border-blue-500/40 hover:text-blue-600 dark:hover:text-blue-400 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 transition-all active:scale-95 cursor-pointer shadow-2xs"
+                        className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900/80 hover:bg-sky-500/10 hover:border-[#38BDF8]/40 hover:text-[#0284c7] dark:hover:text-[#38BDF8] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 transition-all active:scale-95 cursor-pointer shadow-2xs"
                       >
                         {chip}
                       </button>
@@ -233,22 +232,25 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
         {aiMessages.map((msg, i) => (
           <div
             key={i}
-            className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} gap-1.5`}
+            className="flex flex-col gap-1.5"
           >
-            <div
-              className={`max-w-[88%] sm:max-w-[85%] px-3.5 py-2.5 rounded-2xl text-xs sm:text-[13px] leading-relaxed shadow-2xs font-sans ${
-                msg.role === 'user'
-                  ? 'bg-gradient-to-r from-blue-600 to-sky-500 text-white font-medium rounded-tr-xs'
-                  : 'bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white rounded-tl-xs'
-              }`}
+            <ChatBubble
+              sender={msg.role === 'user' ? 'user' : 'assistant'}
+              avatar={
+                msg.role === 'ai' ? (
+                  <div className="w-7 h-7 rounded-xl bg-sky-500/10 text-[#38BDF8] flex items-center justify-center border border-[#38BDF8]/20 shrink-0">
+                    <AppIcon name="smart_toy" className="text-sm" />
+                  </div>
+                ) : undefined
+              }
             >
               {msg.text}
-            </div>
+            </ChatBubble>
 
             {/* Recommended Food Cards */}
             {msg.role === 'ai' && msg.recommendedFoods && msg.recommendedFoods.length > 0 && (
               <div className="w-full max-w-[95%] space-y-2 mt-1">
-                <p className="text-[11px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                <p className="text-[11px] font-black uppercase tracking-wider text-[#0284c7] dark:text-[#38BDF8] flex items-center gap-1">
                   <AppIcon name="menu_book" className="text-xs" />
                   {lang === 'en'
                     ? 'Recommended for you:'
@@ -260,7 +262,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
                   {msg.recommendedFoods.map((food) => (
                     <div
                       key={food._id}
-                      className="flex items-center gap-3 p-2.5 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 hover:border-blue-500/40 transition-all shadow-xs"
+                      className="flex items-center gap-3 p-2.5 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/90 hover:border-[#38BDF8]/40 transition-all shadow-xs"
                     >
                       <img
                         src={food.image}
@@ -279,7 +281,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
                         <button
                           type="button"
                           onClick={() => onAddToCart(food)}
-                          className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1 transition-all active:scale-95 shadow-xs cursor-pointer shrink-0"
+                          className="px-3.5 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-xs font-black flex items-center gap-1 transition-all active:scale-95 shadow-xs shadow-sky-500/20 cursor-pointer shrink-0"
                         >
                           <AppIcon name="add_shopping_cart" className="text-sm" />
                           <span>{lang === 'en' ? 'Add' : lang === 'zh' ? '加购' : 'Thêm'}</span>
@@ -328,16 +330,15 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
               ? '输入关于口味或菜品的问题...'
               : 'Đặt câu hỏi hoặc nhập khẩu vị thích (VD: thích ngọt)...'
           }
-          className="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-2xl px-3.5 py-2.5 text-xs sm:text-[13px] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-sans"
+          className="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-2xl px-3.5 py-2.5 text-xs sm:text-[13px] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8] transition-all font-sans"
         />
         <button
           type="button"
-
           onClick={toggleSpeechInput}
           className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all active:scale-95 shadow-md cursor-pointer shrink-0 ${
             isListeningVoice
-              ? 'bg-[#38BDF8] text-white shadow-sky-500/30 animate-pulse'
-              : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-sky-500 hover:text-white'
+              ? 'bg-[#38BDF8] text-[#090D16] shadow-sky-500/30 animate-pulse'
+              : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-sky-500/20 hover:text-[#38BDF8]'
           }`}
           title={isListeningVoice ? 'Đang lắng nghe... Bấm để dừng' : 'Nói để đặt câu hỏi'}
         >
@@ -347,7 +348,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
           type="button"
           onClick={() => handleSendAiMessage()}
           disabled={!aiInput.trim() || isAiThinking}
-          className="w-10 h-10 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 text-white flex items-center justify-center transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-blue-500/20 cursor-pointer shrink-0"
+          className="w-10 h-10 rounded-2xl bg-sky-500 hover:bg-sky-400 text-white font-black flex items-center justify-center transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-sky-500/25 cursor-pointer shrink-0"
           title={lang === 'en' ? 'Send' : lang === 'zh' ? '发送' : 'Gửi'}
         >
           <AppIcon name="send" className="text-base" />
@@ -404,39 +405,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
         )}
       </AnimatePresence>
 
-      {/* ── DRAGGABLE FLOATING ACTION BUTTON (FAB) ───────────────────────── */}
-      <div
-        ref={constraintsRef}
-        className={`fixed inset-0 pointer-events-none z-40 overflow-hidden p-3 md:p-6 ${
-          isAiChatOpen || isHidden ? 'hidden' : ''
-        }`}
-      >
-        <motion.button
-          type="button"
-          drag
-          dragConstraints={constraintsRef}
-          dragElastic={0.12}
-          dragMomentum={false}
-          whileDrag={{ scale: 1.08, cursor: 'grabbing' }}
-          whileTap={{ scale: 0.92 }}
-          onClick={() => setIsAiChatOpen(!isAiChatOpen)}
-          animate={{
-            scale: isAiChatOpen || isHidden ? 0 : 1,
-            opacity: isAiChatOpen || isHidden ? 0 : 1,
-            pointerEvents: isAiChatOpen || isHidden ? 'none' : 'auto',
-          }}
-          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className={`pointer-events-auto absolute right-3.5 bottom-[76px] md:right-6 md:bottom-8 w-11 h-11 md:w-12 md:h-12 rounded-full bg-slate-900 dark:bg-[#151C2C] hover:bg-slate-800 text-white shadow-lg shadow-black/25 border border-slate-700/80 dark:border-white/15 flex items-center justify-center cursor-grab active:cursor-grabbing backdrop-blur-md group touch-none select-none transition-all ${
-            isAiChatOpen || isHidden ? 'invisible pointer-events-none' : ''
-          }`}
-          title="Tư vấn chọn món & Hỗ trợ (Kohi Concierge)"
-          aria-label="Tư vấn chọn món & Hỗ trợ"
-        >
-          <div className="relative flex items-center justify-center pointer-events-none">
-            <AppIcon name="chat_bubble" className="text-[20px] md:text-[22px] text-sky-400 group-hover:scale-105 transition-transform select-none" />
-          </div>
-        </motion.button>
-      </div>
+      {/* Note: Floating Action Button (FAB) removed per user request; AI chat modal is accessed via left sidebar & food cards */}
     </>
   );
 };

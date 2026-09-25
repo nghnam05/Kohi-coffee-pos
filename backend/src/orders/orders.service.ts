@@ -30,7 +30,14 @@ export class OrdersService implements OnModuleInit {
     // Lưu lịch sử vào DB để phục vụ thống kê doanh thu cho admin
   }
 
-  async createOrder(createOrderDto: CreateOrderDto): Promise<OrderDocument> {
+  async createOrder(createOrderDto: CreateOrderDto, userRole?: string): Promise<OrderDocument> {
+    // 🛡️ Phân quyền: Quản trị viên chỉ xem trạng thái hệ thống, không được tạo đơn mang về
+    if (userRole === 'admin' && (createOrderDto.isTakeaway || !createOrderDto.tableId)) {
+      throw new ForbiddenException(
+        'Quản trị viên chỉ có quyền xem trạng thái hệ thống, không được tạo đơn mang về.',
+      );
+    }
+
     // 🛡️ Chống spam đơn ảo qua mã QR: Mỗi bàn chỉ được có tối đa 1 đơn chờ duyệt (pending)
     if (createOrderDto.tableId) {
       const existingPending = await this.orderModel.findOne({
@@ -123,21 +130,42 @@ export class OrdersService implements OnModuleInit {
           submittedBy: createOrderDto.customerName || 'Khách',
         });
       }
+      this.clearCache();
       return populatedOrder;
     }
 
+    this.clearCache();
     return savedOrder;
   }
 
+  private ordersCache = new Map<string, { data: any[]; expiresAt: number }>();
+
+  public clearCache() {
+    this.ordersCache.clear();
+  }
+
   async findAll(status?: string): Promise<any[]> {
+    const cacheKey = status || '__ALL__';
+    const cached = this.ordersCache.get(cacheKey);
+    if (cached && Date.now() < cached.expiresAt) {
+      return cached.data;
+    }
+
     const filter = status ? { status, isDeleted: { $ne: true } } : { isDeleted: { $ne: true } };
-    return this.orderModel
+    const orders = await this.orderModel
       .find(filter)
-      .populate('tableId')
-      .populate('items.foodId')
+      .populate('tableId', 'tableName tableNumber status capacity qrCode location')
+      .populate('items.foodId', 'name price image category isAvailable size options')
       .sort({ createdAt: -1 })
       .lean()
       .exec() as any;
+
+    this.ordersCache.set(cacheKey, {
+      data: orders,
+      expiresAt: Date.now() + 3000,
+    });
+
+    return orders;
   }
 
   async findOne(id: string): Promise<any> {
@@ -146,8 +174,8 @@ export class OrdersService implements OnModuleInit {
     }
     const order = await this.orderModel
       .findById(id)
-      .populate('tableId')
-      .populate('items.foodId')
+      .populate('tableId', 'tableName tableNumber status capacity qrCode location')
+      .populate('items.foodId', 'name price image category isAvailable size options')
       .lean()
       .exec();
 
@@ -193,8 +221,16 @@ export class OrdersService implements OnModuleInit {
       throw new NotFoundException(`Không tìm thấy đơn hàng với ID: ${id}`);
     }
 
-    if (userRole === 'barista' && updateOrderStatusDto.status === 'paid') {
-      throw new ForbiddenException('Nhân viên pha chế không có quyền xác nhận thanh toán đơn hàng.');
+    if (userRole === 'admin') {
+      throw new ForbiddenException('Quản trị viên chỉ có quyền xem trạng thái, không trực tiếp thao tác đổi trạng thái đơn hàng của phục vụ/pha chế.');
+    }
+
+    if (userRole === 'barista' && (updateOrderStatusDto.status === 'confirmed' || updateOrderStatusDto.status === 'completed' || updateOrderStatusDto.status === 'paid' || updateOrderStatusDto.status === 'cancelled')) {
+      throw new ForbiddenException('Nhân viên pha chế chỉ có quyền chuyển đơn sang trạng thái đang pha chế hoặc hoàn tất pha chế.');
+    }
+
+    if (userRole === 'waiter' && (updateOrderStatusDto.status === 'cooking' || updateOrderStatusDto.status === 'ready')) {
+      throw new ForbiddenException('Nhân viên phục vụ không có quyền cập nhật trạng thái pha chế tại quầy.');
     }
 
     const updatePayload: any = { status: updateOrderStatusDto.status };
@@ -283,6 +319,7 @@ export class OrdersService implements OnModuleInit {
       }
     }
 
+    this.clearCache();
     return updatedOrder;
   }
 
@@ -486,6 +523,7 @@ export class OrdersService implements OnModuleInit {
       this.ordersGateway.emitPaymentNotified(updatedOrder);
     }
 
+    this.clearCache();
     return updatedOrder;
   }
 
@@ -542,6 +580,10 @@ export class OrdersService implements OnModuleInit {
   }
 
   async confirmSplitPayment(id: string, dto: ConfirmSplitPaymentDto, userRole?: string): Promise<OrderDocument> {
+    if (userRole === 'admin') {
+      throw new ForbiddenException('Quản trị viên chỉ có thể xem trạng thái, không trực tiếp xác nhận thu tiền.');
+    }
+
     if (userRole === 'barista') {
       throw new ForbiddenException('Nhân viên pha chế không có quyền xác nhận thanh toán.');
     }
@@ -649,6 +691,7 @@ export class OrdersService implements OnModuleInit {
       }
     }
 
+    this.clearCache();
     return populated;
   }
 
@@ -727,6 +770,7 @@ export class OrdersService implements OnModuleInit {
       }
     }
 
+    this.clearCache();
     return { message: `Đã xóa đơn hàng ${id} thành công.` };
   }
 
@@ -760,6 +804,7 @@ export class OrdersService implements OnModuleInit {
 
     const deletedCount = (result as any)?.deletedCount ?? (result as any)?.modifiedCount ?? ids.length;
 
+    this.clearCache();
     return { message: `Đã xóa ${deletedCount} đơn hàng thành công.`, deletedCount };
   }
 
@@ -818,6 +863,7 @@ export class OrdersService implements OnModuleInit {
       this.ordersGateway.server.emit('ordersMerged', { tableId, primaryOrderId: primaryOrder._id });
     }
 
+    this.clearCache();
     return {
       message: 'Gộp đơn thành công',
       primaryOrder,

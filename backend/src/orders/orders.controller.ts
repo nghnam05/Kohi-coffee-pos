@@ -24,8 +24,22 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
-  async createOrder(@Body() createOrderDto: CreateOrderDto): Promise<OrderDocument> {
-    return this.ordersService.createOrder(createOrderDto);
+  async createOrder(@Body() createOrderDto: CreateOrderDto, @Req() req?: any): Promise<OrderDocument> {
+    let userRole: string | undefined;
+    const authHeader = req?.headers?.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.substring(7);
+        const payloadBase64 = token.split('.')[1];
+        if (payloadBase64) {
+          const payload = JSON.parse(Buffer.from(payloadBase64, 'base64').toString('utf-8'));
+          userRole = payload?.role;
+        }
+      } catch {
+        // ignore parse error, fallback to undefined
+      }
+    }
+    return this.ordersService.createOrder(createOrderDto, userRole);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -95,7 +109,7 @@ export class OrdersController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin', 'waiter', 'barista', 'staff')
+  @Roles('waiter', 'barista', 'staff')
   @Patch(':id/status')
   async updateStatus(
     @Param('id') id: string,
@@ -119,7 +133,7 @@ export class OrdersController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin', 'waiter', 'staff', 'user', 'manager', 'cashier')
+  @Roles('waiter', 'staff', 'manager', 'cashier')
   @Patch(':id/confirm-split-payment')
   async confirmSplitPayment(
     @Param('id') id: string,

@@ -3,6 +3,8 @@ import { DashboardIcon } from '@/components/common/DashboardIcon';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { InlineAlert } from '@/components/ui/InlineAlert';
+import { StatusDot } from '@/components/ui/StatusDot';
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1')
   .trim()
@@ -269,18 +271,15 @@ export const AiDemandForecastCard: React.FC<AiDemandForecastCardProps> = ({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center justify-between"
           >
-            <div className="flex items-center gap-2">
-              <DashboardIcon name="check_circle" className="text-base" />
-              <span>{successMsg}</span>
-            </div>
-            <button
-              onClick={() => setSuccessMsg(null)}
-              className="text-emerald-500 hover:text-emerald-700"
+            <InlineAlert
+              severity="success"
+              dismissible
+              onDismiss={() => setSuccessMsg(null)}
+              icon={<DashboardIcon name="check_circle" />}
             >
-              <DashboardIcon name="close" className="text-sm" />
-            </button>
+              {successMsg}
+            </InlineAlert>
           </motion.div>
         )}
         {errorMsg && (
@@ -288,18 +287,15 @@ export const AiDemandForecastCard: React.FC<AiDemandForecastCardProps> = ({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center justify-between"
           >
-            <div className="flex items-center gap-2">
-              <DashboardIcon name="error_outline" className="text-base" />
-              <span>{errorMsg}</span>
-            </div>
-            <button
-              onClick={() => setErrorMsg(null)}
-              className="text-rose-500 hover:text-rose-700"
+            <InlineAlert
+              severity="error"
+              dismissible
+              onDismiss={() => setErrorMsg(null)}
+              icon={<DashboardIcon name="error_outline" />}
             >
-              <DashboardIcon name="close" className="text-sm" />
-            </button>
+              {errorMsg}
+            </InlineAlert>
           </motion.div>
         )}
       </AnimatePresence>
@@ -437,12 +433,17 @@ export const AiDemandForecastCard: React.FC<AiDemandForecastCardProps> = ({
                     {w.ingredientName}
                   </span>
                   <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
                       w.severity === 'critical'
-                        ? 'bg-rose-600 text-white'
-                        : 'bg-amber-500 text-slate-950'
+                        ? 'bg-rose-600/10 text-rose-500 border border-rose-500/20'
+                        : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
                     }`}
                   >
+                    <StatusDot
+                      status={w.severity === 'critical' ? 'cancelled' : 'warning'}
+                      size="sm"
+                      ping={w.severity === 'critical'}
+                    />
                     {w.severity === 'critical' ? 'Khẩn cấp' : 'Sắp hết'}
                   </span>
                 </div>

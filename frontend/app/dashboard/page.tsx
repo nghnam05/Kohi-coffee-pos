@@ -1,7 +1,7 @@
 'use client';
 import { DashboardIcon } from '@/components/common/DashboardIcon';
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, Fragment } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { io, Socket } from 'socket.io-client';
@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select } from '@/components/ui/select';
 import dynamic from 'next/dynamic';
 import { getTableQrUrl } from '@/utils/format';
+import { StatusDot } from '@/components/ui/StatusDot';
 
 const InventoryManagement = dynamic(() => import('@/components/dashboard/InventoryManagement').then(m => m.InventoryManagement), { ssr: false });
 const AiDemandForecastCard = dynamic(() => import('@/components/dashboard/AiDemandForecastCard').then(m => m.AiDemandForecastCard), { ssr: false });
@@ -539,12 +540,30 @@ export default function DashboardPage() {
   };
 
   // Main data states
-  const [foods, setFoods] = useState<any[]>([]);
+  const [foods, setFoods] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('kohi_cached_foods');
+        if (cached) return JSON.parse(cached);
+      } catch (e) { }
+    }
+    return [];
+  });
   const [tables, setTables] = useState<any[]>([]);
   const [usersList, setUsersList] = useState<User[]>([]);
   const [staffCalls, setStaffCalls] = useState<StaffCall[]>([]);
   const [pendingTransferRequests, setPendingTransferRequests] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'orders' | 'foods' | 'tables' | 'users' | 'attendance' | 'analytics' | 'inventory'>('attendance');
+  const [activeTab, setActiveTab] = useState<'orders' | 'foods' | 'tables' | 'users' | 'attendance' | 'analytics' | 'inventory' | 'reservations' | 'coupons'>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedTab = localStorage.getItem('kohi_dashboard_active_tab');
+        if (savedTab && ['orders', 'foods', 'tables', 'users', 'attendance', 'analytics', 'inventory', 'reservations', 'coupons'].includes(savedTab)) {
+          return savedTab as any;
+        }
+      } catch (e) { }
+    }
+    return 'attendance';
+  });
   const [activityFilter, setActivityFilter] = useState<'all' | 'table' | 'support' | 'payment' | 'checkedIn' | 'notCheckedIn' | 'confirmed' | 'cooking'>('all');
   const [tableActivities, setTableActivities] = useState<
     Array<{ id: string; tableId: string; tableName: string; type: 'joined' | 'left'; timestamp: Date }>
@@ -594,6 +613,7 @@ export default function DashboardPage() {
   const [topFoods, setTopFoods] = useState<any[]>([]);
   const [revenueHistory, setRevenueHistory] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [reviewCurrentPage, setReviewCurrentPage] = useState<number>(1);
 
   // Enhanced Store Financial Analytics (Admin Only: Thu - Chi - Lương - Tiền phát sinh)
   const [analyticsPeriodMode, setAnalyticsPeriodMode] = useState<'day' | 'month'>('day');
@@ -892,7 +912,15 @@ export default function DashboardPage() {
   // Coupons state (for admin)
   const [coupons, setCoupons] = useState<any[]>([]);
   const [couponFilter, setCouponFilter] = useState<'all' | 'manual' | 'auto'>('all');
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('kohi_cached_categories');
+        if (cached) return JSON.parse(cached);
+      } catch (e) { }
+    }
+    return [];
+  });
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any | null>(null);
   const [categoryForm, setCategoryForm] = useState({
@@ -987,6 +1015,19 @@ export default function DashboardPage() {
 
   const [searchQuery, setSearchQuery] = useState('');
 
+  // ⚡ SWR Pattern: Tải menu món và danh mục ngay tức khắc (Public endpoints)
+  useEffect(() => {
+    fetchFoods('');
+    fetchCategories();
+  }, []);
+
+  // Đồng bộ lưu tab đang chọn để khi F5 trang không bị nhảy tab
+  useEffect(() => {
+    if (typeof window !== 'undefined' && activeTab) {
+      localStorage.setItem('kohi_dashboard_active_tab', activeTab);
+    }
+  }, [activeTab]);
+
   // Initial authentication & mounting check
   useEffect(() => {
     setMounted(true);
@@ -1009,17 +1050,17 @@ export default function DashboardPage() {
           setSelectedShift(u.assignedShift as any);
         }
 
-        // Default tab upon login: Admin -> analytics (Thống kê), Staff -> attendance (Chấm công)
-        if (u.role === 'admin') {
-          setActiveTab('analytics');
-          fetchAnalytics(storedToken);
-          fetchReviews(storedToken);
+        // Giữ nguyên tab người dùng đang xem khi F5, nếu lần đầu đăng nhập thì đặt theo role
+        const savedTab = localStorage.getItem('kohi_dashboard_active_tab');
+        if (savedTab && ['orders', 'foods', 'tables', 'users', 'attendance', 'analytics', 'inventory', 'reservations', 'coupons'].includes(savedTab)) {
+          setActiveTab(savedTab as any);
         } else {
-          setActiveTab('attendance');
+          if (u.role === 'admin') {
+            setActiveTab('analytics');
+          } else {
+            setActiveTab('attendance');
+          }
         }
-
-        // Fetch attendance with explicit user role as soon as session is parsed
-        fetchAttendance(storedToken, u.role);
       } catch (e) {
         console.error('Failed to parse user session', e);
       }
@@ -1038,29 +1079,33 @@ export default function DashboardPage() {
     }
   }, [activeTab, token, analyticsSelectedDate, analyticsSelectedMonth, analyticsPeriodMode]);
 
-  // Fetch all data & Initialize Socket.io
+  // Lazy-load dữ liệu theo tab khi chuyển tab (loại bỏ nghẽn mạng lúc khởi động)
+  useEffect(() => {
+    if (!token) return;
+    if (activeTab === 'attendance') {
+      const storedUser = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}') : null;
+      fetchAttendance(token, user?.role || storedUser?.role || 'admin');
+      const isAdmin = user?.role === 'admin' || storedUser?.role === 'admin';
+      if (isAdmin) {
+        fetchPayrolls(token);
+        fetchSalaryConfigs(token);
+      }
+      fetchShiftSwaps(token);
+    } else if (activeTab === 'reservations') {
+      fetchReservations(token);
+    } else if (activeTab === 'coupons') {
+      fetchCoupons(token);
+    }
+  }, [activeTab, token]);
+
+  // Fetch all operational data & Initialize Socket.io
   useEffect(() => {
     if (!token) return;
 
     fetchOrders(token);
     fetchPendingCalls(token);
-    fetchFoods(token);
-    fetchCategories();
     fetchTables(token);
-
     fetchUsers(token);
-    const storedUser = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}') : null;
-    const isAdmin = user?.role === 'admin' || storedUser?.role === 'admin';
-    if (isAdmin) {
-      fetchAnalytics(token, analyticsSelectedDate, analyticsSelectedMonth, analyticsPeriodMode);
-      fetchReviews(token);
-      fetchPayrolls(token);
-      fetchSalaryConfigs(token);
-      fetchCoupons(token);
-    }
-    fetchAttendance(token, user?.role || storedUser?.role || 'admin');
-    fetchReservations(token);
-    fetchShiftSwaps(token);
 
     const playAlertPing = () => {
       try {
@@ -1434,17 +1479,33 @@ export default function DashboardPage() {
     }
   };
 
-  const fetchFoods = async (tok: string) => {
+  const fetchFoods = async (tok?: string) => {
     try {
       const res = await fetch(`${API_BASE}/foods`);
-      if (res.ok) setFoods(await res.json());
+      if (res.ok) {
+        const data = await res.json();
+        setFoods(data);
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('kohi_cached_foods', JSON.stringify(data));
+          } catch (e) { }
+        }
+      }
     } catch (e) { }
   };
 
   const fetchCategories = async () => {
     try {
       const res = await fetch(`${API_BASE}/categories`);
-      if (res.ok) setCategories(await res.json());
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(data);
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('kohi_cached_categories', JSON.stringify(data));
+          } catch (e) { }
+        }
+      }
     } catch (e) { }
   };
 
@@ -2778,6 +2839,10 @@ export default function DashboardPage() {
   const handleCreateTakeawayOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) return;
+    if (user?.role === 'admin' || user?.role === 'barista') {
+      showToast('Quản trị viên và Pha chế không có quyền tạo đơn mang về!', 'error');
+      return;
+    }
     if (takeawayCart.length === 0) {
       showToast('Vui lòng chọn ít nhất 1 món ăn cho đơn mang về!', 'error');
       return;
@@ -4236,36 +4301,36 @@ export default function DashboardPage() {
         </div>
 
         {/* Controls & Bottom User Profile */}
-        <div className="p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] border-t border-slate-200 dark:border-white/10 space-y-2 font-sans shrink-0">
-          <div className="flex items-center justify-between gap-2">
+        <div className="p-4 sm:p-4.5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] border-t border-slate-200 dark:border-white/10 space-y-3.5 font-sans shrink-0 bg-slate-50/60 dark:bg-slate-900/30">
+          <div className="flex items-center justify-between gap-2.5 py-0.5">
             <LanguageToggleSwitch lang={lang} setLang={setLang} />
             <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
           </div>
 
-          <div className="flex items-center justify-between pt-1">
+          <div className="flex items-center justify-between pt-2 border-t border-slate-200/70 dark:border-white/5">
             <button
               onClick={() => {
                 setIsProfileModalOpen(true);
                 setIsMobileSidebarOpen(false);
               }}
-              className="flex items-center gap-2.5 min-w-0 text-left hover:opacity-80 transition-opacity flex-1 cursor-pointer"
+              className="flex items-center gap-3 min-w-0 text-left hover:opacity-85 transition-opacity flex-1 cursor-pointer py-0.5"
               title={user?.name || 'Quản trị viên'}
             >
-              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-[#3B82F6] text-[#3B82F6] dark:text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+              <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-[#3B82F6] text-[#3B82F6] dark:text-white flex items-center justify-center font-extrabold text-sm flex-shrink-0 shadow-xs">
                 {user?.name ? user.name.charAt(0).toUpperCase() : 'N'}
               </div>
               <div className="truncate min-w-0 flex-1">
                 <p className="text-xs font-extrabold text-slate-900 dark:text-slate-100 truncate leading-tight" title={user?.name || 'Quản trị viên'}>
                   {user?.name || 'Nhân viên Phục vụ'}
                 </p>
-                <p className="text-[10.5px] font-normal text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 truncate leading-tight">
+                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 truncate leading-tight mt-0.5">
                   Sửa thông tin
                 </p>
               </div>
             </button>
             <button
               onClick={handleLogout}
-              className="text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors p-1.5 rounded-lg flex-shrink-0 ml-1 cursor-pointer"
+              className="text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors p-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-500/10 flex-shrink-0 ml-1 cursor-pointer"
               title="Đăng xuất"
             >
               <DashboardIcon name="logout" className="text-lg" />
@@ -4570,8 +4635,8 @@ export default function DashboardPage() {
                     </button>
                   </div>
 
-                  {/* CTA: Create Takeaway */}
-                  {user?.role !== 'barista' && (
+                  {/* CTA: Create Takeaway (Phục vụ / Nhân viên quầy tạo đơn - Admin và Barista không được tạo) */}
+                  {user?.role !== 'barista' && user?.role !== 'admin' && (
                     <button
                       onClick={() => {
                         setTakeawayCart([]);
@@ -5083,24 +5148,58 @@ export default function DashboardPage() {
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t.noOrdersDesc}</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
                     {displayedOrders.map((order) => {
                       const getOrderStatusBadge = (status: string) => {
                         switch (status) {
                           case 'pending':
-                            return <span className="px-2.5 py-0.5 bg-amber-500/15 text-amber-600 dark:text-amber-400 rounded-full text-[10px] font-bold uppercase tracking-wider">Chờ duyệt</span>;
+                            return (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 rounded-full text-[10px] font-extrabold uppercase tracking-wider font-mono shrink-0 whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                                Chờ duyệt
+                              </span>
+                            );
                           case 'confirmed':
-                            return <span className="px-2.5 py-0.5 bg-sky-500/15 text-sky-600 dark:text-[#38BDF8] rounded-full text-[10px] font-bold uppercase tracking-wider">Chờ pha chế</span>;
+                            return (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] border border-sky-500/25 rounded-full text-[10px] font-extrabold uppercase tracking-wider font-mono shrink-0 whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8]" />
+                                Chờ pha chế
+                              </span>
+                            );
                           case 'cooking':
-                            return <span className="px-2.5 py-0.5 bg-sky-500/20 text-[#38BDF8] rounded-full text-[10px] font-bold uppercase tracking-wider">Đang pha chế</span>;
+                            return (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-sky-500/20 text-[#38BDF8] border border-[#38BDF8]/30 rounded-full text-[10px] font-extrabold uppercase tracking-wider font-mono shrink-0 whitespace-nowrap animate-pulse">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8]" />
+                                Đang pha chế
+                              </span>
+                            );
                           case 'ready':
-                            return <span className="px-2.5 py-0.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-bold uppercase tracking-wider">Chờ ra món</span>;
+                            return (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 rounded-full text-[10px] font-extrabold uppercase tracking-wider font-mono shrink-0 whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                Chờ ra món
+                              </span>
+                            );
                           case 'completed':
-                            return <span className="px-2.5 py-0.5 bg-amber-500/15 text-amber-700 dark:text-amber-300 rounded-full text-[10px] font-bold uppercase tracking-wider">Chờ thanh toán</span>;
+                            return (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 rounded-full text-[10px] font-extrabold uppercase tracking-wider font-mono shrink-0 whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                Chờ thanh toán
+                              </span>
+                            );
                           case 'paid':
-                            return <span className="px-2.5 py-0.5 bg-emerald-600/20 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-bold uppercase tracking-wider">Đã thanh toán</span>;
+                            return (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded-full text-[10px] font-extrabold uppercase tracking-wider font-mono shrink-0 whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                Đã thanh toán
+                              </span>
+                            );
                           default:
-                            return <span className="px-2.5 py-0.5 bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full text-[10px] font-bold uppercase tracking-wider">Đang xử lý</span>;
+                            return (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-200/60 dark:bg-white/10 text-slate-600 dark:text-slate-300 border border-slate-300/40 dark:border-white/10 rounded-full text-[10px] font-extrabold uppercase tracking-wider font-mono shrink-0 whitespace-nowrap">
+                                Đang xử lý
+                              </span>
+                            );
                         }
                       };
 
@@ -5110,19 +5209,37 @@ export default function DashboardPage() {
                       return (
                         <div
                           key={order._id}
-                          className={`bg-white dark:bg-[#0d1322] border rounded-3xl p-4 sm:p-5 shadow-xs dark:shadow-md flex flex-col justify-between transition-all duration-200 hover:shadow-lg hover:border-slate-300 dark:hover:border-white/20 ${isSelected
-                            ? 'border-[#38BDF8] ring-2 ring-[#38BDF8]/40 bg-sky-50/20 dark:bg-sky-500/5'
-                            : order.status === 'pending'
-                              ? 'border-amber-400/70 dark:border-amber-500/50 shadow-sm'
+                          className={`relative bg-white dark:bg-[#0d1322] border rounded-3xl p-4 sm:p-5 shadow-xs dark:shadow-md flex flex-col justify-between transition-all duration-300 overflow-hidden group hover:shadow-xl hover:border-slate-300 dark:hover:border-white/20 ${
+                            isSelected
+                              ? 'border-[#38BDF8] ring-2 ring-[#38BDF8]/40 bg-sky-50/20 dark:bg-sky-500/[0.04]'
                               : isPaid
-                                ? 'border-emerald-500/30'
-                                : 'border-slate-200/80 dark:border-white/5'
-                            }`}
+                                ? 'border-slate-200 dark:border-white/10 hover:border-emerald-500/30'
+                                : order.status === 'pending'
+                                  ? 'border-slate-200/90 dark:border-white/10 hover:border-amber-400/40'
+                                  : 'border-slate-200/80 dark:border-white/10 hover:border-[#38BDF8]/30'
+                          }`}
                         >
+                          {/* Top ambient status accent bar */}
+                          <div
+                            className={`absolute top-0 left-0 right-0 h-1 ${
+                              order.status === 'pending'
+                                ? 'bg-gradient-to-r from-amber-500/80 via-amber-400 to-amber-500/80'
+                                : order.status === 'confirmed' || order.status === 'cooking'
+                                  ? 'bg-gradient-to-r from-[#38BDF8] via-sky-300 to-[#38BDF8]'
+                                  : order.status === 'ready'
+                                    ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-emerald-500'
+                                    : order.status === 'completed'
+                                      ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400'
+                                      : isPaid
+                                        ? 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600'
+                                        : 'bg-transparent'
+                            }`}
+                          />
+
                           <div>
-                            {/* Card Header: Checkbox + Table + Status */}
-                            <div className="flex items-start justify-between pb-3.5 border-b border-slate-100 dark:border-white/5 mb-3.5 gap-2">
-                              <div className="flex items-start gap-2.5 min-w-0">
+                            {/* Card Header Row 1: Checkbox + Table Name & Status Badge */}
+                            <div className="flex items-center justify-between gap-2 pb-2">
+                              <div className="flex items-center gap-2.5 min-w-0">
                                 <input
                                   type="checkbox"
                                   checked={isSelected}
@@ -5133,108 +5250,107 @@ export default function DashboardPage() {
                                       setSelectedOrderIds((prev) => prev.filter((id) => id !== order._id));
                                     }
                                   }}
-                                  className="w-4 h-4 mt-0.5 rounded border-slate-300 dark:border-slate-700 text-[#38BDF8] focus:ring-[#38BDF8] cursor-pointer shrink-0"
+                                  className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-[#38BDF8] focus:ring-[#38BDF8] cursor-pointer shrink-0"
                                 />
-                                <div className="min-w-0">
-                                  <div className="flex items-center gap-1.5">
-                                    <h3 className="text-base sm:text-[17px] font-extrabold text-slate-900 dark:text-white truncate tracking-tight">
-                                      {order.isTakeaway || !order.tableId ? (
-                                        <span className="text-[#0284c7] dark:text-[#38BDF8]">
-                                          Mang về
-                                        </span>
-                                      ) : (
-                                        order.tableId?.tableName || t.unknownTable
-                                      )}
-                                    </h3>
-                                    {order.paymentNotified && order.status !== 'paid' && (
-                                      <span className="px-2 py-0.5 bg-amber-500 text-white rounded-md text-[10px] font-bold uppercase shrink-0">
-                                        Báo CK
-                                      </span>
-                                    )}
-                                  </div>
-
-                                  <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-400 dark:text-slate-500 font-normal flex-wrap">
-                                    <span className="px-2 py-0.5 bg-slate-100/80 dark:bg-white/5 text-slate-600 dark:text-slate-300 rounded-md text-[10px] font-extrabold uppercase border border-slate-200/50 dark:border-white/5">
-                                      {order.paymentMethod === 'bank_transfer' ? 'VietQR' : order.paymentMethod === 'momo' ? 'MoMo' : 'Tiền mặt'}
+                                <h3 className="text-base sm:text-[17px] font-extrabold text-slate-900 dark:text-white truncate tracking-tight">
+                                  {order.isTakeaway || !order.tableId ? (
+                                    <span className="text-[#0284c7] dark:text-[#38BDF8]">
+                                      Mang về
                                     </span>
-                                    {(order.customerName || order.customerPhone) && (
-                                      <span className="truncate max-w-[120px]">
-                                        • {order.customerName || 'Khách'}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
+                                  ) : (
+                                    order.tableId?.tableName || t.unknownTable
+                                  )}
+                                </h3>
+                                {order.paymentNotified && order.status !== 'paid' && (
+                                  <span className="px-2 py-0.5 bg-amber-500/20 text-amber-500 border border-amber-500/30 rounded-full text-[10px] font-extrabold uppercase shrink-0 animate-pulse">
+                                    Báo CK
+                                  </span>
+                                )}
                               </div>
 
-                              <div className="flex flex-col items-end gap-1.5 shrink-0">
+                              <div className="shrink-0">
                                 {getOrderStatusBadge(order.status)}
-                                {(() => {
-                                  if (!order.createdAt) return null;
-                                  const timeStr = new Date(order.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-                                  if (order.status === 'paid' || order.status === 'completed' || order.status === 'cancelled') {
-                                    return (
-                                      <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
-                                        {timeStr}
-                                      </span>
-                                    );
-                                  }
-                                  const elapsedMins = Math.max(0, Math.floor((Date.now() - new Date(order.createdAt).getTime()) / 60000));
-                                  const isOverdue = elapsedMins >= 10;
-                                  const isWarning = elapsedMins >= 5 && elapsedMins < 10;
+                              </div>
+                            </div>
 
-                                  return (
-                                    <div className="flex items-center gap-1 font-mono">
-                                      <span className="text-[10px] text-slate-400 dark:text-slate-500">
-                                        {timeStr}
-                                      </span>
+                            {/* Card Header Row 2 (Full-Width Metadata Bar): Payment method + Customer + Time/Elapsed */}
+                            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pb-3 border-b border-slate-100 dark:border-white/5 mb-3 gap-2">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span className="px-2 py-0.5 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 rounded-md text-[10px] font-extrabold uppercase border border-slate-200/60 dark:border-white/5 font-mono shrink-0">
+                                  {order.paymentMethod === 'bank_transfer' ? 'VietQR' : order.paymentMethod === 'momo' ? 'MoMo' : 'Tiền mặt'}
+                                </span>
+                                {(order.customerName || order.customerPhone) && (
+                                  <span className="truncate text-slate-600 dark:text-slate-300 text-xs font-semibold">
+                                    • {order.customerName || 'Khách'}
+                                  </span>
+                                )}
+                              </div>
+
+                              {(() => {
+                                if (!order.createdAt) return null;
+                                const timeStr = new Date(order.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                                const elapsedMins = Math.max(0, Math.floor((Date.now() - new Date(order.createdAt).getTime()) / 60000));
+                                const isOverdue = elapsedMins >= 10;
+                                const isWarning = elapsedMins >= 5 && elapsedMins < 10;
+
+                                return (
+                                  <div className="flex items-center gap-1.5 font-mono shrink-0 text-right">
+                                    <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                                      {timeStr}
+                                    </span>
+                                    {order.status !== 'paid' && order.status !== 'completed' && order.status !== 'cancelled' && (
                                       <span
-                                        className={`px-1.5 py-0.5 rounded-md text-[10px] font-extrabold tracking-tight ${isOverdue
-                                          ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 animate-pulse'
-                                          : isWarning
-                                            ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30'
-                                            : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25'
-                                          }`}
+                                        className={`px-1.5 py-0.2 rounded-md text-[10px] font-extrabold tracking-tight ${
+                                          isOverdue
+                                            ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 animate-pulse'
+                                            : isWarning
+                                              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30'
+                                              : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200/50 dark:border-white/5'
+                                        }`}
                                         title={`Thời gian từ khi đặt: ${elapsedMins} phút`}
                                       >
                                         {elapsedMins}p
                                       </span>
-                                    </div>
-                                  );
-                                })()}
-                              </div>
-                            </div>
-
-                            {/* Order Items List (Clean & Modern typography, high-contrast recipe notes) */}
-                            <div className="py-1 space-y-2.5 mb-3.5">
-                              {order.items?.map((item, idx) => (
-                                <div key={idx} className="flex items-start gap-2.5 text-xs">
-                                  <span className="w-6 h-6 rounded-lg bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] font-black text-[11px] flex items-center justify-center shrink-0 font-mono">
-                                    {item.quantity}x
-                                  </span>
-                                  <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                      <p className={`font-extrabold text-[13px] leading-snug ${item.isPaid ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-slate-100'}`}>
-                                        {item.foodId?.name || 'Món ăn'}
-                                      </p>
-                                      {(item.orderedBy || (item.note && item.note.match(/^\[(.*?)\]/)?.[1])) && (
-                                        <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-sky-500/15 text-sky-600 dark:text-sky-400 font-mono">
-                                          {item.orderedBy || (item.note ? item.note.match(/^\[(.*?)\]/)?.[1] : '')}
-                                        </span>
-                                      )}
-                                      {item.isPaid && (
-                                        <span className="px-1.5 py-0.2 rounded text-[10px] font-black bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-mono shrink-0">
-                                          ✓ Đã trả {item.paidBy ? `(${item.paidBy})` : ''}
-                                        </span>
-                                      )}
-                                    </div>
-                                    {Boolean(item.note && item.note.replace(/^\[.*?\]\s*/, '').trim()) && (
-                                      <div className="mt-1">
-                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-[11px] font-extrabold">
-                                          <span>{item.note?.replace(/^\[.*?\]\s*/, '')}</span>
-                                        </span>
-                                      </div>
                                     )}
                                   </div>
+                                );
+                              })()}
+                            </div>
+
+                            {/* Order Items List */}
+                            <div className="py-1 space-y-2 mb-3">
+                              {order.items?.map((item, idx) => (
+                                <div key={idx} className="space-y-1">
+                                  <div className="flex items-center justify-between gap-2 text-xs">
+                                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                                      <span className="w-5 h-5 rounded-md bg-sky-500/10 text-[#0284c7] dark:text-[#38BDF8] font-black text-[11px] flex items-center justify-center shrink-0 font-mono border border-sky-500/20">
+                                        {item.quantity}x
+                                      </span>
+                                      <p className={`font-extrabold text-[13px] leading-snug truncate ${item.isPaid ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-slate-100'}`}>
+                                        {item.foodId?.name || 'Món ăn'}
+                                      </p>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      {item.isPaid && (
+                                        <span className="px-1.5 py-0.2 rounded text-[10px] font-black bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-mono">
+                                          ✓ Đã trả
+                                        </span>
+                                      )}
+                                      {item.foodId?.price && (
+                                        <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400">
+                                          {formatPrice(item.foodId.price * item.quantity)}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {Boolean(item.note && item.note.replace(/^\[.*?\]\s*/, '').trim()) && (
+                                    <div className="pl-7">
+                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-[11px] font-extrabold">
+                                        <DashboardIcon name="edit_note" className="text-xs shrink-0" />
+                                        <span>{item.note?.replace(/^\[.*?\]\s*/, '')}</span>
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
                               ))}
                             </div>
@@ -5293,23 +5409,41 @@ export default function DashboardPage() {
                             })()}
                           </div>
 
-                          {/* Card Bottom Action Buttons */}
-                          <div className="space-y-2.5 pt-2.5 border-t border-slate-100 dark:border-white/10">
-                            {/* Payment Status Display */}
-                            <div className="flex items-center justify-between px-0.5">
-                              <span className="text-[11px] font-normal text-slate-400 uppercase tracking-wider">Thanh toán</span>
-                              <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-full ${order.status === 'paid' || order.paymentStatus === 'paid'
-                                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                                : order.paymentNotified
-                                  ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-                                  : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
+                          {/* Card Bottom: Total, Payment Status & Action Buttons */}
+                          <div className="space-y-2.5 pt-3 border-t border-slate-100 dark:border-white/10">
+                            {/* Order Total & Payment Status (Clean, Spacious, Never Wraps) */}
+                            <div className="flex items-center justify-between gap-2 px-0.5">
+                              <div className="min-w-0">
+                                <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
+                                  Tổng tiền
+                                </span>
+                                <span className="text-base sm:text-lg font-black font-mono text-slate-900 dark:text-white leading-tight">
+                                  {formatPrice(order.totalAmount || 0)}
+                                </span>
+                              </div>
+
+                              <div className="shrink-0">
+                                <span className={`inline-flex items-center gap-1.5 text-xs font-extrabold px-3 py-1 rounded-full border whitespace-nowrap ${
+                                  order.status === 'paid' || order.paymentStatus === 'paid'
+                                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25'
+                                    : order.paymentNotified
+                                      ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25'
+                                      : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
                                 }`}>
-                                {order.status === 'paid' || order.paymentStatus === 'paid'
-                                  ? 'Đã thanh toán'
-                                  : order.paymentNotified
-                                    ? 'Đã báo chuyển khoản'
-                                    : 'Chưa thanh toán'}
-                              </span>
+                                  <span className={`w-1.5 h-1.5 rounded-full ${
+                                    order.status === 'paid' || order.paymentStatus === 'paid'
+                                      ? 'bg-emerald-500'
+                                      : order.paymentNotified
+                                        ? 'bg-amber-500 animate-pulse'
+                                        : 'bg-rose-500'
+                                  }`} />
+                                  {order.status === 'paid' || order.paymentStatus === 'paid'
+                                    ? 'Đã thanh toán'
+                                    : order.paymentNotified
+                                      ? 'Đã báo chuyển khoản'
+                                      : 'Chưa thanh toán'}
+                                </span>
+                              </div>
                             </div>
 
                             {/* Quick Collect by Member for Table Orders */}
@@ -5328,28 +5462,37 @@ export default function DashboardPage() {
                               if (personUnpaidMap.size <= 1) return null;
 
                               return (
-                                <div className="pt-2 border-t border-dashed border-slate-200 dark:border-slate-800">
+                                <div className="pt-2 border-t border-dashed border-slate-200 dark:border-white/10">
                                   <span className="text-[10px] font-normal text-slate-400 uppercase tracking-wider block mb-1">
                                     Thu tiền từng người:
                                   </span>
                                   <div className="flex flex-wrap gap-1.5">
                                     {Array.from(personUnpaidMap.entries()).map(([person, data]) => (
-                                      <button
-                                        key={person}
-                                        onClick={() =>
-                                          handleConfirmSplitPayment({
-                                            orderId: order._id,
-                                            amount: data.amount,
-                                            payerName: person,
-                                            itemIndexes: data.indexes,
-                                            paymentMethod: 'cash',
-                                          })
-                                        }
-                                        className="px-2 py-1 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-[#38BDF8] border border-sky-500/20 text-[10px] font-black font-mono transition-all active:scale-95 cursor-pointer"
-                                        title={`Xác nhận thu ${formatPrice(data.amount)} của ${person}`}
-                                      >
-                                        Thu {person}: {formatPrice(data.amount)}
-                                      </button>
+                                      user?.role === 'admin' ? (
+                                        <span
+                                          key={person}
+                                          className="px-2 py-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[10px] font-bold font-mono"
+                                        >
+                                          Chờ thu {person}: {formatPrice(data.amount)}
+                                        </span>
+                                      ) : (
+                                        <button
+                                          key={person}
+                                          onClick={() =>
+                                            handleConfirmSplitPayment({
+                                              orderId: order._id,
+                                              amount: data.amount,
+                                              payerName: person,
+                                              itemIndexes: data.indexes,
+                                              paymentMethod: 'cash',
+                                            })
+                                          }
+                                          className="px-2.5 py-1 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-[#38BDF8] border border-sky-500/20 text-[10px] font-black font-mono transition-all active:scale-95 cursor-pointer"
+                                          title={`Xác nhận thu ${formatPrice(data.amount)} của ${person}`}
+                                        >
+                                          Thu {person}: {formatPrice(data.amount)}
+                                        </button>
+                                      )
                                     ))}
                                   </div>
                                 </div>
@@ -5358,24 +5501,27 @@ export default function DashboardPage() {
 
                             {/* Step 1 -> 2: Phục vụ xác nhận & gửi pha chế hoặc Từ chối */}
                             {order.status === 'pending' && (
-                              user?.role === 'barista' ? (
-                                <div className="w-full py-2.5 text-center text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 rounded-2xl border border-amber-500/20 select-none">
-                                  Chờ phục vụ duyệt đơn
+                              user?.role === 'barista' || user?.role === 'admin' ? (
+                                <div className="w-full py-2.5 px-3 text-center text-xs font-extrabold text-amber-600 dark:text-amber-400 bg-amber-500/10 rounded-2xl border border-amber-500/20 select-none flex items-center justify-center gap-2">
+                                  <DashboardIcon name="schedule" className="text-base" />
+                                  <span>Chờ phục vụ duyệt đơn</span>
                                 </div>
                               ) : (
                                 <div className="flex items-center gap-2">
                                   <button
                                     onClick={() => handleUpdateStatus(order._id, 'confirmed')}
-                                    className="flex-1 h-11 bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 font-extrabold text-xs rounded-2xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
+                                    className="flex-1 h-11 bg-[#38BDF8] hover:bg-[#2593e8] text-[#090D16] font-extrabold text-xs rounded-2xl transition-all shadow-md shadow-[#38BDF8]/20 active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 uppercase tracking-wider"
                                   >
-                                    Duyệt đơn
+                                    <DashboardIcon name="check" className="text-sm" />
+                                    <span>Duyệt đơn</span>
                                   </button>
                                   <button
                                     onClick={() => handleUpdateStatus(order._id, 'cancelled')}
-                                    className="h-11 px-4 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/25 font-extrabold text-xs rounded-2xl transition-all active:scale-95 cursor-pointer flex items-center justify-center uppercase"
+                                    className="h-11 px-4 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 font-extrabold text-xs rounded-2xl transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 uppercase"
                                     title="Từ chối đơn rác / Khách không có tại bàn"
                                   >
-                                    Từ chối
+                                    <DashboardIcon name="close" className="text-sm" />
+                                    <span>Từ chối</span>
                                   </button>
                                 </div>
                               )
@@ -5383,32 +5529,36 @@ export default function DashboardPage() {
 
                             {/* Step 2 -> 3: Barista bắt đầu pha chế */}
                             {order.status === 'confirmed' && (
-                              user?.role === 'barista' || user?.role === 'admin' ? (
+                              user?.role === 'barista' ? (
                                 <button
                                   onClick={() => handleUpdateStatus(order._id, 'cooking')}
-                                  className="w-full h-11 bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold text-xs rounded-2xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
+                                  className="w-full h-11 bg-[#38BDF8] hover:bg-[#2593e8] text-[#090D16] font-extrabold text-xs rounded-2xl transition-all shadow-md shadow-[#38BDF8]/20 active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 uppercase tracking-wider"
                                 >
-                                  Bắt đầu pha chế
+                                  <DashboardIcon name="blender" className="text-base" />
+                                  <span>Bắt đầu pha chế</span>
                                 </button>
                               ) : (
-                                <div className="w-full py-2.5 text-center text-xs font-bold text-sky-600 dark:text-[#38BDF8] bg-sky-500/10 rounded-2xl border border-sky-500/20 select-none">
-                                  Đã chuyển quầy pha chế
+                                <div className="w-full py-2.5 px-3 text-center text-xs font-extrabold text-sky-600 dark:text-[#38BDF8] bg-sky-500/10 rounded-2xl border border-sky-500/20 select-none flex items-center justify-center gap-2">
+                                  <DashboardIcon name={user?.role === 'admin' ? 'task_alt' : 'local_cafe'} className="text-base" />
+                                  <span>{user?.role === 'admin' ? 'Đã duyệt • Đang chờ pha chế' : 'Đã chuyển quầy pha chế'}</span>
                                 </div>
                               )
                             )}
 
                             {/* Step 3 -> 4: Barista hoàn tất pha chế */}
                             {order.status === 'cooking' && (
-                              user?.role === 'barista' || user?.role === 'admin' ? (
+                              user?.role === 'barista' ? (
                                 <button
                                   onClick={() => handleUpdateStatus(order._id, 'ready')}
-                                  className="w-full h-11 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs rounded-2xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
+                                  className="w-full h-11 bg-emerald-500 hover:bg-emerald-400 text-[#090D16] font-extrabold text-xs rounded-2xl transition-all shadow-md shadow-emerald-500/20 active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 uppercase tracking-wider"
                                 >
-                                  Hoàn tất pha chế
+                                  <DashboardIcon name="check_circle" className="text-base" />
+                                  <span>Hoàn tất pha chế</span>
                                 </button>
                               ) : (
-                                <div className="w-full py-2.5 text-center text-xs font-bold text-sky-600 dark:text-[#38BDF8] bg-sky-500/10 rounded-2xl border border-sky-500/20 select-none">
-                                  Đang pha chế tại quầy
+                                <div className="w-full py-2.5 px-3 text-center text-xs font-extrabold text-sky-600 dark:text-[#38BDF8] bg-sky-500/10 rounded-2xl border border-sky-500/20 select-none flex items-center justify-center gap-2">
+                                  <DashboardIcon name="blender" className="text-base animate-pulse" />
+                                  <span>Đang pha chế tại quầy</span>
                                 </div>
                               )
                             )}
@@ -5416,15 +5566,22 @@ export default function DashboardPage() {
                             {/* Step 4 -> 5: Phục vụ mang đồ ra bàn cho Khách */}
                             {order.status === 'ready' && (
                               user?.role === 'barista' ? (
-                                <div className="w-full py-2.5 text-center text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 select-none">
-                                  Đã báo phục vụ ra món
+                                <div className="w-full py-2.5 px-3 text-center text-xs font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 select-none flex items-center justify-center gap-2">
+                                  <DashboardIcon name="room_service" className="text-base" />
+                                  <span>Đã báo phục vụ ra món</span>
+                                </div>
+                              ) : user?.role === 'admin' ? (
+                                <div className="w-full py-2.5 px-3 text-center text-xs font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 select-none flex items-center justify-center gap-2">
+                                  <DashboardIcon name="room_service" className="text-base" />
+                                  <span>Đã pha xong • Chờ phục vụ ra món</span>
                                 </div>
                               ) : (
                                 <button
                                   onClick={() => handleUpdateStatus(order._id, 'completed')}
-                                  className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-2xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
+                                  className="w-full h-11 bg-emerald-500 hover:bg-emerald-400 text-[#090D16] font-extrabold text-xs rounded-2xl transition-all shadow-md shadow-emerald-500/20 active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 uppercase tracking-wider"
                                 >
-                                  Xác nhận ra món
+                                  <DashboardIcon name="room_service" className="text-base" />
+                                  <span>Xác nhận ra món</span>
                                 </button>
                               )
                             )}
@@ -5432,22 +5589,39 @@ export default function DashboardPage() {
                             {/* Step 5: Phục vụ thanh toán */}
                             {order.status === 'completed' && (
                               user?.role === 'barista' ? (
-                                <div className="w-full py-2.5 text-center text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/5 rounded-2xl border border-slate-200/50 dark:border-white/5 select-none">
-                                  Đã hoàn tất món
+                                <div className="w-full py-2.5 px-3 text-center text-xs font-extrabold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/5 rounded-2xl border border-slate-200/50 dark:border-white/5 select-none flex items-center justify-center gap-2">
+                                  <DashboardIcon name="task_alt" className="text-base" />
+                                  <span>Đã hoàn tất món</span>
+                                </div>
+                              ) : user?.role === 'admin' ? (
+                                <div className="flex items-center gap-2">
+                                  <div className="flex-1 py-2.5 px-3 text-center text-xs font-extrabold text-amber-600 dark:text-amber-400 bg-amber-500/10 rounded-2xl border border-amber-500/20 select-none flex items-center justify-center gap-2">
+                                    <DashboardIcon name="hourglass_bottom" className="text-base" />
+                                    <span>Đã ra món • Chờ thanh toán</span>
+                                  </div>
+                                  <button
+                                    onClick={() => setActiveInvoice(order)}
+                                    className="h-11 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-extrabold text-xs rounded-2xl transition-all cursor-pointer flex items-center justify-center gap-1.5 uppercase shrink-0"
+                                  >
+                                    <DashboardIcon name="receipt" className="text-base" />
+                                    <span>Hóa đơn</span>
+                                  </button>
                                 </div>
                               ) : (
-                                <div className="flex gap-2">
+                                <div className="flex items-center gap-2">
                                   <button
                                     onClick={() => handleUpdateStatus(order._id, 'paid')}
-                                    className="flex-1 h-11 bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:hover:bg-sky-300 text-white dark:text-slate-950 font-extrabold text-xs rounded-2xl transition-all shadow-sm active:scale-95 cursor-pointer flex items-center justify-center uppercase tracking-wider"
+                                    className="flex-1 h-11 bg-[#38BDF8] hover:bg-[#2593e8] text-[#090D16] font-extrabold text-xs rounded-2xl transition-all shadow-md shadow-[#38BDF8]/20 active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 uppercase tracking-wider"
                                   >
-                                    Xác nhận nhận tiền
+                                    <DashboardIcon name="payments" className="text-base" />
+                                    <span>Xác nhận nhận tiền</span>
                                   </button>
                                   <button
                                     onClick={() => setActiveInvoice(order)}
-                                    className="h-10 px-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center uppercase"
+                                    className="h-11 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-extrabold text-xs rounded-2xl transition-all cursor-pointer flex items-center justify-center gap-1.5 uppercase shrink-0"
                                   >
-                                    Hóa đơn
+                                    <DashboardIcon name="receipt" className="text-base" />
+                                    <span>Hóa đơn</span>
                                   </button>
                                 </div>
                               )
@@ -5455,9 +5629,10 @@ export default function DashboardPage() {
                             {isPaid && (
                               <button
                                 onClick={() => setActiveInvoice(order)}
-                                className="w-full h-10 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 hover:text-sky-500 dark:hover:text-[#38BDF8] text-xs font-black rounded-xl transition-all flex items-center justify-center uppercase tracking-wider cursor-pointer"
+                                className="w-full h-11 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/10 text-slate-800 dark:text-slate-200 hover:text-[#38BDF8] text-xs font-black rounded-2xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider cursor-pointer"
                               >
-                                Xem hóa đơn chi tiết
+                                <DashboardIcon name="receipt_long" className="text-base" />
+                                <span>Xem hóa đơn chi tiết</span>
                               </button>
                             )}
                           </div>
@@ -5542,16 +5717,16 @@ export default function DashboardPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedCategory('all')}
-                    className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${selectedCategory === 'all'
-                      ? 'bg-[#38BDF8] text-[#090D16] font-bold shadow-sm'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${selectedCategory === 'all'
+                      ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-[#090D16] font-black shadow-sm'
+                      : 'text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                       }`}
                   >
                     <span>Tất cả</span>
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${selectedCategory === 'all'
-                        ? 'bg-black/20 text-[#090D16]'
-                        : 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400'
+                      className={`px-2 py-0.5 rounded-full text-[11px] font-black ${selectedCategory === 'all'
+                        ? 'bg-white/25 dark:bg-[#090D16]/20 text-white dark:text-[#090D16]'
+                        : 'bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-white/10'
                         }`}
                     >
                       {foods.length}
@@ -5568,16 +5743,16 @@ export default function DashboardPage() {
                         key={cat.name}
                         type="button"
                         onClick={() => setSelectedCategory(isSelected ? 'all' : cat.name)}
-                        className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${isSelected
-                          ? 'bg-[#38BDF8] text-[#090D16] font-bold shadow-sm'
-                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${isSelected
+                          ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-[#090D16] font-black shadow-sm'
+                          : 'text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                           }`}
                       >
                         <span>{cat.name}</span>
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${isSelected
-                            ? 'bg-black/20 text-[#090D16]'
-                            : 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400'
+                          className={`px-2 py-0.5 rounded-full text-[11px] font-black ${isSelected
+                            ? 'bg-white/25 dark:bg-[#090D16]/20 text-white dark:text-[#090D16]'
+                            : 'bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-white/10'
                             }`}
                         >
                           {count}
@@ -5650,21 +5825,21 @@ export default function DashboardPage() {
                                       </div>
                                     )}
 
-                                    {/* Availability Status: Floating Frosted Pill */}
+                                    {/* Availability Status: Solid High-Contrast Badge */}
                                     <button
                                       type="button"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleToggleFoodAvailability(food);
                                       }}
-                                      className={`absolute top-2.5 right-2.5 px-3 py-1 rounded-full text-[11px] font-semibold backdrop-blur-md shadow-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 ${food.isAvailable
-                                        ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30'
-                                        : 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-600 dark:text-rose-300 border border-rose-500/30'
+                                      className={`absolute top-2.5 right-2.5 px-3 py-1 rounded-full text-[11px] font-extrabold shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 ${food.isAvailable
+                                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-400/80 shadow-emerald-950/20'
+                                        : 'bg-rose-600 hover:bg-rose-700 text-white border border-rose-400/80 shadow-rose-950/20'
                                         }`}
                                       title={food.isAvailable ? 'Bấm để Tạm ngưng món nhanh' : 'Bấm để Mở bán lại nhanh'}
                                     >
                                       <span
-                                        className={`w-1.5 h-1.5 rounded-full ${food.isAvailable ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
+                                        className={`w-2 h-2 rounded-full ${food.isAvailable ? 'bg-white animate-pulse' : 'bg-white'
                                           }`}
                                       />
                                       <span>{food.isAvailable ? 'Đang bán' : 'Tạm ngưng'}</span>
@@ -5772,21 +5947,21 @@ export default function DashboardPage() {
                                     </div>
                                   )}
 
-                                  {/* Availability Status: Floating Frosted Pill */}
+                                  {/* Availability Status: Solid High-Contrast Badge */}
                                   <button
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleToggleFoodAvailability(food);
                                     }}
-                                    className={`absolute top-2.5 right-2.5 px-3 py-1 rounded-full text-[11px] font-semibold backdrop-blur-md shadow-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 ${food.isAvailable
-                                      ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30'
-                                      : 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-600 dark:text-rose-300 border border-rose-500/30'
+                                    className={`absolute top-2.5 right-2.5 px-3 py-1 rounded-full text-[11px] font-extrabold shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 ${food.isAvailable
+                                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-400/80 shadow-emerald-950/20'
+                                      : 'bg-rose-600 hover:bg-rose-700 text-white border border-rose-400/80 shadow-rose-950/20'
                                       }`}
                                     title={food.isAvailable ? 'Bấm để Tạm ngưng món nhanh' : 'Bấm để Mở bán lại nhanh'}
                                   >
                                     <span
-                                      className={`w-1.5 h-1.5 rounded-full ${food.isAvailable ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
+                                      className={`w-2 h-2 rounded-full ${food.isAvailable ? 'bg-white animate-pulse' : 'bg-white'
                                         }`}
                                     />
                                     <span>{food.isAvailable ? 'Đang bán' : 'Tạm ngưng'}</span>
@@ -6064,7 +6239,7 @@ export default function DashboardPage() {
                           : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                           }`}
                       >
-                        <span className="w-2 h-2 rounded-full bg-slate-400" />
+                        <StatusDot status="offline" size="sm" ping={false} />
                         <span>Trống</span>
                       </button>
                       <button
@@ -6075,7 +6250,7 @@ export default function DashboardPage() {
                           : 'text-slate-500 hover:text-emerald-500'
                           }`}
                       >
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                        <StatusDot status="available" size="sm" ping={false} />
                         <span>Có khách</span>
                       </button>
                       <button
@@ -6086,7 +6261,7 @@ export default function DashboardPage() {
                           : 'text-slate-500 hover:text-amber-500'
                           }`}
                       >
-                        <span className="w-2 h-2 rounded-full bg-amber-500" />
+                        <StatusDot status="reserved" size="sm" ping={false} />
                         <span>Đã đặt</span>
                       </button>
                     </div>
@@ -6167,7 +6342,7 @@ export default function DashboardPage() {
                     let headerBg = 'bg-white dark:bg-slate-900/50';
                     let statusBadge = (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 whitespace-nowrap shrink-0">
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                        <StatusDot status="offline" size="sm" ping={false} />
                         Trống
                       </span>
                     );
@@ -6177,10 +6352,7 @@ export default function DashboardPage() {
                       headerBg = 'bg-emerald-500/10 dark:bg-emerald-950/20';
                       statusBadge = (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 whitespace-nowrap shrink-0">
-                          <span className="relative flex h-2 w-2 shrink-0">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                          </span>
+                          <StatusDot status="available" size="sm" ping={true} />
                           Có khách
                         </span>
                       );
@@ -6189,10 +6361,7 @@ export default function DashboardPage() {
                       headerBg = 'bg-amber-500/10 dark:bg-amber-950/20';
                       statusBadge = (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 whitespace-nowrap shrink-0">
-                          <span className="relative flex h-2 w-2 shrink-0">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                          </span>
+                          <StatusDot status="reserved" size="sm" ping={true} />
                           Khách hẹn
                         </span>
                       );
@@ -9121,43 +9290,105 @@ export default function DashboardPage() {
                     <div className="bg-white dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-8 text-center text-slate-500">
                       Chưa có đánh giá nào từ khách hàng
                     </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {reviews.map((rev) => (
-                        <div key={rev._id} className="bg-white dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] p-4 rounded-xl space-y-2 relative shadow-xs">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-bold text-slate-900 dark:text-white text-xs">{rev.customerName || 'Khách hàng'}</span>
-                                <span className="text-[10px] bg-slate-200 dark:bg-[#1e293b] text-slate-700 dark:text-slate-400 px-2 py-0.5 rounded-md">
-                                  {rev.tableId?.tableName || 'Bàn'}
-                                </span>
+                  ) : (() => {
+                    const REVIEWS_PER_PAGE = 4; // 2 hàng x 2 cột = 4 đánh giá/trang
+                    const totalReviewPages = Math.ceil(reviews.length / REVIEWS_PER_PAGE) || 1;
+                    const safeReviewPage = Math.min(reviewCurrentPage, totalReviewPages);
+                    const paginatedReviews = reviews.slice((safeReviewPage - 1) * REVIEWS_PER_PAGE, safeReviewPage * REVIEWS_PER_PAGE);
+
+                    return (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {paginatedReviews.map((rev) => (
+                            <div key={rev._id} className="bg-white dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] p-4 rounded-xl space-y-2 relative shadow-xs">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-bold text-slate-900 dark:text-white text-xs">{rev.customerName || 'Khách hàng'}</span>
+                                    <span className="text-[10px] bg-slate-200 dark:bg-[#1e293b] text-slate-700 dark:text-slate-400 px-2 py-0.5 rounded-md">
+                                      {rev.tableId?.tableName || 'Bàn'}
+                                    </span>
+                                  </div>
+                                  <div className="text-amber-500 dark:text-amber-400 text-xs mt-1 flex items-center">
+                                    {Array.from({ length: rev.serviceStar || 5 }).map((_, idx) => (
+                                      <DashboardIcon name="star" key={idx} className="text-sm" />
+                                    ))}
+                                  </div>
+                                </div>
+
+                                <button
+                                  onClick={() => setReviewToDelete(rev._id)}
+                                  className="text-slate-400 hover:text-red-500 p-1 cursor-pointer"
+                                  title="Xóa đánh giá"
+                                >
+                                  <DashboardIcon name="delete" className="text-sm" />
+                                </button>
                               </div>
-                              <div className="text-amber-500 dark:text-amber-400 text-xs mt-1 flex items-center">
-                                {Array.from({ length: rev.serviceStar || 5 }).map((_, idx) => (
-                                  <DashboardIcon name="star" key={idx} className="text-sm" />
-                                ))}
+
+                              <p className="text-xs text-slate-700 dark:text-slate-300 italic">{rev.comment || 'Khách hàng không để lại nhận xét'}</p>
+
+                              <div className="text-[10px] text-slate-500 text-right">
+                                {rev.createdAt ? new Date(rev.createdAt).toLocaleString('vi-VN') : ''}
                               </div>
                             </div>
-
-                            <button
-                              onClick={() => setReviewToDelete(rev._id)}
-                              className="text-slate-400 hover:text-red-500 p-1"
-                              title="Xóa đánh giá"
-                            >
-                              <DashboardIcon name="delete" className="text-sm" />
-                            </button>
-                          </div>
-
-                          <p className="text-xs text-slate-700 dark:text-slate-300 italic">{rev.comment || 'Khách hàng không để lại nhận xét'}</p>
-
-                          <div className="text-[10px] text-slate-500 text-right">
-                            {rev.createdAt ? new Date(rev.createdAt).toLocaleString('vi-VN') : ''}
-                          </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  )}
+
+                        {/* Phân trang: 2 hàng (4 thẻ/trang) */}
+                        {totalReviewPages > 1 && (
+                          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-200 dark:border-white/10 text-xs">
+                            <span className="text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap shrink-0">
+                              Hiển thị 2 hàng (trang <b className="text-slate-900 dark:text-white font-bold">{safeReviewPage}</b> / {totalReviewPages} • tổng {reviews.length} đánh giá)
+                            </span>
+                            <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+                              <button
+                                type="button"
+                                onClick={() => setReviewCurrentPage((p) => Math.max(1, p - 1))}
+                                disabled={safeReviewPage <= 1}
+                                className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-bold flex items-center gap-1 cursor-pointer whitespace-nowrap"
+                              >
+                                <DashboardIcon name="chevron_left" className="text-sm" />
+                                <span>Trang trước</span>
+                              </button>
+
+                              <div className="flex items-center gap-1">
+                                {Array.from({ length: totalReviewPages }, (_, i) => i + 1)
+                                  .filter((page) => totalReviewPages <= 5 || Math.abs(page - safeReviewPage) <= 1 || page === 1 || page === totalReviewPages)
+                                  .map((page, idx, arr) => (
+                                    <React.Fragment key={page}>
+                                      {idx > 0 && page - arr[idx - 1] > 1 && (
+                                        <span className="px-1 text-slate-400 select-none">...</span>
+                                      )}
+                                      <button
+                                        type="button"
+                                        onClick={() => setReviewCurrentPage(page)}
+                                        className={`min-w-[28px] h-7 px-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                                          safeReviewPage === page
+                                            ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-[#090D16] shadow-xs'
+                                            : 'bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                        }`}
+                                      >
+                                        {page}
+                                      </button>
+                                    </React.Fragment>
+                                  ))}
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => setReviewCurrentPage((p) => Math.min(totalReviewPages, p + 1))}
+                                disabled={safeReviewPage >= totalReviewPages}
+                                className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-bold flex items-center gap-1 cursor-pointer whitespace-nowrap"
+                              >
+                                <span>Trang sau</span>
+                                <DashboardIcon name="chevron_right" className="text-sm" />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             )}
@@ -11425,9 +11656,9 @@ export default function DashboardPage() {
         )}
       </AnimatePresence>
 
-      {/* 5.5 Staff Takeaway POS Modal (Tạo đơn mang về) */}
+      {/* 5.5 Staff Takeaway POS Modal (Tạo đơn mang về - chỉ Phục vụ / Nhân viên quầy) */}
       <AnimatePresence>
-        {isTakeawayModalOpen && (
+        {isTakeawayModalOpen && user?.role !== 'admin' && user?.role !== 'barista' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
             <motion.div
               initial={{ opacity: 0 }}

@@ -5,6 +5,9 @@ import React from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatTableName } from '@/utils/format';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { InlineAlert } from '@/components/ui/InlineAlert';
+import { FormField } from '@/components/ui/FormField';
 
 interface Food {
   _id: string;
@@ -337,16 +340,16 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                         <p className="text-xs font-medium text-slate-900 dark:text-white truncate">
                           {recomFood.name}
                         </p>
-                        <p className="text-[13px] font-extrabold text-[#0284c7] dark:text-[#38BDF8] font-sans tracking-tight">
+                        <p className="text-[13px] font-extrabold text-slate-900 dark:text-white font-sans tracking-tight">
                           {formatPrice(recomFood.price, lang)}
                         </p>
                       </div>
                     </div>
                     <button
                       onClick={() => handleIncrease(recomFood)}
-                      className="px-3.5 py-1.5 bg-sky-500 hover:bg-sky-600 dark:bg-sky-500 dark:hover:bg-sky-400 text-white rounded-xl text-xs font-extrabold transition-all flex items-center gap-1 flex-shrink-0 active:scale-95 cursor-pointer shadow-xs hover:shadow-md hover:shadow-sky-500/25 min-h-[32px]"
+                      className="px-3.5 py-1.5 bg-sky-500 hover:bg-sky-400 text-white rounded-xl text-xs font-extrabold transition-all flex items-center gap-1 flex-shrink-0 active:scale-95 cursor-pointer shadow-xs hover:shadow-md hover:shadow-sky-500/25 min-h-[36px]"
                     >
-                      <span className="text-white">+ {t.addItem || (lang === 'en' ? 'Add' : lang === 'zh' ? '添加' : 'Thêm')}</span>
+                      <span className="text-white font-extrabold">+ {t.addItem || (lang === 'en' ? 'Add' : lang === 'zh' ? '添加' : 'Thêm')}</span>
                     </button>
                   </div>
                 ))}
@@ -418,93 +421,68 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
           </div>
         )}
 
-        {/* Coupon Input Group */}
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <input
-              type="text"
-              value={couponInput}
-              onChange={(e) => {
-                setCouponInput(e.target.value.toUpperCase());
-                setCouponResult(null);
-              }}
-              onKeyDown={(e) => e.key === 'Enter' && handleValidateCoupon()}
-              placeholder={t.promoCode ? `${t.promoCode}...` : (lang === 'en' ? 'Promo Code...' : lang === 'zh' ? '优惠码...' : 'Mã giảm giá...')}
-              aria-label={lang === 'en' ? 'Promo or discount code' : lang === 'zh' ? '优惠码' : 'Mã giảm giá'}
-              className="w-full bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl py-2.5 px-3.5 text-xs text-slate-900 dark:text-white font-medium uppercase focus:border-sky-500 outline-none font-sans placeholder-slate-400 dark:placeholder-slate-500"
-            />
+        {/* Coupon Input Group (FormField) */}
+        <div className="space-y-2">
+          <div className="flex gap-2 items-center">
+            <div className="flex-1">
+              <input
+                type="text"
+                value={couponInput}
+                onChange={(e) => {
+                  setCouponInput(e.target.value.toUpperCase());
+                  setCouponResult(null);
+                }}
+                onKeyDown={(e) => e.key === 'Enter' && handleValidateCoupon()}
+                placeholder={t.promoCode ? `${t.promoCode}...` : (lang === 'en' ? 'Promo Code...' : lang === 'zh' ? '优惠码...' : 'Mã giảm giá...')}
+                aria-label={lang === 'en' ? 'Promo or discount code' : lang === 'zh' ? '优惠码' : 'Mã giảm giá'}
+                className="w-full h-11 bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-2xl px-3.5 text-base sm:text-xs text-slate-900 dark:text-white font-bold uppercase focus:border-[#38BDF8] focus-visible:ring-2 focus-visible:ring-[#38BDF8] outline-none font-sans placeholder-slate-400 dark:placeholder-slate-500"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleValidateCoupon}
+              disabled={isValidatingCoupon || !couponInput.trim()}
+              className={`h-11 min-h-[44px] px-4 rounded-2xl text-xs font-black uppercase tracking-wider transition-all font-sans shrink-0 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${
+                couponInput.trim()
+                  ? 'bg-sky-500 hover:bg-sky-400 text-white cursor-pointer shadow-xs'
+                  : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+              }`}
+            >
+              {isValidatingCoupon ? '...' : (t.apply || (lang === 'en' ? 'Apply' : lang === 'zh' ? '应用' : 'Áp dụng'))}
+            </button>
           </div>
-          <button
-            onClick={handleValidateCoupon}
-            disabled={isValidatingCoupon || !couponInput.trim()}
-            className={`px-4 py-2.5 rounded-xl text-xs font-semibold transition-all font-sans ${
-              couponInput.trim()
-                ? 'bg-sky-500 text-slate-950 font-semibold cursor-pointer shadow-md hover:bg-sky-400 active:scale-95'
-                : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
-            }`}
-          >
-            {isValidatingCoupon ? '...' : (t.apply || (lang === 'en' ? 'Apply' : lang === 'zh' ? '应用' : 'Áp dụng'))}
-          </button>
+
+          {couponResult && (
+            <InlineAlert severity={couponResult.valid ? 'success' : 'error'}>
+              {couponResult.valid
+                ? `${lang === 'en' ? 'Discount ' : lang === 'zh' ? '立减 ' : 'Giảm '}${formatPrice(couponResult.discountAmount, lang)}`
+                : couponResult.message}
+            </InlineAlert>
+          )}
         </div>
-        {couponResult && (
-          <p
-            className={`text-xs font-medium mt-2 ${
-              couponResult.valid ? 'text-sky-500 dark:text-sky-400' : 'text-rose-500 dark:text-rose-400'
-            }`}
-          >
-            {couponResult.valid
-              ? `${lang === 'en' ? 'Discount ' : lang === 'zh' ? '立减 ' : 'Giảm '}${formatPrice(couponResult.discountAmount, lang)}`
-              : couponResult.message}
-          </p>
-        )}
 
         <div className="border-t border-slate-200 dark:border-white/10 my-3" />
 
-        {/* Payment Method Selector - Modern Segmented Control */}
-        <div
-          className="p-1 bg-slate-100 dark:bg-[#090D16] rounded-2xl border border-slate-200/80 dark:border-white/10 flex gap-1 font-sans shadow-inner"
-          role="radiogroup"
-          aria-label={lang === 'en' ? 'Payment method' : lang === 'zh' ? '支付方式' : 'Phương thức thanh toán'}
-        >
-          <button
-            type="button"
-            role="radio"
-            aria-checked={paymentMethod === 'cash'}
-            aria-label={lang === 'en' ? 'Pay with cash' : lang === 'zh' ? '现金支付' : 'Thanh toán tiền mặt'}
-            onClick={() => setPaymentMethod('cash')}
-            className={`flex-1 h-[42px] px-3 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-[0.98] ${
-              paymentMethod === 'cash'
-                ? 'bg-sky-50 dark:bg-sky-500/15 text-[#0284c7] dark:text-[#38BDF8] border border-sky-200 dark:border-sky-500/30 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5 border border-transparent'
-            }`}
-          >
-            <AppIcon name="payments" className={`text-[18px] transition-transform ${
-                paymentMethod === 'cash' ? 'text-[#0284c7] dark:text-[#38BDF8] scale-105' : 'text-slate-400 dark:text-slate-500'
-              }`}
-              aria-hidden="true" />
-            <span className="font-sans whitespace-nowrap">{t.cash || (lang === 'en' ? 'Cash' : lang === 'zh' ? '现金' : 'Tiền mặt')}</span>
-          </button>
-
-          <button
-            type="button"
-            role="radio"
-            aria-checked={paymentMethod === 'bank_transfer' || paymentMethod === 'momo'}
-            aria-label={lang === 'en' ? 'Pay with bank transfer QR' : lang === 'zh' ? '银行转账扫码' : 'Thanh toán Chuyển khoản QR'}
-            onClick={() => setPaymentMethod('bank_transfer')}
-            className={`flex-1 h-[42px] px-3 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-[0.98] ${
-              paymentMethod === 'bank_transfer' || paymentMethod === 'momo'
-                ? 'bg-sky-50 dark:bg-sky-500/15 text-[#0284c7] dark:text-[#38BDF8] border border-sky-200 dark:border-sky-500/30 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5 border border-transparent'
-            }`}
-          >
-            <AppIcon name="qr_code_2" className={`text-[18px] transition-transform ${
-                paymentMethod === 'bank_transfer' || paymentMethod === 'momo'
-                  ? 'text-[#0284c7] dark:text-[#38BDF8] scale-105'
-                  : 'text-slate-400 dark:text-slate-500'
-              }`}
-              aria-hidden="true" />
-            <span className="font-sans whitespace-nowrap">{t.bankTransfer || (lang === 'en' ? 'Bank QR' : lang === 'zh' ? '银行转账' : 'CK Ngân hàng')}</span>
-          </button>
+        {/* Payment Method Selector - Name That UI Segmented Control */}
+        <div>
+          <SegmentedControl<'cash' | 'bank_transfer'>
+            fullWidth
+            size="md"
+            value={paymentMethod === 'cash' ? 'cash' : 'bank_transfer'}
+            onChange={(val) => setPaymentMethod(val)}
+            options={[
+              {
+                value: 'cash',
+                label: t.cash || (lang === 'en' ? 'Cash' : lang === 'zh' ? '现金' : 'Tiền mặt'),
+                icon: <AppIcon name="payments" className="text-lg" />,
+              },
+              {
+                value: 'bank_transfer',
+                label: t.bankTransfer || (lang === 'en' ? 'Bank QR' : lang === 'zh' ? '银行转账' : 'CK Ngân hàng'),
+                icon: <AppIcon name="qr_code_2" className="text-lg" />,
+              },
+            ]}
+          />
         </div>
 
         <div className="border-t border-slate-200 dark:border-white/10 my-3" />
@@ -535,28 +513,28 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
           </div>
         </div>
 
-        {/* Pending Order Notice */}
-      {hasPendingOrder && (
-        <div className="mt-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs font-medium flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping shrink-0" />
-          <span>
-            {lang === 'en'
-              ? 'An order is pending staff approval. Please wait a moment before adding more!'
-              : lang === 'zh'
-              ? '当前桌位有一笔订单等待服务员确认中，请稍候再加点！'
-              : 'Bàn đang có 1 đơn chờ nhân viên xác nhận. Vui lòng đợi trong giây lát!'}
-          </span>
-        </div>
-      )}
+        {/* Pending Order Notice - Name That UI InlineAlert */}
+        {hasPendingOrder && (
+          <div className="mb-2">
+            <InlineAlert severity="warning">
+              {lang === 'en'
+                ? 'An order is pending staff approval. Please wait a moment before adding more!'
+                : lang === 'zh'
+                ? '当前桌位有一笔订单等待服务员确认中，请稍候再加点！'
+                : 'Bàn đang có 1 đơn chờ nhân viên xác nhận. Vui lòng đợi trong giây lát!'}
+            </InlineAlert>
+          </div>
+        )}
 
       {/* Submit CTA Button */}
       <button
+        type="button"
         onClick={handleSubmitOrder}
         disabled={cart.length === 0 || isSubmitting || hasPendingOrder}
-        className={`w-full h-[52px] mt-2 rounded-xl text-[14px] font-bold uppercase tracking-[0.04em] flex items-center justify-center transition-all font-sans ${
+        className={`w-full min-h-[52px] h-[52px] mt-2 rounded-2xl text-xs sm:text-sm font-black uppercase tracking-wider flex items-center justify-center transition-all font-sans focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${
           cart.length === 0 || hasPendingOrder
             ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
-            : 'bg-[#38BDF8] hover:bg-sky-400 text-slate-950 shadow-lg cursor-pointer active:scale-[0.99]'
+            : 'bg-sky-500 hover:bg-sky-400 text-white shadow-lg shadow-sky-500/25 cursor-pointer active:scale-[0.99]'
         }`}
       >
         <span>
