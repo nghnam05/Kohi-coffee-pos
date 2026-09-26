@@ -20,8 +20,6 @@ import { getTableQrUrl } from '@/utils/format';
 import { StatusDot } from '@/components/ui/StatusDot';
 
 const InventoryManagement = dynamic(() => import('@/components/dashboard/InventoryManagement').then(m => m.InventoryManagement), { ssr: false });
-const AiDemandForecastCard = dynamic(() => import('@/components/dashboard/AiDemandForecastCard').then(m => m.AiDemandForecastCard), { ssr: false });
-import { AdminAiReviewInsights } from '@/components/dashboard/AdminAiReviewInsights';
 
 
 import {
@@ -3894,7 +3892,7 @@ export default function DashboardPage() {
                   <div className="px-3 pb-1 flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                      Vận hành thời gian thực
+                      Vận hành
                     </p>
                   </div>
 
@@ -5154,49 +5152,49 @@ export default function DashboardPage() {
                         switch (status) {
                           case 'pending':
                             return (
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 rounded-full text-[10px] font-extrabold uppercase tracking-wider font-mono shrink-0 whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/40 rounded-full text-[11px] font-bold shrink-0 whitespace-nowrap">
                                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                                 Chờ duyệt
                               </span>
                             );
                           case 'confirmed':
                             return (
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] border border-sky-500/25 rounded-full text-[10px] font-extrabold uppercase tracking-wider font-mono shrink-0 whitespace-nowrap">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8]" />
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200/80 dark:border-sky-800/40 rounded-full text-[11px] font-bold shrink-0 whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
                                 Chờ pha chế
                               </span>
                             );
                           case 'cooking':
                             return (
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-sky-500/20 text-[#38BDF8] border border-[#38BDF8]/30 rounded-full text-[10px] font-extrabold uppercase tracking-wider font-mono shrink-0 whitespace-nowrap animate-pulse">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8]" />
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-sky-100/80 dark:bg-sky-950/60 text-[#0284c7] dark:text-sky-300 border border-sky-300/80 dark:border-sky-700/50 rounded-full text-[11px] font-bold shrink-0 whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
                                 Đang pha chế
                               </span>
                             );
                           case 'ready':
                             return (
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 rounded-full text-[10px] font-extrabold uppercase tracking-wider font-mono shrink-0 whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/40 rounded-full text-[11px] font-bold shrink-0 whitespace-nowrap">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                                 Chờ ra món
                               </span>
                             );
                           case 'completed':
                             return (
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 rounded-full text-[10px] font-extrabold uppercase tracking-wider font-mono shrink-0 whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/40 rounded-full text-[11px] font-bold shrink-0 whitespace-nowrap">
                                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                                 Chờ thanh toán
                               </span>
                             );
                           case 'paid':
                             return (
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded-full text-[10px] font-extrabold uppercase tracking-wider font-mono shrink-0 whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/40 rounded-full text-[11px] font-bold shrink-0 whitespace-nowrap">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                                 Đã thanh toán
                               </span>
                             );
                           default:
                             return (
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-200/60 dark:bg-white/10 text-slate-600 dark:text-slate-300 border border-slate-300/40 dark:border-white/10 rounded-full text-[10px] font-extrabold uppercase tracking-wider font-mono shrink-0 whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-white/10 rounded-full text-[11px] font-bold shrink-0 whitespace-nowrap">
                                 Đang xử lý
                               </span>
                             );
@@ -5209,33 +5207,11 @@ export default function DashboardPage() {
                       return (
                         <div
                           key={order._id}
-                          className={`relative bg-white dark:bg-[#0d1322] border rounded-3xl p-4 sm:p-5 shadow-xs dark:shadow-md flex flex-col justify-between transition-all duration-300 overflow-hidden group hover:shadow-xl hover:border-slate-300 dark:hover:border-white/20 ${
-                            isSelected
-                              ? 'border-[#38BDF8] ring-2 ring-[#38BDF8]/40 bg-sky-50/20 dark:bg-sky-500/[0.04]'
-                              : isPaid
-                                ? 'border-slate-200 dark:border-white/10 hover:border-emerald-500/30'
-                                : order.status === 'pending'
-                                  ? 'border-slate-200/90 dark:border-white/10 hover:border-amber-400/40'
-                                  : 'border-slate-200/80 dark:border-white/10 hover:border-[#38BDF8]/30'
-                          }`}
-                        >
-                          {/* Top ambient status accent bar */}
-                          <div
-                            className={`absolute top-0 left-0 right-0 h-1 ${
-                              order.status === 'pending'
-                                ? 'bg-gradient-to-r from-amber-500/80 via-amber-400 to-amber-500/80'
-                                : order.status === 'confirmed' || order.status === 'cooking'
-                                  ? 'bg-gradient-to-r from-[#38BDF8] via-sky-300 to-[#38BDF8]'
-                                  : order.status === 'ready'
-                                    ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-emerald-500'
-                                    : order.status === 'completed'
-                                      ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400'
-                                      : isPaid
-                                        ? 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600'
-                                        : 'bg-transparent'
+                          className={`relative bg-white dark:bg-[#111827] border rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md flex flex-col justify-between transition-all duration-200 group text-left ${isSelected
+                              ? 'border-[#0284c7] ring-2 ring-[#0284c7]/20 bg-sky-50/15 dark:bg-sky-500/[0.03]'
+                              : 'border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20'
                             }`}
-                          />
-
+                        >
                           <div>
                             {/* Card Header Row 1: Checkbox + Table Name & Status Badge */}
                             <div className="flex items-center justify-between gap-2 pb-2">
@@ -5250,9 +5226,9 @@ export default function DashboardPage() {
                                       setSelectedOrderIds((prev) => prev.filter((id) => id !== order._id));
                                     }
                                   }}
-                                  className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-[#38BDF8] focus:ring-[#38BDF8] cursor-pointer shrink-0"
+                                  className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-[#0284c7] focus:ring-[#0284c7] cursor-pointer shrink-0 transition-colors"
                                 />
-                                <h3 className="text-base sm:text-[17px] font-extrabold text-slate-900 dark:text-white truncate tracking-tight">
+                                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate tracking-tight font-sans">
                                   {order.isTakeaway || !order.tableId ? (
                                     <span className="text-[#0284c7] dark:text-[#38BDF8]">
                                       Mang về
@@ -5262,7 +5238,7 @@ export default function DashboardPage() {
                                   )}
                                 </h3>
                                 {order.paymentNotified && order.status !== 'paid' && (
-                                  <span className="px-2 py-0.5 bg-amber-500/20 text-amber-500 border border-amber-500/30 rounded-full text-[10px] font-extrabold uppercase shrink-0 animate-pulse">
+                                  <span className="px-2 py-0.5 bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 rounded-full text-[10px] font-bold uppercase shrink-0 animate-pulse font-mono">
                                     Báo CK
                                   </span>
                                 )}
@@ -5273,14 +5249,14 @@ export default function DashboardPage() {
                               </div>
                             </div>
 
-                            {/* Card Header Row 2 (Full-Width Metadata Bar): Payment method + Customer + Time/Elapsed */}
-                            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pb-3 border-b border-slate-100 dark:border-white/5 mb-3 gap-2">
-                              <div className="flex items-center gap-1.5 min-w-0">
-                                <span className="px-2 py-0.5 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 rounded-md text-[10px] font-extrabold uppercase border border-slate-200/60 dark:border-white/5 font-mono shrink-0">
+                            {/* Card Header Row 2: Metadata Bar: Payment method + Customer + Time/Elapsed */}
+                            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pb-3 border-b border-slate-100 dark:border-white/5 mb-3 gap-2 font-sans">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-md text-[10.5px] font-bold uppercase tracking-wider font-mono shrink-0">
                                   {order.paymentMethod === 'bank_transfer' ? 'VietQR' : order.paymentMethod === 'momo' ? 'MoMo' : 'Tiền mặt'}
                                 </span>
                                 {(order.customerName || order.customerPhone) && (
-                                  <span className="truncate text-slate-600 dark:text-slate-300 text-xs font-semibold">
+                                  <span className="truncate text-slate-600 dark:text-slate-300 text-xs font-medium">
                                     • {order.customerName || 'Khách'}
                                   </span>
                                 )}
@@ -5295,18 +5271,17 @@ export default function DashboardPage() {
 
                                 return (
                                   <div className="flex items-center gap-1.5 font-mono shrink-0 text-right">
-                                    <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                                    <span className="text-[11.5px] text-slate-400 dark:text-slate-500">
                                       {timeStr}
                                     </span>
                                     {order.status !== 'paid' && order.status !== 'completed' && order.status !== 'cancelled' && (
                                       <span
-                                        className={`px-1.5 py-0.2 rounded-md text-[10px] font-extrabold tracking-tight ${
-                                          isOverdue
-                                            ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 animate-pulse'
+                                        className={`px-1.5 py-0.2 rounded-md text-[10px] font-bold tracking-tight ${isOverdue
+                                            ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40 animate-pulse'
                                             : isWarning
-                                              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30'
-                                              : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200/50 dark:border-white/5'
-                                        }`}
+                                              ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40'
+                                              : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                                          }`}
                                         title={`Thời gian từ khi đặt: ${elapsedMins} phút`}
                                       >
                                         {elapsedMins}p
@@ -5321,23 +5296,23 @@ export default function DashboardPage() {
                             <div className="py-1 space-y-2 mb-3">
                               {order.items?.map((item, idx) => (
                                 <div key={idx} className="space-y-1">
-                                  <div className="flex items-center justify-between gap-2 text-xs">
+                                  <div className="flex items-center justify-between gap-2 text-xs font-sans">
                                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                                      <span className="w-5 h-5 rounded-md bg-sky-500/10 text-[#0284c7] dark:text-[#38BDF8] font-black text-[11px] flex items-center justify-center shrink-0 font-mono border border-sky-500/20">
+                                      <span className="px-1.5 py-0.5 rounded bg-sky-50 dark:bg-sky-950/50 text-[#0284c7] dark:text-[#38BDF8] font-bold font-mono text-[11px] shrink-0 border border-sky-200/60 dark:border-sky-800/30">
                                         {item.quantity}x
                                       </span>
-                                      <p className={`font-extrabold text-[13px] leading-snug truncate ${item.isPaid ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-slate-100'}`}>
+                                      <p className={`font-semibold text-xs sm:text-[13px] leading-snug truncate ${item.isPaid ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-slate-100'}`}>
                                         {item.foodId?.name || 'Món ăn'}
                                       </p>
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0">
                                       {item.isPaid && (
-                                        <span className="px-1.5 py-0.2 rounded text-[10px] font-black bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-mono">
+                                        <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 font-mono">
                                           ✓ Đã trả
                                         </span>
                                       )}
                                       {item.foodId?.price && (
-                                        <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400">
+                                        <span className="text-xs font-mono font-medium text-slate-600 dark:text-slate-400">
                                           {formatPrice(item.foodId.price * item.quantity)}
                                         </span>
                                       )}
@@ -5345,7 +5320,7 @@ export default function DashboardPage() {
                                   </div>
                                   {Boolean(item.note && item.note.replace(/^\[.*?\]\s*/, '').trim()) && (
                                     <div className="pl-7">
-                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-[11px] font-extrabold">
+                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/40 text-[11px] font-medium">
                                         <DashboardIcon name="edit_note" className="text-xs shrink-0" />
                                         <span>{item.note?.replace(/^\[.*?\]\s*/, '')}</span>
                                       </span>
@@ -5357,10 +5332,10 @@ export default function DashboardPage() {
 
                             {/* Split Payment Progress Bar */}
                             {order.paidAmount && order.paidAmount > 0 && order.status !== 'paid' ? (
-                              <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-white/5 space-y-1.5 mb-3">
-                                <div className="flex justify-between text-[10.5px] font-normal">
+                              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-white/5 space-y-1.5 mb-3">
+                                <div className="flex justify-between text-[10.5px] font-medium">
                                   <span className="text-slate-500 dark:text-slate-400">Tiến độ thanh toán:</span>
-                                  <span className="text-emerald-600 dark:text-emerald-400 font-extrabold font-mono">
+                                  <span className="text-emerald-600 dark:text-emerald-400 font-bold font-mono">
                                     {Math.round((order.paidAmount / order.totalAmount) * 100)}%
                                   </span>
                                 </div>
@@ -5386,19 +5361,20 @@ export default function DashboardPage() {
                                   {orderNotifs.map((notif, nIdx) => (
                                     <div
                                       key={nIdx}
-                                      className="p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-between gap-2"
+                                      className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/40 flex items-center justify-between gap-2"
                                     >
                                       <div className="min-w-0">
-                                        <span className="text-[10px] font-black uppercase text-amber-600 dark:text-amber-400 block truncate">
+                                        <span className="text-[10px] font-bold uppercase text-amber-700 dark:text-amber-400 block truncate">
                                           {notif.payerName} báo {notif.paymentMethod === 'cash' ? 'tiền mặt' : 'chuyển khoản'}
                                         </span>
-                                        <span className="text-xs font-black font-mono text-slate-900 dark:text-white">
+                                        <span className="text-xs font-bold font-mono text-slate-900 dark:text-white">
                                           {formatPrice(notif.amount)} ({notif.itemIndexes.length} món)
                                         </span>
                                       </div>
                                       <button
+                                        type="button"
                                         onClick={() => handleConfirmSplitPayment(notif)}
-                                        className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-black text-[10.5px] rounded-lg shadow-xs transition-all active:scale-95 cursor-pointer uppercase shrink-0"
+                                        className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-[10.5px] rounded-lg shadow-xs transition-all active:scale-95 cursor-pointer uppercase shrink-0"
                                       >
                                         Xác nhận
                                       </button>
@@ -5410,33 +5386,31 @@ export default function DashboardPage() {
                           </div>
 
                           {/* Card Bottom: Total, Payment Status & Action Buttons */}
-                          <div className="space-y-2.5 pt-3 border-t border-slate-100 dark:border-white/10">
-                            {/* Order Total & Payment Status (Clean, Spacious, Never Wraps) */}
-                            <div className="flex items-center justify-between gap-2 px-0.5">
+                          <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-white/10 font-sans">
+                            {/* Order Total & Payment Status */}
+                            <div className="flex items-center justify-between gap-2">
                               <div className="min-w-0">
-                                <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
+                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
                                   Tổng tiền
                                 </span>
-                                <span className="text-base sm:text-lg font-black font-mono text-slate-900 dark:text-white leading-tight">
+                                <span className="text-base sm:text-lg font-bold font-mono text-slate-900 dark:text-white leading-tight">
                                   {formatPrice(order.totalAmount || 0)}
                                 </span>
                               </div>
 
                               <div className="shrink-0">
-                                <span className={`inline-flex items-center gap-1.5 text-xs font-extrabold px-3 py-1 rounded-full border whitespace-nowrap ${
-                                  order.status === 'paid' || order.paymentStatus === 'paid'
-                                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25'
+                                <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full border whitespace-nowrap ${order.status === 'paid' || order.paymentStatus === 'paid'
+                                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200/80 dark:border-emerald-800/40'
                                     : order.paymentNotified
-                                      ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25'
-                                      : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
-                                }`}>
-                                  <span className={`w-1.5 h-1.5 rounded-full ${
-                                    order.status === 'paid' || order.paymentStatus === 'paid'
+                                      ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200/80 dark:border-amber-800/40'
+                                      : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-rose-200/80 dark:border-rose-800/40'
+                                  }`}>
+                                  <span className={`w-1.5 h-1.5 rounded-full ${order.status === 'paid' || order.paymentStatus === 'paid'
                                       ? 'bg-emerald-500'
                                       : order.paymentNotified
                                         ? 'bg-amber-500 animate-pulse'
                                         : 'bg-rose-500'
-                                  }`} />
+                                    }`} />
                                   {order.status === 'paid' || order.paymentStatus === 'paid'
                                     ? 'Đã thanh toán'
                                     : order.paymentNotified
@@ -5463,7 +5437,7 @@ export default function DashboardPage() {
 
                               return (
                                 <div className="pt-2 border-t border-dashed border-slate-200 dark:border-white/10">
-                                  <span className="text-[10px] font-normal text-slate-400 uppercase tracking-wider block mb-1">
+                                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block mb-1">
                                     Thu tiền từng người:
                                   </span>
                                   <div className="flex flex-wrap gap-1.5">
@@ -5471,13 +5445,14 @@ export default function DashboardPage() {
                                       user?.role === 'admin' ? (
                                         <span
                                           key={person}
-                                          className="px-2 py-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[10px] font-bold font-mono"
+                                          className="px-2 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/40 text-[10.5px] font-bold font-mono"
                                         >
                                           Chờ thu {person}: {formatPrice(data.amount)}
                                         </span>
                                       ) : (
                                         <button
                                           key={person}
+                                          type="button"
                                           onClick={() =>
                                             handleConfirmSplitPayment({
                                               orderId: order._id,
@@ -5487,7 +5462,7 @@ export default function DashboardPage() {
                                               paymentMethod: 'cash',
                                             })
                                           }
-                                          className="px-2.5 py-1 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-[#38BDF8] border border-sky-500/20 text-[10px] font-black font-mono transition-all active:scale-95 cursor-pointer"
+                                          className="px-2.5 py-1 rounded-xl bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-950/60 text-[#0284c7] dark:text-[#38BDF8] border border-sky-200/80 dark:border-sky-800/40 text-[10.5px] font-bold font-mono transition-all active:scale-95 cursor-pointer"
                                           title={`Xác nhận thu ${formatPrice(data.amount)} của ${person}`}
                                         >
                                           Thu {person}: {formatPrice(data.amount)}
@@ -5502,25 +5477,27 @@ export default function DashboardPage() {
                             {/* Step 1 -> 2: Phục vụ xác nhận & gửi pha chế hoặc Từ chối */}
                             {order.status === 'pending' && (
                               user?.role === 'barista' || user?.role === 'admin' ? (
-                                <div className="w-full py-2.5 px-3 text-center text-xs font-extrabold text-amber-600 dark:text-amber-400 bg-amber-500/10 rounded-2xl border border-amber-500/20 select-none flex items-center justify-center gap-2">
+                                <div className="w-full py-2.5 px-3 text-center text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200/80 dark:border-amber-800/40 select-none flex items-center justify-center gap-2">
                                   <DashboardIcon name="schedule" className="text-base" />
                                   <span>Chờ phục vụ duyệt đơn</span>
                                 </div>
                               ) : (
                                 <div className="flex items-center gap-2">
                                   <button
+                                    type="button"
                                     onClick={() => handleUpdateStatus(order._id, 'confirmed')}
-                                    className="flex-1 h-11 bg-[#38BDF8] hover:bg-[#2593e8] text-[#090D16] font-extrabold text-xs rounded-2xl transition-all shadow-md shadow-[#38BDF8]/20 active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 uppercase tracking-wider"
+                                    className="flex-1 h-10 bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-xs rounded-xl transition-all shadow-xs active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5 uppercase tracking-wide font-sans"
                                   >
-                                    <DashboardIcon name="check" className="text-sm" />
+                                    <DashboardIcon name="check" className="text-base" />
                                     <span>Duyệt đơn</span>
                                   </button>
                                   <button
+                                    type="button"
                                     onClick={() => handleUpdateStatus(order._id, 'cancelled')}
-                                    className="h-11 px-4 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 font-extrabold text-xs rounded-2xl transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1 uppercase"
+                                    className="h-10 px-4 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200/80 dark:border-rose-800/40 font-bold text-xs rounded-xl transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1 uppercase font-sans"
                                     title="Từ chối đơn rác / Khách không có tại bàn"
                                   >
-                                    <DashboardIcon name="close" className="text-sm" />
+                                    <DashboardIcon name="close" className="text-base" />
                                     <span>Từ chối</span>
                                   </button>
                                 </div>
@@ -5531,14 +5508,15 @@ export default function DashboardPage() {
                             {order.status === 'confirmed' && (
                               user?.role === 'barista' ? (
                                 <button
+                                  type="button"
                                   onClick={() => handleUpdateStatus(order._id, 'cooking')}
-                                  className="w-full h-11 bg-[#38BDF8] hover:bg-[#2593e8] text-[#090D16] font-extrabold text-xs rounded-2xl transition-all shadow-md shadow-[#38BDF8]/20 active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 uppercase tracking-wider"
+                                  className="w-full h-10 bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-xs rounded-xl transition-all shadow-xs active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5 uppercase tracking-wide font-sans"
                                 >
                                   <DashboardIcon name="blender" className="text-base" />
                                   <span>Bắt đầu pha chế</span>
                                 </button>
                               ) : (
-                                <div className="w-full py-2.5 px-3 text-center text-xs font-extrabold text-sky-600 dark:text-[#38BDF8] bg-sky-500/10 rounded-2xl border border-sky-500/20 select-none flex items-center justify-center gap-2">
+                                <div className="w-full py-2.5 px-3 text-center text-xs font-bold text-sky-700 dark:text-[#38BDF8] bg-sky-50 dark:bg-sky-950/30 rounded-xl border border-sky-200/80 dark:border-sky-800/40 select-none flex items-center justify-center gap-2">
                                   <DashboardIcon name={user?.role === 'admin' ? 'task_alt' : 'local_cafe'} className="text-base" />
                                   <span>{user?.role === 'admin' ? 'Đã duyệt • Đang chờ pha chế' : 'Đã chuyển quầy pha chế'}</span>
                                 </div>
@@ -5549,14 +5527,15 @@ export default function DashboardPage() {
                             {order.status === 'cooking' && (
                               user?.role === 'barista' ? (
                                 <button
+                                  type="button"
                                   onClick={() => handleUpdateStatus(order._id, 'ready')}
-                                  className="w-full h-11 bg-emerald-500 hover:bg-emerald-400 text-[#090D16] font-extrabold text-xs rounded-2xl transition-all shadow-md shadow-emerald-500/20 active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 uppercase tracking-wider"
+                                  className="w-full h-10 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all shadow-xs active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5 uppercase tracking-wide font-sans"
                                 >
                                   <DashboardIcon name="check_circle" className="text-base" />
                                   <span>Hoàn tất pha chế</span>
                                 </button>
                               ) : (
-                                <div className="w-full py-2.5 px-3 text-center text-xs font-extrabold text-sky-600 dark:text-[#38BDF8] bg-sky-500/10 rounded-2xl border border-sky-500/20 select-none flex items-center justify-center gap-2">
+                                <div className="w-full py-2.5 px-3 text-center text-xs font-bold text-sky-700 dark:text-[#38BDF8] bg-sky-50 dark:bg-sky-950/30 rounded-xl border border-sky-200/80 dark:border-sky-800/40 select-none flex items-center justify-center gap-2">
                                   <DashboardIcon name="blender" className="text-base animate-pulse" />
                                   <span>Đang pha chế tại quầy</span>
                                 </div>
@@ -5566,19 +5545,20 @@ export default function DashboardPage() {
                             {/* Step 4 -> 5: Phục vụ mang đồ ra bàn cho Khách */}
                             {order.status === 'ready' && (
                               user?.role === 'barista' ? (
-                                <div className="w-full py-2.5 px-3 text-center text-xs font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 select-none flex items-center justify-center gap-2">
+                                <div className="w-full py-2.5 px-3 text-center text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl border border-emerald-200/80 dark:border-emerald-800/40 select-none flex items-center justify-center gap-2">
                                   <DashboardIcon name="room_service" className="text-base" />
                                   <span>Đã báo phục vụ ra món</span>
                                 </div>
                               ) : user?.role === 'admin' ? (
-                                <div className="w-full py-2.5 px-3 text-center text-xs font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 select-none flex items-center justify-center gap-2">
+                                <div className="w-full py-2.5 px-3 text-center text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl border border-emerald-200/80 dark:border-emerald-800/40 select-none flex items-center justify-center gap-2">
                                   <DashboardIcon name="room_service" className="text-base" />
                                   <span>Đã pha xong • Chờ phục vụ ra món</span>
                                 </div>
                               ) : (
                                 <button
+                                  type="button"
                                   onClick={() => handleUpdateStatus(order._id, 'completed')}
-                                  className="w-full h-11 bg-emerald-500 hover:bg-emerald-400 text-[#090D16] font-extrabold text-xs rounded-2xl transition-all shadow-md shadow-emerald-500/20 active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 uppercase tracking-wider"
+                                  className="w-full h-10 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all shadow-xs active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5 uppercase tracking-wide font-sans"
                                 >
                                   <DashboardIcon name="room_service" className="text-base" />
                                   <span>Xác nhận ra món</span>
@@ -5589,19 +5569,20 @@ export default function DashboardPage() {
                             {/* Step 5: Phục vụ thanh toán */}
                             {order.status === 'completed' && (
                               user?.role === 'barista' ? (
-                                <div className="w-full py-2.5 px-3 text-center text-xs font-extrabold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/5 rounded-2xl border border-slate-200/50 dark:border-white/5 select-none flex items-center justify-center gap-2">
+                                <div className="w-full py-2.5 px-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/80 dark:border-white/10 select-none flex items-center justify-center gap-2">
                                   <DashboardIcon name="task_alt" className="text-base" />
                                   <span>Đã hoàn tất món</span>
                                 </div>
                               ) : user?.role === 'admin' ? (
                                 <div className="flex items-center gap-2">
-                                  <div className="flex-1 py-2.5 px-3 text-center text-xs font-extrabold text-amber-600 dark:text-amber-400 bg-amber-500/10 rounded-2xl border border-amber-500/20 select-none flex items-center justify-center gap-2">
+                                  <div className="flex-1 py-2 px-3 text-center text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200/80 dark:border-amber-800/40 select-none flex items-center justify-center gap-2">
                                     <DashboardIcon name="hourglass_bottom" className="text-base" />
                                     <span>Đã ra món • Chờ thanh toán</span>
                                   </div>
                                   <button
+                                    type="button"
                                     onClick={() => setActiveInvoice(order)}
-                                    className="h-11 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-extrabold text-xs rounded-2xl transition-all cursor-pointer flex items-center justify-center gap-1.5 uppercase shrink-0"
+                                    className="h-10 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 uppercase shrink-0"
                                   >
                                     <DashboardIcon name="receipt" className="text-base" />
                                     <span>Hóa đơn</span>
@@ -5610,15 +5591,17 @@ export default function DashboardPage() {
                               ) : (
                                 <div className="flex items-center gap-2">
                                   <button
+                                    type="button"
                                     onClick={() => handleUpdateStatus(order._id, 'paid')}
-                                    className="flex-1 h-11 bg-[#38BDF8] hover:bg-[#2593e8] text-[#090D16] font-extrabold text-xs rounded-2xl transition-all shadow-md shadow-[#38BDF8]/20 active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 uppercase tracking-wider"
+                                    className="flex-1 h-10 bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-xs rounded-xl transition-all shadow-xs active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5 uppercase tracking-wide font-sans"
                                   >
                                     <DashboardIcon name="payments" className="text-base" />
                                     <span>Xác nhận nhận tiền</span>
                                   </button>
                                   <button
+                                    type="button"
                                     onClick={() => setActiveInvoice(order)}
-                                    className="h-11 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-extrabold text-xs rounded-2xl transition-all cursor-pointer flex items-center justify-center gap-1.5 uppercase shrink-0"
+                                    className="h-10 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 uppercase shrink-0"
                                   >
                                     <DashboardIcon name="receipt" className="text-base" />
                                     <span>Hóa đơn</span>
@@ -5628,8 +5611,9 @@ export default function DashboardPage() {
                             )}
                             {isPaid && (
                               <button
+                                type="button"
                                 onClick={() => setActiveInvoice(order)}
-                                className="w-full h-11 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/10 text-slate-800 dark:text-slate-200 hover:text-[#38BDF8] text-xs font-black rounded-2xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider cursor-pointer"
+                                className="w-full h-10 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:text-[#0284c7] text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wide cursor-pointer"
                               >
                                 <DashboardIcon name="receipt_long" className="text-base" />
                                 <span>Xem hóa đơn chi tiết</span>
@@ -5644,6861 +5628,6872 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Menu Management View */}
-            {activeTab === 'foods' && (
-              <div className="flex-1 overflow-y-auto space-y-4 pb-32 lg:pb-10 scrollbar-thin">
-                {/* Top Toolbar: Count, View Mode Switcher, Category Manager, Add Food */}
-                {/* Top Toolbar: Count, View Mode Switcher, Category Manager, Add Food */}
-                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3.5 bg-white dark:bg-[#111622] border border-slate-200/80 dark:border-white/[0.08] p-3.5 sm:p-4 rounded-3xl shadow-xs">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                      Tổng cộng <strong className="text-slate-900 dark:text-white font-bold">{filteredFoods.length}</strong> món ăn
+{/* Menu Management View */ }
+{
+  activeTab === 'foods' && (
+    <div className="flex-1 overflow-y-auto space-y-4 pb-32 lg:pb-10 scrollbar-thin">
+      {/* Top Toolbar: Count, View Mode Switcher, Category Manager, Add Food */}
+      {/* Top Toolbar: Count, View Mode Switcher, Category Manager, Add Food */}
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3.5 bg-white dark:bg-[#111622] border border-slate-200/80 dark:border-white/[0.08] p-3.5 sm:p-4 rounded-3xl shadow-xs">
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
+            Tổng cộng <strong className="text-slate-900 dark:text-white font-bold">{filteredFoods.length}</strong> món ăn
+          </span>
+
+          {/* View Mode Toggle: [Lưới] và [Bảng] */}
+          <div className="flex items-center p-1 bg-slate-100/90 dark:bg-[#090D16] rounded-xl border border-slate-200/80 dark:border-white/10 text-xs font-semibold shrink-0">
+            <button
+              type="button"
+              onClick={() => setFoodViewMode('grid')}
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${foodViewMode === 'grid'
+                ? 'bg-white dark:bg-[#1e293b] text-[#0284c7] dark:text-[#38BDF8] shadow-xs font-bold'
+                : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              title="Hiển thị dạng lưới"
+            >
+              <DashboardIcon name="grid_view" className="text-[15px]" />
+              <span>Lưới</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setFoodViewMode('table')}
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${foodViewMode === 'table'
+                ? 'bg-white dark:bg-[#1e293b] text-[#0284c7] dark:text-[#38BDF8] shadow-xs font-bold'
+                : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              title="Hiển thị dạng bảng"
+            >
+              <DashboardIcon name="table_rows" className="text-[15px]" />
+              <span>Bảng</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 w-full xl:w-auto flex-wrap sm:flex-nowrap">
+          {user?.role === 'admin' && (
+            <button
+              onClick={() => {
+                setEditingCategory(null);
+                setCategoryForm({ name: '', icon: 'local_cafe', order: categories.length + 1, isActive: true });
+                setIsCategoryModalOpen(true);
+              }}
+              className="px-3.5 sm:px-4 py-2.5 bg-slate-100/90 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 text-slate-800 dark:text-slate-200 font-bold text-xs sm:text-sm rounded-2xl transition-all flex items-center justify-center gap-1.5 border border-slate-200/80 dark:border-white/10 cursor-pointer active:scale-95 whitespace-nowrap shrink-0"
+            >
+              <DashboardIcon name="layers" className="text-base" />
+              <span>Quản lý Danh mục</span>
+            </button>
+          )}
+          <button
+            onClick={() => {
+              setEditingFood(null);
+              setFoodForm({ name: '', price: '', category: categories[0]?.name || 'Cà phê', description: '', image: '', isAvailable: true });
+              setIsFoodModalOpen(true);
+            }}
+            className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+          >
+            <DashboardIcon name="add" className="text-lg sm:text-xl" />
+            <span>Thêm món mới</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Category Filter Pills Bar */}
+      <div className="p-1.5 bg-white dark:bg-[#111622] rounded-2xl border border-slate-200/80 dark:border-white/[0.08] flex items-center gap-1.5 overflow-x-auto scrollbar-none shadow-xs">
+        <button
+          type="button"
+          onClick={() => setSelectedCategory('all')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${selectedCategory === 'all'
+            ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-[#090D16] font-black shadow-sm'
+            : 'text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+            }`}
+        >
+          <span>Tất cả</span>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[11px] font-black ${selectedCategory === 'all'
+              ? 'bg-white/25 dark:bg-[#090D16]/20 text-white dark:text-[#090D16]'
+              : 'bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-white/10'
+              }`}
+          >
+            {foods.length}
+          </span>
+        </button>
+
+        {categoriesToDisplay.map((cat) => {
+          const isSelected = selectedCategory !== 'all' && normalizeCatKey(selectedCategory) === normalizeCatKey(cat.name);
+          const count = foods.filter(
+            (f) => normalizeCatKey(f.category) === normalizeCatKey(cat.name)
+          ).length;
+          return (
+            <button
+              key={cat.name}
+              type="button"
+              onClick={() => setSelectedCategory(isSelected ? 'all' : cat.name)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${isSelected
+                ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-[#090D16] font-black shadow-sm'
+                : 'text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                }`}
+            >
+              <span>{cat.name}</span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[11px] font-black ${isSelected
+                  ? 'bg-white/25 dark:bg-[#090D16]/20 text-white dark:text-[#090D16]'
+                  : 'bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-white/10'
+                  }`}
+              >
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Empty State */}
+      {filteredFoods.length === 0 ? (
+        <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3">
+          <DashboardIcon name="search_off" className="text-5xl text-slate-300 dark:text-slate-600" />
+          <p className="font-extrabold text-sm text-slate-700 dark:text-slate-300">
+            Không tìm thấy món ăn nào phù hợp
+          </p>
+          <p className="text-xs text-slate-400">
+            Thử thay đổi danh mục chọn hoặc từ khóa tìm kiếm
+          </p>
+          {(selectedCategory !== 'all' || searchQuery) && (
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCategory('all');
+                setSearchQuery('');
+              }}
+              className="mt-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold rounded-xl text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+            >
+              Xem tất cả món ăn
+            </button>
+          )}
+        </div>
+      ) : foodViewMode === 'grid' ? (
+        /* ── DẠNG LƯỚI 4 ITEM 1 HÀNG (Grid View: 4 items per row on desktop) ── */
+        <div className="space-y-6">
+          {selectedCategory === 'all' && !searchQuery.trim() ? (
+            /* Hiển thị phân nhóm theo từng danh mục khi xem Tất cả */
+            groupedFoodsByCategory.map((group) => (
+              <div key={group.name} className="space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-[#1e293b]">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-black text-sm sm:text-base text-slate-900 dark:text-white tracking-tight">
+                      {group.name}
+                    </h3>
+                    <span className="text-[11px] font-black px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300">
+                      {group.items.length} món
                     </span>
-
-                    {/* View Mode Toggle: [Lưới] và [Bảng] */}
-                    <div className="flex items-center p-1 bg-slate-100/90 dark:bg-[#090D16] rounded-xl border border-slate-200/80 dark:border-white/10 text-xs font-semibold shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => setFoodViewMode('grid')}
-                        className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${foodViewMode === 'grid'
-                          ? 'bg-white dark:bg-[#1e293b] text-[#0284c7] dark:text-[#38BDF8] shadow-xs font-bold'
-                          : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                          }`}
-                        title="Hiển thị dạng lưới"
-                      >
-                        <DashboardIcon name="grid_view" className="text-[15px]" />
-                        <span>Lưới</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFoodViewMode('table')}
-                        className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${foodViewMode === 'table'
-                          ? 'bg-white dark:bg-[#1e293b] text-[#0284c7] dark:text-[#38BDF8] shadow-xs font-bold'
-                          : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                          }`}
-                        title="Hiển thị dạng bảng"
-                      >
-                        <DashboardIcon name="table_rows" className="text-[15px]" />
-                        <span>Bảng</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 w-full xl:w-auto flex-wrap sm:flex-nowrap">
-                    {user?.role === 'admin' && (
-                      <button
-                        onClick={() => {
-                          setEditingCategory(null);
-                          setCategoryForm({ name: '', icon: 'local_cafe', order: categories.length + 1, isActive: true });
-                          setIsCategoryModalOpen(true);
-                        }}
-                        className="px-3.5 sm:px-4 py-2.5 bg-slate-100/90 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 text-slate-800 dark:text-slate-200 font-bold text-xs sm:text-sm rounded-2xl transition-all flex items-center justify-center gap-1.5 border border-slate-200/80 dark:border-white/10 cursor-pointer active:scale-95 whitespace-nowrap shrink-0"
-                      >
-                        <DashboardIcon name="layers" className="text-base" />
-                        <span>Quản lý Danh mục</span>
-                      </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        setEditingFood(null);
-                        setFoodForm({ name: '', price: '', category: categories[0]?.name || 'Cà phê', description: '', image: '', isAvailable: true });
-                        setIsFoodModalOpen(true);
-                      }}
-                      className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
-                    >
-                      <DashboardIcon name="add" className="text-lg sm:text-xl" />
-                      <span>Thêm món mới</span>
-                    </button>
                   </div>
                 </div>
-
-                {/* Category Filter Pills Bar */}
-                <div className="p-1.5 bg-white dark:bg-[#111622] rounded-2xl border border-slate-200/80 dark:border-white/[0.08] flex items-center gap-1.5 overflow-x-auto scrollbar-none shadow-xs">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedCategory('all')}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${selectedCategory === 'all'
-                      ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-[#090D16] font-black shadow-sm'
-                      : 'text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
-                      }`}
-                  >
-                    <span>Tất cả</span>
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[11px] font-black ${selectedCategory === 'all'
-                        ? 'bg-white/25 dark:bg-[#090D16]/20 text-white dark:text-[#090D16]'
-                        : 'bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-white/10'
-                        }`}
-                    >
-                      {foods.length}
-                    </span>
-                  </button>
-
-                  {categoriesToDisplay.map((cat) => {
-                    const isSelected = selectedCategory !== 'all' && normalizeCatKey(selectedCategory) === normalizeCatKey(cat.name);
-                    const count = foods.filter(
-                      (f) => normalizeCatKey(f.category) === normalizeCatKey(cat.name)
-                    ).length;
-                    return (
-                      <button
-                        key={cat.name}
-                        type="button"
-                        onClick={() => setSelectedCategory(isSelected ? 'all' : cat.name)}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer ${isSelected
-                          ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-[#090D16] font-black shadow-sm'
-                          : 'text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
-                          }`}
-                      >
-                        <span>{cat.name}</span>
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[11px] font-black ${isSelected
-                            ? 'bg-white/25 dark:bg-[#090D16]/20 text-white dark:text-[#090D16]'
-                            : 'bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-white/10'
-                            }`}
-                        >
-                          {count}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Empty State */}
-                {filteredFoods.length === 0 ? (
-                  <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3">
-                    <DashboardIcon name="search_off" className="text-5xl text-slate-300 dark:text-slate-600" />
-                    <p className="font-extrabold text-sm text-slate-700 dark:text-slate-300">
-                      Không tìm thấy món ăn nào phù hợp
-                    </p>
-                    <p className="text-xs text-slate-400">
-                      Thử thay đổi danh mục chọn hoặc từ khóa tìm kiếm
-                    </p>
-                    {(selectedCategory !== 'all' || searchQuery) && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedCategory('all');
-                          setSearchQuery('');
-                        }}
-                        className="mt-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold rounded-xl text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
-                      >
-                        Xem tất cả món ăn
-                      </button>
-                    )}
-                  </div>
-                ) : foodViewMode === 'grid' ? (
-                  /* ── DẠNG LƯỚI 4 ITEM 1 HÀNG (Grid View: 4 items per row on desktop) ── */
-                  <div className="space-y-6">
-                    {selectedCategory === 'all' && !searchQuery.trim() ? (
-                      /* Hiển thị phân nhóm theo từng danh mục khi xem Tất cả */
-                      groupedFoodsByCategory.map((group) => (
-                        <div key={group.name} className="space-y-3">
-                          <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-[#1e293b]">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-black text-sm sm:text-base text-slate-900 dark:text-white tracking-tight">
-                                {group.name}
-                              </h3>
-                              <span className="text-[11px] font-black px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300">
-                                {group.items.length} món
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-                            {group.items.map((food) => (
-                              <div
-                                key={food._id}
-                                className="group relative bg-white dark:bg-[#111622] rounded-3xl p-3.5 sm:p-4 border border-slate-200/80 dark:border-white/[0.08] hover:border-[#38BDF8]/50 dark:hover:border-[#38BDF8]/40 shadow-xs hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-sky-950/20 transition-all duration-300 flex flex-col justify-between overflow-hidden"
-                              >
-                                <div>
-                                  <div className="relative w-full h-44 sm:h-48 md:h-52 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-white/5">
-                                    {food.image ? (
-                                      <img
-                                        src={food.image}
-                                        alt={food.name}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        loading="lazy"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-1.5">
-                                        <DashboardIcon name="local_cafe" className="text-4xl text-slate-300 dark:text-slate-600" />
-                                        <span className="text-xs font-medium text-slate-400">Chưa có ảnh</span>
-                                      </div>
-                                    )}
-
-                                    {/* Availability Status: Solid High-Contrast Badge */}
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleToggleFoodAvailability(food);
-                                      }}
-                                      className={`absolute top-2.5 right-2.5 px-3 py-1 rounded-full text-[11px] font-extrabold shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 ${food.isAvailable
-                                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-400/80 shadow-emerald-950/20'
-                                        : 'bg-rose-600 hover:bg-rose-700 text-white border border-rose-400/80 shadow-rose-950/20'
-                                        }`}
-                                      title={food.isAvailable ? 'Bấm để Tạm ngưng món nhanh' : 'Bấm để Mở bán lại nhanh'}
-                                    >
-                                      <span
-                                        className={`w-2 h-2 rounded-full ${food.isAvailable ? 'bg-white animate-pulse' : 'bg-white'
-                                          }`}
-                                      />
-                                      <span>{food.isAvailable ? 'Đang bán' : 'Tạm ngưng'}</span>
-                                    </button>
-                                  </div>
-
-                                  <div className="mt-3.5 space-y-1">
-                                    <span className="text-[10.5px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
-                                      {food.category}
-                                    </span>
-                                    <h4
-                                      className="font-bold text-sm sm:text-base text-slate-900 dark:text-white group-hover:text-[#38BDF8] transition-colors truncate"
-                                      title={food.name}
-                                    >
-                                      {food.name}
-                                    </h4>
-                                    {food.description ? (
-                                      <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
-                                        {food.description}
-                                      </p>
-                                    ) : (
-                                      <p className="text-xs text-slate-400 dark:text-slate-500 italic">
-                                        Món ngon đặc sắc tại Kohi Coffee
-                                      </p>
-                                    )}
-                                  </div>
-                                </div>
-
-                                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between gap-2">
-                                  <div>
-                                    <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-slate-500 block">
-                                      Giá bán
-                                    </span>
-                                    <span className="font-extrabold text-sm sm:text-base text-[#0284c7] dark:text-[#38BDF8] tracking-tight">
-                                      {formatPrice(food.price)}
-                                    </span>
-                                  </div>
-
-                                  <div className="flex items-center gap-1.5 shrink-0">
-                                    <button
-                                      onClick={() => {
-                                        setEditingFood(food);
-                                        setFoodForm({
-                                          name: food.name || '',
-                                          price: food.price ? String(food.price) : '',
-                                          category: food.category || 'Cà phê',
-                                          description: food.description || '',
-                                          image: food.image || '',
-                                          isAvailable: food.isAvailable ?? true,
-                                        });
-                                        setIsFoodModalOpen(true);
-                                      }}
-                                      className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-sky-500/15 text-slate-600 dark:text-slate-300 hover:text-[#38BDF8] border border-slate-200/60 dark:border-white/10 transition-all flex items-center justify-center cursor-pointer active:scale-90"
-                                      title="Chỉnh sửa món"
-                                    >
-                                      <DashboardIcon name="edit" className="text-[17px]" />
-                                    </button>
-                                    <button
-                                      onClick={() => setFoodToDelete(food._id)}
-                                      className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-rose-500/15 text-slate-600 dark:text-slate-300 hover:text-rose-500 border border-slate-200/60 dark:border-white/10 transition-all flex items-center justify-center cursor-pointer active:scale-90"
-                                      title="Xóa món"
-                                    >
-                                      <DashboardIcon name="delete" className="text-[17px]" />
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      /* Hiển thị danh sách lọc theo 1 danh mục cụ thể hoặc theo từ khóa tìm kiếm */
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-[#1e293b]">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-black text-sm sm:text-base text-slate-900 dark:text-white tracking-tight">
-                              {selectedCategory !== 'all' ? selectedCategory : `Kết quả tìm kiếm "${searchQuery}"`}
-                            </h3>
-                            <span className="text-[11px] font-black px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300">
-                              {filteredFoods.length} món
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-                          {filteredFoods.map((food) => (
-                            <div
-                              key={food._id}
-                              className="group relative bg-white dark:bg-[#111622] rounded-3xl p-3.5 sm:p-4 border border-slate-200/80 dark:border-white/[0.08] hover:border-[#38BDF8]/50 dark:hover:border-[#38BDF8]/40 shadow-xs hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-sky-950/20 transition-all duration-300 flex flex-col justify-between overflow-hidden"
-                            >
-                              <div>
-                                <div className="relative w-full h-44 sm:h-48 md:h-52 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-white/5">
-                                  {food.image ? (
-                                    <img
-                                      src={food.image}
-                                      alt={food.name}
-                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                      loading="lazy"
-                                    />
-                                  ) : (
-                                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-1.5">
-                                      <DashboardIcon name="local_cafe" className="text-4xl text-slate-300 dark:text-slate-600" />
-                                      <span className="text-xs font-medium text-slate-400">Chưa có ảnh</span>
-                                    </div>
-                                  )}
-
-                                  {/* Availability Status: Solid High-Contrast Badge */}
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleToggleFoodAvailability(food);
-                                    }}
-                                    className={`absolute top-2.5 right-2.5 px-3 py-1 rounded-full text-[11px] font-extrabold shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 ${food.isAvailable
-                                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-400/80 shadow-emerald-950/20'
-                                      : 'bg-rose-600 hover:bg-rose-700 text-white border border-rose-400/80 shadow-rose-950/20'
-                                      }`}
-                                    title={food.isAvailable ? 'Bấm để Tạm ngưng món nhanh' : 'Bấm để Mở bán lại nhanh'}
-                                  >
-                                    <span
-                                      className={`w-2 h-2 rounded-full ${food.isAvailable ? 'bg-white animate-pulse' : 'bg-white'
-                                        }`}
-                                    />
-                                    <span>{food.isAvailable ? 'Đang bán' : 'Tạm ngưng'}</span>
-                                  </button>
-                                </div>
-
-                                <div className="mt-3.5 space-y-1">
-                                  <span className="text-[10.5px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
-                                    {food.category}
-                                  </span>
-                                  <h4
-                                    className="font-bold text-sm sm:text-base text-slate-900 dark:text-white group-hover:text-[#38BDF8] transition-colors truncate"
-                                    title={food.name}
-                                  >
-                                    {food.name}
-                                  </h4>
-                                  {food.description ? (
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
-                                      {food.description}
-                                    </p>
-                                  ) : (
-                                    <p className="text-xs text-slate-400 dark:text-slate-500 italic">
-                                      Món ngon đặc sắc tại Kohi Coffee
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between gap-2">
-                                <div>
-                                  <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-slate-500 block">
-                                    Giá bán
-                                  </span>
-                                  <span className="font-extrabold text-sm sm:text-base text-[#0284c7] dark:text-[#38BDF8] tracking-tight">
-                                    {formatPrice(food.price)}
-                                  </span>
-                                </div>
-
-                                <div className="flex items-center gap-1.5 shrink-0">
-                                  <button
-                                    onClick={() => {
-                                      setEditingFood(food);
-                                      setFoodForm({
-                                        name: food.name || '',
-                                        price: food.price ? String(food.price) : '',
-                                        category: food.category || 'Cà phê',
-                                        description: food.description || '',
-                                        image: food.image || '',
-                                        isAvailable: food.isAvailable ?? true,
-                                      });
-                                      setIsFoodModalOpen(true);
-                                    }}
-                                    className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-sky-500/15 text-slate-600 dark:text-slate-300 hover:text-[#38BDF8] border border-slate-200/60 dark:border-white/10 transition-all flex items-center justify-center cursor-pointer active:scale-90"
-                                    title="Chỉnh sửa món"
-                                  >
-                                    <DashboardIcon name="edit" className="text-[17px]" />
-                                  </button>
-                                  <button
-                                    onClick={() => setFoodToDelete(food._id)}
-                                    className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-rose-500/15 text-slate-600 dark:text-slate-300 hover:text-rose-500 border border-slate-200/60 dark:border-white/10 transition-all flex items-center justify-center cursor-pointer active:scale-90"
-                                    title="Xóa món"
-                                  >
-                                    <DashboardIcon name="delete" className="text-[17px]" />
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  /* ── DẠNG BẢNG (Table View Mode: Modern Boutique & Hospitality) ── */
-                  <div className="space-y-4">
-                    {/* Mobile Card List (< sm: 640px) */}
-                    <div className="grid grid-cols-1 gap-2.5 sm:hidden">
-                      {filteredFoods.map((food) => (
-                        <div
-                          key={food._id}
-                          className="bg-white dark:bg-[#0d1322] border border-slate-200/80 dark:border-white/5 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-xs hover:border-slate-300 dark:hover:border-white/10 transition-all"
-                        >
-                          <div className="flex items-center gap-3 min-w-0">
-                            {food.image ? (
-                              <img
-                                src={food.image}
-                                alt={food.name}
-                                className="w-13 h-13 rounded-xl object-cover bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-100 dark:border-white/5 shadow-xs"
-                              />
-                            ) : (
-                              <div className="w-13 h-13 rounded-xl bg-slate-100 dark:bg-white/5 shrink-0 flex items-center justify-center text-slate-400 border border-slate-200/50 dark:border-white/5">
-                                <DashboardIcon name="restaurant" className="text-xl" />
-                              </div>
-                            )}
-                            <div className="min-w-0">
-                              <h4 className="font-bold text-slate-900 dark:text-white text-[13px] leading-snug truncate">{food.name}</h4>
-                              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mt-0.5 truncate">{food.category}</p>
-                              <div className="flex items-center gap-2 mt-1.5">
-                                <span className="font-extrabold text-[#0284c7] dark:text-[#38BDF8] text-xs">{formatPrice(food.price)}</span>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleToggleFoodAvailability(food);
-                                  }}
-                                  className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all active:scale-95 cursor-pointer select-none ${food.isAvailable
-                                    ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25'
-                                    : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 dark:text-rose-400 border border-rose-500/25'
-                                    }`}
-                                  title={food.isAvailable ? 'Bấm để Tạm ngưng món nhanh' : 'Bấm để Mở bán lại nhanh'}
-                                >
-                                  <span className={`w-1.5 h-1.5 rounded-full ${food.isAvailable ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                                  <span>{food.isAvailable ? 'Đang bán' : 'Tạm ngưng'}</span>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <button
-                              onClick={() => {
-                                setEditingFood(food);
-                                setFoodForm({
-                                  name: food.name || '',
-                                  price: food.price ? String(food.price) : '',
-                                  category: food.category || 'Cà phê',
-                                  description: food.description || '',
-                                  image: food.image || '',
-                                  isAvailable: food.isAvailable ?? true,
-                                });
-                                setIsFoodModalOpen(true);
-                              }}
-                              className="w-9 h-9 rounded-xl bg-slate-100/80 dark:bg-white/5 hover:bg-sky-500/10 text-slate-500 dark:text-slate-400 hover:text-sky-500 border border-slate-200/50 dark:border-white/5 transition-all flex items-center justify-center cursor-pointer active:scale-95"
-                              title="Chỉnh sửa món"
-                            >
-                              <DashboardIcon name="edit" className="text-[17px]" />
-                            </button>
-                            <button
-                              onClick={() => setFoodToDelete(food._id)}
-                              className="w-9 h-9 rounded-xl bg-slate-100/80 dark:bg-white/5 hover:bg-rose-500/10 text-slate-500 dark:text-slate-400 hover:text-rose-500 border border-slate-200/50 dark:border-white/5 transition-all flex items-center justify-center cursor-pointer active:scale-95"
-                              title="Xóa món"
-                            >
-                              <DashboardIcon name="delete" className="text-[17px]" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Desktop Table View (>= sm: 640px) */}
-                    <div className="hidden sm:block bg-white dark:bg-[#0d1322] border border-slate-200/80 dark:border-white/5 rounded-3xl overflow-x-auto shadow-xs">
-                      <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
-                        <thead className="bg-slate-50/70 dark:bg-white/[0.02] text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-wider font-bold border-b border-slate-100 dark:border-white/5">
-                          <tr>
-                            <th className="py-3.5 px-5">Món</th>
-                            <th className="py-3.5 px-5">Danh mục</th>
-                            <th className="py-3.5 px-5">Giá tiền</th>
-                            <th className="py-3.5 px-5">Trạng thái</th>
-                            <th className="py-3.5 px-5 text-right">Hành động</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-white/[0.03]">
-                          {filteredFoods.map((food) => (
-                            <tr key={food._id} className="hover:bg-slate-50/60 dark:hover:bg-white/[0.02] transition-colors">
-                              <td className="py-3 px-5 font-bold text-slate-900 dark:text-white flex items-center gap-3.5">
-                                {food.image ? (
-                                  <img
-                                    src={food.image}
-                                    alt={food.name}
-                                    className="w-10 h-10 rounded-xl object-cover bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-white/5 shadow-xs"
-                                  />
-                                ) : (
-                                  <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 border border-slate-200/50 dark:border-white/5">
-                                    <DashboardIcon name="restaurant" className="text-lg" />
-                                  </div>
-                                )}
-                                <div>
-                                  <span className="font-bold text-slate-900 dark:text-white text-sm block leading-tight">{food.name}</span>
-                                  {food.description && (
-                                    <span className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1 mt-0.5">{food.description}</span>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="py-3 px-5">
-                                <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100/70 dark:bg-white/5 text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-white/5">
-                                  {food.category}
-                                </span>
-                              </td>
-                              <td className="py-3 px-5 font-extrabold text-[#0284c7] dark:text-[#38BDF8] text-sm tracking-tight">{formatPrice(food.price)}</td>
-                              <td className="py-3 px-5">
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleToggleFoodAvailability(food);
-                                  }}
-                                  disabled={togglingFoodId === food._id}
-                                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer select-none active:scale-95 ${food.isAvailable
-                                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/25'
-                                    : 'bg-rose-500/10 text-rose-500 dark:text-rose-400 hover:bg-rose-500/20 border border-rose-500/25'
-                                    } ${togglingFoodId === food._id ? 'opacity-50 cursor-wait' : ''}`}
-                                  title={food.isAvailable ? 'Bấm để chuyển sang Tạm ngưng' : 'Bấm để chuyển sang Đang bán'}
-                                >
-                                  {togglingFoodId === food._id ? (
-                                    <span className="animate-spin inline-block text-xs">⏳</span>
-                                  ) : (
-                                    <span className={`w-1.5 h-1.5 rounded-full ${food.isAvailable ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                                  )}
-                                  <span>{food.isAvailable ? 'Đang bán' : 'Tạm ngưng'}</span>
-                                </button>
-                              </td>
-                              <td className="py-3 px-5 text-right">
-                                <div className="inline-flex items-center gap-1.5">
-                                  <button
-                                    onClick={() => {
-                                      setEditingFood(food);
-                                      setFoodForm({
-                                        name: food.name || '',
-                                        price: food.price ? String(food.price) : '',
-                                        category: food.category || 'Cà phê',
-                                        description: food.description || '',
-                                        image: food.image || '',
-                                        isAvailable: food.isAvailable ?? true,
-                                      });
-                                      setIsFoodModalOpen(true);
-                                    }}
-                                    className="w-8 h-8 rounded-lg bg-slate-100/70 dark:bg-white/5 hover:bg-sky-500/10 text-slate-500 dark:text-slate-400 hover:text-sky-500 transition-all flex items-center justify-center cursor-pointer active:scale-90"
-                                    title="Chỉnh sửa món"
-                                  >
-                                    <DashboardIcon name="edit" className="text-[16px]" />
-                                  </button>
-                                  <button
-                                    onClick={() => setFoodToDelete(food._id)}
-                                    className="w-8 h-8 rounded-lg bg-slate-100/70 dark:bg-white/5 hover:bg-rose-500/10 text-slate-500 dark:text-slate-400 hover:text-rose-500 transition-all flex items-center justify-center cursor-pointer active:scale-90"
-                                    title="Xóa món"
-                                  >
-                                    <DashboardIcon name="delete" className="text-[16px]" />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Tables Management View */}
-            {activeTab === 'tables' && (
-              <div className="flex-1 overflow-y-auto space-y-4 pb-32 lg:pb-10 scrollbar-thin">
-                <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-xs">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Danh sách {filteredTables.length} bàn ăn
-                    </span>
-                    <div className="flex items-center p-0.5 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedTableStatus('all')}
-                        className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${selectedTableStatus === 'all'
-                          ? 'bg-white dark:bg-[#1e293b] text-slate-900 dark:text-white shadow-xs font-black'
-                          : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                          }`}
-                      >
-                        Tất cả ({tables.length})
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedTableStatus('empty')}
-                        className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${selectedTableStatus === 'empty'
-                          ? 'bg-white dark:bg-[#1e293b] text-slate-900 dark:text-white shadow-xs font-black'
-                          : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                          }`}
-                      >
-                        <StatusDot status="offline" size="sm" ping={false} />
-                        <span>Trống</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedTableStatus('serving')}
-                        className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${selectedTableStatus === 'serving'
-                          ? 'bg-white dark:bg-[#1e293b] text-emerald-600 dark:text-emerald-400 shadow-xs font-black'
-                          : 'text-slate-500 hover:text-emerald-500'
-                          }`}
-                      >
-                        <StatusDot status="available" size="sm" ping={false} />
-                        <span>Có khách</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedTableStatus('reserved')}
-                        className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${selectedTableStatus === 'reserved'
-                          ? 'bg-white dark:bg-[#1e293b] text-amber-600 dark:text-amber-400 shadow-xs font-black'
-                          : 'text-slate-500 hover:text-amber-500'
-                          }`}
-                      >
-                        <StatusDot status="reserved" size="sm" ping={false} />
-                        <span>Đã đặt</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      setEditingTable(null);
-                      setTableForm({ tableName: '', status: 'empty' });
-                      setIsTableModalOpen(true);
-                    }}
-                    className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
-                  >
-                    <DashboardIcon name="add" className="text-lg sm:text-xl" />
-                    <span>Thêm bàn mới</span>
-                  </button>
-                </div>
-
-                {/* Table Transfer Requests Banner in Tables View */}
-                {pendingTransferRequests.length > 0 && (
-                  <div className="space-y-2 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 shadow-sm">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
-                        <span className="text-xs font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                          Yêu cầu chuyển bàn từ khách hàng ({pendingTransferRequests.length})
-                        </span>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
-                      {pendingTransferRequests.map((req) => (
-                        <div
-                          key={req.id}
-                          className="bg-white dark:bg-[#131929] border border-amber-500/30 dark:border-amber-500/20 rounded-xl p-3.5 shadow-xs flex flex-col justify-between"
-                        >
-                          <div>
-                            <div className="text-xs font-black text-slate-900 dark:text-white flex items-center justify-between">
-                              <span>{req.fromTableName} ➔ {req.toTableName}</span>
-                              <span className="text-[10px] text-slate-400 font-mono font-medium">
-                                {req.createdAt ? new Date(req.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'Vừa xong'}
-                              </span>
-                            </div>
-                            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                              Khách hàng: <strong className="text-slate-700 dark:text-slate-200">{req.customerName || 'Khách tại bàn'}</strong>
-                            </div>
-                          </div>
-                          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handleApproveTransfer(req.id)}
-                              className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-lg transition-all active:scale-95 cursor-pointer text-center"
-                            >
-                              Chấp nhận
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleRejectTransfer(req.id)}
-                              className="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-lg transition-all active:scale-95 cursor-pointer text-center"
-                            >
-                              Từ chối
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-                  {filteredTables.map((tbl) => {
-                    const tableOrders = orders.filter(
-                      (o) => (o.tableId?._id === tbl._id || (o.tableId as any) === tbl._id) && o.status !== 'paid' && o.status !== 'cancelled'
-                    );
-                    const hasActiveOrders = tableOrders.length > 0;
-                    const effectiveStatus = hasActiveOrders ? 'serving' : (tbl.status || 'empty');
-
-                    let cardBorder = 'border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-700';
-                    let headerBg = 'bg-white dark:bg-slate-900/50';
-                    let statusBadge = (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 whitespace-nowrap shrink-0">
-                        <StatusDot status="offline" size="sm" ping={false} />
-                        Trống
-                      </span>
-                    );
-
-                    if (effectiveStatus === 'serving') {
-                      cardBorder = 'border-emerald-500/40 shadow-emerald-500/5 dark:shadow-emerald-500/10';
-                      headerBg = 'bg-emerald-500/10 dark:bg-emerald-950/20';
-                      statusBadge = (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 whitespace-nowrap shrink-0">
-                          <StatusDot status="available" size="sm" ping={true} />
-                          Có khách
-                        </span>
-                      );
-                    } else if (effectiveStatus === 'reserved') {
-                      cardBorder = 'border-amber-500/40 shadow-amber-500/5 dark:shadow-amber-500/10';
-                      headerBg = 'bg-amber-500/10 dark:bg-amber-950/20';
-                      statusBadge = (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 whitespace-nowrap shrink-0">
-                          <StatusDot status="reserved" size="sm" ping={true} />
-                          Khách hẹn
-                        </span>
-                      );
-                    }
-
-                    return (
-                      <div
-                        key={tbl._id}
-                        className={`bg-white dark:bg-[#131929] border ${cardBorder} rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 hover:shadow-lg group relative overflow-hidden`}
-                      >
-                        {/* Card Header */}
-                        <div className="space-y-3">
-                          <div className={`p-3 rounded-xl ${headerBg} flex items-center justify-between gap-2`}>
-                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                              <div className="w-9 h-9 rounded-xl bg-[#38BDF8]/10 text-[#38BDF8] border border-[#38BDF8]/20 flex items-center justify-center font-black text-sm shadow-xs select-none shrink-0">
-                                {(tbl.tableName || 'B').charAt(0).toUpperCase()}
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <h4 className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base tracking-tight whitespace-nowrap truncate" title={tbl.tableName}>{tbl.tableName}</h4>
-                                {hasActiveOrders && (
-                                  <div>
-                                    <p className="text-[10.5px] font-extrabold text-slate-700 dark:text-slate-300">
-                                      {tableOrders.length} đơn
-                                    </p>
-                                    {tableOrders.some((o) => o.status === 'completed') ? (
-                                      <span className="inline-block mt-0.5 px-1.5 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded text-[9.5px] font-extrabold animate-pulse">
-                                        Đã ra món • Cần thanh toán ({tableOrders.filter((o) => o.status === 'completed').length})
-                                      </span>
-                                    ) : tableOrders.every((o) => o.status === 'paid') ? (
-                                      <span className="inline-block mt-0.5 px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded text-[9.5px] font-extrabold">
-                                        Đã thanh toán hết
-                                      </span>
-                                    ) : null}
-                                  </div>
-                                )}
-                              </div>
+                  {group.items.map((food) => (
+                    <div
+                      key={food._id}
+                      className="group relative bg-white dark:bg-[#111622] rounded-3xl p-3.5 sm:p-4 border border-slate-200/80 dark:border-white/[0.08] hover:border-[#38BDF8]/50 dark:hover:border-[#38BDF8]/40 shadow-xs hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-sky-950/20 transition-all duration-300 flex flex-col justify-between overflow-hidden"
+                    >
+                      <div>
+                        <div className="relative w-full h-44 sm:h-48 md:h-52 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-white/5">
+                          {food.image ? (
+                            <img
+                              src={food.image}
+                              alt={food.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-1.5">
+                              <DashboardIcon name="local_cafe" className="text-4xl text-slate-300 dark:text-slate-600" />
+                              <span className="text-xs font-medium text-slate-400">Chưa có ảnh</span>
                             </div>
-                            <div className="shrink-0">
-                              {statusBadge}
-                            </div>
-                          </div>
+                          )}
 
-                          {/* Quick Status Control Buttons */}
-                          <div className="space-y-1">
-                            <span className="text-[10px] font-normal text-slate-400 uppercase tracking-wider block">Đổi trạng thái nhanh:</span>
-                            <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100 dark:bg-[#090D16] rounded-xl border border-slate-200 dark:border-[#1e293b]">
-                              <button
-                                type="button"
-                                onClick={() => handleQuickTableStatusUpdate(tbl._id, 'empty')}
-                                className={`py-2 px-1 rounded-lg text-[10px] sm:text-[10.5px] font-extrabold transition-all cursor-pointer active:scale-95 whitespace-nowrap text-center ${effectiveStatus === 'empty'
-                                  ? 'bg-white dark:bg-[#1e293b] text-slate-900 dark:text-white shadow-xs font-black'
-                                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                                  }`}
-                              >
-                                Trống
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleQuickTableStatusUpdate(tbl._id, 'serving')}
-                                className={`py-2 px-1 rounded-lg text-[10px] sm:text-[10.5px] font-extrabold transition-all cursor-pointer active:scale-95 whitespace-nowrap text-center ${effectiveStatus === 'serving'
-                                  ? 'bg-emerald-500 text-white shadow-xs font-black'
-                                  : 'text-slate-500 hover:text-emerald-500'
-                                  }`}
-                              >
-                                Có khách
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleQuickTableStatusUpdate(tbl._id, 'reserved')}
-                                className={`py-2 px-1 rounded-lg text-[10px] sm:text-[10.5px] font-extrabold transition-all cursor-pointer active:scale-95 whitespace-nowrap text-center ${effectiveStatus === 'reserved'
-                                  ? 'bg-amber-500 text-white shadow-xs font-black'
-                                  : 'text-slate-500 hover:text-amber-500'
-                                  }`}
-                              >
-                                Đã đặt
-                              </button>
-                            </div>
-                          </div>
+                          {/* Availability Status: Solid High-Contrast Badge */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleFoodAvailability(food);
+                            }}
+                            className={`absolute top-2.5 right-2.5 px-3 py-1 rounded-full text-[11px] font-extrabold shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 ${food.isAvailable
+                              ? 'bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-400/80 shadow-emerald-950/20'
+                              : 'bg-rose-600 hover:bg-rose-700 text-white border border-rose-400/80 shadow-rose-950/20'
+                              }`}
+                            title={food.isAvailable ? 'Bấm để Tạm ngưng món nhanh' : 'Bấm để Mở bán lại nhanh'}
+                          >
+                            <span
+                              className={`w-2 h-2 rounded-full ${food.isAvailable ? 'bg-white animate-pulse' : 'bg-white'
+                                }`}
+                            />
+                            <span>{food.isAvailable ? 'Đang bán' : 'Tạm ngưng'}</span>
+                          </button>
                         </div>
 
-                        {/* Card Action Footer */}
-                        <div className="pt-3 mt-3 border-t border-slate-100 dark:border-[#1e293b] flex items-center gap-1.5 sm:gap-2">
-                          <button
-                            onClick={() => setQrTable(tbl)}
-                            className="flex-1 h-9 px-2 bg-[#38BDF8]/10 hover:bg-[#38BDF8] text-[#0284c7] dark:text-[#38BDF8] hover:text-[#090D16] dark:hover:text-[#090D16] rounded-xl text-xs font-bold transition-all flex items-center justify-center cursor-pointer active:scale-95 whitespace-nowrap"
+                        <div className="mt-3.5 space-y-1">
+                          <span className="text-[10.5px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
+                            {food.category}
+                          </span>
+                          <h4
+                            className="font-bold text-sm sm:text-base text-slate-900 dark:text-white group-hover:text-[#38BDF8] transition-colors truncate"
+                            title={food.name}
                           >
-                            QR Code
-                          </button>
+                            {food.name}
+                          </h4>
+                          {food.description ? (
+                            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                              {food.description}
+                            </p>
+                          ) : (
+                            <p className="text-xs text-slate-400 dark:text-slate-500 italic">
+                              Món ngon đặc sắc tại Kohi Coffee
+                            </p>
+                          )}
+                        </div>
+                      </div>
 
+                      <div className="mt-4 pt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between gap-2">
+                        <div>
+                          <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-slate-500 block">
+                            Giá bán
+                          </span>
+                          <span className="font-extrabold text-sm sm:text-base text-[#0284c7] dark:text-[#38BDF8] tracking-tight">
+                            {formatPrice(food.price)}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
                           <button
                             onClick={() => {
-                              setEditingTable(tbl);
-                              setTableForm({ tableName: tbl.tableName || '', status: effectiveStatus || 'empty' });
-                              setIsTableModalOpen(true);
+                              setEditingFood(food);
+                              setFoodForm({
+                                name: food.name || '',
+                                price: food.price ? String(food.price) : '',
+                                category: food.category || 'Cà phê',
+                                description: food.description || '',
+                                image: food.image || '',
+                                isAvailable: food.isAvailable ?? true,
+                              });
+                              setIsFoodModalOpen(true);
                             }}
-                            className="h-9 px-2.5 sm:px-3 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:text-[#38BDF8] dark:hover:text-[#38BDF8] rounded-xl transition-colors cursor-pointer text-xs font-bold active:scale-95 whitespace-nowrap shrink-0"
+                            className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-sky-500/15 text-slate-600 dark:text-slate-300 hover:text-[#38BDF8] border border-slate-200/60 dark:border-white/10 transition-all flex items-center justify-center cursor-pointer active:scale-90"
+                            title="Chỉnh sửa món"
                           >
-                            Sửa
+                            <DashboardIcon name="edit" className="text-[17px]" />
                           </button>
-
                           <button
-                            onClick={() => setTableToDelete(tbl._id)}
-                            className="h-9 px-2.5 sm:px-3 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:text-rose-500 dark:hover:text-rose-500 rounded-xl transition-colors cursor-pointer text-xs font-bold active:scale-95 whitespace-nowrap shrink-0"
+                            onClick={() => setFoodToDelete(food._id)}
+                            className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-rose-500/15 text-slate-600 dark:text-slate-300 hover:text-rose-500 border border-slate-200/60 dark:border-white/10 transition-all flex items-center justify-center cursor-pointer active:scale-90"
+                            title="Xóa món"
                           >
-                            Xóa
+                            <DashboardIcon name="delete" className="text-[17px]" />
                           </button>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Users Management View: ADMIN ONLY */}
-            {activeTab === 'users' && user?.role === 'admin' && (
-              <div className="flex-1 overflow-y-auto space-y-4 pb-32 lg:pb-10 scrollbar-thin">
-                <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-xs">
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Danh sách {usersList.length} nhân viên</span>
-                  <button
-                    onClick={() => {
-                      setEditingUser(null);
-                      setUserForm({ name: '', email: '', password: '', role: 'staff', assignedShift: 'morning' });
-                      setIsUserModalOpen(true);
-                    }}
-                    className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
-                  >
-                    <DashboardIcon name="add" className="text-lg sm:text-xl" />
-                    <span>Thêm nhân viên mới</span>
-                  </button>
-                </div>
-
-                {/* Mobile Card List (< sm: 640px) */}
-                <div className="grid grid-cols-1 gap-3 sm:hidden">
-                  {usersList.map((u) => (
-                    <div key={u._id} className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-4 flex items-center justify-between gap-3 shadow-xs">
-                      <div className="truncate">
-                        <h4 className="font-extrabold text-slate-900 dark:text-white text-xs truncate">{u.name}</h4>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">{u.email}</p>
-                        <span className="inline-block mt-1 px-2.5 py-0.5 bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] rounded-full text-[9.5px] font-bold">
-                          {u.role === 'admin' ? 'Quản trị (Admin)' : u.role === 'barista' ? 'Pha chế (Barista)' : u.role === 'waiter' ? 'Phục vụ (Waiter)' : 'Nhân viên'}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          onClick={() => {
-                            setEditingUser(u);
-                            setUserForm({ name: u.name || '', email: u.email || '', password: '', role: u.role || 'staff', assignedShift: u.assignedShift || 'morning' });
-                            setIsUserModalOpen(true);
-                          }}
-                          className="p-2 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 rounded-xl hover:text-[#38BDF8] transition-colors"
-                          title="Sửa nhân viên"
-                        >
-                          <DashboardIcon name="edit" className="text-base" />
-                        </button>
-                        {u.email !== 'admin@kohi.vn' && (
-                          <button
-                            onClick={() => setUserToDelete(u._id!)}
-                            className="p-2 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 rounded-xl hover:text-red-500 transition-colors"
-                            title="Xóa nhân viên"
-                          >
-                            <DashboardIcon name="delete" className="text-base" />
-                          </button>
-                        )}
                       </div>
                     </div>
                   ))}
                 </div>
+              </div>
+            ))
+          ) : (
+            /* Hiển thị danh sách lọc theo 1 danh mục cụ thể hoặc theo từ khóa tìm kiếm */
+            <div className="space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-[#1e293b]">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-black text-sm sm:text-base text-slate-900 dark:text-white tracking-tight">
+                    {selectedCategory !== 'all' ? selectedCategory : `Kết quả tìm kiếm "${searchQuery}"`}
+                  </h3>
+                  <span className="text-[11px] font-black px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300">
+                    {filteredFoods.length} món
+                  </span>
+                </div>
+              </div>
 
-                {/* Desktop Table View (>= sm: 640px) */}
-                <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl overflow-x-auto shadow-xs">
-                  <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[500px]">
-                    <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
-                      <tr>
-                        <th className="p-4">Họ tên</th>
-                        <th className="p-4">Email</th>
-                        <th className="p-4">Vai trò</th>
-                        <th className="p-4">Ca phân công</th>
-                        <th className="p-4 text-right">Hành động</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
-                      {usersList.map((u) => (
-                        <tr key={u._id} className="hover:bg-slate-100/60 dark:hover:bg-[#182035]">
-                          <td className="p-4 font-bold text-slate-900 dark:text-white">{u.name}</td>
-                          <td className="p-4 text-slate-500 dark:text-slate-400">{u.email}</td>
-                          <td className="p-4">
-                            <span className="px-2.5 py-1 bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] rounded-full text-[10px] font-bold">
-                              {u.role === 'admin' ? 'Quản trị (Admin)' : u.role === 'barista' ? 'Pha chế (Barista)' : u.role === 'waiter' ? 'Phục vụ (Waiter)' : 'Nhân viên'}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                {filteredFoods.map((food) => (
+                  <div
+                    key={food._id}
+                    className="group relative bg-white dark:bg-[#111622] rounded-3xl p-3.5 sm:p-4 border border-slate-200/80 dark:border-white/[0.08] hover:border-[#38BDF8]/50 dark:hover:border-[#38BDF8]/40 shadow-xs hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-sky-950/20 transition-all duration-300 flex flex-col justify-between overflow-hidden"
+                  >
+                    <div>
+                      <div className="relative w-full h-44 sm:h-48 md:h-52 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-white/5">
+                        {food.image ? (
+                          <img
+                            src={food.image}
+                            alt={food.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-1.5">
+                            <DashboardIcon name="local_cafe" className="text-4xl text-slate-300 dark:text-slate-600" />
+                            <span className="text-xs font-medium text-slate-400">Chưa có ảnh</span>
+                          </div>
+                        )}
+
+                        {/* Availability Status: Solid High-Contrast Badge */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleFoodAvailability(food);
+                          }}
+                          className={`absolute top-2.5 right-2.5 px-3 py-1 rounded-full text-[11px] font-extrabold shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 ${food.isAvailable
+                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-400/80 shadow-emerald-950/20'
+                            : 'bg-rose-600 hover:bg-rose-700 text-white border border-rose-400/80 shadow-rose-950/20'
+                            }`}
+                          title={food.isAvailable ? 'Bấm để Tạm ngưng món nhanh' : 'Bấm để Mở bán lại nhanh'}
+                        >
+                          <span
+                            className={`w-2 h-2 rounded-full ${food.isAvailable ? 'bg-white animate-pulse' : 'bg-white'
+                              }`}
+                          />
+                          <span>{food.isAvailable ? 'Đang bán' : 'Tạm ngưng'}</span>
+                        </button>
+                      </div>
+
+                      <div className="mt-3.5 space-y-1">
+                        <span className="text-[10.5px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
+                          {food.category}
+                        </span>
+                        <h4
+                          className="font-bold text-sm sm:text-base text-slate-900 dark:text-white group-hover:text-[#38BDF8] transition-colors truncate"
+                          title={food.name}
+                        >
+                          {food.name}
+                        </h4>
+                        {food.description ? (
+                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                            {food.description}
+                          </p>
+                        ) : (
+                          <p className="text-xs text-slate-400 dark:text-slate-500 italic">
+                            Món ngon đặc sắc tại Kohi Coffee
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between gap-2">
+                      <div>
+                        <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-slate-500 block">
+                          Giá bán
+                        </span>
+                        <span className="font-extrabold text-sm sm:text-base text-[#0284c7] dark:text-[#38BDF8] tracking-tight">
+                          {formatPrice(food.price)}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          onClick={() => {
+                            setEditingFood(food);
+                            setFoodForm({
+                              name: food.name || '',
+                              price: food.price ? String(food.price) : '',
+                              category: food.category || 'Cà phê',
+                              description: food.description || '',
+                              image: food.image || '',
+                              isAvailable: food.isAvailable ?? true,
+                            });
+                            setIsFoodModalOpen(true);
+                          }}
+                          className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-sky-500/15 text-slate-600 dark:text-slate-300 hover:text-[#38BDF8] border border-slate-200/60 dark:border-white/10 transition-all flex items-center justify-center cursor-pointer active:scale-90"
+                          title="Chỉnh sửa món"
+                        >
+                          <DashboardIcon name="edit" className="text-[17px]" />
+                        </button>
+                        <button
+                          onClick={() => setFoodToDelete(food._id)}
+                          className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-rose-500/15 text-slate-600 dark:text-slate-300 hover:text-rose-500 border border-slate-200/60 dark:border-white/10 transition-all flex items-center justify-center cursor-pointer active:scale-90"
+                          title="Xóa món"
+                        >
+                          <DashboardIcon name="delete" className="text-[17px]" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        /* ── DẠNG BẢNG (Table View Mode: Modern Boutique & Hospitality) ── */
+        <div className="space-y-4">
+          {/* Mobile Card List (< sm: 640px) */}
+          <div className="grid grid-cols-1 gap-2.5 sm:hidden">
+            {filteredFoods.map((food) => (
+              <div
+                key={food._id}
+                className="bg-white dark:bg-[#0d1322] border border-slate-200/80 dark:border-white/5 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-xs hover:border-slate-300 dark:hover:border-white/10 transition-all"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  {food.image ? (
+                    <img
+                      src={food.image}
+                      alt={food.name}
+                      className="w-13 h-13 rounded-xl object-cover bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-100 dark:border-white/5 shadow-xs"
+                    />
+                  ) : (
+                    <div className="w-13 h-13 rounded-xl bg-slate-100 dark:bg-white/5 shrink-0 flex items-center justify-center text-slate-400 border border-slate-200/50 dark:border-white/5">
+                      <DashboardIcon name="restaurant" className="text-xl" />
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <h4 className="font-bold text-slate-900 dark:text-white text-[13px] leading-snug truncate">{food.name}</h4>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mt-0.5 truncate">{food.category}</p>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <span className="font-extrabold text-[#0284c7] dark:text-[#38BDF8] text-xs">{formatPrice(food.price)}</span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleFoodAvailability(food);
+                        }}
+                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all active:scale-95 cursor-pointer select-none ${food.isAvailable
+                          ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25'
+                          : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 dark:text-rose-400 border border-rose-500/25'
+                          }`}
+                        title={food.isAvailable ? 'Bấm để Tạm ngưng món nhanh' : 'Bấm để Mở bán lại nhanh'}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${food.isAvailable ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                        <span>{food.isAvailable ? 'Đang bán' : 'Tạm ngưng'}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    onClick={() => {
+                      setEditingFood(food);
+                      setFoodForm({
+                        name: food.name || '',
+                        price: food.price ? String(food.price) : '',
+                        category: food.category || 'Cà phê',
+                        description: food.description || '',
+                        image: food.image || '',
+                        isAvailable: food.isAvailable ?? true,
+                      });
+                      setIsFoodModalOpen(true);
+                    }}
+                    className="w-9 h-9 rounded-xl bg-slate-100/80 dark:bg-white/5 hover:bg-sky-500/10 text-slate-500 dark:text-slate-400 hover:text-sky-500 border border-slate-200/50 dark:border-white/5 transition-all flex items-center justify-center cursor-pointer active:scale-95"
+                    title="Chỉnh sửa món"
+                  >
+                    <DashboardIcon name="edit" className="text-[17px]" />
+                  </button>
+                  <button
+                    onClick={() => setFoodToDelete(food._id)}
+                    className="w-9 h-9 rounded-xl bg-slate-100/80 dark:bg-white/5 hover:bg-rose-500/10 text-slate-500 dark:text-slate-400 hover:text-rose-500 border border-slate-200/50 dark:border-white/5 transition-all flex items-center justify-center cursor-pointer active:scale-95"
+                    title="Xóa món"
+                  >
+                    <DashboardIcon name="delete" className="text-[17px]" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View (>= sm: 640px) */}
+          <div className="hidden sm:block bg-white dark:bg-[#0d1322] border border-slate-200/80 dark:border-white/5 rounded-3xl overflow-x-auto shadow-xs">
+            <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
+              <thead className="bg-slate-50/70 dark:bg-white/[0.02] text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-wider font-bold border-b border-slate-100 dark:border-white/5">
+                <tr>
+                  <th className="py-3.5 px-5">Món</th>
+                  <th className="py-3.5 px-5">Danh mục</th>
+                  <th className="py-3.5 px-5">Giá tiền</th>
+                  <th className="py-3.5 px-5">Trạng thái</th>
+                  <th className="py-3.5 px-5 text-right">Hành động</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-white/[0.03]">
+                {filteredFoods.map((food) => (
+                  <tr key={food._id} className="hover:bg-slate-50/60 dark:hover:bg-white/[0.02] transition-colors">
+                    <td className="py-3 px-5 font-bold text-slate-900 dark:text-white flex items-center gap-3.5">
+                      {food.image ? (
+                        <img
+                          src={food.image}
+                          alt={food.name}
+                          className="w-10 h-10 rounded-xl object-cover bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-white/5 shadow-xs"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 border border-slate-200/50 dark:border-white/5">
+                          <DashboardIcon name="restaurant" className="text-lg" />
+                        </div>
+                      )}
+                      <div>
+                        <span className="font-bold text-slate-900 dark:text-white text-sm block leading-tight">{food.name}</span>
+                        {food.description && (
+                          <span className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1 mt-0.5">{food.description}</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3 px-5">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100/70 dark:bg-white/5 text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-white/5">
+                        {food.category}
+                      </span>
+                    </td>
+                    <td className="py-3 px-5 font-extrabold text-[#0284c7] dark:text-[#38BDF8] text-sm tracking-tight">{formatPrice(food.price)}</td>
+                    <td className="py-3 px-5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleFoodAvailability(food);
+                        }}
+                        disabled={togglingFoodId === food._id}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer select-none active:scale-95 ${food.isAvailable
+                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/25'
+                          : 'bg-rose-500/10 text-rose-500 dark:text-rose-400 hover:bg-rose-500/20 border border-rose-500/25'
+                          } ${togglingFoodId === food._id ? 'opacity-50 cursor-wait' : ''}`}
+                        title={food.isAvailable ? 'Bấm để chuyển sang Tạm ngưng' : 'Bấm để chuyển sang Đang bán'}
+                      >
+                        {togglingFoodId === food._id ? (
+                          <span className="animate-spin inline-block text-xs">⏳</span>
+                        ) : (
+                          <span className={`w-1.5 h-1.5 rounded-full ${food.isAvailable ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                        )}
+                        <span>{food.isAvailable ? 'Đang bán' : 'Tạm ngưng'}</span>
+                      </button>
+                    </td>
+                    <td className="py-3 px-5 text-right">
+                      <div className="inline-flex items-center gap-1.5">
+                        <button
+                          onClick={() => {
+                            setEditingFood(food);
+                            setFoodForm({
+                              name: food.name || '',
+                              price: food.price ? String(food.price) : '',
+                              category: food.category || 'Cà phê',
+                              description: food.description || '',
+                              image: food.image || '',
+                              isAvailable: food.isAvailable ?? true,
+                            });
+                            setIsFoodModalOpen(true);
+                          }}
+                          className="w-8 h-8 rounded-lg bg-slate-100/70 dark:bg-white/5 hover:bg-sky-500/10 text-slate-500 dark:text-slate-400 hover:text-sky-500 transition-all flex items-center justify-center cursor-pointer active:scale-90"
+                          title="Chỉnh sửa món"
+                        >
+                          <DashboardIcon name="edit" className="text-[16px]" />
+                        </button>
+                        <button
+                          onClick={() => setFoodToDelete(food._id)}
+                          className="w-8 h-8 rounded-lg bg-slate-100/70 dark:bg-white/5 hover:bg-rose-500/10 text-slate-500 dark:text-slate-400 hover:text-rose-500 transition-all flex items-center justify-center cursor-pointer active:scale-90"
+                          title="Xóa món"
+                        >
+                          <DashboardIcon name="delete" className="text-[16px]" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+{/* Tables Management View */ }
+{
+  activeTab === 'tables' && (
+    <div className="flex-1 overflow-y-auto space-y-4 pb-32 lg:pb-10 scrollbar-thin">
+      <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-xs">
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            Danh sách {filteredTables.length} bàn ăn
+          </span>
+          <div className="flex items-center p-0.5 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold">
+            <button
+              type="button"
+              onClick={() => setSelectedTableStatus('all')}
+              className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${selectedTableStatus === 'all'
+                ? 'bg-white dark:bg-[#1e293b] text-slate-900 dark:text-white shadow-xs font-black'
+                : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                }`}
+            >
+              Tất cả ({tables.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedTableStatus('empty')}
+              className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${selectedTableStatus === 'empty'
+                ? 'bg-white dark:bg-[#1e293b] text-slate-900 dark:text-white shadow-xs font-black'
+                : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                }`}
+            >
+              <StatusDot status="offline" size="sm" ping={false} />
+              <span>Trống</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedTableStatus('serving')}
+              className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${selectedTableStatus === 'serving'
+                ? 'bg-white dark:bg-[#1e293b] text-emerald-600 dark:text-emerald-400 shadow-xs font-black'
+                : 'text-slate-500 hover:text-emerald-500'
+                }`}
+            >
+              <StatusDot status="available" size="sm" ping={false} />
+              <span>Có khách</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedTableStatus('reserved')}
+              className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${selectedTableStatus === 'reserved'
+                ? 'bg-white dark:bg-[#1e293b] text-amber-600 dark:text-amber-400 shadow-xs font-black'
+                : 'text-slate-500 hover:text-amber-500'
+                }`}
+            >
+              <StatusDot status="reserved" size="sm" ping={false} />
+              <span>Đã đặt</span>
+            </button>
+          </div>
+        </div>
+
+        <button
+          onClick={() => {
+            setEditingTable(null);
+            setTableForm({ tableName: '', status: 'empty' });
+            setIsTableModalOpen(true);
+          }}
+          className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+        >
+          <DashboardIcon name="add" className="text-lg sm:text-xl" />
+          <span>Thêm bàn mới</span>
+        </button>
+      </div>
+
+      {/* Table Transfer Requests Banner in Tables View */}
+      {pendingTransferRequests.length > 0 && (
+        <div className="space-y-2 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
+              <span className="text-xs font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                Yêu cầu chuyển bàn từ khách hàng ({pendingTransferRequests.length})
+              </span>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+            {pendingTransferRequests.map((req) => (
+              <div
+                key={req.id}
+                className="bg-white dark:bg-[#131929] border border-amber-500/30 dark:border-amber-500/20 rounded-xl p-3.5 shadow-xs flex flex-col justify-between"
+              >
+                <div>
+                  <div className="text-xs font-black text-slate-900 dark:text-white flex items-center justify-between">
+                    <span>{req.fromTableName} ➔ {req.toTableName}</span>
+                    <span className="text-[10px] text-slate-400 font-mono font-medium">
+                      {req.createdAt ? new Date(req.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'Vừa xong'}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                    Khách hàng: <strong className="text-slate-700 dark:text-slate-200">{req.customerName || 'Khách tại bàn'}</strong>
+                  </div>
+                </div>
+                <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleApproveTransfer(req.id)}
+                    className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-lg transition-all active:scale-95 cursor-pointer text-center"
+                  >
+                    Chấp nhận
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRejectTransfer(req.id)}
+                    className="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-lg transition-all active:scale-95 cursor-pointer text-center"
+                  >
+                    Từ chối
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+        {filteredTables.map((tbl) => {
+          const tableOrders = orders.filter(
+            (o) => (o.tableId?._id === tbl._id || (o.tableId as any) === tbl._id) && o.status !== 'paid' && o.status !== 'cancelled'
+          );
+          const hasActiveOrders = tableOrders.length > 0;
+          const effectiveStatus = hasActiveOrders ? 'serving' : (tbl.status || 'empty');
+
+          let cardBorder = 'border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-700';
+          let headerBg = 'bg-white dark:bg-slate-900/50';
+          let statusBadge = (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 whitespace-nowrap shrink-0">
+              <StatusDot status="offline" size="sm" ping={false} />
+              Trống
+            </span>
+          );
+
+          if (effectiveStatus === 'serving') {
+            cardBorder = 'border-emerald-500/40 shadow-emerald-500/5 dark:shadow-emerald-500/10';
+            headerBg = 'bg-emerald-500/10 dark:bg-emerald-950/20';
+            statusBadge = (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 whitespace-nowrap shrink-0">
+                <StatusDot status="available" size="sm" ping={true} />
+                Có khách
+              </span>
+            );
+          } else if (effectiveStatus === 'reserved') {
+            cardBorder = 'border-amber-500/40 shadow-amber-500/5 dark:shadow-amber-500/10';
+            headerBg = 'bg-amber-500/10 dark:bg-amber-950/20';
+            statusBadge = (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 whitespace-nowrap shrink-0">
+                <StatusDot status="reserved" size="sm" ping={true} />
+                Khách hẹn
+              </span>
+            );
+          }
+
+          return (
+            <div
+              key={tbl._id}
+              className={`bg-white dark:bg-[#131929] border ${cardBorder} rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 hover:shadow-lg group relative overflow-hidden`}
+            >
+              {/* Card Header */}
+              <div className="space-y-3">
+                <div className={`p-3 rounded-xl ${headerBg} flex items-center justify-between gap-2`}>
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div className="w-9 h-9 rounded-xl bg-[#38BDF8]/10 text-[#38BDF8] border border-[#38BDF8]/20 flex items-center justify-center font-black text-sm shadow-xs select-none shrink-0">
+                      {(tbl.tableName || 'B').charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base tracking-tight whitespace-nowrap truncate" title={tbl.tableName}>{tbl.tableName}</h4>
+                      {hasActiveOrders && (
+                        <div>
+                          <p className="text-[10.5px] font-extrabold text-slate-700 dark:text-slate-300">
+                            {tableOrders.length} đơn
+                          </p>
+                          {tableOrders.some((o) => o.status === 'completed') ? (
+                            <span className="inline-block mt-0.5 px-1.5 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded text-[9.5px] font-extrabold animate-pulse">
+                              Đã ra món • Cần thanh toán ({tableOrders.filter((o) => o.status === 'completed').length})
+                            </span>
+                          ) : tableOrders.every((o) => o.status === 'paid') ? (
+                            <span className="inline-block mt-0.5 px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded text-[9.5px] font-extrabold">
+                              Đã thanh toán hết
+                            </span>
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="shrink-0">
+                    {statusBadge}
+                  </div>
+                </div>
+
+                {/* Quick Status Control Buttons */}
+                <div className="space-y-1">
+                  <span className="text-[10px] font-normal text-slate-400 uppercase tracking-wider block">Đổi trạng thái nhanh:</span>
+                  <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100 dark:bg-[#090D16] rounded-xl border border-slate-200 dark:border-[#1e293b]">
+                    <button
+                      type="button"
+                      onClick={() => handleQuickTableStatusUpdate(tbl._id, 'empty')}
+                      className={`py-2 px-1 rounded-lg text-[10px] sm:text-[10.5px] font-extrabold transition-all cursor-pointer active:scale-95 whitespace-nowrap text-center ${effectiveStatus === 'empty'
+                        ? 'bg-white dark:bg-[#1e293b] text-slate-900 dark:text-white shadow-xs font-black'
+                        : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                    >
+                      Trống
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickTableStatusUpdate(tbl._id, 'serving')}
+                      className={`py-2 px-1 rounded-lg text-[10px] sm:text-[10.5px] font-extrabold transition-all cursor-pointer active:scale-95 whitespace-nowrap text-center ${effectiveStatus === 'serving'
+                        ? 'bg-emerald-500 text-white shadow-xs font-black'
+                        : 'text-slate-500 hover:text-emerald-500'
+                        }`}
+                    >
+                      Có khách
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickTableStatusUpdate(tbl._id, 'reserved')}
+                      className={`py-2 px-1 rounded-lg text-[10px] sm:text-[10.5px] font-extrabold transition-all cursor-pointer active:scale-95 whitespace-nowrap text-center ${effectiveStatus === 'reserved'
+                        ? 'bg-amber-500 text-white shadow-xs font-black'
+                        : 'text-slate-500 hover:text-amber-500'
+                        }`}
+                    >
+                      Đã đặt
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card Action Footer */}
+              <div className="pt-3 mt-3 border-t border-slate-100 dark:border-[#1e293b] flex items-center gap-1.5 sm:gap-2">
+                <button
+                  onClick={() => setQrTable(tbl)}
+                  className="flex-1 h-9 px-2 bg-[#38BDF8]/10 hover:bg-[#38BDF8] text-[#0284c7] dark:text-[#38BDF8] hover:text-[#090D16] dark:hover:text-[#090D16] rounded-xl text-xs font-bold transition-all flex items-center justify-center cursor-pointer active:scale-95 whitespace-nowrap"
+                >
+                  QR Code
+                </button>
+
+                <button
+                  onClick={() => {
+                    setEditingTable(tbl);
+                    setTableForm({ tableName: tbl.tableName || '', status: effectiveStatus || 'empty' });
+                    setIsTableModalOpen(true);
+                  }}
+                  className="h-9 px-2.5 sm:px-3 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:text-[#38BDF8] dark:hover:text-[#38BDF8] rounded-xl transition-colors cursor-pointer text-xs font-bold active:scale-95 whitespace-nowrap shrink-0"
+                >
+                  Sửa
+                </button>
+
+                <button
+                  onClick={() => setTableToDelete(tbl._id)}
+                  className="h-9 px-2.5 sm:px-3 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 hover:text-rose-500 dark:hover:text-rose-500 rounded-xl transition-colors cursor-pointer text-xs font-bold active:scale-95 whitespace-nowrap shrink-0"
+                >
+                  Xóa
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  )
+}
+
+{/* Users Management View: ADMIN ONLY */ }
+{
+  activeTab === 'users' && user?.role === 'admin' && (
+    <div className="flex-1 overflow-y-auto space-y-4 pb-32 lg:pb-10 scrollbar-thin">
+      <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-xs">
+        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Danh sách {usersList.length} nhân viên</span>
+        <button
+          onClick={() => {
+            setEditingUser(null);
+            setUserForm({ name: '', email: '', password: '', role: 'staff', assignedShift: 'morning' });
+            setIsUserModalOpen(true);
+          }}
+          className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+        >
+          <DashboardIcon name="add" className="text-lg sm:text-xl" />
+          <span>Thêm nhân viên mới</span>
+        </button>
+      </div>
+
+      {/* Mobile Card List (< sm: 640px) */}
+      <div className="grid grid-cols-1 gap-3 sm:hidden">
+        {usersList.map((u) => (
+          <div key={u._id} className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-4 flex items-center justify-between gap-3 shadow-xs">
+            <div className="truncate">
+              <h4 className="font-extrabold text-slate-900 dark:text-white text-xs truncate">{u.name}</h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">{u.email}</p>
+              <span className="inline-block mt-1 px-2.5 py-0.5 bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] rounded-full text-[9.5px] font-bold">
+                {u.role === 'admin' ? 'Quản trị (Admin)' : u.role === 'barista' ? 'Pha chế (Barista)' : u.role === 'waiter' ? 'Phục vụ (Waiter)' : 'Nhân viên'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                onClick={() => {
+                  setEditingUser(u);
+                  setUserForm({ name: u.name || '', email: u.email || '', password: '', role: u.role || 'staff', assignedShift: u.assignedShift || 'morning' });
+                  setIsUserModalOpen(true);
+                }}
+                className="p-2 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 rounded-xl hover:text-[#38BDF8] transition-colors"
+                title="Sửa nhân viên"
+              >
+                <DashboardIcon name="edit" className="text-base" />
+              </button>
+              {u.email !== 'admin@kohi.vn' && (
+                <button
+                  onClick={() => setUserToDelete(u._id!)}
+                  className="p-2 bg-slate-100 dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 rounded-xl hover:text-red-500 transition-colors"
+                  title="Xóa nhân viên"
+                >
+                  <DashboardIcon name="delete" className="text-base" />
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table View (>= sm: 640px) */}
+      <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl overflow-x-auto shadow-xs">
+        <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[500px]">
+          <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
+            <tr>
+              <th className="p-4">Họ tên</th>
+              <th className="p-4">Email</th>
+              <th className="p-4">Vai trò</th>
+              <th className="p-4">Ca phân công</th>
+              <th className="p-4 text-right">Hành động</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
+            {usersList.map((u) => (
+              <tr key={u._id} className="hover:bg-slate-100/60 dark:hover:bg-[#182035]">
+                <td className="p-4 font-bold text-slate-900 dark:text-white">{u.name}</td>
+                <td className="p-4 text-slate-500 dark:text-slate-400">{u.email}</td>
+                <td className="p-4">
+                  <span className="px-2.5 py-1 bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] rounded-full text-[10px] font-bold">
+                    {u.role === 'admin' ? 'Quản trị (Admin)' : u.role === 'barista' ? 'Pha chế (Barista)' : u.role === 'waiter' ? 'Phục vụ (Waiter)' : 'Nhân viên'}
+                  </span>
+                </td>
+                <td className="p-4">
+                  {(() => {
+                    const s = u.assignedShift || 'morning';
+                    if (s === 'morning') {
+                      return (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+                          <DashboardIcon name="wb_sunny" className="text-xs" />
+                          <span>Ca Sáng (06h-12h)</span>
+                        </span>
+                      );
+                    }
+                    if (s === 'afternoon') {
+                      return (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                          <DashboardIcon name="light_mode" className="text-xs" />
+                          <span>Ca Chiều (12h-18h)</span>
+                        </span>
+                      );
+                    }
+                    return (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                        <DashboardIcon name="dark_mode" className="text-xs" />
+                        <span>Ca Tối (18h-23h)</span>
+                      </span>
+                    );
+                  })()}
+                </td>
+                <td className="p-4 text-right space-x-2">
+                  <button
+                    onClick={() => {
+                      setEditingUser(u);
+                      setUserForm({ name: u.name || '', email: u.email || '', password: '', role: u.role || 'staff', assignedShift: u.assignedShift || 'morning' });
+                      setIsUserModalOpen(true);
+                    }}
+                    className="p-1.5 text-slate-400 hover:text-[#38BDF8] transition-colors"
+                    title="Sửa nhân viên"
+                  >
+                    <DashboardIcon name="edit" className="text-base" />
+                  </button>
+                  {u.email !== 'admin@kohi.vn' && (
+                    <button
+                      onClick={() => setUserToDelete(u._id!)}
+                      className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
+                      title="Xóa nhân viên"
+                    >
+                      <DashboardIcon name="delete" className="text-base" />
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+{/* Attendance View */ }
+{
+  activeTab === 'attendance' && (
+    <div className="flex-1 overflow-y-auto space-y-4 pb-32 lg:pb-10 scrollbar-thin">
+
+      {/* ── HERO HEADER CARD (Compact, Streamlined) ─────────────────── */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-[#0f1b2d] dark:from-[#0c1526] dark:to-[#090D16] rounded-2xl p-3.5 sm:p-4 shadow-lg border border-slate-800/50">
+        <div className="relative">
+          {/* Admin: Compact horizontal layout */}
+          {user?.role === 'admin' ? (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black text-[#38BDF8] uppercase tracking-wider">Tổng quan điểm danh</span>
+                  <span className="text-[11px] text-slate-400 font-mono">
+                    • {new Date().toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit' })} ({new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })})
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5 font-medium hidden sm:block">
+                  Theo dõi giờ làm việc thực tế và quyết toán chi trả lương nhân viên
+                </p>
+              </div>
+
+              {/* Summary stat pills */}
+              <div className="grid grid-cols-3 gap-2 shrink-0">
+                <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-center min-w-[75px]">
+                  <span className="block text-base font-black text-white font-mono leading-tight">{displayedAttendances.length}</span>
+                  <span className="block text-[9.5px] text-slate-400 font-normal">Lượt công</span>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-center min-w-[75px]">
+                  <span className="block text-base font-black text-[#38BDF8] font-mono leading-tight">
+                    {displayedAttendances.filter(a => !a.checkOut).length}
+                  </span>
+                  <span className="block text-[9.5px] text-slate-400 font-normal">Đang ca</span>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-center min-w-[75px]">
+                  <span className="block text-base font-black text-amber-400 font-mono leading-tight">
+                    {shiftSwaps.filter(s => s.status === 'pending').length}
+                  </span>
+                  <span className="block text-[9.5px] text-slate-400 font-normal">Đổi ca</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Staff: Shift info + Action Buttons */
+            <div className="space-y-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-black text-[#38BDF8]/70 uppercase tracking-widest mb-0.5">Ca làm của tôi</p>
+                  <h2 className="text-base sm:text-xl font-black text-white tracking-tight leading-tight">Điểm danh ca làm</h2>
+                </div>
+                <div className="text-right text-xs text-white/80 font-mono">
+                  {new Date().toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit' })}
+                </div>
+              </div>
+
+              {/* Pending shift swap banner */}
+              {(() => {
+                const pendingSwap = shiftSwaps.find((s) => s.status === 'pending');
+                if (!pendingSwap) return null;
+                const reqLabel =
+                  pendingSwap.requestedShift === 'morning' ? 'Ca Sáng (06h–12h)' :
+                    pendingSwap.requestedShift === 'afternoon' ? 'Ca Chiều (12h–18h)' : 'Ca Tối (18h–23h)';
+                return (
+                  <div className="px-3.5 py-2 bg-amber-500/15 border border-amber-500/30 rounded-xl text-amber-300 text-[11px] font-bold flex items-center justify-between gap-2">
+                    <span>Đang chờ duyệt đổi sang <strong>{reqLabel}</strong></span>
+                    <span className="px-2 py-0.5 bg-amber-500/20 rounded-md text-[10px] uppercase font-black shrink-0">Chờ</span>
+                  </div>
+                );
+              })()}
+
+              {/* Shift pill + buttons */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl text-xs font-bold w-fit">
+                  <span className="text-slate-400">Ca đăng ký:</span>
+                  {(() => {
+                    const shift = user?.assignedShift || 'morning';
+                    if (shift === 'morning') return <span className="text-[#38BDF8] font-black">Ca Sáng (06h–12h)</span>;
+                    if (shift === 'afternoon') return <span className="text-amber-400 font-black">Ca Chiều (12h–18h)</span>;
+                    return <span className="text-purple-400 font-black">Ca Tối (18h–23h)</span>;
+                  })()}
+                </div>
+
+                <div className="flex gap-2 flex-wrap items-center">
+                  <button
+                    onClick={handleCheckIn}
+                    disabled={isCheckingIn || isCheckedIn || isCheckedOut || !isCurrentTimeInShift()}
+                    className={`h-9 px-4 text-white font-black text-xs rounded-xl shadow-md transition-all ${isCheckedIn || isCheckedOut || !isCurrentTimeInShift()
+                      ? 'bg-slate-700/50 text-slate-400 cursor-not-allowed shadow-none border border-white/5'
+                      : 'bg-emerald-500 hover:bg-emerald-400 shadow-emerald-500/20 active:scale-95 cursor-pointer'
+                      }`}
+                  >
+                    {isCheckingIn
+                      ? 'Đang xử lý...'
+                      : isCheckedIn
+                        ? 'Đang trong ca'
+                        : isCheckedOut
+                          ? 'Đã kết thúc ca hôm nay'
+                          : !isCurrentTimeInShift()
+                            ? 'Khóa điểm danh'
+                            : 'Bắt đầu ca (Check-in)'}
+                  </button>
+                  <button
+                    onClick={handleCheckOut}
+                    disabled={!isCheckedIn || isCheckedOut}
+                    className={`h-9 px-4 text-white font-black text-xs rounded-xl shadow-md transition-all ${!isCheckedIn || isCheckedOut
+                      ? 'bg-slate-700/50 text-slate-400 cursor-not-allowed shadow-none border border-white/5'
+                      : 'bg-amber-500 hover:bg-amber-400 shadow-amber-500/20 active:scale-95 cursor-pointer'
+                      }`}
+                  >
+                    Kết thúc ca (Check-out)
+                  </button>
+                  <button
+                    onClick={() => {
+                      setRequestedSwapShift(user?.assignedShift === 'morning' ? 'afternoon' : 'morning');
+                      setIsShiftSwapModalOpen(true);
+                    }}
+                    className="h-9 px-3.5 bg-white/10 hover:bg-white/20 text-white/80 font-bold text-xs rounded-xl border border-white/10 transition-all active:scale-95 cursor-pointer"
+                  >
+                    Đổi ca
+                  </button>
+                </div>
+              </div>
+              {!isCheckedIn && !isCheckedOut && !isCurrentTimeInShift() && (
+                <div className="p-2.5 bg-rose-500/15 border border-rose-500/30 rounded-xl text-rose-300 text-xs font-bold flex items-center gap-2">
+                  <DashboardIcon name="lock_clock" className="text-base text-rose-400 shrink-0" />
+                  <span>Hiện tại ngoài khung giờ <strong>{getShiftTimeLabel()}</strong>. Hệ thống đã khóa tính năng điểm danh.</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── ADMIN: SHIFT SWAP APPROVAL PANEL (CHỈ HIỂN THỊ Ở MỤC CHẤM CÔNG CA LÀM) ── */}
+      {user?.role === 'admin' && shiftSwaps.filter(s => s.status === 'pending').length > 0 && (
+        <div id="actionable-shift-swap-approval-banner" className="bg-white dark:bg-[#131929] border border-amber-500/20 rounded-2xl p-4 shadow-xs">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+              Yêu cầu đổi ca cần duyệt
+            </h4>
+            <span className="px-2.5 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg text-[10px] font-black border border-amber-500/20">
+              {shiftSwaps.filter(s => s.status === 'pending').length} yêu cầu
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {shiftSwaps.filter(s => s.status === 'pending').map((swap) => {
+              const curLabel = swap.currentShift === 'morning' ? 'Ca Sáng' : swap.currentShift === 'afternoon' ? 'Ca Chiều' : 'Ca Tối';
+              const reqLabel = swap.requestedShift === 'morning' ? 'Ca Sáng' : swap.requestedShift === 'afternoon' ? 'Ca Chiều' : 'Ca Tối';
+              return (
+                <div key={swap._id} className="p-3.5 bg-white dark:bg-[#0d1525] border border-slate-200 dark:border-[#1e293b] rounded-xl space-y-2.5 text-xs">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="font-extrabold text-slate-900 dark:text-white block">{swap.userId?.name || 'Nhân viên'}</span>
+                      <span className="text-[10px] text-slate-400">{swap.userId?.email}</span>
+                    </div>
+                    <span className="px-2 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-md text-[10px] font-black border border-amber-500/20">Chờ duyệt</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[11px] font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-[#131929] px-3 py-2 rounded-lg border border-slate-200/50 dark:border-slate-800/50">
+                    <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded font-black text-slate-800 dark:text-slate-200">{curLabel}</span>
+                    <span className="text-slate-400 font-normal">→</span>
+                    <span className="px-2 py-0.5 bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] rounded font-black border border-[#38BDF8]/20">{reqLabel}</span>
+                  </div>
+                  {swap.reason && <p className="text-[11px] text-slate-500 italic border-l-2 border-slate-300 dark:border-slate-700 pl-2">{swap.reason}</p>}
+                  <div className="flex justify-end gap-2 pt-0.5">
+                    <button
+                      onClick={() => handleUpdateShiftSwapStatus(swap._id, 'rejected')}
+                      className="px-3.5 py-1.5 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-600 dark:text-rose-400 font-bold text-[11px] rounded-xl border border-rose-500/20 hover:border-rose-500 transition-all cursor-pointer active:scale-95"
+                    >Từ chối</button>
+                    <button
+                      onClick={() => handleUpdateShiftSwapStatus(swap._id, 'approved')}
+                      className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-[11px] rounded-xl shadow-xs shadow-emerald-500/20 transition-all cursor-pointer active:scale-95"
+                    >Duyệt đổi ca</button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+        <div className="flex items-center gap-2">
+          <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+            Lịch sử điểm danh & Bảng Lương
+          </h3>
+          <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-full text-[10px] font-bold">
+            {payrollViewMode === 'weekly' ? `${weeklyPayrolls.length} tuần` : `${attendances.length} bản ghi`}
+          </span>
+        </div>
+
+        {user?.role === 'admin' && (
+          <div className="flex items-center bg-slate-100/90 dark:bg-[#090D16] p-1 rounded-2xl border border-slate-200/80 dark:border-white/10 text-xs font-bold w-fit shadow-2xs">
+            <button
+              onClick={() => setPayrollViewMode('weekly')}
+              className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer font-extrabold ${payrollViewMode === 'weekly'
+                ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 shadow-xs shadow-[#0284c7]/20 dark:shadow-[#38BDF8]/20 active:scale-95'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/5'
+                }`}
+            >
+              <span>Theo Tuần</span>
+            </button>
+            <button
+              onClick={() => setPayrollViewMode('daily')}
+              className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer font-extrabold ${payrollViewMode === 'daily'
+                ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 shadow-xs shadow-[#0284c7]/20 dark:shadow-[#38BDF8]/20 active:scale-95'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/5'
+                }`}
+            >
+              <span>Theo Ca / Ngày</span>
+            </button>
+            <button
+              onClick={() => setPayrollViewMode('hourly')}
+              className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer font-extrabold ${payrollViewMode === 'hourly'
+                ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 shadow-xs shadow-[#0284c7]/20 dark:shadow-[#38BDF8]/20 active:scale-95'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/5'
+                }`}
+            >
+              <span>Theo Giờ</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ── WEEKLY PAYROLL VIEW ──────────────────────────────────────── */}
+      {payrollViewMode === 'weekly' ? (
+        <>
+          {/* Weekly Mobile View (< sm) */}
+          <div className="grid grid-cols-1 gap-3 sm:hidden">
+            {weeklyPayrolls.length === 0 ? (
+              <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-10 text-center shadow-xs">
+                <p className="text-sm font-bold text-slate-400 dark:text-slate-500">Chưa có dữ liệu bảng lương tuần</p>
+              </div>
+            ) : (
+              weeklyPayrolls.map((wp) => {
+                const initials = wp.staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
+                const isWaiter = wp.staffRole === 'waiter' || wp.staffRole === 'staff';
+                const roleLabel = wp.staffRole === 'admin' ? 'Quản trị' : wp.staffRole === 'barista' ? 'Pha chế' : isWaiter ? 'Phục vụ' : 'Nhân viên';
+                const roleColor = wp.staffRole === 'admin' ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' :
+                  wp.staffRole === 'barista' ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300' :
+                    isWaiter ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' :
+                      'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
+
+                return (
+                  <div key={wp.key} className="bg-white dark:bg-[#131929] rounded-2xl shadow-xs overflow-hidden border border-slate-200/80 dark:border-[#1e293b] p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-[#1e293b] pb-2">
+                      <span className="text-xs font-black text-amber-600 dark:text-amber-400 flex items-center gap-1 font-mono">
+                        <DashboardIcon name="calendar_month" className="text-sm" />
+                        {wp.weekLabel}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${roleColor}`}>
+                        {roleLabel}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-black text-sm flex items-center justify-center shrink-0">
+                        {initials}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-extrabold text-slate-900 dark:text-white text-sm truncate">{wp.staffName}</h4>
+                        <p className="text-[10px] text-slate-400 truncate">{wp.staffEmail}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-slate-50 dark:bg-[#0d1525] p-2 rounded-xl">
+                        <span className="block text-[10px] text-slate-400 font-normal">Số ca làm</span>
+                        <span className="block font-bold text-slate-800 dark:text-slate-200 font-mono">
+                          {wp.totalShifts} ca {wp.paidShifts > 0 && <span className="text-[10px] text-emerald-600 font-normal">({wp.paidShifts} đã trả)</span>}
+                        </span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-[#0d1525] p-2 rounded-xl">
+                        <span className="block text-[10px] text-slate-400 font-normal">Giờ chưa thanh toán</span>
+                        <span className="block font-bold text-slate-800 dark:text-slate-200 font-mono">
+                          {wp.unpaidHours}h <span className="text-[10px] text-slate-400 font-normal">/ {wp.totalHours}h</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-[#1e293b]">
+                      <div>
+                        <span className="block text-[10px] text-slate-400 font-normal">
+                          {wp.paidHours > 0 ? 'Lương Còn Lại Tuần Này' : 'Lương Tuần'}
+                        </span>
+                        <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 font-mono">
+                          {formatPrice(wp.unpaidSalary)}
+                        </span>
+                        {wp.paidHours > 0 && (
+                          <span className="block text-[9px] text-slate-400">
+                            Đã trả: {formatPrice(wp.alreadyPaidSalary)} / Tổng: {formatPrice(wp.totalSalary)}
+                          </span>
+                        )}
+                      </div>
+                      {user?.role === 'admin' && (
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenSalaryConfig({ _id: wp.staffId, name: wp.staffName, role: wp.staffRole })}
+                            className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-9 px-3 bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
+                          >
+                            <DashboardIcon name="tune" className="text-sm text-slate-400" />
+                            <span>Cấu hình</span>
+                          </button>
+                          {wp.unpaidSalary > 0 ? (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleOpenDisbursement({
+                                  staffId: wp.staffId,
+                                  staffName: wp.staffName,
+                                  staffRole: wp.staffRole,
+                                  periodType: 'weekly',
+                                  periodLabel: wp.weekLabel,
+                                  totalShifts: wp.totalShifts,
+                                  totalHours: wp.unpaidHours,
+                                  rate: wp.hourlyRate,
+                                  basePay: wp.unpaidSalary,
+                                  allowances: wp.allowances,
+                                  bonuses: wp.bonuses,
+                                  attendanceIds: wp.unpaidAttendances.map((a) => a._id),
+                                })
+                              }
+                              className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-9 px-3.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
+                            >
+                              <DashboardIcon name="payments" className="text-sm" />
+                              <span>Chi trả</span>
+                            </button>
+                          ) : (
+                            <span className="whitespace-nowrap inline-flex items-center gap-1.5 h-9 px-3 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 shrink-0">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                              <span>Đã trả hết</span>
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Weekly Desktop View (>= sm) */}
+          <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl overflow-hidden shadow-xs">
+            <div className="relative overflow-x-auto scrollbar-thin">
+              <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[880px] border-collapse">
+                <thead className="bg-slate-50/95 dark:bg-[#0B101B]/95 border-b border-slate-200/80 dark:border-white/10 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider font-black select-none">
+                  <tr>
+                    <th scope="col" className="py-3 px-3.5 whitespace-nowrap min-w-[125px]">Tuần Làm Việc</th>
+                    <th scope="col" className="py-3 px-3.5 whitespace-nowrap min-w-[135px]">Nhân Viên</th>
+                    <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[85px]">Vai Trò</th>
+                    <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[75px] text-center">Tổng Ca</th>
+                    <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[95px] text-center">Giờ Chưa Trả</th>
+                    {user?.role === 'admin' && <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[105px] text-center">Mức Lương/Giờ</th>}
+                    {user?.role === 'admin' && <th scope="col" className="py-3 px-3 whitespace-nowrap min-w-[110px]">Lương Còn Lại</th>}
+                    {user?.role === 'admin' && (
+                      <th scope="col" className="py-3 px-3.5 whitespace-nowrap text-right min-w-[160px]">
+                        Thao Tác
+                      </th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b]/60">
+                  {weeklyPayrolls.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="py-12 text-center text-slate-400 font-medium">
+                        Chưa có dữ liệu bảng lương gộp theo tuần
+                      </td>
+                    </tr>
+                  ) : (
+                    weeklyPayrolls.map((wp) => {
+                      const initials = wp.staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
+                      const isWaiter = wp.staffRole === 'waiter' || wp.staffRole === 'staff';
+                      const roleLabel = wp.staffRole === 'admin' ? 'Quản trị' : wp.staffRole === 'barista' ? 'Pha chế' : isWaiter ? 'Phục vụ' : 'Nhân viên';
+                      return (
+                        <tr key={wp.key} className="group hover:bg-slate-50/70 dark:hover:bg-[#182035]/50 transition-colors">
+                          {/* Tuần làm việc */}
+                          <td className="py-3 px-3.5 whitespace-nowrap align-middle">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-mono font-bold text-xs">
+                              <DashboardIcon name="calendar_month" className="text-sm text-amber-500 shrink-0" />
+                              <span>{wp.weekLabel}</span>
+                            </div>
+                          </td>
+
+                          {/* Nhân viên */}
+                          <td className="py-3 px-3.5 whitespace-nowrap align-middle">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500/15 to-blue-600/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/25 flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">
+                                {initials}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-extrabold text-slate-900 dark:text-white text-xs truncate max-w-[130px]">
+                                  {wp.staffName}
+                                </div>
+                                {wp.staffEmail && (
+                                  <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate max-w-[130px]">
+                                    {wp.staffEmail}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Vai trò */}
+                          <td className="py-3 px-2.5 whitespace-nowrap align-middle">
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${wp.staffRole === 'admin' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' :
+                              wp.staffRole === 'barista' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20' :
+                                isWaiter ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' :
+                                  'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                              }`}>
+                              <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
+                              <span>{roleLabel}</span>
                             </span>
                           </td>
-                          <td className="p-4">
+
+                          {/* Tổng ca làm */}
+                          <td className="py-3 px-2.5 text-center whitespace-nowrap align-middle">
+                            <span className="font-mono font-bold text-xs text-slate-900 dark:text-slate-100">
+                              {wp.totalShifts} ca
+                            </span>
+                            {wp.paidShifts > 0 && (
+                              <span className="block text-[9.5px] text-emerald-600 dark:text-emerald-400 font-medium">
+                                ({wp.paidShifts} đã trả)
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Giờ công */}
+                          <td className="py-3 px-2.5 text-center whitespace-nowrap align-middle font-mono text-xs">
+                            <span className="font-extrabold text-slate-900 dark:text-white">{wp.unpaidHours}h</span>
+                            <span className="text-slate-400 dark:text-slate-500 font-medium text-[10.5px]"> / {wp.totalHours}h</span>
+                          </td>
+
+                          {/* Mức lương / giờ */}
+                          {user?.role === 'admin' && (
+                            <td className="py-3 px-2.5 whitespace-nowrap text-center align-middle">
+                              <div className="inline-flex items-center bg-slate-50 dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-xl px-2 py-0.5 shadow-2xs focus-within:ring-2 focus-within:ring-[#38BDF8]/40 focus-within:border-[#0284c7] dark:focus-within:border-[#38BDF8] transition-all">
+                                <input
+                                  type="number"
+                                  step="1000"
+                                  value={wp.hourlyRate}
+                                  onChange={(e) => {
+                                    const val = Number(e.target.value);
+                                    setStaffHourlyRates((prev) => ({ ...prev, [wp.staffId]: val }));
+                                  }}
+                                  onBlur={(e) => handleUpdateHourlyRate(wp.staffId, Number(e.target.value))}
+                                  className="w-14 bg-transparent text-xs font-mono font-black text-slate-900 dark:text-white focus:outline-none text-right"
+                                />
+                                <span className="text-[9.5px] font-bold text-slate-400 dark:text-slate-500 ml-0.5 select-none">đ/h</span>
+                              </div>
+                            </td>
+                          )}
+
+                          {/* Lương còn lại */}
+                          {user?.role === 'admin' && (
+                            <td className="py-3 px-3 whitespace-nowrap align-middle font-mono font-black text-xs text-emerald-600 dark:text-emerald-400">
+                              <div>{formatPrice(wp.unpaidSalary)}</div>
+                              {wp.paidHours > 0 && (
+                                <div className="text-[9.5px] text-slate-400 dark:text-slate-500 font-normal mt-0.5">
+                                  Đã trả: {formatPrice(wp.alreadyPaidSalary)}
+                                </div>
+                              )}
+                            </td>
+                          )}
+
+                          {/* Thao tác */}
+                          {user?.role === 'admin' && (
+                            <td className="py-3 px-3.5 text-right whitespace-nowrap align-middle">
+                              <div className="flex items-center justify-end gap-1.5 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenSalaryConfig({ _id: wp.staffId, name: wp.staffName, role: wp.staffRole })}
+                                  className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-8 px-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/15 text-slate-700 dark:text-slate-200 font-extrabold text-xs border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
+                                  title="Cấu hình mức lương & phụ cấp"
+                                >
+                                  <DashboardIcon name="tune" className="text-sm text-slate-500 dark:text-slate-400" />
+                                  <span>Cấu hình</span>
+                                </button>
+                                {wp.unpaidSalary > 0 ? (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleOpenDisbursement({
+                                        staffId: wp.staffId,
+                                        staffName: wp.staffName,
+                                        staffRole: wp.staffRole,
+                                        periodType: 'weekly',
+                                        periodLabel: wp.weekLabel,
+                                        totalShifts: wp.totalShifts,
+                                        totalHours: wp.unpaidHours,
+                                        rate: wp.hourlyRate,
+                                        basePay: wp.unpaidSalary,
+                                        allowances: wp.allowances,
+                                        bonuses: wp.bonuses,
+                                        attendanceIds: wp.unpaidAttendances.map((a) => a._id),
+                                      })
+                                    }
+                                    className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-8 px-3.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
+                                    title="Thực hiện chi trả lương tuần"
+                                  >
+                                    <DashboardIcon name="payments" className="text-sm" />
+                                    <span>Chi trả</span>
+                                  </button>
+                                ) : (
+                                  <span className="whitespace-nowrap inline-flex items-center gap-1.5 h-8 px-3 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 shrink-0">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                    <span>Đã trả hết</span>
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      ) : payrollViewMode === 'hourly' ? (
+        <>
+          {/* ── HOURLY PAYROLL VIEW ───────────────────────────────────────── */}
+          {/* Hourly Mobile View (< sm) */}
+          <div className="grid grid-cols-1 gap-3 sm:hidden">
+            {hourlyPayrolls.length === 0 ? (
+              <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-10 text-center shadow-xs">
+                <p className="text-sm font-bold text-slate-400 dark:text-slate-500">Chưa có dữ liệu bảng lương theo giờ</p>
+              </div>
+            ) : (
+              hourlyPayrolls.map((hp) => {
+                const initials = hp.staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
+                const isWaiter = hp.staffRole === 'waiter' || hp.staffRole === 'staff';
+                const roleLabel = hp.staffRole === 'admin' ? 'Quản trị' : hp.staffRole === 'barista' ? 'Pha chế' : isWaiter ? 'Phục vụ' : 'Nhân viên';
+                const roleColor = hp.staffRole === 'admin' ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' :
+                  hp.staffRole === 'barista' ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300' :
+                    isWaiter ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' :
+                      'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
+
+                return (
+                  <div key={hp.staffId} className="bg-white dark:bg-[#131929] rounded-2xl shadow-xs overflow-hidden border border-slate-200/80 dark:border-[#1e293b] p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-[#1e293b] pb-2">
+                      <span className="text-xs font-black text-[#38BDF8] font-mono">
+                        Đơn giá: {formatPrice(hp.hourlyRate)}/h
+                      </span>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${roleColor}`}>
+                        {roleLabel}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-black text-sm flex items-center justify-center shrink-0">
+                        {initials}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-extrabold text-slate-900 dark:text-white text-sm truncate">{hp.staffName}</h4>
+                        <p className="text-[10px] text-slate-400 truncate">{hp.staffEmail}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-slate-50 dark:bg-[#0d1525] p-2 rounded-xl">
+                        <span className="block text-[10px] text-slate-400 font-medium">Tổng ca làm</span>
+                        <span className="block font-bold text-slate-800 dark:text-slate-200 font-mono">
+                          {hp.totalShifts} ca
+                        </span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-[#0d1525] p-2 rounded-xl">
+                        <span className="block text-[10px] text-slate-400 font-medium">Giờ chưa trả</span>
+                        <span className="block font-bold text-slate-800 dark:text-slate-200 font-mono">
+                          {hp.unpaidHours}h <span className="text-[10px] text-slate-400 font-normal">/ {hp.totalHours}h</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-[#1e293b]">
+                      <div>
+                        <span className="block text-[10px] text-slate-400 font-medium">Lương Giờ Còn Lại</span>
+                        <span className="text-sm font-black text-[#38BDF8] font-mono">
+                          {formatPrice(hp.unpaidSalary)}
+                        </span>
+                        {hp.paidHours > 0 && (
+                          <span className="block text-[9px] text-slate-400">
+                            Đã trả: {formatPrice(hp.alreadyPaidSalary)} / Tổng: {formatPrice(hp.totalSalary)}
+                          </span>
+                        )}
+                      </div>
+                      {user?.role === 'admin' && (
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenSalaryConfig({ _id: hp.staffId, name: hp.staffName, role: hp.staffRole })}
+                            className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-9 px-3 bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
+                          >
+                            <DashboardIcon name="tune" className="text-sm text-slate-400" />
+                            <span>Cấu hình</span>
+                          </button>
+                          {hp.unpaidSalary > 0 ? (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleOpenDisbursement({
+                                  staffId: hp.staffId,
+                                  staffName: hp.staffName,
+                                  staffRole: hp.staffRole,
+                                  periodType: 'hourly',
+                                  periodLabel: `Theo Giờ (${hp.unpaidHours}h)`,
+                                  totalShifts: hp.totalShifts,
+                                  totalHours: hp.unpaidHours,
+                                  rate: hp.hourlyRate,
+                                  basePay: hp.unpaidSalary,
+                                  attendanceIds: hp.unpaidAttendanceIds,
+                                })
+                              }
+                              className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-9 px-3.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
+                            >
+                              <DashboardIcon name="payments" className="text-sm" />
+                              <span>Chi trả</span>
+                            </button>
+                          ) : (
+                            <span className="whitespace-nowrap inline-flex items-center gap-1.5 h-9 px-3 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 shrink-0">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                              <span>Đã trả hết</span>
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Hourly Desktop View (>= sm) */}
+          <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl overflow-hidden shadow-xs">
+            <div className="relative overflow-x-auto scrollbar-thin">
+              <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[820px] border-collapse">
+                <thead className="bg-slate-50/95 dark:bg-[#0B101B]/95 border-b border-slate-200/80 dark:border-white/10 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider font-black select-none">
+                  <tr>
+                    <th scope="col" className="py-3 px-3.5 whitespace-nowrap min-w-[140px]">Nhân Viên</th>
+                    <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[85px]">Vai Trò</th>
+                    <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[75px] text-center">Tổng Ca</th>
+                    <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[95px] text-center">Giờ Chưa Trả</th>
+                    {user?.role === 'admin' && <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[105px] text-center">Mức Lương/Giờ</th>}
+                    {user?.role === 'admin' && <th scope="col" className="py-3 px-3 whitespace-nowrap min-w-[110px]">Lương Còn Lại</th>}
+                    {user?.role === 'admin' && (
+                      <th scope="col" className="py-3 px-3.5 whitespace-nowrap text-right min-w-[160px]">
+                        Thao Tác
+                      </th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b]/60">
+                  {hourlyPayrolls.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-12 text-center text-slate-400 font-medium">
+                        Chưa có dữ liệu bảng lương theo giờ
+                      </td>
+                    </tr>
+                  ) : (
+                    hourlyPayrolls.map((hp) => {
+                      const initials = hp.staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
+                      const isWaiter = hp.staffRole === 'waiter' || hp.staffRole === 'staff';
+                      const roleLabel = hp.staffRole === 'admin' ? 'Quản trị' : hp.staffRole === 'barista' ? 'Pha chế' : isWaiter ? 'Phục vụ' : 'Nhân viên';
+                      return (
+                        <tr key={hp.staffId} className="group hover:bg-slate-50/70 dark:hover:bg-[#182035]/50 transition-colors">
+                          {/* Nhân viên */}
+                          <td className="py-3 px-3.5 whitespace-nowrap align-middle">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500/15 to-blue-600/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/25 flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">
+                                {initials}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-extrabold text-slate-900 dark:text-white text-xs truncate max-w-[130px]">
+                                  {hp.staffName}
+                                </div>
+                                {hp.staffEmail && (
+                                  <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate max-w-[130px]">
+                                    {hp.staffEmail}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Vai trò */}
+                          <td className="py-3 px-2.5 whitespace-nowrap align-middle">
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${hp.staffRole === 'admin' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' :
+                              hp.staffRole === 'barista' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20' :
+                                isWaiter ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' :
+                                  'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                              }`}>
+                              <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
+                              <span>{roleLabel}</span>
+                            </span>
+                          </td>
+
+                          {/* Tổng ca làm */}
+                          <td className="py-3 px-2.5 text-center whitespace-nowrap align-middle font-mono font-bold text-xs text-slate-800 dark:text-slate-200">
+                            {hp.totalShifts} ca
+                          </td>
+
+                          {/* Giờ công */}
+                          <td className="py-3 px-2.5 text-center whitespace-nowrap align-middle font-mono text-xs">
+                            <span className="font-extrabold text-slate-900 dark:text-white">{hp.unpaidHours}h</span>
+                            <span className="text-slate-400 dark:text-slate-500 font-medium text-[10.5px]"> / {hp.totalHours}h</span>
+                          </td>
+
+                          {/* Đơn giá / giờ */}
+                          {user?.role === 'admin' && (
+                            <td className="py-3 px-2.5 whitespace-nowrap text-center align-middle">
+                              <div className="inline-flex items-center px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10 font-mono font-bold text-xs text-slate-900 dark:text-white">
+                                {formatPrice(hp.hourlyRate)}/h
+                              </div>
+                            </td>
+                          )}
+
+                          {/* Lương còn lại */}
+                          {user?.role === 'admin' && (
+                            <td className="py-3 px-3 whitespace-nowrap align-middle font-mono font-black text-xs text-[#0284c7] dark:text-[#38BDF8]">
+                              <div>{formatPrice(hp.unpaidSalary)}</div>
+                              {hp.paidHours > 0 && (
+                                <div className="text-[9.5px] text-slate-400 dark:text-slate-500 font-normal mt-0.5">
+                                  Đã trả: {formatPrice(hp.alreadyPaidSalary)} / Tổng: {formatPrice(hp.totalSalary)}
+                                </div>
+                              )}
+                            </td>
+                          )}
+
+                          {/* Thao tác */}
+                          {user?.role === 'admin' && (
+                            <td className="py-3 px-3.5 text-right whitespace-nowrap align-middle">
+                              <div className="flex items-center justify-end gap-1.5 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenSalaryConfig({ _id: hp.staffId, name: hp.staffName, role: hp.staffRole })}
+                                  className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-8 px-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/15 text-slate-700 dark:text-slate-200 font-extrabold text-xs border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
+                                  title="Cấu hình mức lương & phụ cấp"
+                                >
+                                  <DashboardIcon name="tune" className="text-sm text-slate-500 dark:text-slate-400" />
+                                  <span>Cấu hình</span>
+                                </button>
+                                {hp.unpaidSalary > 0 ? (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleOpenDisbursement({
+                                        staffId: hp.staffId,
+                                        staffName: hp.staffName,
+                                        staffRole: hp.staffRole,
+                                        periodType: 'hourly',
+                                        periodLabel: `Theo Giờ (${hp.unpaidHours}h)`,
+                                        totalShifts: hp.totalShifts,
+                                        totalHours: hp.unpaidHours,
+                                        rate: hp.hourlyRate,
+                                        basePay: hp.unpaidSalary,
+                                        attendanceIds: hp.unpaidAttendanceIds,
+                                      })
+                                    }
+                                    className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-8 px-3.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
+                                    title="Thực hiện chi trả lương theo giờ"
+                                  >
+                                    <DashboardIcon name="payments" className="text-sm" />
+                                    <span>Chi trả</span>
+                                  </button>
+                                ) : (
+                                  <span className="whitespace-nowrap inline-flex items-center gap-1.5 h-8 px-3 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 shrink-0">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                    <span>Đã trả hết</span>
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* ── DAILY ATTENDANCE VIEW ──────────────────────────────────── */}
+          {/* Mobile Card List (< sm: 640px) */}
+          <div className="grid grid-cols-1 gap-3 sm:hidden">
+            {attendances.length === 0 ? (
+              <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-10 text-center shadow-xs">
+                <p className="text-sm font-bold text-slate-400 dark:text-slate-500">Chưa có lịch sử điểm danh</p>
+                <p className="text-[11px] text-slate-400 dark:text-slate-600 mt-1">Bấm Check-in để bắt đầu ca làm</p>
+              </div>
+            ) : (
+              attendances.map((att) => {
+                const staffId = att.userId?._id || att.userId;
+                const staffName = att.userId?.name || 'Nhân viên';
+                const staffEmail = att.userId?.email || '';
+                const staffRole = att.userId?.role || 'staff';
+                const checkInTime = att.checkIn ? new Date(att.checkIn) : null;
+                const checkOutTime = att.checkOut ? new Date(att.checkOut) : null;
+                const isActive = checkInTime && !checkOutTime;
+
+                let hoursWorked = att.hoursWorked || 0;
+                if (!hoursWorked && checkInTime && checkOutTime) {
+                  hoursWorked = Math.max(0, (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60));
+                }
+                hoursWorked = Number(hoursWorked.toFixed(2));
+
+                const hourlyRate = staffHourlyRates[staffId] || 25000;
+                const totalSalary = Math.round(hoursWorked * hourlyRate);
+
+                const formattedDate = (() => {
+                  const raw = att.date || att.createdAt;
+                  if (!raw) return '—';
+                  try {
+                    const d = new Date(raw);
+                    return isNaN(d.getTime()) ? String(raw) : d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                  } catch {
+                    return String(raw);
+                  }
+                })();
+
+                const shiftLabel =
+                  att.shift === 'morning' ? 'Ca Sáng' :
+                    att.shift === 'afternoon' ? 'Ca Chiều' : 'Ca Tối';
+                const shiftColor =
+                  att.shift === 'morning' ? 'text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-500/15' :
+                    att.shift === 'afternoon' ? 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/15' :
+                      'text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-500/15';
+
+                const roleLabel = staffRole === 'admin' ? 'Quản trị' : staffRole === 'barista' ? 'Pha chế' : staffRole === 'waiter' ? 'Phục vụ' : 'Nhân viên';
+                const roleColor = staffRole === 'admin' ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' :
+                  staffRole === 'barista' ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300' :
+                    staffRole === 'waiter' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' :
+                      'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
+
+                const initials = staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
+
+                return (
+                  <div key={att._id} className={`bg-white dark:bg-[#131929] rounded-2xl shadow-xs overflow-hidden border ${isActive ? 'border-emerald-500/40' : 'border-slate-200/80 dark:border-[#1e293b]'}`}>
+                    <div className="p-4 space-y-3">
+                      {/* Header: Staff Info & Status */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-black text-xs flex items-center justify-center shrink-0">
+                            {initials}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <h4 className="font-extrabold text-slate-900 dark:text-white text-sm truncate">{staffName}</h4>
+                              {isActive && (
+                                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/15 px-2 py-0.5 rounded-full">
+                                  Đang làm
+                                </span>
+                              )}
+                            </div>
+                            {staffEmail && <p className="text-[10px] text-slate-400 mt-0.5 truncate">{staffEmail}</p>}
+                          </div>
+                        </div>
+                        <span className="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400">
+                          {formattedDate}
+                        </span>
+                      </div>
+
+                      {/* Badges: Role & Shift */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${roleColor}`}>
+                          {roleLabel}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${shiftColor}`}>
+                          {shiftLabel}
+                        </span>
+                      </div>
+
+                      {/* Checkin / Checkout times */}
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="bg-slate-50 dark:bg-[#0d1525] rounded-xl p-2">
+                          <span className="block text-[10px] font-medium text-slate-400 mb-0.5">Check-in</span>
+                          <span className="block font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                            {checkInTime ? checkInTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                          </span>
+                        </div>
+                        <div className="bg-slate-50 dark:bg-[#0d1525] rounded-xl p-2">
+                          <span className="block text-[10px] font-medium text-slate-400 mb-0.5">Check-out</span>
+                          <span className={`block font-mono font-bold ${checkOutTime ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'}`}>
+                            {checkOutTime ? checkOutTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '—'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Bottom Actions & Total Salary */}
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-[#1e293b]">
+                        <div>
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Tổng làm: </span>
+                          <span className="text-xs font-bold text-slate-900 dark:text-white font-mono">{hoursWorked}h</span>
+                          {user?.role === 'admin' && (
+                            <span className="block text-xs font-black text-[#0284c7] dark:text-[#38BDF8]">
+                              {formatPrice(totalSalary)}
+                            </span>
+                          )}
+                        </div>
+
+                        {user?.role === 'admin' && (
+                          <div className="flex items-center gap-1.5">
+                            {att.isPaid ? (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-[10px] rounded-lg border border-emerald-500/20">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                <span>Đã trả</span>
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() =>
+                                  handleOpenDisbursement({
+                                    staffId,
+                                    staffName,
+                                    staffRole,
+                                    periodType: 'daily',
+                                    periodLabel: `${shiftLabel} (${formattedDate})`,
+                                    totalShifts: 1,
+                                    totalHours: hoursWorked,
+                                    rate: hourlyRate,
+                                    basePay: totalSalary,
+                                    attendanceIds: [att._id],
+                                  })
+                                }
+                                className="px-3 py-1 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-extrabold text-[11px] rounded-lg shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 active:scale-95 transition-all cursor-pointer"
+                              >
+                                Chi trả Ca
+                              </button>
+                            )}
+                            <button
+                              onClick={() => {
+                                setEditingAttendance(att);
+                                setAttendanceForm({
+                                  checkIn: formatForDatetimeInput(att.checkIn),
+                                  checkOut: formatForDatetimeInput(att.checkOut),
+                                  note: att.note || '',
+                                });
+                                setIsAttendanceModalOpen(true);
+                              }}
+                              className="px-2.5 py-1 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-700 transition-all cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95"
+                            >
+                              Sửa
+                            </button>
+                            <button
+                              onClick={() => setAttendanceToDelete(att._id)}
+                              className="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500 text-rose-600 dark:text-rose-400 hover:text-white text-[11px] font-bold rounded-lg border border-rose-500/20 transition-all cursor-pointer active:scale-95"
+                            >
+                              Xóa
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Desktop Table View (>= sm: 640px) */}
+          <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200/80 dark:border-[#1e293b] rounded-2xl overflow-hidden shadow-xs">
+            <div className="relative overflow-x-auto scrollbar-thin">
+              <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[880px] border-collapse">
+                <thead className="bg-slate-50/95 dark:bg-[#0d1525]/95 border-b border-slate-200/80 dark:border-[#1e293b] text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-wider font-bold select-none">
+                  <tr>
+                    <th className="py-3 px-3 whitespace-nowrap min-w-[85px]">Ngày</th>
+                    <th className="py-3 px-3 whitespace-nowrap min-w-[135px]">Nhân viên</th>
+                    <th className="py-3 px-2.5 whitespace-nowrap min-w-[80px] text-center">Vai trò</th>
+                    <th className="py-3 px-2.5 whitespace-nowrap min-w-[75px] text-center">Ca làm</th>
+                    <th className="py-3 px-3 whitespace-nowrap min-w-[110px]">Giờ Vào / Ra</th>
+                    <th className="py-3 px-2 whitespace-nowrap text-center min-w-[65px]">Tổng giờ</th>
+                    {user?.role === 'admin' && <th className="py-3 px-2.5 whitespace-nowrap min-w-[95px] text-center">Mức lương/giờ</th>}
+                    {user?.role === 'admin' && <th className="py-3 px-3 whitespace-nowrap min-w-[95px] text-right">Lương tính</th>}
+                    {user?.role === 'admin' && (
+                      <th className="py-3 px-3.5 whitespace-nowrap text-right min-w-[160px]">
+                        Hành động
+                      </th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b]/60">
+                  {attendances.length === 0 ? (
+                    <tr>
+                      <td colSpan={user?.role === 'admin' ? 9 : 6} className="py-10 text-center text-slate-400 font-medium">
+                        Chưa có dữ liệu điểm danh ca làm
+                      </td>
+                    </tr>
+                  ) : (
+                    attendances.map((att) => {
+                      const staffId = att.userId?._id || att.userId;
+                      const staffName = att.userId?.name || 'Nhân viên';
+                      const staffEmail = att.userId?.email || '';
+                      const staffRole = att.userId?.role || 'staff';
+                      const checkInTime = att.checkIn ? new Date(att.checkIn) : null;
+                      const checkOutTime = att.checkOut ? new Date(att.checkOut) : null;
+                      const isActive = checkInTime && !checkOutTime;
+
+                      let hoursWorked = att.hoursWorked || 0;
+                      if (!hoursWorked && checkInTime && checkOutTime) {
+                        hoursWorked = Math.max(0, (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60));
+                      }
+                      hoursWorked = Number(hoursWorked.toFixed(2));
+
+                      const hourlyRate = staffHourlyRates[staffId] || 25000;
+                      const totalSalary = Math.round(hoursWorked * hourlyRate);
+
+                      const formattedDate = (() => {
+                        const raw = att.date || att.createdAt;
+                        if (!raw) return '—';
+                        try {
+                          const d = new Date(raw);
+                          return isNaN(d.getTime()) ? String(raw) : d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                        } catch {
+                          return String(raw);
+                        }
+                      })();
+
+                      const shiftLabel =
+                        att.shift === 'morning' ? 'Ca Sáng' :
+                          att.shift === 'afternoon' ? 'Ca Chiều' : 'Ca Tối';
+
+                      const initials = staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
+
+                      return (
+                        <tr key={att._id} className="group hover:bg-slate-50/70 dark:hover:bg-[#182035]/50 transition-colors">
+                          {/* Date */}
+                          <td className="py-3 px-3 font-mono font-medium text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                            {formattedDate}
+                          </td>
+
+                          {/* Staff Name & Avatar */}
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500/15 to-blue-600/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/25 flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">
+                                {initials}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-extrabold text-slate-900 dark:text-white text-xs truncate max-w-[125px] flex items-center gap-1.5">
+                                  <span>{staffName}</span>
+                                  {isActive && (
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse" title="Đang làm ca" />
+                                  )}
+                                </div>
+                                {staffEmail && <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate max-w-[125px]">{staffEmail}</div>}
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Role */}
+                          <td className="py-3 px-2.5 text-center whitespace-nowrap">
+                            <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${staffRole === 'admin' ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' :
+                              staffRole === 'barista' ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300' :
+                                staffRole === 'waiter' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' :
+                                  'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                              }`}>
+                              {staffRole === 'admin' ? 'Quản trị' : staffRole === 'barista' ? 'Pha chế' : staffRole === 'waiter' ? 'Phục vụ' : 'Nhân viên'}
+                            </span>
+                          </td>
+
+                          {/* Shift */}
+                          <td className="py-3 px-2.5 text-center whitespace-nowrap">
                             {(() => {
-                              const s = u.assignedShift || 'morning';
+                              const s = att.shift || 'morning';
                               if (s === 'morning') {
                                 return (
-                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
-                                    <DashboardIcon name="wb_sunny" className="text-xs" />
-                                    <span>Ca Sáng (06h-12h)</span>
+                                  <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
+                                    Ca Sáng
                                   </span>
                                 );
                               }
                               if (s === 'afternoon') {
                                 return (
-                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                                    <DashboardIcon name="light_mode" className="text-xs" />
-                                    <span>Ca Chiều (12h-18h)</span>
+                                  <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                                    Ca Chiều
                                   </span>
                                 );
                               }
                               return (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-                                  <DashboardIcon name="dark_mode" className="text-xs" />
-                                  <span>Ca Tối (18h-23h)</span>
+                                <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300">
+                                  Ca Tối
                                 </span>
                               );
                             })()}
                           </td>
-                          <td className="p-4 text-right space-x-2">
-                            <button
-                              onClick={() => {
-                                setEditingUser(u);
-                                setUserForm({ name: u.name || '', email: u.email || '', password: '', role: u.role || 'staff', assignedShift: u.assignedShift || 'morning' });
-                                setIsUserModalOpen(true);
-                              }}
-                              className="p-1.5 text-slate-400 hover:text-[#38BDF8] transition-colors"
-                              title="Sửa nhân viên"
-                            >
-                              <DashboardIcon name="edit" className="text-base" />
-                            </button>
-                            {u.email !== 'admin@kohi.vn' && (
-                              <button
-                                onClick={() => setUserToDelete(u._id!)}
-                                className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
-                                title="Xóa nhân viên"
-                              >
-                                <DashboardIcon name="delete" className="text-base" />
-                              </button>
-                            )}
+
+                          {/* Giờ Vào / Ra (Combined Check-in & Check-out) */}
+                          <td className="py-3 px-3 font-mono font-medium text-xs whitespace-nowrap">
+                            <div className="flex items-center gap-1.5 font-bold">
+                              <span className="text-emerald-600 dark:text-emerald-400">
+                                {checkInTime ? checkInTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                              </span>
+                              <span className="text-slate-300 dark:text-slate-600 font-normal">→</span>
+                              <span className={checkOutTime ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 italic'}>
+                                {checkOutTime ? checkOutTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'Đang làm'}
+                              </span>
+                            </div>
                           </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
 
-            {/* Attendance View */}
-            {activeTab === 'attendance' && (
-              <div className="flex-1 overflow-y-auto space-y-4 pb-32 lg:pb-10 scrollbar-thin">
+                          {/* Total Hours */}
+                          <td className="py-3 px-2 text-center font-mono font-bold text-xs text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                            {hoursWorked}h
+                          </td>
 
-                {/* ── HERO HEADER CARD (Compact, Streamlined) ─────────────────── */}
-                <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-[#0f1b2d] dark:from-[#0c1526] dark:to-[#090D16] rounded-2xl p-3.5 sm:p-4 shadow-lg border border-slate-800/50">
-                  <div className="relative">
-                    {/* Admin: Compact horizontal layout */}
-                    {user?.role === 'admin' ? (
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-black text-[#38BDF8] uppercase tracking-wider">Tổng quan điểm danh</span>
-                            <span className="text-[11px] text-slate-400 font-mono">
-                              • {new Date().toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit' })} ({new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })})
-                            </span>
-                          </div>
-                          <p className="text-xs text-slate-400 mt-0.5 font-medium hidden sm:block">
-                            Theo dõi giờ làm việc thực tế và quyết toán chi trả lương nhân viên
-                          </p>
-                        </div>
-
-                        {/* Summary stat pills */}
-                        <div className="grid grid-cols-3 gap-2 shrink-0">
-                          <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-center min-w-[75px]">
-                            <span className="block text-base font-black text-white font-mono leading-tight">{displayedAttendances.length}</span>
-                            <span className="block text-[9.5px] text-slate-400 font-normal">Lượt công</span>
-                          </div>
-                          <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-center min-w-[75px]">
-                            <span className="block text-base font-black text-[#38BDF8] font-mono leading-tight">
-                              {displayedAttendances.filter(a => !a.checkOut).length}
-                            </span>
-                            <span className="block text-[9.5px] text-slate-400 font-normal">Đang ca</span>
-                          </div>
-                          <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-center min-w-[75px]">
-                            <span className="block text-base font-black text-amber-400 font-mono leading-tight">
-                              {shiftSwaps.filter(s => s.status === 'pending').length}
-                            </span>
-                            <span className="block text-[9.5px] text-slate-400 font-normal">Đổi ca</span>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      /* Staff: Shift info + Action Buttons */
-                      <div className="space-y-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-[10px] font-black text-[#38BDF8]/70 uppercase tracking-widest mb-0.5">Ca làm của tôi</p>
-                            <h2 className="text-base sm:text-xl font-black text-white tracking-tight leading-tight">Điểm danh ca làm</h2>
-                          </div>
-                          <div className="text-right text-xs text-white/80 font-mono">
-                            {new Date().toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit' })}
-                          </div>
-                        </div>
-
-                        {/* Pending shift swap banner */}
-                        {(() => {
-                          const pendingSwap = shiftSwaps.find((s) => s.status === 'pending');
-                          if (!pendingSwap) return null;
-                          const reqLabel =
-                            pendingSwap.requestedShift === 'morning' ? 'Ca Sáng (06h–12h)' :
-                              pendingSwap.requestedShift === 'afternoon' ? 'Ca Chiều (12h–18h)' : 'Ca Tối (18h–23h)';
-                          return (
-                            <div className="px-3.5 py-2 bg-amber-500/15 border border-amber-500/30 rounded-xl text-amber-300 text-[11px] font-bold flex items-center justify-between gap-2">
-                              <span>Đang chờ duyệt đổi sang <strong>{reqLabel}</strong></span>
-                              <span className="px-2 py-0.5 bg-amber-500/20 rounded-md text-[10px] uppercase font-black shrink-0">Chờ</span>
-                            </div>
-                          );
-                        })()}
-
-                        {/* Shift pill + buttons */}
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                          <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl text-xs font-bold w-fit">
-                            <span className="text-slate-400">Ca đăng ký:</span>
-                            {(() => {
-                              const shift = user?.assignedShift || 'morning';
-                              if (shift === 'morning') return <span className="text-[#38BDF8] font-black">Ca Sáng (06h–12h)</span>;
-                              if (shift === 'afternoon') return <span className="text-amber-400 font-black">Ca Chiều (12h–18h)</span>;
-                              return <span className="text-purple-400 font-black">Ca Tối (18h–23h)</span>;
-                            })()}
-                          </div>
-
-                          <div className="flex gap-2 flex-wrap items-center">
-                            <button
-                              onClick={handleCheckIn}
-                              disabled={isCheckingIn || isCheckedIn || isCheckedOut || !isCurrentTimeInShift()}
-                              className={`h-9 px-4 text-white font-black text-xs rounded-xl shadow-md transition-all ${isCheckedIn || isCheckedOut || !isCurrentTimeInShift()
-                                ? 'bg-slate-700/50 text-slate-400 cursor-not-allowed shadow-none border border-white/5'
-                                : 'bg-emerald-500 hover:bg-emerald-400 shadow-emerald-500/20 active:scale-95 cursor-pointer'
-                                }`}
-                            >
-                              {isCheckingIn
-                                ? 'Đang xử lý...'
-                                : isCheckedIn
-                                  ? 'Đang trong ca'
-                                  : isCheckedOut
-                                    ? 'Đã kết thúc ca hôm nay'
-                                    : !isCurrentTimeInShift()
-                                      ? 'Khóa điểm danh'
-                                      : 'Bắt đầu ca (Check-in)'}
-                            </button>
-                            <button
-                              onClick={handleCheckOut}
-                              disabled={!isCheckedIn || isCheckedOut}
-                              className={`h-9 px-4 text-white font-black text-xs rounded-xl shadow-md transition-all ${!isCheckedIn || isCheckedOut
-                                ? 'bg-slate-700/50 text-slate-400 cursor-not-allowed shadow-none border border-white/5'
-                                : 'bg-amber-500 hover:bg-amber-400 shadow-amber-500/20 active:scale-95 cursor-pointer'
-                                }`}
-                            >
-                              Kết thúc ca (Check-out)
-                            </button>
-                            <button
-                              onClick={() => {
-                                setRequestedSwapShift(user?.assignedShift === 'morning' ? 'afternoon' : 'morning');
-                                setIsShiftSwapModalOpen(true);
-                              }}
-                              className="h-9 px-3.5 bg-white/10 hover:bg-white/20 text-white/80 font-bold text-xs rounded-xl border border-white/10 transition-all active:scale-95 cursor-pointer"
-                            >
-                              Đổi ca
-                            </button>
-                          </div>
-                        </div>
-                        {!isCheckedIn && !isCheckedOut && !isCurrentTimeInShift() && (
-                          <div className="p-2.5 bg-rose-500/15 border border-rose-500/30 rounded-xl text-rose-300 text-xs font-bold flex items-center gap-2">
-                            <DashboardIcon name="lock_clock" className="text-base text-rose-400 shrink-0" />
-                            <span>Hiện tại ngoài khung giờ <strong>{getShiftTimeLabel()}</strong>. Hệ thống đã khóa tính năng điểm danh.</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* ── ADMIN: SHIFT SWAP APPROVAL PANEL (CHỈ HIỂN THỊ Ở MỤC CHẤM CÔNG CA LÀM) ── */}
-                {user?.role === 'admin' && shiftSwaps.filter(s => s.status === 'pending').length > 0 && (
-                  <div id="actionable-shift-swap-approval-banner" className="bg-white dark:bg-[#131929] border border-amber-500/20 rounded-2xl p-4 shadow-xs">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                        Yêu cầu đổi ca cần duyệt
-                      </h4>
-                      <span className="px-2.5 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg text-[10px] font-black border border-amber-500/20">
-                        {shiftSwaps.filter(s => s.status === 'pending').length} yêu cầu
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {shiftSwaps.filter(s => s.status === 'pending').map((swap) => {
-                        const curLabel = swap.currentShift === 'morning' ? 'Ca Sáng' : swap.currentShift === 'afternoon' ? 'Ca Chiều' : 'Ca Tối';
-                        const reqLabel = swap.requestedShift === 'morning' ? 'Ca Sáng' : swap.requestedShift === 'afternoon' ? 'Ca Chiều' : 'Ca Tối';
-                        return (
-                          <div key={swap._id} className="p-3.5 bg-white dark:bg-[#0d1525] border border-slate-200 dark:border-[#1e293b] rounded-xl space-y-2.5 text-xs">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <span className="font-extrabold text-slate-900 dark:text-white block">{swap.userId?.name || 'Nhân viên'}</span>
-                                <span className="text-[10px] text-slate-400">{swap.userId?.email}</span>
+                          {/* Rate/Hour Input */}
+                          {user?.role === 'admin' && (
+                            <td className="py-3 px-2.5 whitespace-nowrap text-center">
+                              <div className="inline-flex items-center gap-1 bg-slate-50 dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-2 py-0.5 shadow-2xs">
+                                <input
+                                  type="number"
+                                  step="1000"
+                                  value={hourlyRate}
+                                  onChange={(e) => {
+                                    const val = Number(e.target.value);
+                                    setStaffHourlyRates((prev) => ({ ...prev, [staffId]: val }));
+                                  }}
+                                  onBlur={(e) => handleUpdateHourlyRate(staffId, Number(e.target.value))}
+                                  className="w-14 bg-transparent text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none text-right"
+                                />
+                                <span className="text-[9.5px] font-medium text-slate-400">đ/h</span>
                               </div>
-                              <span className="px-2 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-md text-[10px] font-black border border-amber-500/20">Chờ duyệt</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-[11px] font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-[#131929] px-3 py-2 rounded-lg border border-slate-200/50 dark:border-slate-800/50">
-                              <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded font-black text-slate-800 dark:text-slate-200">{curLabel}</span>
-                              <span className="text-slate-400 font-normal">→</span>
-                              <span className="px-2 py-0.5 bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] rounded font-black border border-[#38BDF8]/20">{reqLabel}</span>
-                            </div>
-                            {swap.reason && <p className="text-[11px] text-slate-500 italic border-l-2 border-slate-300 dark:border-slate-700 pl-2">{swap.reason}</p>}
-                            <div className="flex justify-end gap-2 pt-0.5">
-                              <button
-                                onClick={() => handleUpdateShiftSwapStatus(swap._id, 'rejected')}
-                                className="px-3.5 py-1.5 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-600 dark:text-rose-400 font-bold text-[11px] rounded-xl border border-rose-500/20 hover:border-rose-500 transition-all cursor-pointer active:scale-95"
-                              >Từ chối</button>
-                              <button
-                                onClick={() => handleUpdateShiftSwapStatus(swap._id, 'approved')}
-                                className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-[11px] rounded-xl shadow-xs shadow-emerald-500/20 transition-all cursor-pointer active:scale-95"
-                              >Duyệt đổi ca</button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                            </td>
+                          )}
 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                      Lịch sử điểm danh & Bảng Lương
-                    </h3>
-                    <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-full text-[10px] font-bold">
-                      {payrollViewMode === 'weekly' ? `${weeklyPayrolls.length} tuần` : `${attendances.length} bản ghi`}
+                          {/* Calculated Salary */}
+                          {user?.role === 'admin' && (
+                            <td className="py-3 px-3 font-mono font-extrabold text-xs text-[#0284c7] dark:text-[#38BDF8] whitespace-nowrap text-right">
+                              {formatPrice(totalSalary)}
+                            </td>
+                          )}
+
+                          {/* Action Buttons */}
+                          {user?.role === 'admin' && (
+                            <td className="py-3 px-3.5 text-right whitespace-nowrap align-middle">
+                              <div className="flex items-center justify-end gap-1.5 shrink-0">
+                                <button
+                                  onClick={() => handleOpenSalaryConfig({ _id: staffId, name: staffName, role: staffRole })}
+                                  className="h-8 px-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/15 text-slate-700 dark:text-slate-200 text-xs font-extrabold rounded-xl border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 shadow-2xs active:scale-95 transition-all cursor-pointer inline-flex items-center gap-1"
+                                  title="Cấu hình mức lương & phụ cấp"
+                                >
+                                  <DashboardIcon name="tune" className="text-xs text-slate-500 dark:text-slate-400" />
+                                  <span>Cấu hình</span>
+                                </button>
+                                {att.isPaid ? (
+                                  <span className="inline-flex items-center gap-1.5 h-8 px-2.5 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 shrink-0">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                    <span>Đã trả</span>
+                                  </span>
+                                ) : (
+                                  <button
+                                    onClick={() =>
+                                      handleOpenDisbursement({
+                                        staffId,
+                                        staffName,
+                                        staffRole,
+                                        periodType: 'daily',
+                                        periodLabel: `${shiftLabel} (${formattedDate})`,
+                                        totalShifts: 1,
+                                        totalHours: hoursWorked,
+                                        rate: hourlyRate,
+                                        basePay: totalSalary,
+                                        attendanceIds: [att._id],
+                                      })
+                                    }
+                                    className="h-8 px-3 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer inline-flex items-center gap-1"
+                                    title="Thực hiện chi trả ca làm"
+                                  >
+                                    <DashboardIcon name="payments" className="text-xs" />
+                                    <span>Chi trả Ca</span>
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => {
+                                    setEditingAttendance(att);
+                                    setAttendanceForm({
+                                      checkIn: formatForDatetimeInput(att.checkIn),
+                                      checkOut: formatForDatetimeInput(att.checkOut),
+                                      note: att.note || '',
+                                    });
+                                    setIsAttendanceModalOpen(true);
+                                  }}
+                                  className="w-8 h-8 rounded-xl bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs active:scale-95 transition-all cursor-pointer inline-flex items-center justify-center shrink-0"
+                                  title="Chỉnh sửa giờ điểm danh"
+                                >
+                                  <DashboardIcon name="edit" className="text-xs text-slate-400" />
+                                </button>
+                                <button
+                                  onClick={() => setAttendanceToDelete(att._id)}
+                                  className="w-8 h-8 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-600 dark:text-rose-400 hover:text-white border border-rose-500/20 hover:border-rose-500 active:scale-95 transition-all cursor-pointer inline-flex items-center justify-center shrink-0"
+                                  title="Xóa bản ghi điểm danh"
+                                >
+                                  <DashboardIcon name="delete" className="text-xs" />
+                                </button>
+                              </div>
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+{/* Analytics View: ADMIN ONLY */ }
+{
+  activeTab === 'analytics' && user?.role === 'admin' && (
+    <div className="flex-1 overflow-y-auto space-y-6 pb-32 lg:pb-10 scrollbar-thin">
+      {/* ── ADMIN: EXECUTIVE COMMAND BAR (CHỈ HIỂN THỊ Ở MỤC THỐNG KÊ DOANH THU CỬA HÀNG) ── */}
+      <div className="shrink-0 space-y-2.5 font-sans" id="executive-command-bar">
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Tổng quan doanh thu & vận hành thời gian thực
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsCommandBarCollapsed(!isCommandBarCollapsed)}
+            className="text-[10px] font-bold text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors flex items-center gap-1 cursor-pointer"
+          >
+            <span>{isCommandBarCollapsed ? 'Mở rộng' : 'Thu gọn'}</span>
+            <DashboardIcon name={isCommandBarCollapsed ? 'expand_more' : 'expand_less'} className="text-sm" />
+          </button>
+        </div>
+
+        {!isCommandBarCollapsed && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+            {/* KPI 1: Doanh thu */}
+            <div
+              className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3 rounded-2xl shadow-2xs"
+            >
+              <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
+                <span className="text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-400">Doanh thu hôm nay</span>
+                <DashboardIcon name="payments" className="text-base text-emerald-500" />
+              </div>
+              <div className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
+                {formatPrice(analyticsSummary?.periodGross ?? analyticsSummary?.todayGross ?? paymentHistory.reduce((s, p) => s + (p.totalAmount || 0), 0))}
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                {analyticsSummary?.settlementStatus ? (
+                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${analyticsSummary.settlementStatus.isSettled
+                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                    : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                    }`}>
+                    {analyticsSummary.settlementStatus.isSettled ? '✓ Đã chốt sổ' : `Tạm tính (${analyticsSummary.settlementStatus.unpaidOrdersCount || 0} chưa thu)`}
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-slate-400">Từ hóa đơn trong ngày</span>
+                )}
+              </div>
+            </div>
+
+            {/* KPI 2: Công suất bàn */}
+            {(() => {
+              const servingCount = tables.filter(t => t.status === 'serving' || t.status === 'occupied').length;
+              const totalCount = tables.length;
+              const occupancyRate = totalCount > 0 ? Math.round((servingCount / totalCount) * 100) : 0;
+              return (
+                <div
+                  onClick={() => setActiveTab('tables')}
+                  className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] hover:border-[#0284c7]/40 dark:hover:border-[#38BDF8]/40 p-3 rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+                  title="Bấm để xem Sơ đồ bàn"
+                >
+                  <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
+                    <span className="text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-400">Công suất bàn</span>
+                    <DashboardIcon name="table_restaurant" className="text-base text-sky-500 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
+                      {servingCount}/{totalCount}
+                    </span>
+                    <span className="text-[11px] font-black text-[#0284c7] dark:text-[#38BDF8]">
+                      ({occupancyRate}%)
                     </span>
                   </div>
+                  <div className="mt-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${occupancyRate >= 90 ? 'bg-amber-500' : occupancyRate >= 70 ? 'bg-sky-500' : 'bg-emerald-500'
+                        }`}
+                      style={{ width: `${Math.min(100, occupancyRate)}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })()}
 
-                  {user?.role === 'admin' && (
-                    <div className="flex items-center bg-slate-100/90 dark:bg-[#090D16] p-1 rounded-2xl border border-slate-200/80 dark:border-white/10 text-xs font-bold w-fit shadow-2xs">
-                      <button
-                        onClick={() => setPayrollViewMode('weekly')}
-                        className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer font-extrabold ${payrollViewMode === 'weekly'
-                          ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 shadow-xs shadow-[#0284c7]/20 dark:shadow-[#38BDF8]/20 active:scale-95'
-                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/5'
-                          }`}
-                      >
-                        <span>Theo Tuần</span>
-                      </button>
-                      <button
-                        onClick={() => setPayrollViewMode('daily')}
-                        className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer font-extrabold ${payrollViewMode === 'daily'
-                          ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 shadow-xs shadow-[#0284c7]/20 dark:shadow-[#38BDF8]/20 active:scale-95'
-                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/5'
-                          }`}
-                      >
-                        <span>Theo Ca / Ngày</span>
-                      </button>
-                      <button
-                        onClick={() => setPayrollViewMode('hourly')}
-                        className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer font-extrabold ${payrollViewMode === 'hourly'
-                          ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 shadow-xs shadow-[#0284c7]/20 dark:shadow-[#38BDF8]/20 active:scale-95'
-                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/5'
-                          }`}
-                      >
-                        <span>Theo Giờ</span>
-                      </button>
-                    </div>
+            {/* KPI 3: Đơn hàng & Pha chế */}
+            {(() => {
+              const activeOrdersCount = orders.filter(o => ['pending', 'confirmed', 'cooking', 'ready'].includes(o.status)).length;
+              const brewingCount = orders.filter(o => o.status === 'cooking' || o.status === 'pending').length;
+              return (
+                <div
+                  onClick={() => setActiveTab('orders')}
+                  className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] hover:border-[#0284c7]/40 dark:hover:border-[#38BDF8]/40 p-3 rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+                  title="Bấm để xem Quản lý đơn hàng & KDS"
+                >
+                  <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
+                    <span className="text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-400">Đang phục vụ</span>
+                    <DashboardIcon name="soup_kitchen" className="text-base text-amber-500 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
+                      {activeOrdersCount}
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">đơn đang chạy</span>
+                  </div>
+                  <div className="mt-1 flex items-center gap-1.5 text-[10px] text-slate-400">
+                    <span className={`w-1.5 h-1.5 rounded-full ${brewingCount > 0 ? 'bg-amber-500 animate-pulse' : 'bg-slate-400'}`} />
+                    <span>{brewingCount} món đang đợi pha chế</span>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* KPI 4: Nhân sự trực ca */}
+            {(() => {
+              const activeStaffCount = attendances.filter(a => a.checkIn && !a.checkOut).length;
+              const pendingSwapsCount = shiftSwaps.filter(s => s.status === 'pending').length;
+              return (
+                <div
+                  onClick={() => setActiveTab('attendance')}
+                  className={`bg-white dark:bg-[#131929] border p-3 rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer group ${pendingSwapsCount > 0
+                    ? 'border-amber-500/30 hover:border-amber-500'
+                    : 'border-slate-200 dark:border-[#1e293b] hover:border-[#0284c7]/40 dark:hover:border-[#38BDF8]/40'
+                    }`}
+                  title="Bấm để xem Chấm công & Bảng lương"
+                >
+                  <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
+                    <span className="text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-400">Nhân sự trực ca</span>
+                    <DashboardIcon name="badge" className="text-base text-indigo-500 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
+                      {activeStaffCount}
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">nhân viên check-in</span>
+                  </div>
+                  <div className="mt-1 flex items-center gap-1.5">
+                    {pendingSwapsCount > 0 ? (
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse">
+                        ⚠️ {pendingSwapsCount} đổi ca chờ duyệt
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-slate-400">Hoạt động bình thường</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+      </div>
+
+      {/* ── BÁO CÁO THU - CHI CỬA HÀNG (ADMIN ONLY) ────────────────────────── */}
+      <div className="space-y-4">
+        {/* Header Title & Segmented Period Toggle */}
+        <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 sm:p-5 rounded-3xl shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
+                Báo Cáo Thu - Chi Cửa Hàng
+              </h3>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                Chỉ Admin
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              {analyticsPeriodMode === 'day'
+                ? 'Quản lý Doanh thu, Chi phí Lương, Tiền Nguyên liệu & Tiền Phát Sinh theo ngày'
+                : 'Tổng hợp dòng tiền và chi tiết từng ngày trong tháng'}
+            </p>
+          </div>
+
+          {/* Segmented Mode Switcher */}
+          <div className="flex items-center bg-slate-100 dark:bg-[#0B0F17] p-1.5 rounded-2xl border border-slate-200/80 dark:border-[#1e293b] self-start md:self-auto shrink-0 shadow-inner">
+            <button
+              onClick={() => {
+                setAnalyticsPeriodMode('day');
+                if (token) fetchAnalytics(token, analyticsSelectedDate, analyticsSelectedMonth, 'day');
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${analyticsPeriodMode === 'day'
+                ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+            >
+              <span>Theo Ngày</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setAnalyticsPeriodMode('month');
+                if (token) fetchAnalytics(token, analyticsSelectedDate, analyticsSelectedMonth, 'month');
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${analyticsPeriodMode === 'month'
+                ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+            >
+              <span>Tổng Hợp Theo Tháng</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Sub-bar: Date/Month picker, Quick Buttons, and Add Expense CTA */}
+        <div className="bg-slate-50 dark:bg-[#131929]/70 border border-slate-200 dark:border-[#1e293b] p-3 sm:p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {analyticsPeriodMode === 'day' ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 shrink-0">Chọn ngày:</span>
+              <button
+                onClick={() => {
+                  const now = new Date();
+                  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                  setAnalyticsSelectedDate(todayStr);
+                  setLedgerPage(1);
+                  if (token) fetchAnalytics(token, todayStr, undefined, 'day');
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${analyticsSelectedDate === `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`
+                  ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/40'
+                  : 'bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#1e293b] hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+              >
+                Hôm Nay
+              </button>
+              <button
+                onClick={() => {
+                  const yest = new Date(Date.now() - 86400000);
+                  const yestStr = `${yest.getFullYear()}-${String(yest.getMonth() + 1).padStart(2, '0')}-${String(yest.getDate()).padStart(2, '0')}`;
+                  setAnalyticsSelectedDate(yestStr);
+                  setLedgerPage(1);
+                  if (token) fetchAnalytics(token, yestStr, undefined, 'day');
+                }}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#1e293b] hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+              >
+                Hôm Qua
+              </button>
+              <input
+                type="date"
+                value={analyticsSelectedDate}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) {
+                    setAnalyticsSelectedDate(val);
+                    setLedgerPage(1);
+                    if (token) fetchAnalytics(token, val, undefined, 'day');
+                  }
+                }}
+                className="px-3 py-1.5 bg-white dark:bg-[#0B0F17] border border-slate-200 dark:border-[#1e293b] rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:border-[#0284c7] dark:focus:border-[#38BDF8]"
+              />
+              <span className="text-[11px] font-bold text-[#0284c7] dark:text-[#38BDF8] bg-sky-50 dark:bg-[#38BDF8]/10 px-2.5 py-1 rounded-lg border border-sky-200 dark:border-sky-500/20">
+                {(() => {
+                  const [y, m, d] = (analyticsSelectedDate || '').split('-').map(Number);
+                  if (!y || !m || !d) return '';
+                  const dt = new Date(y, m - 1, d);
+                  const dn = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+                  return `${dn[dt.getDay()]}, ${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
+                })()}
+              </span>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 shrink-0">Chọn tháng:</span>
+              <button
+                onClick={() => {
+                  const now = new Date();
+                  const curMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                  setAnalyticsSelectedMonth(curMonth);
+                  if (token) fetchAnalytics(token, undefined, curMonth, 'month');
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${analyticsSelectedMonth === `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`
+                  ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/40'
+                  : 'bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#1e293b] hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+              >
+                Tháng Này
+              </button>
+              <input
+                type="month"
+                value={analyticsSelectedMonth}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) {
+                    setAnalyticsSelectedMonth(val);
+                    if (token) fetchAnalytics(token, undefined, val, 'month');
+                  }
+                }}
+                className="px-3 py-1.5 bg-white dark:bg-[#0B0F17] border border-slate-200 dark:border-[#1e293b] rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:border-[#0284c7] dark:focus:border-[#38BDF8]"
+              />
+              <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 px-2.5 py-1 rounded-lg border border-purple-200 dark:border-purple-500/20">
+                {(() => {
+                  const [y, m] = (analyticsSelectedMonth || '').split('-');
+                  return `Tổng hợp Tháng ${m}/${y}`;
+                })()}
+              </span>
+            </div>
+          )}
+
+          {/* Right Quick Action: Add Incidental Expense */}
+          <button
+            onClick={() => {
+              setExpenseForm({
+                title: '',
+                amount: '',
+                category: 'Vật tư & Tiện ích',
+                note: '',
+                date: analyticsSelectedDate,
+              });
+              setIsAddExpenseModalOpen(true);
+            }}
+            className="flex items-center justify-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black shadow-xs hover:shadow-md active:scale-95 transition-all cursor-pointer w-full sm:w-auto shrink-0"
+          >
+            <span>+ Thêm Chi Phí Phát Sinh</span>
+          </button>
+        </div>
+
+        {/* Day Settlement Clearance Status Banner */}
+        {analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && (
+          <div
+            id="day-settlement-status-banner"
+            className={`p-4 sm:p-5 rounded-2xl border transition-all ${analyticsSummary.settlementStatus.isSettled
+              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-950 dark:text-emerald-200'
+              : 'bg-amber-500/10 border-amber-500/30 text-amber-950 dark:text-amber-200'
+              }`}
+          >
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="text-sm font-black font-heading tracking-wide">
+                    {analyticsSummary.settlementStatus.isSettled
+                      ? 'ĐÃ QUYẾT TOÁN SỔ SÁCH NGÀY'
+                      : 'CHƯA ĐỦ ĐIỀU KIỆN QUYẾT TOÁN NGÀY (ĐANG TRONG CA HOẠT ĐỘNG)'}
+                  </h4>
+                  <span
+                    className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${analyticsSummary.settlementStatus.isSettled
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-amber-600 text-white animate-pulse'
+                      }`}
+                  >
+                    {analyticsSummary.settlementStatus.isSettled ? 'Đã Chốt Sổ' : 'Tạm Tính'}
+                  </span>
+                </div>
+                <p className="text-xs mt-1 opacity-90 font-medium">
+                  {analyticsSummary.settlementStatus.isSettled
+                    ? 'Tất cả ca làm việc đã Check-out và các đơn hàng phát sinh trong ngày đã thanh toán đầy đủ. Doanh thu và lợi nhuận ròng hiển thị chính thức 100%.'
+                    : 'Các chỉ số bên dưới đang ở mức TẠM TÍNH. Lợi nhuận ròng sẽ được tính chính thức sau khi toàn bộ nhân viên checkout ca làm và các bàn hoàn tất thanh toán.'}
+                </p>
+              </div>
+
+              {/* Quick navigation tags without icons */}
+              {!analyticsSummary.settlementStatus.isSettled && (
+                <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
+                  <button
+                    onClick={() => setActiveTab('attendance')}
+                    className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-200 border border-amber-500/30 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                  >
+                    Xem Chấm Công
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('orders')}
+                    className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-200 border border-amber-500/30 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                  >
+                    Xem Đơn Hàng
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Settlement Checklist items with minimal indicators */}
+            {!analyticsSummary.settlementStatus.isSettled && (
+              <div className="mt-3.5 pt-3 border-t border-amber-500/20 grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                <div className="bg-white/60 dark:bg-black/20 p-3 rounded-xl border border-amber-500/20">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${analyticsSummary.settlementStatus.activeShiftsCount > 0 ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                    <span className="font-bold truncate">
+                      {analyticsSummary.settlementStatus.activeShiftsCount > 0
+                        ? `${analyticsSummary.settlementStatus.activeShiftsCount} ca chưa Check-out`
+                        : 'Đã Check-out tất cả ca'}
+                    </span>
+                  </div>
+                  {analyticsSummary.settlementStatus.activeStaffNames?.length > 0 && (
+                    <span className="text-[10px] text-amber-700 dark:text-amber-300 block truncate mt-1 pl-4" title={analyticsSummary.settlementStatus.activeStaffNames.join(', ')}>
+                      NV: {analyticsSummary.settlementStatus.activeStaffNames.join(', ')}
+                    </span>
                   )}
                 </div>
 
-                {/* ── WEEKLY PAYROLL VIEW ──────────────────────────────────────── */}
-                {payrollViewMode === 'weekly' ? (
-                  <>
-                    {/* Weekly Mobile View (< sm) */}
-                    <div className="grid grid-cols-1 gap-3 sm:hidden">
-                      {weeklyPayrolls.length === 0 ? (
-                        <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-10 text-center shadow-xs">
-                          <p className="text-sm font-bold text-slate-400 dark:text-slate-500">Chưa có dữ liệu bảng lương tuần</p>
-                        </div>
-                      ) : (
-                        weeklyPayrolls.map((wp) => {
-                          const initials = wp.staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
-                          const isWaiter = wp.staffRole === 'waiter' || wp.staffRole === 'staff';
-                          const roleLabel = wp.staffRole === 'admin' ? 'Quản trị' : wp.staffRole === 'barista' ? 'Pha chế' : isWaiter ? 'Phục vụ' : 'Nhân viên';
-                          const roleColor = wp.staffRole === 'admin' ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' :
-                            wp.staffRole === 'barista' ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300' :
-                              isWaiter ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' :
-                                'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
+                <div className="bg-white/60 dark:bg-black/20 p-3 rounded-xl border border-amber-500/20">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${analyticsSummary.settlementStatus.unpaidOrdersCount > 0 ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                    <span className="font-bold truncate">
+                      {analyticsSummary.settlementStatus.unpaidOrdersCount > 0
+                        ? `${analyticsSummary.settlementStatus.unpaidOrdersCount} đơn chưa thanh toán`
+                        : 'Tất cả đơn đã thanh toán'}
+                    </span>
+                  </div>
+                  {analyticsSummary.settlementStatus.unpaidOrdersAmount > 0 && (
+                    <span className="text-[10px] text-amber-700 dark:text-amber-300 block truncate mt-1 pl-4">
+                      Đang chờ thu: {formatPrice(analyticsSummary.settlementStatus.unpaidOrdersAmount)}
+                    </span>
+                  )}
+                </div>
 
-                          return (
-                            <div key={wp.key} className="bg-white dark:bg-[#131929] rounded-2xl shadow-xs overflow-hidden border border-slate-200/80 dark:border-[#1e293b] p-4 space-y-3">
-                              <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-[#1e293b] pb-2">
-                                <span className="text-xs font-black text-amber-600 dark:text-amber-400 flex items-center gap-1 font-mono">
-                                  <DashboardIcon name="calendar_month" className="text-sm" />
-                                  {wp.weekLabel}
-                                </span>
-                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${roleColor}`}>
-                                  {roleLabel}
-                                </span>
-                              </div>
-
-                              <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-black text-sm flex items-center justify-center shrink-0">
-                                  {initials}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <h4 className="font-extrabold text-slate-900 dark:text-white text-sm truncate">{wp.staffName}</h4>
-                                  <p className="text-[10px] text-slate-400 truncate">{wp.staffEmail}</p>
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-2 gap-2 text-xs">
-                                <div className="bg-slate-50 dark:bg-[#0d1525] p-2 rounded-xl">
-                                  <span className="block text-[10px] text-slate-400 font-normal">Số ca làm</span>
-                                  <span className="block font-bold text-slate-800 dark:text-slate-200 font-mono">
-                                    {wp.totalShifts} ca {wp.paidShifts > 0 && <span className="text-[10px] text-emerald-600 font-normal">({wp.paidShifts} đã trả)</span>}
-                                  </span>
-                                </div>
-                                <div className="bg-slate-50 dark:bg-[#0d1525] p-2 rounded-xl">
-                                  <span className="block text-[10px] text-slate-400 font-normal">Giờ chưa thanh toán</span>
-                                  <span className="block font-bold text-slate-800 dark:text-slate-200 font-mono">
-                                    {wp.unpaidHours}h <span className="text-[10px] text-slate-400 font-normal">/ {wp.totalHours}h</span>
-                                  </span>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-[#1e293b]">
-                                <div>
-                                  <span className="block text-[10px] text-slate-400 font-normal">
-                                    {wp.paidHours > 0 ? 'Lương Còn Lại Tuần Này' : 'Lương Tuần'}
-                                  </span>
-                                  <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 font-mono">
-                                    {formatPrice(wp.unpaidSalary)}
-                                  </span>
-                                  {wp.paidHours > 0 && (
-                                    <span className="block text-[9px] text-slate-400">
-                                      Đã trả: {formatPrice(wp.alreadyPaidSalary)} / Tổng: {formatPrice(wp.totalSalary)}
-                                    </span>
-                                  )}
-                                </div>
-                                {user?.role === 'admin' && (
-                                  <div className="flex items-center gap-2">
-                                    <button
-                                      type="button"
-                                      onClick={() => handleOpenSalaryConfig({ _id: wp.staffId, name: wp.staffName, role: wp.staffRole })}
-                                      className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-9 px-3 bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
-                                    >
-                                      <DashboardIcon name="tune" className="text-sm text-slate-400" />
-                                      <span>Cấu hình</span>
-                                    </button>
-                                    {wp.unpaidSalary > 0 ? (
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          handleOpenDisbursement({
-                                            staffId: wp.staffId,
-                                            staffName: wp.staffName,
-                                            staffRole: wp.staffRole,
-                                            periodType: 'weekly',
-                                            periodLabel: wp.weekLabel,
-                                            totalShifts: wp.totalShifts,
-                                            totalHours: wp.unpaidHours,
-                                            rate: wp.hourlyRate,
-                                            basePay: wp.unpaidSalary,
-                                            allowances: wp.allowances,
-                                            bonuses: wp.bonuses,
-                                            attendanceIds: wp.unpaidAttendances.map((a) => a._id),
-                                          })
-                                        }
-                                        className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-9 px-3.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
-                                      >
-                                        <DashboardIcon name="payments" className="text-sm" />
-                                        <span>Chi trả</span>
-                                      </button>
-                                    ) : (
-                                      <span className="whitespace-nowrap inline-flex items-center gap-1.5 h-9 px-3 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 shrink-0">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                                        <span>Đã trả hết</span>
-                                      </span>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-
-                    {/* Weekly Desktop View (>= sm) */}
-                    <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl overflow-hidden shadow-xs">
-                      <div className="relative overflow-x-auto scrollbar-thin">
-                        <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[880px] border-collapse">
-                          <thead className="bg-slate-50/95 dark:bg-[#0B101B]/95 border-b border-slate-200/80 dark:border-white/10 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider font-black select-none">
-                            <tr>
-                              <th scope="col" className="py-3 px-3.5 whitespace-nowrap min-w-[125px]">Tuần Làm Việc</th>
-                              <th scope="col" className="py-3 px-3.5 whitespace-nowrap min-w-[135px]">Nhân Viên</th>
-                              <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[85px]">Vai Trò</th>
-                              <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[75px] text-center">Tổng Ca</th>
-                              <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[95px] text-center">Giờ Chưa Trả</th>
-                              {user?.role === 'admin' && <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[105px] text-center">Mức Lương/Giờ</th>}
-                              {user?.role === 'admin' && <th scope="col" className="py-3 px-3 whitespace-nowrap min-w-[110px]">Lương Còn Lại</th>}
-                              {user?.role === 'admin' && (
-                                <th scope="col" className="sticky right-0 z-20 py-3 px-3.5 whitespace-nowrap min-w-[165px] text-right bg-slate-50/95 dark:bg-[#0B101B]/95 shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.06)] dark:shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.4)]">
-                                  Thao Tác
-                                </th>
-                              )}
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b]/60">
-                            {weeklyPayrolls.length === 0 ? (
-                              <tr>
-                                <td colSpan={8} className="py-12 text-center text-slate-400 font-medium">
-                                  Chưa có dữ liệu bảng lương gộp theo tuần
-                                </td>
-                              </tr>
-                            ) : (
-                              weeklyPayrolls.map((wp) => {
-                                const initials = wp.staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
-                                const isWaiter = wp.staffRole === 'waiter' || wp.staffRole === 'staff';
-                                const roleLabel = wp.staffRole === 'admin' ? 'Quản trị' : wp.staffRole === 'barista' ? 'Pha chế' : isWaiter ? 'Phục vụ' : 'Nhân viên';
-                                return (
-                                  <tr key={wp.key} className="group hover:bg-slate-50/70 dark:hover:bg-[#182035]/50 transition-colors">
-                                    {/* Tuần làm việc */}
-                                    <td className="py-3 px-3.5 whitespace-nowrap align-middle">
-                                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-mono font-bold text-xs">
-                                        <DashboardIcon name="calendar_month" className="text-sm text-amber-500 shrink-0" />
-                                        <span>{wp.weekLabel}</span>
-                                      </div>
-                                    </td>
-
-                                    {/* Nhân viên */}
-                                    <td className="py-3 px-3.5 whitespace-nowrap align-middle">
-                                      <div className="flex items-center gap-2.5">
-                                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500/15 to-blue-600/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/25 flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">
-                                          {initials}
-                                        </div>
-                                        <div className="min-w-0">
-                                          <div className="font-extrabold text-slate-900 dark:text-white text-xs truncate max-w-[130px]">
-                                            {wp.staffName}
-                                          </div>
-                                          {wp.staffEmail && (
-                                            <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate max-w-[130px]">
-                                              {wp.staffEmail}
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </td>
-
-                                    {/* Vai trò */}
-                                    <td className="py-3 px-2.5 whitespace-nowrap align-middle">
-                                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${wp.staffRole === 'admin' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' :
-                                        wp.staffRole === 'barista' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20' :
-                                          isWaiter ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' :
-                                            'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-                                        }`}>
-                                        <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
-                                        <span>{roleLabel}</span>
-                                      </span>
-                                    </td>
-
-                                    {/* Tổng ca làm */}
-                                    <td className="py-3 px-2.5 text-center whitespace-nowrap align-middle">
-                                      <span className="font-mono font-bold text-xs text-slate-900 dark:text-slate-100">
-                                        {wp.totalShifts} ca
-                                      </span>
-                                      {wp.paidShifts > 0 && (
-                                        <span className="block text-[9.5px] text-emerald-600 dark:text-emerald-400 font-medium">
-                                          ({wp.paidShifts} đã trả)
-                                        </span>
-                                      )}
-                                    </td>
-
-                                    {/* Giờ công */}
-                                    <td className="py-3 px-2.5 text-center whitespace-nowrap align-middle font-mono text-xs">
-                                      <span className="font-extrabold text-slate-900 dark:text-white">{wp.unpaidHours}h</span>
-                                      <span className="text-slate-400 dark:text-slate-500 font-medium text-[10.5px]"> / {wp.totalHours}h</span>
-                                    </td>
-
-                                    {/* Mức lương / giờ */}
-                                    {user?.role === 'admin' && (
-                                      <td className="py-3 px-2.5 whitespace-nowrap text-center align-middle">
-                                        <div className="inline-flex items-center bg-slate-50 dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-xl px-2 py-0.5 shadow-2xs focus-within:ring-2 focus-within:ring-[#38BDF8]/40 focus-within:border-[#0284c7] dark:focus-within:border-[#38BDF8] transition-all">
-                                          <input
-                                            type="number"
-                                            step="1000"
-                                            value={wp.hourlyRate}
-                                            onChange={(e) => {
-                                              const val = Number(e.target.value);
-                                              setStaffHourlyRates((prev) => ({ ...prev, [wp.staffId]: val }));
-                                            }}
-                                            onBlur={(e) => handleUpdateHourlyRate(wp.staffId, Number(e.target.value))}
-                                            className="w-14 bg-transparent text-xs font-mono font-black text-slate-900 dark:text-white focus:outline-none text-right"
-                                          />
-                                          <span className="text-[9.5px] font-bold text-slate-400 dark:text-slate-500 ml-0.5 select-none">đ/h</span>
-                                        </div>
-                                      </td>
-                                    )}
-
-                                    {/* Lương còn lại */}
-                                    {user?.role === 'admin' && (
-                                      <td className="py-3 px-3 whitespace-nowrap align-middle font-mono font-black text-xs text-emerald-600 dark:text-emerald-400">
-                                        <div>{formatPrice(wp.unpaidSalary)}</div>
-                                        {wp.paidHours > 0 && (
-                                          <div className="text-[9.5px] text-slate-400 dark:text-slate-500 font-normal mt-0.5">
-                                            Đã trả: {formatPrice(wp.alreadyPaidSalary)}
-                                          </div>
-                                        )}
-                                      </td>
-                                    )}
-
-                                    {/* Thao tác - Sticky Right */}
-                                    {user?.role === 'admin' && (
-                                      <td className="sticky right-0 z-10 py-3 px-3.5 text-right whitespace-nowrap align-middle bg-white group-hover:bg-slate-50/90 dark:bg-[#131929] dark:group-hover:bg-[#182035]/90 shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.06)] dark:shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.4)] transition-colors">
-                                        <div className="flex items-center justify-end gap-1.5 shrink-0">
-                                          <button
-                                            type="button"
-                                            onClick={() => handleOpenSalaryConfig({ _id: wp.staffId, name: wp.staffName, role: wp.staffRole })}
-                                            className="whitespace-nowrap inline-flex items-center justify-center gap-1 h-7.5 px-2.5 rounded-xl bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-[11px] border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
-                                            title="Cấu hình mức lương & phụ cấp"
-                                          >
-                                            <DashboardIcon name="tune" className="text-sm text-slate-400" />
-                                            <span>Cấu hình</span>
-                                          </button>
-                                          {wp.unpaidSalary > 0 ? (
-                                            <button
-                                              type="button"
-                                              onClick={() =>
-                                                handleOpenDisbursement({
-                                                  staffId: wp.staffId,
-                                                  staffName: wp.staffName,
-                                                  staffRole: wp.staffRole,
-                                                  periodType: 'weekly',
-                                                  periodLabel: wp.weekLabel,
-                                                  totalShifts: wp.totalShifts,
-                                                  totalHours: wp.unpaidHours,
-                                                  rate: wp.hourlyRate,
-                                                  basePay: wp.unpaidSalary,
-                                                  allowances: wp.allowances,
-                                                  bonuses: wp.bonuses,
-                                                  attendanceIds: wp.unpaidAttendances.map((a) => a._id),
-                                                })
-                                              }
-                                              className="whitespace-nowrap inline-flex items-center justify-center gap-1 h-7.5 px-3 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-[11px] shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
-                                              title="Thực hiện chi trả lương tuần"
-                                            >
-                                              <DashboardIcon name="payments" className="text-sm" />
-                                              <span>Chi trả</span>
-                                            </button>
-                                          ) : (
-                                            <span className="whitespace-nowrap inline-flex items-center gap-1 h-7.5 px-2.5 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] rounded-xl border border-emerald-500/20 shrink-0">
-                                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                                              <span>Đã trả hết</span>
-                                            </span>
-                                          )}
-                                        </div>
-                                      </td>
-                                    )}
-                                  </tr>
-                                );
-                              })
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </>
-                ) : payrollViewMode === 'hourly' ? (
-                  <>
-                    {/* ── HOURLY PAYROLL VIEW ───────────────────────────────────────── */}
-                    {/* Hourly Mobile View (< sm) */}
-                    <div className="grid grid-cols-1 gap-3 sm:hidden">
-                      {hourlyPayrolls.length === 0 ? (
-                        <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-10 text-center shadow-xs">
-                          <p className="text-sm font-bold text-slate-400 dark:text-slate-500">Chưa có dữ liệu bảng lương theo giờ</p>
-                        </div>
-                      ) : (
-                        hourlyPayrolls.map((hp) => {
-                          const initials = hp.staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
-                          const isWaiter = hp.staffRole === 'waiter' || hp.staffRole === 'staff';
-                          const roleLabel = hp.staffRole === 'admin' ? 'Quản trị' : hp.staffRole === 'barista' ? 'Pha chế' : isWaiter ? 'Phục vụ' : 'Nhân viên';
-                          const roleColor = hp.staffRole === 'admin' ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' :
-                            hp.staffRole === 'barista' ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300' :
-                              isWaiter ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' :
-                                'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
-
-                          return (
-                            <div key={hp.staffId} className="bg-white dark:bg-[#131929] rounded-2xl shadow-xs overflow-hidden border border-slate-200/80 dark:border-[#1e293b] p-4 space-y-3">
-                              <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-[#1e293b] pb-2">
-                                <span className="text-xs font-black text-[#38BDF8] font-mono">
-                                  Đơn giá: {formatPrice(hp.hourlyRate)}/h
-                                </span>
-                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${roleColor}`}>
-                                  {roleLabel}
-                                </span>
-                              </div>
-
-                              <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-black text-sm flex items-center justify-center shrink-0">
-                                  {initials}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <h4 className="font-extrabold text-slate-900 dark:text-white text-sm truncate">{hp.staffName}</h4>
-                                  <p className="text-[10px] text-slate-400 truncate">{hp.staffEmail}</p>
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-2 gap-2 text-xs">
-                                <div className="bg-slate-50 dark:bg-[#0d1525] p-2 rounded-xl">
-                                  <span className="block text-[10px] text-slate-400 font-medium">Tổng ca làm</span>
-                                  <span className="block font-bold text-slate-800 dark:text-slate-200 font-mono">
-                                    {hp.totalShifts} ca
-                                  </span>
-                                </div>
-                                <div className="bg-slate-50 dark:bg-[#0d1525] p-2 rounded-xl">
-                                  <span className="block text-[10px] text-slate-400 font-medium">Giờ chưa trả</span>
-                                  <span className="block font-bold text-slate-800 dark:text-slate-200 font-mono">
-                                    {hp.unpaidHours}h <span className="text-[10px] text-slate-400 font-normal">/ {hp.totalHours}h</span>
-                                  </span>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-[#1e293b]">
-                                <div>
-                                  <span className="block text-[10px] text-slate-400 font-medium">Lương Giờ Còn Lại</span>
-                                  <span className="text-sm font-black text-[#38BDF8] font-mono">
-                                    {formatPrice(hp.unpaidSalary)}
-                                  </span>
-                                  {hp.paidHours > 0 && (
-                                    <span className="block text-[9px] text-slate-400">
-                                      Đã trả: {formatPrice(hp.alreadyPaidSalary)} / Tổng: {formatPrice(hp.totalSalary)}
-                                    </span>
-                                  )}
-                                </div>
-                                {user?.role === 'admin' && (
-                                  <div className="flex items-center gap-2">
-                                    <button
-                                      type="button"
-                                      onClick={() => handleOpenSalaryConfig({ _id: hp.staffId, name: hp.staffName, role: hp.staffRole })}
-                                      className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-9 px-3 bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
-                                    >
-                                      <DashboardIcon name="tune" className="text-sm text-slate-400" />
-                                      <span>Cấu hình</span>
-                                    </button>
-                                    {hp.unpaidSalary > 0 ? (
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          handleOpenDisbursement({
-                                            staffId: hp.staffId,
-                                            staffName: hp.staffName,
-                                            staffRole: hp.staffRole,
-                                            periodType: 'hourly',
-                                            periodLabel: `Theo Giờ (${hp.unpaidHours}h)`,
-                                            totalShifts: hp.totalShifts,
-                                            totalHours: hp.unpaidHours,
-                                            rate: hp.hourlyRate,
-                                            basePay: hp.unpaidSalary,
-                                            attendanceIds: hp.unpaidAttendanceIds,
-                                          })
-                                        }
-                                        className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-9 px-3.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
-                                      >
-                                        <DashboardIcon name="payments" className="text-sm" />
-                                        <span>Chi trả</span>
-                                      </button>
-                                    ) : (
-                                      <span className="whitespace-nowrap inline-flex items-center gap-1.5 h-9 px-3 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 shrink-0">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                                        <span>Đã trả hết</span>
-                                      </span>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-
-                    {/* Hourly Desktop View (>= sm) */}
-                    <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl overflow-hidden shadow-xs">
-                      <div className="relative overflow-x-auto scrollbar-thin">
-                        <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[820px] border-collapse">
-                          <thead className="bg-slate-50/95 dark:bg-[#0B101B]/95 border-b border-slate-200/80 dark:border-white/10 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider font-black select-none">
-                            <tr>
-                              <th scope="col" className="py-3 px-3.5 whitespace-nowrap min-w-[140px]">Nhân Viên</th>
-                              <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[85px]">Vai Trò</th>
-                              <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[75px] text-center">Tổng Ca</th>
-                              <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[95px] text-center">Giờ Chưa Trả</th>
-                              {user?.role === 'admin' && <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[105px] text-center">Mức Lương/Giờ</th>}
-                              {user?.role === 'admin' && <th scope="col" className="py-3 px-3 whitespace-nowrap min-w-[110px]">Lương Còn Lại</th>}
-                              {user?.role === 'admin' && (
-                                <th scope="col" className="sticky right-0 z-20 py-3 px-3.5 whitespace-nowrap min-w-[165px] text-right bg-slate-50/95 dark:bg-[#0B101B]/95 shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.06)] dark:shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.4)]">
-                                  Thao Tác
-                                </th>
-                              )}
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b]/60">
-                            {hourlyPayrolls.length === 0 ? (
-                              <tr>
-                                <td colSpan={7} className="py-12 text-center text-slate-400 font-medium">
-                                  Chưa có dữ liệu bảng lương theo giờ
-                                </td>
-                              </tr>
-                            ) : (
-                              hourlyPayrolls.map((hp) => {
-                                const initials = hp.staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
-                                const isWaiter = hp.staffRole === 'waiter' || hp.staffRole === 'staff';
-                                const roleLabel = hp.staffRole === 'admin' ? 'Quản trị' : hp.staffRole === 'barista' ? 'Pha chế' : isWaiter ? 'Phục vụ' : 'Nhân viên';
-                                return (
-                                  <tr key={hp.staffId} className="group hover:bg-slate-50/70 dark:hover:bg-[#182035]/50 transition-colors">
-                                    {/* Nhân viên */}
-                                    <td className="py-3 px-3.5 whitespace-nowrap align-middle">
-                                      <div className="flex items-center gap-2.5">
-                                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500/15 to-blue-600/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/25 flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">
-                                          {initials}
-                                        </div>
-                                        <div className="min-w-0">
-                                          <div className="font-extrabold text-slate-900 dark:text-white text-xs truncate max-w-[130px]">
-                                            {hp.staffName}
-                                          </div>
-                                          {hp.staffEmail && (
-                                            <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate max-w-[130px]">
-                                              {hp.staffEmail}
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </td>
-
-                                    {/* Vai trò */}
-                                    <td className="py-3 px-2.5 whitespace-nowrap align-middle">
-                                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${hp.staffRole === 'admin' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' :
-                                        hp.staffRole === 'barista' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20' :
-                                          isWaiter ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' :
-                                            'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-                                        }`}>
-                                        <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
-                                        <span>{roleLabel}</span>
-                                      </span>
-                                    </td>
-
-                                    {/* Tổng ca làm */}
-                                    <td className="py-3 px-2.5 text-center whitespace-nowrap align-middle font-mono font-bold text-xs text-slate-800 dark:text-slate-200">
-                                      {hp.totalShifts} ca
-                                    </td>
-
-                                    {/* Giờ công */}
-                                    <td className="py-3 px-2.5 text-center whitespace-nowrap align-middle font-mono text-xs">
-                                      <span className="font-extrabold text-slate-900 dark:text-white">{hp.unpaidHours}h</span>
-                                      <span className="text-slate-400 dark:text-slate-500 font-medium text-[10.5px]"> / {hp.totalHours}h</span>
-                                    </td>
-
-                                    {/* Đơn giá / giờ */}
-                                    {user?.role === 'admin' && (
-                                      <td className="py-3 px-2.5 whitespace-nowrap text-center align-middle">
-                                        <div className="inline-flex items-center px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10 font-mono font-bold text-xs text-slate-900 dark:text-white">
-                                          {formatPrice(hp.hourlyRate)}/h
-                                        </div>
-                                      </td>
-                                    )}
-
-                                    {/* Lương còn lại */}
-                                    {user?.role === 'admin' && (
-                                      <td className="py-3 px-3 whitespace-nowrap align-middle font-mono font-black text-xs text-[#0284c7] dark:text-[#38BDF8]">
-                                        <div>{formatPrice(hp.unpaidSalary)}</div>
-                                        {hp.paidHours > 0 && (
-                                          <div className="text-[9.5px] text-slate-400 dark:text-slate-500 font-normal mt-0.5">
-                                            Đã trả: {formatPrice(hp.alreadyPaidSalary)} / Tổng: {formatPrice(hp.totalSalary)}
-                                          </div>
-                                        )}
-                                      </td>
-                                    )}
-
-                                    {/* Thao tác - Sticky Right */}
-                                    {user?.role === 'admin' && (
-                                      <td className="sticky right-0 z-10 py-3 px-3.5 text-right whitespace-nowrap align-middle bg-white group-hover:bg-slate-50/90 dark:bg-[#131929] dark:group-hover:bg-[#182035]/90 shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.06)] dark:shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.4)] transition-colors">
-                                        <div className="flex items-center justify-end gap-1.5 shrink-0">
-                                          <button
-                                            type="button"
-                                            onClick={() => handleOpenSalaryConfig({ _id: hp.staffId, name: hp.staffName, role: hp.staffRole })}
-                                            className="whitespace-nowrap inline-flex items-center justify-center gap-1 h-7.5 px-2.5 rounded-xl bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-[11px] border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
-                                            title="Cấu hình mức lương & phụ cấp"
-                                          >
-                                            <DashboardIcon name="tune" className="text-sm text-slate-400" />
-                                            <span>Cấu hình</span>
-                                          </button>
-                                          {hp.unpaidSalary > 0 ? (
-                                            <button
-                                              type="button"
-                                              onClick={() =>
-                                                handleOpenDisbursement({
-                                                  staffId: hp.staffId,
-                                                  staffName: hp.staffName,
-                                                  staffRole: hp.staffRole,
-                                                  periodType: 'hourly',
-                                                  periodLabel: `Theo Giờ (${hp.unpaidHours}h)`,
-                                                  totalShifts: hp.totalShifts,
-                                                  totalHours: hp.unpaidHours,
-                                                  rate: hp.hourlyRate,
-                                                  basePay: hp.unpaidSalary,
-                                                  attendanceIds: hp.unpaidAttendanceIds,
-                                                })
-                                              }
-                                              className="whitespace-nowrap inline-flex items-center justify-center gap-1 h-7.5 px-3 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-[11px] shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
-                                              title="Thực hiện chi trả lương theo giờ"
-                                            >
-                                              <DashboardIcon name="payments" className="text-sm" />
-                                              <span>Chi trả</span>
-                                            </button>
-                                          ) : (
-                                            <span className="whitespace-nowrap inline-flex items-center gap-1 h-7.5 px-2.5 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] rounded-xl border border-emerald-500/20 shrink-0">
-                                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                                              <span>Đã trả hết</span>
-                                            </span>
-                                          )}
-                                        </div>
-                                      </td>
-                                    )}
-                                  </tr>
-                                );
-                              })
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {/* ── DAILY ATTENDANCE VIEW ──────────────────────────────────── */}
-                    {/* Mobile Card List (< sm: 640px) */}
-                    <div className="grid grid-cols-1 gap-3 sm:hidden">
-                      {attendances.length === 0 ? (
-                        <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-10 text-center shadow-xs">
-                          <p className="text-sm font-bold text-slate-400 dark:text-slate-500">Chưa có lịch sử điểm danh</p>
-                          <p className="text-[11px] text-slate-400 dark:text-slate-600 mt-1">Bấm Check-in để bắt đầu ca làm</p>
-                        </div>
-                      ) : (
-                        attendances.map((att) => {
-                          const staffId = att.userId?._id || att.userId;
-                          const staffName = att.userId?.name || 'Nhân viên';
-                          const staffEmail = att.userId?.email || '';
-                          const staffRole = att.userId?.role || 'staff';
-                          const checkInTime = att.checkIn ? new Date(att.checkIn) : null;
-                          const checkOutTime = att.checkOut ? new Date(att.checkOut) : null;
-                          const isActive = checkInTime && !checkOutTime;
-
-                          let hoursWorked = att.hoursWorked || 0;
-                          if (!hoursWorked && checkInTime && checkOutTime) {
-                            hoursWorked = Math.max(0, (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60));
-                          }
-                          hoursWorked = Number(hoursWorked.toFixed(2));
-
-                          const hourlyRate = staffHourlyRates[staffId] || 25000;
-                          const totalSalary = Math.round(hoursWorked * hourlyRate);
-
-                          const formattedDate = (() => {
-                            const raw = att.date || att.createdAt;
-                            if (!raw) return '—';
-                            try {
-                              const d = new Date(raw);
-                              return isNaN(d.getTime()) ? String(raw) : d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                            } catch {
-                              return String(raw);
-                            }
-                          })();
-
-                          const shiftLabel =
-                            att.shift === 'morning' ? 'Ca Sáng' :
-                              att.shift === 'afternoon' ? 'Ca Chiều' : 'Ca Tối';
-                          const shiftColor =
-                            att.shift === 'morning' ? 'text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-500/15' :
-                              att.shift === 'afternoon' ? 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/15' :
-                                'text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-500/15';
-
-                          const roleLabel = staffRole === 'admin' ? 'Quản trị' : staffRole === 'barista' ? 'Pha chế' : staffRole === 'waiter' ? 'Phục vụ' : 'Nhân viên';
-                          const roleColor = staffRole === 'admin' ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' :
-                            staffRole === 'barista' ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300' :
-                              staffRole === 'waiter' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' :
-                                'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
-
-                          const initials = staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
-
-                          return (
-                            <div key={att._id} className={`bg-white dark:bg-[#131929] rounded-2xl shadow-xs overflow-hidden border ${isActive ? 'border-emerald-500/40' : 'border-slate-200/80 dark:border-[#1e293b]'}`}>
-                              <div className="p-4 space-y-3">
-                                {/* Header: Staff Info & Status */}
-                                <div className="flex items-start justify-between gap-3">
-                                  <div className="flex items-center gap-2.5 min-w-0">
-                                    <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-black text-xs flex items-center justify-center shrink-0">
-                                      {initials}
-                                    </div>
-                                    <div className="min-w-0">
-                                      <div className="flex items-center gap-1.5 flex-wrap">
-                                        <h4 className="font-extrabold text-slate-900 dark:text-white text-sm truncate">{staffName}</h4>
-                                        {isActive && (
-                                          <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/15 px-2 py-0.5 rounded-full">
-                                            Đang làm
-                                          </span>
-                                        )}
-                                      </div>
-                                      {staffEmail && <p className="text-[10px] text-slate-400 mt-0.5 truncate">{staffEmail}</p>}
-                                    </div>
-                                  </div>
-                                  <span className="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400">
-                                    {formattedDate}
-                                  </span>
-                                </div>
-
-                                {/* Badges: Role & Shift */}
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${roleColor}`}>
-                                    {roleLabel}
-                                  </span>
-                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${shiftColor}`}>
-                                    {shiftLabel}
-                                  </span>
-                                </div>
-
-                                {/* Checkin / Checkout times */}
-                                <div className="grid grid-cols-2 gap-2 text-xs">
-                                  <div className="bg-slate-50 dark:bg-[#0d1525] rounded-xl p-2">
-                                    <span className="block text-[10px] font-medium text-slate-400 mb-0.5">Check-in</span>
-                                    <span className="block font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                                      {checkInTime ? checkInTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
-                                    </span>
-                                  </div>
-                                  <div className="bg-slate-50 dark:bg-[#0d1525] rounded-xl p-2">
-                                    <span className="block text-[10px] font-medium text-slate-400 mb-0.5">Check-out</span>
-                                    <span className={`block font-mono font-bold ${checkOutTime ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'}`}>
-                                      {checkOutTime ? checkOutTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '—'}
-                                    </span>
-                                  </div>
-                                </div>
-
-                                {/* Bottom Actions & Total Salary */}
-                                <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-[#1e293b]">
-                                  <div>
-                                    <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Tổng làm: </span>
-                                    <span className="text-xs font-bold text-slate-900 dark:text-white font-mono">{hoursWorked}h</span>
-                                    {user?.role === 'admin' && (
-                                      <span className="block text-xs font-black text-[#0284c7] dark:text-[#38BDF8]">
-                                        {formatPrice(totalSalary)}
-                                      </span>
-                                    )}
-                                  </div>
-
-                                  {user?.role === 'admin' && (
-                                    <div className="flex items-center gap-1.5">
-                                      {att.isPaid ? (
-                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-[10px] rounded-lg border border-emerald-500/20">
-                                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                                          <span>Đã trả</span>
-                                        </span>
-                                      ) : (
-                                        <button
-                                          onClick={() =>
-                                            handleOpenDisbursement({
-                                              staffId,
-                                              staffName,
-                                              staffRole,
-                                              periodType: 'daily',
-                                              periodLabel: `${shiftLabel} (${formattedDate})`,
-                                              totalShifts: 1,
-                                              totalHours: hoursWorked,
-                                              rate: hourlyRate,
-                                              basePay: totalSalary,
-                                              attendanceIds: [att._id],
-                                            })
-                                          }
-                                          className="px-3 py-1 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-extrabold text-[11px] rounded-lg shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 active:scale-95 transition-all cursor-pointer"
-                                        >
-                                          Chi trả Ca
-                                        </button>
-                                      )}
-                                      <button
-                                        onClick={() => {
-                                          setEditingAttendance(att);
-                                          setAttendanceForm({
-                                            checkIn: formatForDatetimeInput(att.checkIn),
-                                            checkOut: formatForDatetimeInput(att.checkOut),
-                                            note: att.note || '',
-                                          });
-                                          setIsAttendanceModalOpen(true);
-                                        }}
-                                        className="px-2.5 py-1 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-700 transition-all cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95"
-                                      >
-                                        Sửa
-                                      </button>
-                                      <button
-                                        onClick={() => setAttendanceToDelete(att._id)}
-                                        className="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500 text-rose-600 dark:text-rose-400 hover:text-white text-[11px] font-bold rounded-lg border border-rose-500/20 transition-all cursor-pointer active:scale-95"
-                                      >
-                                        Xóa
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-
-                    {/* Desktop Table View (>= sm: 640px) */}
-                    <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200/80 dark:border-[#1e293b] rounded-2xl overflow-hidden shadow-xs">
-                      <div className="relative overflow-x-auto scrollbar-thin">
-                        <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[850px]">
-                          <thead className="bg-slate-50/95 dark:bg-[#0d1525]/95 border-b border-slate-200/80 dark:border-[#1e293b] text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-wider font-bold select-none">
-                            <tr>
-                              <th className="py-3 px-3 whitespace-nowrap min-w-[85px]">Ngày</th>
-                              <th className="py-3 px-3 whitespace-nowrap min-w-[130px]">Nhân viên</th>
-                              <th className="py-3 px-2.5 whitespace-nowrap min-w-[80px]">Vai trò</th>
-                              <th className="py-3 px-2.5 whitespace-nowrap min-w-[75px]">Ca làm</th>
-                              <th className="py-3 px-2.5 whitespace-nowrap min-w-[75px]">Check-in</th>
-                              <th className="py-3 px-2.5 whitespace-nowrap min-w-[75px]">Check-out</th>
-                              <th className="py-3 px-2 whitespace-nowrap text-center min-w-[65px]">Tổng giờ</th>
-                              {user?.role === 'admin' && <th className="py-3 px-2.5 whitespace-nowrap min-w-[95px]">Mức lương/giờ</th>}
-                              {user?.role === 'admin' && <th className="py-3 px-3 whitespace-nowrap min-w-[95px]">Lương tính</th>}
-                              {user?.role === 'admin' && (
-                                <th className="sticky right-0 z-20 py-3 px-3.5 whitespace-nowrap min-w-[195px] text-right bg-slate-50/95 dark:bg-[#0d1525]/95 shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.06)] dark:shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.4)]">
-                                  Hành động
-                                </th>
-                              )}
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b]/60">
-                            {attendances.length === 0 ? (
-                              <tr>
-                                <td colSpan={user?.role === 'admin' ? 10 : 7} className="py-10 text-center text-slate-400 font-medium">
-                                  Chưa có dữ liệu điểm danh ca làm
-                                </td>
-                              </tr>
-                            ) : (
-                              attendances.map((att) => {
-                                const staffId = att.userId?._id || att.userId;
-                                const staffName = att.userId?.name || 'Nhân viên';
-                                const staffEmail = att.userId?.email || '';
-                                const staffRole = att.userId?.role || 'staff';
-                                const checkInTime = att.checkIn ? new Date(att.checkIn) : null;
-                                const checkOutTime = att.checkOut ? new Date(att.checkOut) : null;
-                                const isActive = checkInTime && !checkOutTime;
-
-                                let hoursWorked = att.hoursWorked || 0;
-                                if (!hoursWorked && checkInTime && checkOutTime) {
-                                  hoursWorked = Math.max(0, (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60));
-                                }
-                                hoursWorked = Number(hoursWorked.toFixed(2));
-
-                                const hourlyRate = staffHourlyRates[staffId] || 25000;
-                                const totalSalary = Math.round(hoursWorked * hourlyRate);
-
-                                const formattedDate = (() => {
-                                  const raw = att.date || att.createdAt;
-                                  if (!raw) return '—';
-                                  try {
-                                    const d = new Date(raw);
-                                    return isNaN(d.getTime()) ? String(raw) : d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                                  } catch {
-                                    return String(raw);
-                                  }
-                                })();
-
-                                const shiftLabel =
-                                  att.shift === 'morning' ? 'Ca Sáng' :
-                                    att.shift === 'afternoon' ? 'Ca Chiều' : 'Ca Tối';
-
-                                const initials = staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
-
-                                return (
-                                  <tr key={att._id} className="group hover:bg-slate-50/70 dark:hover:bg-[#182035]/50 transition-colors">
-                                    {/* Date */}
-                                    <td className="py-3 px-3 font-mono font-medium text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                                      {formattedDate}
-                                    </td>
-
-                                    {/* Staff Name & Avatar */}
-                                    <td className="py-3 px-3 whitespace-nowrap">
-                                      <div className="flex items-center gap-2">
-                                        <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-extrabold text-xs flex items-center justify-center shrink-0">
-                                          {initials}
-                                        </div>
-                                        <div className="min-w-0">
-                                          <div className="font-bold text-slate-900 dark:text-white text-xs truncate max-w-[120px] flex items-center gap-1.5">
-                                            <span>{staffName}</span>
-                                            {isActive && (
-                                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" title="Đang làm ca" />
-                                            )}
-                                          </div>
-                                          {staffEmail && <div className="text-[10px] text-slate-400 truncate max-w-[120px]">{staffEmail}</div>}
-                                        </div>
-                                      </div>
-                                    </td>
-
-                                    {/* Role */}
-                                    <td className="py-3 px-2.5 whitespace-nowrap">
-                                      <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${staffRole === 'admin' ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' :
-                                        staffRole === 'barista' ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300' :
-                                          staffRole === 'waiter' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' :
-                                            'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
-                                        }`}>
-                                        {staffRole === 'admin' ? 'Quản trị' : staffRole === 'barista' ? 'Pha chế' : staffRole === 'waiter' ? 'Phục vụ' : 'Nhân viên'}
-                                      </span>
-                                    </td>
-
-                                    {/* Shift */}
-                                    <td className="py-3 px-2.5 whitespace-nowrap">
-                                      {(() => {
-                                        const s = att.shift || 'morning';
-                                        if (s === 'morning') {
-                                          return (
-                                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
-                                              Ca Sáng
-                                            </span>
-                                          );
-                                        }
-                                        if (s === 'afternoon') {
-                                          return (
-                                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
-                                              Ca Chiều
-                                            </span>
-                                          );
-                                        }
-                                        return (
-                                          <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300">
-                                            Ca Tối
-                                          </span>
-                                        );
-                                      })()}
-                                    </td>
-
-                                    {/* Check-in */}
-                                    <td className="py-3 px-2.5 font-mono font-medium text-xs text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
-                                      {checkInTime ? checkInTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
-                                    </td>
-
-                                    {/* Check-out */}
-                                    <td className="py-3 px-2.5 font-mono font-medium text-xs whitespace-nowrap">
-                                      <span className={checkOutTime ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'}>
-                                        {checkOutTime ? checkOutTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'Đang làm ca'}
-                                      </span>
-                                    </td>
-
-                                    {/* Total Hours */}
-                                    <td className="py-3 px-2 text-center font-mono font-bold text-xs text-slate-800 dark:text-slate-200 whitespace-nowrap">
-                                      {hoursWorked}h
-                                    </td>
-
-                                    {/* Rate/Hour Input */}
-                                    {user?.role === 'admin' && (
-                                      <td className="py-3 px-2.5 whitespace-nowrap">
-                                        <div className="flex items-center gap-1">
-                                          <input
-                                            type="number"
-                                            step="1000"
-                                            value={hourlyRate}
-                                            onChange={(e) => {
-                                              const val = Number(e.target.value);
-                                              setStaffHourlyRates((prev) => ({ ...prev, [staffId]: val }));
-                                            }}
-                                            onBlur={(e) => handleUpdateHourlyRate(staffId, Number(e.target.value))}
-                                            className="w-16 bg-slate-50 dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-lg px-1.5 py-0.5 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0284c7] dark:focus:border-[#38BDF8]"
-                                          />
-                                          <span className="text-[9.5px] font-medium text-slate-400">đ/h</span>
-                                        </div>
-                                      </td>
-                                    )}
-
-                                    {/* Calculated Salary */}
-                                    {user?.role === 'admin' && (
-                                      <td className="py-3 px-3 font-mono font-extrabold text-xs text-[#0284c7] dark:text-[#38BDF8] whitespace-nowrap">
-                                        {formatPrice(totalSalary)}
-                                      </td>
-                                    )}
-
-                                    {/* Action Buttons - Sticky Right */}
-                                    {user?.role === 'admin' && (
-                                      <td className="sticky right-0 z-10 py-3 px-3.5 text-right whitespace-nowrap align-middle bg-white group-hover:bg-slate-50/90 dark:bg-[#131929] dark:group-hover:bg-[#182035]/90 shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.06)] dark:shadow-[-6px_0_10px_-2px_rgba(0,0,0,0.4)] transition-colors">
-                                        <div className="flex items-center justify-end gap-1 shrink-0">
-                                          <button
-                                            onClick={() => handleOpenSalaryConfig({ _id: staffId, name: staffName, role: staffRole })}
-                                            className="h-7 px-2 bg-white dark:bg-[#131929] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-[10.5px] font-bold rounded-xl border border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs active:scale-95 transition-all cursor-pointer"
-                                          >
-                                            Cấu hình
-                                          </button>
-                                          {att.isPaid ? (
-                                            <span className="inline-flex items-center gap-1 h-7 px-2 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-[10.5px] rounded-xl border border-emerald-500/20 shrink-0">
-                                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                                              <span>Đã trả</span>
-                                            </span>
-                                          ) : (
-                                            <button
-                                              onClick={() =>
-                                                handleOpenDisbursement({
-                                                  staffId,
-                                                  staffName,
-                                                  staffRole,
-                                                  periodType: 'daily',
-                                                  periodLabel: `${shiftLabel} (${formattedDate})`,
-                                                  totalShifts: 1,
-                                                  totalHours: hoursWorked,
-                                                  rate: hourlyRate,
-                                                  basePay: totalSalary,
-                                                  attendanceIds: [att._id],
-                                                })
-                                              }
-                                              className="h-7 px-2.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-extrabold text-[10.5px] rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-md active:scale-95 transition-all cursor-pointer"
-                                            >
-                                              Chi trả Ca
-                                            </button>
-                                          )}
-                                          <button
-                                            onClick={() => {
-                                              setEditingAttendance(att);
-                                              setAttendanceForm({
-                                                checkIn: formatForDatetimeInput(att.checkIn),
-                                                checkOut: formatForDatetimeInput(att.checkOut),
-                                                note: att.note || '',
-                                              });
-                                              setIsAttendanceModalOpen(true);
-                                            }}
-                                            className="h-7 px-2 bg-white dark:bg-[#131929] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-[10.5px] font-bold rounded-xl border border-slate-200 dark:border-[#1e293b] hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs active:scale-95 transition-all cursor-pointer"
-                                          >
-                                            Sửa
-                                          </button>
-                                          <button
-                                            onClick={() => setAttendanceToDelete(att._id)}
-                                            className="h-7 px-2 bg-rose-500/10 hover:bg-rose-500 text-rose-600 dark:text-rose-400 hover:text-white text-[10.5px] font-bold rounded-xl border border-rose-500/20 hover:border-rose-500 active:scale-95 transition-all cursor-pointer"
-                                          >
-                                            Xóa
-                                          </button>
-                                        </div>
-                                      </td>
-                                    )}
-                                  </tr>
-                                );
-                              })
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </>
-                )}
+                <div className="bg-white/60 dark:bg-black/20 p-3 rounded-xl border border-amber-500/20">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${analyticsSummary.settlementStatus.servingTablesCount > 0 ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                    <span className="font-bold truncate">
+                      {analyticsSummary.settlementStatus.servingTablesCount > 0
+                        ? `${analyticsSummary.settlementStatus.servingTablesCount} bàn đang phục vụ`
+                        : 'Bàn phục vụ đã trống'}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-amber-700 dark:text-amber-300 block truncate mt-1 pl-4">
+                    {analyticsSummary.settlementStatus.servingTablesCount > 0
+                      ? 'Chờ khách dùng xong'
+                      : 'Sẵn sàng chốt doanh thu'}
+                  </span>
+                </div>
               </div>
             )}
+          </div>
+        )}
 
-            {/* Analytics View: ADMIN ONLY */}
-            {activeTab === 'analytics' && user?.role === 'admin' && (
-              <div className="flex-1 overflow-y-auto space-y-6 pb-32 lg:pb-10 scrollbar-thin">
-                {/* ── ADMIN: EXECUTIVE COMMAND BAR (CHỈ HIỂN THỊ Ở MỤC THỐNG KÊ DOANH THU CỬA HÀNG) ── */}
-                <div className="shrink-0 space-y-2.5 font-sans" id="executive-command-bar">
-                  <div className="flex items-center justify-between px-1">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Tổng quan doanh thu & vận hành thời gian thực
+        {/* ── SMART FINANCIAL & MARGIN INSIGHTS PILL STRIP ── */}
+        {(() => {
+          const gross = analyticsSummary?.periodGross ?? analyticsSummary?.todayGross ?? 0;
+          const salary = analyticsSummary?.periodSalary ?? analyticsSummary?.todaySalary ?? 0;
+          const ingredient = analyticsSummary?.periodIngredientCost ?? 0;
+          const expense = analyticsSummary?.periodExpenseCost ?? analyticsSummary?.todayExpenseCost ?? 0;
+          const totalCost = salary + ingredient + expense;
+          const netProfit = analyticsSummary?.periodNetProfit ?? analyticsSummary?.todayNetProfit ?? (gross - totalCost);
+          const isLoss = netProfit < 0;
+          const netMarginPercent = gross > 0 ? Math.round((netProfit / gross) * 100) : 0;
+          const costRatioPercent = gross > 0 ? Math.round((totalCost / gross) * 100) : 0;
+          const salaryRatioPercent = gross > 0 ? Math.round((salary / gross) * 100) : 0;
+          const ingredientRatioPercent = gross > 0 ? Math.round((ingredient / gross) * 100) : 0;
+
+          return (
+            <div
+              id="smart-financial-margin-insights"
+              className={`p-3.5 border rounded-2xl shadow-2xs transition-all ${isLoss
+                ? 'bg-gradient-to-r from-rose-50 via-rose-50/30 to-amber-50/20 dark:from-[#211018] dark:via-[#1c0f1b] dark:to-[#18111e] border-rose-300 dark:border-rose-900/50'
+                : 'bg-gradient-to-r from-slate-50 via-sky-50/20 to-slate-50 dark:from-[#101726] dark:via-[#0e1b2e] dark:to-[#101726] border-slate-200 dark:border-[#1e293b]'
+                }`}
+            >
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isLoss
+                    ? 'bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-400'
+                    : 'bg-sky-500/10 border border-sky-500/20 text-sky-500'
+                    }`}>
+                    <DashboardIcon name={isLoss ? 'warning' : 'insights'} className="text-lg" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                        Chỉ số hiệu quả tài chính & Tỷ suất sinh lời
+                      </span>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${isLoss
+                        ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30'
+                        : netMarginPercent >= 50
+                          ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                          : netMarginPercent >= 20
+                            ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/20'
+                            : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                        }`}>
+                        {isLoss ? `Thâm hụt: ${netMarginPercent}%` : `Biên lợi nhuận: ${netMarginPercent}%`}
                       </span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setIsCommandBarCollapsed(!isCommandBarCollapsed)}
-                      className="text-[10px] font-bold text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors flex items-center gap-1 cursor-pointer"
-                    >
-                      <span>{isCommandBarCollapsed ? 'Mở rộng' : 'Thu gọn'}</span>
-                      <DashboardIcon name={isCommandBarCollapsed ? 'expand_more' : 'expand_less'} className="text-sm" />
-                    </button>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      {gross === 0
+                        ? 'Chưa ghi nhận doanh thu trong kỳ này để tính tỷ suất tài chính.'
+                        : isLoss
+                          ? `Lưu ý: Kỳ này đang chịu lỗ ròng do tổng chi phí (${costRatioPercent}% doanh thu) vượt quá số tiền thực thu.`
+                          : netMarginPercent >= 50
+                            ? `Hiệu suất sinh lời xuất sắc: Mỗi 100đ doanh thu tạo ra ${netMarginPercent}đ lợi nhuận ròng sau mọi chi phí.`
+                            : netMarginPercent >= 20
+                              ? `Biên lợi nhuận ổn định (${netMarginPercent}%). Tỷ lệ chi phí vận hành chiếm ${costRatioPercent}% doanh thu.`
+                              : `Cần lưu ý: Tỷ lệ tổng chi phí (${costRatioPercent}%) đang cao so với doanh thu kỳ này.`}
+                    </p>
                   </div>
-
-                  {!isCommandBarCollapsed && (
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-                      {/* KPI 1: Doanh thu */}
-                      <div
-                        className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3 rounded-2xl shadow-2xs"
-                      >
-                        <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
-                          <span className="text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-400">Doanh thu hôm nay</span>
-                          <DashboardIcon name="payments" className="text-base text-emerald-500" />
-                        </div>
-                        <div className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
-                          {formatPrice(analyticsSummary?.periodGross ?? analyticsSummary?.todayGross ?? paymentHistory.reduce((s, p) => s + (p.totalAmount || 0), 0))}
-                        </div>
-                        <div className="mt-1 flex items-center gap-1.5 flex-wrap">
-                          {analyticsSummary?.settlementStatus ? (
-                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${analyticsSummary.settlementStatus.isSettled
-                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
-                              }`}>
-                              {analyticsSummary.settlementStatus.isSettled ? '✓ Đã chốt sổ' : `Tạm tính (${analyticsSummary.settlementStatus.unpaidOrdersCount || 0} chưa thu)`}
-                            </span>
-                          ) : (
-                            <span className="text-[10px] text-slate-400">Từ hóa đơn trong ngày</span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* KPI 2: Công suất bàn */}
-                      {(() => {
-                        const servingCount = tables.filter(t => t.status === 'serving' || t.status === 'occupied').length;
-                        const totalCount = tables.length;
-                        const occupancyRate = totalCount > 0 ? Math.round((servingCount / totalCount) * 100) : 0;
-                        return (
-                          <div
-                            onClick={() => setActiveTab('tables')}
-                            className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] hover:border-[#0284c7]/40 dark:hover:border-[#38BDF8]/40 p-3 rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
-                            title="Bấm để xem Sơ đồ bàn"
-                          >
-                            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
-                              <span className="text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-400">Công suất bàn</span>
-                              <DashboardIcon name="table_restaurant" className="text-base text-sky-500 group-hover:scale-110 transition-transform" />
-                            </div>
-                            <div className="flex items-baseline gap-1.5">
-                              <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
-                                {servingCount}/{totalCount}
-                              </span>
-                              <span className="text-[11px] font-black text-[#0284c7] dark:text-[#38BDF8]">
-                                ({occupancyRate}%)
-                              </span>
-                            </div>
-                            <div className="mt-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                              <div
-                                className={`h-full rounded-full transition-all duration-500 ${occupancyRate >= 90 ? 'bg-amber-500' : occupancyRate >= 70 ? 'bg-sky-500' : 'bg-emerald-500'
-                                  }`}
-                                style={{ width: `${Math.min(100, occupancyRate)}%` }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })()}
-
-                      {/* KPI 3: Đơn hàng & Pha chế */}
-                      {(() => {
-                        const activeOrdersCount = orders.filter(o => ['pending', 'confirmed', 'cooking', 'ready'].includes(o.status)).length;
-                        const brewingCount = orders.filter(o => o.status === 'cooking' || o.status === 'pending').length;
-                        return (
-                          <div
-                            onClick={() => setActiveTab('orders')}
-                            className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] hover:border-[#0284c7]/40 dark:hover:border-[#38BDF8]/40 p-3 rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
-                            title="Bấm để xem Quản lý đơn hàng & KDS"
-                          >
-                            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
-                              <span className="text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-400">Đang phục vụ</span>
-                              <DashboardIcon name="soup_kitchen" className="text-base text-amber-500 group-hover:scale-110 transition-transform" />
-                            </div>
-                            <div className="flex items-baseline gap-1.5">
-                              <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
-                                {activeOrdersCount}
-                              </span>
-                              <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">đơn đang chạy</span>
-                            </div>
-                            <div className="mt-1 flex items-center gap-1.5 text-[10px] text-slate-400">
-                              <span className={`w-1.5 h-1.5 rounded-full ${brewingCount > 0 ? 'bg-amber-500 animate-pulse' : 'bg-slate-400'}`} />
-                              <span>{brewingCount} món đang đợi pha chế</span>
-                            </div>
-                          </div>
-                        );
-                      })()}
-
-                      {/* KPI 4: Nhân sự trực ca */}
-                      {(() => {
-                        const activeStaffCount = attendances.filter(a => a.checkIn && !a.checkOut).length;
-                        const pendingSwapsCount = shiftSwaps.filter(s => s.status === 'pending').length;
-                        return (
-                          <div
-                            onClick={() => setActiveTab('attendance')}
-                            className={`bg-white dark:bg-[#131929] border p-3 rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer group ${pendingSwapsCount > 0
-                              ? 'border-amber-500/30 hover:border-amber-500'
-                              : 'border-slate-200 dark:border-[#1e293b] hover:border-[#0284c7]/40 dark:hover:border-[#38BDF8]/40'
-                              }`}
-                            title="Bấm để xem Chấm công & Bảng lương"
-                          >
-                            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1">
-                              <span className="text-[10px] font-normal uppercase tracking-wider text-slate-400 dark:text-slate-400">Nhân sự trực ca</span>
-                              <DashboardIcon name="badge" className="text-base text-indigo-500 group-hover:scale-110 transition-transform" />
-                            </div>
-                            <div className="flex items-baseline gap-1.5">
-                              <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
-                                {activeStaffCount}
-                              </span>
-                              <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">nhân viên check-in</span>
-                            </div>
-                            <div className="mt-1 flex items-center gap-1.5">
-                              {pendingSwapsCount > 0 ? (
-                                <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse">
-                                  ⚠️ {pendingSwapsCount} đổi ca chờ duyệt
-                                </span>
-                              ) : (
-                                <span className="text-[10px] text-slate-400">Hoạt động bình thường</span>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  )}
                 </div>
 
-                {/* ── BÁO CÁO THU - CHI CỬA HÀNG (ADMIN ONLY) ────────────────────────── */}
-                <div className="space-y-4">
-                  {/* Header Title & Segmented Period Toggle */}
-                  <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 sm:p-5 rounded-3xl shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading tracking-tight">
-                          Báo Cáo Thu - Chi Cửa Hàng
-                        </h3>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-500/10 text-rose-500 border border-rose-500/20">
-                          Chỉ Admin
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                        {analyticsPeriodMode === 'day'
-                          ? 'Quản lý Doanh thu, Chi phí Lương, Tiền Nguyên liệu & Tiền Phát Sinh theo ngày'
-                          : 'Tổng hợp dòng tiền và chi tiết từng ngày trong tháng'}
-                      </p>
+                {gross > 0 && (
+                  <div className="flex items-center gap-3 shrink-0 text-xs bg-white dark:bg-[#131929] px-3 py-1.5 rounded-xl border border-slate-200/60 dark:border-slate-800">
+                    <div className="flex items-center gap-1.5" title="Chi phí nhân sự / Doanh thu">
+                      <span className="w-2 h-2 rounded-full bg-amber-500" />
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400">Lương:</span>
+                      <span className="text-[11px] font-black text-amber-600 dark:text-amber-400">{salaryRatioPercent}%</span>
                     </div>
-
-                    {/* Segmented Mode Switcher */}
-                    <div className="flex items-center bg-slate-100 dark:bg-[#0B0F17] p-1.5 rounded-2xl border border-slate-200/80 dark:border-[#1e293b] self-start md:self-auto shrink-0 shadow-inner">
-                      <button
-                        onClick={() => {
-                          setAnalyticsPeriodMode('day');
-                          if (token) fetchAnalytics(token, analyticsSelectedDate, analyticsSelectedMonth, 'day');
-                        }}
-                        className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${analyticsPeriodMode === 'day'
-                          ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 shadow-sm'
-                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                          }`}
-                      >
-                        <span>Theo Ngày</span>
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setAnalyticsPeriodMode('month');
-                          if (token) fetchAnalytics(token, analyticsSelectedDate, analyticsSelectedMonth, 'month');
-                        }}
-                        className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${analyticsPeriodMode === 'month'
-                          ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 shadow-sm'
-                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                          }`}
-                      >
-                        <span>Tổng Hợp Theo Tháng</span>
-                      </button>
+                    <div className="w-px h-3 bg-slate-200 dark:bg-slate-700" />
+                    <div className="flex items-center gap-1.5" title="Chi phí nguyên liệu tiêu hao / Doanh thu">
+                      <span className="w-2 h-2 rounded-full bg-sky-500" />
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400">Nguyên liệu:</span>
+                      <span className="text-[11px] font-black text-[#0284c7] dark:text-[#38BDF8]">{ingredientRatioPercent}%</span>
+                    </div>
+                    <div className="w-px h-3 bg-slate-200 dark:bg-slate-700" />
+                    <div className="flex items-center gap-1.5" title="Tỷ suất lợi nhuận ròng">
+                      <span className={`w-2 h-2 rounded-full ${isLoss ? 'bg-rose-500' : 'bg-emerald-500'}`} />
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400">Ròng:</span>
+                      <span className={`text-[11px] font-black ${isLoss ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                        {netMarginPercent}%
+                      </span>
                     </div>
                   </div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
-                  {/* Sub-bar: Date/Month picker, Quick Buttons, and Add Expense CTA */}
-                  <div className="bg-slate-50 dark:bg-[#131929]/70 border border-slate-200 dark:border-[#1e293b] p-3 sm:p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    {analyticsPeriodMode === 'day' ? (
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 shrink-0">Chọn ngày:</span>
-                        <button
-                          onClick={() => {
-                            const now = new Date();
-                            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-                            setAnalyticsSelectedDate(todayStr);
-                            setLedgerPage(1);
-                            if (token) fetchAnalytics(token, todayStr, undefined, 'day');
-                          }}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${analyticsSelectedDate === `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`
-                            ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/40'
-                            : 'bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#1e293b] hover:bg-slate-100 dark:hover:bg-slate-800'
-                            }`}
-                        >
-                          Hôm Nay
-                        </button>
-                        <button
-                          onClick={() => {
-                            const yest = new Date(Date.now() - 86400000);
-                            const yestStr = `${yest.getFullYear()}-${String(yest.getMonth() + 1).padStart(2, '0')}-${String(yest.getDate()).padStart(2, '0')}`;
-                            setAnalyticsSelectedDate(yestStr);
-                            setLedgerPage(1);
-                            if (token) fetchAnalytics(token, yestStr, undefined, 'day');
-                          }}
-                          className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#1e293b] hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
-                        >
-                          Hôm Qua
-                        </button>
-                        <input
-                          type="date"
-                          value={analyticsSelectedDate}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            if (val) {
-                              setAnalyticsSelectedDate(val);
-                              setLedgerPage(1);
-                              if (token) fetchAnalytics(token, val, undefined, 'day');
-                            }
-                          }}
-                          className="px-3 py-1.5 bg-white dark:bg-[#0B0F17] border border-slate-200 dark:border-[#1e293b] rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:border-[#0284c7] dark:focus:border-[#38BDF8]"
-                        />
-                        <span className="text-[11px] font-bold text-[#0284c7] dark:text-[#38BDF8] bg-sky-50 dark:bg-[#38BDF8]/10 px-2.5 py-1 rounded-lg border border-sky-200 dark:border-sky-500/20">
-                          {(() => {
-                            const [y, m, d] = (analyticsSelectedDate || '').split('-').map(Number);
-                            if (!y || !m || !d) return '';
-                            const dt = new Date(y, m - 1, d);
-                            const dn = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-                            return `${dn[dt.getDay()]}, ${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
-                          })()}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 shrink-0">Chọn tháng:</span>
-                        <button
-                          onClick={() => {
-                            const now = new Date();
-                            const curMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-                            setAnalyticsSelectedMonth(curMonth);
-                            if (token) fetchAnalytics(token, undefined, curMonth, 'month');
-                          }}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${analyticsSelectedMonth === `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`
-                            ? 'bg-[#0284c7]/15 dark:bg-[#38BDF8]/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/30 dark:border-[#38BDF8]/40'
-                            : 'bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#1e293b] hover:bg-slate-100 dark:hover:bg-slate-800'
-                            }`}
-                        >
-                          Tháng Này
-                        </button>
-                        <input
-                          type="month"
-                          value={analyticsSelectedMonth}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            if (val) {
-                              setAnalyticsSelectedMonth(val);
-                              if (token) fetchAnalytics(token, undefined, val, 'month');
-                            }
-                          }}
-                          className="px-3 py-1.5 bg-white dark:bg-[#0B0F17] border border-slate-200 dark:border-[#1e293b] rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:border-[#0284c7] dark:focus:border-[#38BDF8]"
-                        />
-                        <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 px-2.5 py-1 rounded-lg border border-purple-200 dark:border-purple-500/20">
-                          {(() => {
-                            const [y, m] = (analyticsSelectedMonth || '').split('-');
-                            return `Tổng hợp Tháng ${m}/${y}`;
-                          })()}
-                        </span>
-                      </div>
-                    )}
+        {/* 5 Financial KPI Cards (Clean Typography - Modern Surface Tokens) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-3.5">
+          {/* Card 1: Gross Revenue */}
+          <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-slate-800 p-3.5 sm:p-4 rounded-2xl shadow-xs hover:border-emerald-500/40 hover:shadow-emerald-500/5 transition-all group relative overflow-hidden flex flex-col justify-between min-h-[148px]">
+            <div>
+              {/* Top row: Icon + Status Badge */}
+              <div className="flex items-center justify-between gap-1.5">
+                <div className="w-7 h-7 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                  <DashboardIcon name="payments" className="text-[17px]" />
+                </div>
+                {analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus ? (
+                  <span
+                    className={`text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${analyticsSummary.settlementStatus.isSettled
+                      ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                      : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse'
+                      }`}
+                  >
+                    {analyticsSummary.settlementStatus.isSettled ? '✓ Đã Chốt Sổ' : 'Tạm Tính'}
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shrink-0">
+                    Cả Tháng
+                  </span>
+                )}
+              </div>
 
-                    {/* Right Quick Action: Add Incidental Expense */}
-                    <button
-                      onClick={() => {
-                        setExpenseForm({
-                          title: '',
-                          amount: '',
-                          category: 'Vật tư & Tiện ích',
-                          note: '',
-                          date: analyticsSelectedDate,
-                        });
-                        setIsAddExpenseModalOpen(true);
-                      }}
-                      className="flex items-center justify-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black shadow-xs hover:shadow-md active:scale-95 transition-all cursor-pointer w-full sm:w-auto shrink-0"
-                    >
-                      <span>+ Thêm Chi Phí Phát Sinh</span>
-                    </button>
-                  </div>
+              {/* Title & Amount */}
+              <div className="mt-2.5">
+                <span className="text-slate-500 dark:text-slate-400 text-xs font-bold block truncate" title="1. Tổng Doanh Thu">
+                  1. Tổng Doanh Thu
+                </span>
+                <div className="mt-1 text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-heading tracking-tight truncate" title={formatPrice(analyticsSummary?.periodGross ?? analyticsSummary?.todayGross ?? 0)}>
+                  {formatPrice(analyticsSummary?.periodGross ?? analyticsSummary?.todayGross ?? 0)}
+                </div>
+              </div>
+            </div>
 
-                  {/* Day Settlement Clearance Status Banner */}
-                  {analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && (
+            {/* Footer Note */}
+            <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate" title={analyticsPeriodMode === 'day' ? (analyticsSummary?.settlementStatus?.isSettled ? 'Hóa đơn đã quyết toán đầy đủ' : 'Thu từ đơn hàng ngày này (tạm tính)') : 'Tổng thực thu toàn bộ tháng'}>
+                {analyticsPeriodMode === 'day'
+                  ? (analyticsSummary?.settlementStatus?.isSettled ? 'Hóa đơn đã quyết toán đầy đủ' : 'Thu từ đơn hàng tạm tính')
+                  : 'Tổng thực thu toàn bộ tháng'}
+              </p>
+            </div>
+          </div>
+
+          {/* Card 2: Salary Costs */}
+          <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-slate-800 p-3.5 sm:p-4 rounded-2xl shadow-xs hover:border-amber-500/40 hover:shadow-amber-500/5 transition-all group relative overflow-hidden flex flex-col justify-between min-h-[148px]">
+            <div>
+              {/* Top row: Icon + Shift Status Badge */}
+              <div className="flex items-center justify-between gap-1.5">
+                <div className="w-7 h-7 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                  <DashboardIcon name="badge" className="text-[17px]" />
+                </div>
+                {analyticsPeriodMode === 'day' ? (
+                  analyticsSummary?.settlementStatus?.activeShiftsCount > 0 ? (
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 shrink-0">
+                      Đang chạy ca
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 shrink-0">
+                      Theo ca làm
+                    </span>
+                  )
+                ) : (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 shrink-0">
+                    Cả Tháng
+                  </span>
+                )}
+              </div>
+
+              {/* Title & Amount */}
+              <div className="mt-2.5">
+                <span className="text-slate-500 dark:text-slate-400 text-xs font-bold block truncate" title="2. Chi Phí Lương">
+                  2. Chi Phí Lương
+                </span>
+                <div className="mt-1 text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 font-heading tracking-tight truncate" title={formatPrice(analyticsSummary?.periodSalary ?? analyticsSummary?.todaySalary ?? 0)}>
+                  {formatPrice(analyticsSummary?.periodSalary ?? analyticsSummary?.todaySalary ?? 0)}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Note */}
+            <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate" title={analyticsPeriodMode === 'day' ? (analyticsSummary?.settlementStatus?.activeShiftsCount > 0 ? `Còn ${analyticsSummary.settlementStatus.activeShiftsCount} ca chưa checkout` : 'Lương ca làm tính theo ngày') : 'Tổng quỹ lương trong tháng'}>
+                {analyticsPeriodMode === 'day'
+                  ? (analyticsSummary?.settlementStatus?.activeShiftsCount > 0
+                    ? `Còn ${analyticsSummary.settlementStatus.activeShiftsCount} ca chưa checkout`
+                    : 'Lương ca làm tính theo ngày')
+                  : 'Tổng quỹ lương trong tháng'}
+              </p>
+            </div>
+          </div>
+
+          {/* Card 3: Ingredient Costs */}
+          <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-slate-800 p-3.5 sm:p-4 rounded-2xl shadow-xs hover:border-sky-500/40 hover:shadow-sky-500/5 transition-all group relative overflow-hidden flex flex-col justify-between min-h-[148px]">
+            <div>
+              {/* Top row: Icon + Stock Badge */}
+              <div className="flex items-center justify-between gap-1.5">
+                <div className="w-7 h-7 rounded-xl bg-sky-500/10 dark:bg-sky-500/20 text-sky-600 dark:text-[#38BDF8] flex items-center justify-center shrink-0">
+                  <DashboardIcon name="inventory_2" className="text-[17px]" />
+                </div>
+                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] border border-sky-500/20 shrink-0">
+                  Định mức kho
+                </span>
+              </div>
+
+              {/* Title & Amount */}
+              <div className="mt-2.5">
+                <span className="text-slate-500 dark:text-slate-400 text-xs font-bold block truncate" title="3. Tiền Nguyên Liệu">
+                  3. Tiền Nguyên Liệu
+                </span>
+                <div className="mt-1 text-xl sm:text-2xl font-black text-[#0284c7] dark:text-[#38BDF8] font-heading tracking-tight truncate" title={formatPrice(analyticsSummary?.periodIngredientCost ?? 0)}>
+                  {formatPrice(analyticsSummary?.periodIngredientCost ?? 0)}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Note & Stock Value */}
+            <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+              <div className="flex items-center justify-between gap-1 text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                <span className="truncate" title={analyticsPeriodMode === 'day' ? 'Tiêu hao pha chế trong ngày' : 'Tổng tiêu hao trong tháng'}>
+                  {analyticsPeriodMode === 'day' ? 'Tiêu hao trong ngày' : 'Tổng tiêu hao tháng'}
+                </span>
+                {analyticsSummary?.totalInventoryValue !== undefined && (
+                  <span
+                    className="text-[9px] font-bold text-sky-600 dark:text-[#38BDF8] bg-sky-50 dark:bg-sky-500/10 px-1.5 py-0.5 rounded shrink-0 cursor-default"
+                    title={`Vốn kho hiện tại: ${formatPrice(analyticsSummary.totalInventoryValue)}`}
+                  >
+                    Kho: {formatPrice(analyticsSummary.totalInventoryValue)}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Card 4: Incidental / Operating Expenses */}
+          <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-slate-800 p-3.5 sm:p-4 rounded-2xl shadow-xs hover:border-purple-500/40 hover:shadow-purple-500/5 transition-all group relative overflow-hidden flex flex-col justify-between min-h-[148px]">
+            <div>
+              {/* Top row: Icon + Add Expense Action */}
+              <div className="flex items-center justify-between gap-1.5">
+                <div className="w-7 h-7 rounded-xl bg-purple-500/10 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                  <DashboardIcon name="receipt_long" className="text-[17px]" />
+                </div>
+                <button
+                  onClick={() => {
+                    setExpenseForm({
+                      title: '',
+                      amount: '',
+                      category: 'Vật tư & Tiện ích',
+                      note: '',
+                      date: analyticsSelectedDate,
+                    });
+                    setIsAddExpenseModalOpen(true);
+                  }}
+                  className="px-2.5 py-0.5 bg-purple-500/15 hover:bg-purple-500/25 text-purple-600 dark:text-purple-400 rounded-lg transition-colors cursor-pointer text-[10px] font-black active:scale-95 border border-purple-500/20 shrink-0 flex items-center gap-1"
+                  title="Thêm chi phí phát sinh"
+                >
+                  <span>+ Thêm</span>
+                </button>
+              </div>
+
+              {/* Title & Amount */}
+              <div className="mt-2.5">
+                <span className="text-slate-500 dark:text-slate-400 text-xs font-bold block truncate" title="4. Tiền Phát Sinh">
+                  4. Tiền Phát Sinh
+                </span>
+                <div className="mt-1 text-xl sm:text-2xl font-black text-purple-600 dark:text-purple-400 font-heading tracking-tight truncate" title={formatPrice(analyticsSummary?.periodExpenseCost ?? analyticsSummary?.todayExpenseCost ?? 0)}>
+                  {formatPrice(analyticsSummary?.periodExpenseCost ?? analyticsSummary?.todayExpenseCost ?? 0)}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Note */}
+            <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate" title="Mua đá, sửa chữa, phụ phí vận hành...">
+                Mua đá, sửa chữa, phụ phí...
+              </p>
+            </div>
+          </div>
+
+          {/* Card 5: Net Profit */}
+          {(() => {
+            const netProfitVal = analyticsSummary?.periodNetProfit ?? analyticsSummary?.todayNetProfit ?? 0;
+            const isNegative = netProfitVal < 0;
+
+            return (
+              <div
+                className={`border p-3.5 sm:p-4 rounded-2xl shadow-xs transition-all group relative overflow-hidden flex flex-col justify-between min-h-[148px] sm:col-span-2 lg:col-span-2 xl:col-span-1 ${isNegative
+                  ? 'bg-white dark:bg-[#111827] border-rose-500/40 dark:border-rose-500/30 hover:border-rose-500 bg-gradient-to-br from-rose-500/10 via-amber-500/5 to-transparent'
+                  : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
+                    ? 'bg-white dark:bg-[#111827] border-amber-500/40 dark:border-amber-500/30 hover:border-amber-500 bg-gradient-to-br from-amber-500/10 via-sky-500/5 to-transparent'
+                    : 'bg-white dark:bg-[#111827] border-emerald-500/40 dark:border-emerald-500/30 hover:border-emerald-500 bg-gradient-to-br from-emerald-500/10 via-sky-500/5 to-transparent'
+                  }`}
+              >
+                <div>
+                  {/* Top row: Icon + Net Status Badge */}
+                  <div className="flex items-center justify-between gap-1.5">
                     <div
-                      id="day-settlement-status-banner"
-                      className={`p-4 sm:p-5 rounded-2xl border transition-all ${analyticsSummary.settlementStatus.isSettled
-                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-950 dark:text-emerald-200'
-                        : 'bg-amber-500/10 border-amber-500/30 text-amber-950 dark:text-amber-200'
+                      className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 ${isNegative
+                        ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
+                        : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
                         }`}
                     >
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                        <div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="text-sm font-black font-heading tracking-wide">
-                              {analyticsSummary.settlementStatus.isSettled
-                                ? 'ĐÃ QUYẾT TOÁN SỔ SÁCH NGÀY'
-                                : 'CHƯA ĐỦ ĐIỀU KIỆN QUYẾT TOÁN NGÀY (ĐANG TRONG CA HOẠT ĐỘNG)'}
-                            </h4>
-                            <span
-                              className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${analyticsSummary.settlementStatus.isSettled
-                                ? 'bg-emerald-600 text-white'
-                                : 'bg-amber-600 text-white animate-pulse'
-                                }`}
-                            >
-                              {analyticsSummary.settlementStatus.isSettled ? 'Đã Chốt Sổ' : 'Tạm Tính'}
-                            </span>
-                          </div>
-                          <p className="text-xs mt-1 opacity-90 font-medium">
-                            {analyticsSummary.settlementStatus.isSettled
-                              ? 'Tất cả ca làm việc đã Check-out và các đơn hàng phát sinh trong ngày đã thanh toán đầy đủ. Doanh thu và lợi nhuận ròng hiển thị chính thức 100%.'
-                              : 'Các chỉ số bên dưới đang ở mức TẠM TÍNH. Lợi nhuận ròng sẽ được tính chính thức sau khi toàn bộ nhân viên checkout ca làm và các bàn hoàn tất thanh toán.'}
-                          </p>
+                      <DashboardIcon name={isNegative ? 'trending_down' : 'account_balance_wallet'} className="text-[17px]" />
+                    </div>
+                    {analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus ? (
+                      <span
+                        className={`text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${isNegative
+                          ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30'
+                          : analyticsSummary.settlementStatus.isSettled
+                            ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                            : 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30'
+                          }`}
+                      >
+                        {isNegative ? 'Thâm Hụt' : analyticsSummary.settlementStatus.isSettled ? '✓ Đã Quyết Toán' : 'Chờ Chốt Ca'}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shrink-0">
+                        Lãi / Lỗ Tháng
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Title & Amount */}
+                  <div className="mt-2.5">
+                    <span
+                      className={`text-xs font-black block truncate ${isNegative
+                        ? 'text-rose-600 dark:text-rose-400'
+                        : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : 'text-emerald-600 dark:text-emerald-400'
+                        }`}
+                      title={isNegative ? '5. Lỗ Ròng (Thâm Hụt)' : '5. Lợi Nhuận Ròng'}
+                    >
+                      {isNegative ? '5. Lỗ Ròng (Thâm Hụt)' : '5. Lợi Nhuận Ròng'}
+                    </span>
+                    <div
+                      className={`mt-1 text-xl sm:text-2xl font-black font-heading tracking-tight truncate ${isNegative
+                        ? 'text-rose-600 dark:text-rose-400'
+                        : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : 'text-emerald-600 dark:text-emerald-400'
+                        }`}
+                      title={formatPrice(netProfitVal)}
+                    >
+                      {formatPrice(netProfitVal)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Note */}
+                <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                  <p
+                    className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate"
+                    title={
+                      isNegative
+                        ? 'Chi phí trong kỳ vượt quá doanh thu'
+                        : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
+                          ? 'Tạm tính (Chưa chốt lương ca làm & chi phí cuối ngày)'
+                          : 'Thu - Lương - NL - Phát sinh (Chính thức)'
+                    }
+                  >
+                    {isNegative
+                      ? 'Chi phí vượt doanh thu'
+                      : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
+                        ? 'Tạm tính (chờ chốt ca)'
+                        : 'Thu trừ toàn bộ chi phí'}
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+
+        {/* Detailed Breakdown Section: Day Ledger OR Monthly Aggregation Table */}
+        {analyticsPeriodMode === 'day' ? (
+          /* ── DAY LEDGER DETAILS (4 TABS) ───────────────────────── */
+          <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-4 sm:p-6 shadow-xs space-y-4">
+            <div className="flex flex-col 2xl:flex-row 2xl:items-center justify-between gap-3 border-b border-slate-100 dark:border-[#1e293b] pb-3">
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm font-black text-slate-900 dark:text-white font-heading">
+                  Sổ Kê Chi Tiết Thu - Chi Trong Ngày ({analyticsSelectedDate})
+                </h4>
+              </div>
+
+              {/* Day Ledger Tabs — Responsive flex-wrap */}
+              <div className="flex items-center flex-wrap gap-1.5 w-full 2xl:w-auto p-1 bg-slate-100 dark:bg-[#0B0F17] rounded-xl border border-slate-200/60 dark:border-[#1e293b]">
+                <button
+                  onClick={() => { setAnalyticsDayLedgerTab('orders'); setLedgerPage(1); }}
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${analyticsDayLedgerTab === 'orders'
+                    ? 'bg-white dark:bg-[#1e293b] text-emerald-600 dark:text-emerald-400 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                >
+                  Thu: Đơn Hàng ({analyticsSummary?.dayOrders?.length || 0})
+                </button>
+
+                <button
+                  onClick={() => { setAnalyticsDayLedgerTab('attendances'); setLedgerPage(1); }}
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${analyticsDayLedgerTab === 'attendances'
+                    ? 'bg-white dark:bg-[#1e293b] text-amber-600 dark:text-amber-400 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                >
+                  Chi: Ca Làm Lương ({analyticsSummary?.dayAttendances?.length || 0})
+                </button>
+
+                <button
+                  onClick={() => { setAnalyticsDayLedgerTab('expenses'); setLedgerPage(1); }}
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${analyticsDayLedgerTab === 'expenses'
+                    ? 'bg-white dark:bg-[#1e293b] text-purple-600 dark:text-purple-400 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                >
+                  Chi: Tiền Phát Sinh ({analyticsSummary?.dayExpenses?.length || 0})
+                </button>
+
+                <button
+                  onClick={() => { setAnalyticsDayLedgerTab('ingredients'); setLedgerPage(1); }}
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${analyticsDayLedgerTab === 'ingredients'
+                    ? 'bg-white dark:bg-[#1e293b] text-[#0284c7] dark:text-[#38BDF8] shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                >
+                  Chi: Tiêu Hao Nguyên Liệu ({analyticsSummary?.dayIngredientUsages?.length || 0})
+                </button>
+              </div>
+            </div>
+
+            {(() => {
+              const currentLedgerList =
+                analyticsDayLedgerTab === 'orders' ? (analyticsSummary?.dayOrders || []) :
+                  analyticsDayLedgerTab === 'attendances' ? (analyticsSummary?.dayAttendances || []) :
+                    analyticsDayLedgerTab === 'expenses' ? (analyticsSummary?.dayExpenses || []) :
+                      (analyticsSummary?.dayIngredientUsages || []);
+
+              const totalLedgerItems = currentLedgerList.length;
+              const totalLedgerPages = Math.max(1, Math.ceil(totalLedgerItems / LEDGER_PAGE_SIZE));
+              const safePage = Math.min(Math.max(1, ledgerPage), totalLedgerPages);
+              const startIndex = (safePage - 1) * LEDGER_PAGE_SIZE;
+              const paginatedList = currentLedgerList.slice(startIndex, startIndex + LEDGER_PAGE_SIZE);
+
+              const tabLabel =
+                analyticsDayLedgerTab === 'orders' ? 'đơn hàng' :
+                  analyticsDayLedgerTab === 'attendances' ? 'ca làm' :
+                    analyticsDayLedgerTab === 'expenses' ? 'khoản chi' :
+                      'lần tiêu hao';
+
+              return (
+                <>
+                  {/* Tab 1: Orders (Thu) */}
+                  {analyticsDayLedgerTab === 'orders' && (
+                    <div className="overflow-x-auto">
+                      {(!currentLedgerList || currentLedgerList.length === 0) ? (
+                        <div className="py-12 text-center text-slate-400 text-xs">
+                          <DashboardIcon name="receipt" className="text-4xl text-slate-300 dark:text-slate-600 mb-2 block" />
+                          Không có đơn hàng nào đã thanh toán trong ngày này.
                         </div>
-
-                        {/* Quick navigation tags without icons */}
-                        {!analyticsSummary.settlementStatus.isSettled && (
-                          <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
-                            <button
-                              onClick={() => setActiveTab('attendance')}
-                              className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-200 border border-amber-500/30 rounded-xl text-xs font-bold transition-all cursor-pointer"
-                            >
-                              Xem Chấm Công
-                            </button>
-                            <button
-                              onClick={() => setActiveTab('orders')}
-                              className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-200 border border-amber-500/30 rounded-xl text-xs font-bold transition-all cursor-pointer"
-                            >
-                              Xem Đơn Hàng
-                            </button>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Settlement Checklist items with minimal indicators */}
-                      {!analyticsSummary.settlementStatus.isSettled && (
-                        <div className="mt-3.5 pt-3 border-t border-amber-500/20 grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
-                          <div className="bg-white/60 dark:bg-black/20 p-3 rounded-xl border border-amber-500/20">
-                            <div className="flex items-center gap-2">
-                              <span className={`w-2 h-2 rounded-full shrink-0 ${analyticsSummary.settlementStatus.activeShiftsCount > 0 ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                              <span className="font-bold truncate">
-                                {analyticsSummary.settlementStatus.activeShiftsCount > 0
-                                  ? `${analyticsSummary.settlementStatus.activeShiftsCount} ca chưa Check-out`
-                                  : 'Đã Check-out tất cả ca'}
-                              </span>
-                            </div>
-                            {analyticsSummary.settlementStatus.activeStaffNames?.length > 0 && (
-                              <span className="text-[10px] text-amber-700 dark:text-amber-300 block truncate mt-1 pl-4" title={analyticsSummary.settlementStatus.activeStaffNames.join(', ')}>
-                                NV: {analyticsSummary.settlementStatus.activeStaffNames.join(', ')}
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="bg-white/60 dark:bg-black/20 p-3 rounded-xl border border-amber-500/20">
-                            <div className="flex items-center gap-2">
-                              <span className={`w-2 h-2 rounded-full shrink-0 ${analyticsSummary.settlementStatus.unpaidOrdersCount > 0 ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                              <span className="font-bold truncate">
-                                {analyticsSummary.settlementStatus.unpaidOrdersCount > 0
-                                  ? `${analyticsSummary.settlementStatus.unpaidOrdersCount} đơn chưa thanh toán`
-                                  : 'Tất cả đơn đã thanh toán'}
-                              </span>
-                            </div>
-                            {analyticsSummary.settlementStatus.unpaidOrdersAmount > 0 && (
-                              <span className="text-[10px] text-amber-700 dark:text-amber-300 block truncate mt-1 pl-4">
-                                Đang chờ thu: {formatPrice(analyticsSummary.settlementStatus.unpaidOrdersAmount)}
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="bg-white/60 dark:bg-black/20 p-3 rounded-xl border border-amber-500/20">
-                            <div className="flex items-center gap-2">
-                              <span className={`w-2 h-2 rounded-full shrink-0 ${analyticsSummary.settlementStatus.servingTablesCount > 0 ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                              <span className="font-bold truncate">
-                                {analyticsSummary.settlementStatus.servingTablesCount > 0
-                                  ? `${analyticsSummary.settlementStatus.servingTablesCount} bàn đang phục vụ`
-                                  : 'Bàn phục vụ đã trống'}
-                              </span>
-                            </div>
-                            <span className="text-[10px] text-amber-700 dark:text-amber-300 block truncate mt-1 pl-4">
-                              {analyticsSummary.settlementStatus.servingTablesCount > 0
-                                ? 'Chờ khách dùng xong'
-                                : 'Sẵn sàng chốt doanh thu'}
-                            </span>
-                          </div>
-                        </div>
+                      ) : (
+                        <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
+                          <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
+                            <tr>
+                              <th className="p-3">Mã đơn</th>
+                              <th className="p-3">Thời gian</th>
+                              <th className="p-3">Bàn / Hình thức</th>
+                              <th className="p-3">Món gọi</th>
+                              <th className="p-3">Thanh toán</th>
+                              <th className="p-3 text-right">Số tiền</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
+                            {paginatedList.map((ord: any, idx: number) => {
+                              const paidDate = ord.paidAt ? new Date(ord.paidAt) : (ord.createdAt ? new Date(ord.createdAt) : null);
+                              const timeStr = paidDate ? `${String(paidDate.getHours()).padStart(2, '0')}:${String(paidDate.getMinutes()).padStart(2, '0')}` : '--:--';
+                              return (
+                                <tr key={ord._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
+                                  <td className="p-3 font-mono font-bold text-slate-900 dark:text-white">
+                                    #{String(ord._id).slice(-5).toUpperCase()}
+                                  </td>
+                                  <td className="p-3 text-slate-500 font-medium">{timeStr}</td>
+                                  <td className="p-3 font-bold text-slate-800 dark:text-slate-200">
+                                    {ord.isTakeaway ? (
+                                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                                        Mang về
+                                      </span>
+                                    ) : (
+                                      <span>Bàn {ord.tableId?.tableNumber || ord.tableNumber || 'Tại chỗ'}</span>
+                                    )}
+                                  </td>
+                                  <td className="p-3 text-slate-600 dark:text-slate-300 max-w-xs truncate">
+                                    {ord.items?.length ? `${ord.items.length} món (${ord.items.map((i: any) => `${i.foodId?.name || 'Món'} x${i.quantity || 1}`).join(', ')})` : 'Chi tiết đơn'}
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase">
+                                      {ord.paymentMethod === 'bank' || ord.paymentMethod === 'bank_transfer' ? 'Chuyển khoản' : (ord.paymentMethod === 'momo' ? 'MoMo' : 'Tiền mặt')}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 text-right font-black text-emerald-600 dark:text-emerald-400">
+                                    {formatPrice(ord.totalAmount || 0)}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
                       )}
                     </div>
                   )}
 
-                  {/* ── SMART FINANCIAL & MARGIN INSIGHTS PILL STRIP ── */}
-                  {(() => {
-                    const gross = analyticsSummary?.periodGross ?? analyticsSummary?.todayGross ?? 0;
-                    const salary = analyticsSummary?.periodSalary ?? analyticsSummary?.todaySalary ?? 0;
-                    const ingredient = analyticsSummary?.periodIngredientCost ?? 0;
-                    const expense = analyticsSummary?.periodExpenseCost ?? analyticsSummary?.todayExpenseCost ?? 0;
-                    const totalCost = salary + ingredient + expense;
-                    const netProfit = analyticsSummary?.periodNetProfit ?? analyticsSummary?.todayNetProfit ?? (gross - totalCost);
-                    const isLoss = netProfit < 0;
-                    const netMarginPercent = gross > 0 ? Math.round((netProfit / gross) * 100) : 0;
-                    const costRatioPercent = gross > 0 ? Math.round((totalCost / gross) * 100) : 0;
-                    const salaryRatioPercent = gross > 0 ? Math.round((salary / gross) * 100) : 0;
-                    const ingredientRatioPercent = gross > 0 ? Math.round((ingredient / gross) * 100) : 0;
-
-                    return (
-                      <div
-                        id="smart-financial-margin-insights"
-                        className={`p-3.5 border rounded-2xl shadow-2xs transition-all ${isLoss
-                          ? 'bg-gradient-to-r from-rose-50 via-rose-50/30 to-amber-50/20 dark:from-[#211018] dark:via-[#1c0f1b] dark:to-[#18111e] border-rose-300 dark:border-rose-900/50'
-                          : 'bg-gradient-to-r from-slate-50 via-sky-50/20 to-slate-50 dark:from-[#101726] dark:via-[#0e1b2e] dark:to-[#101726] border-slate-200 dark:border-[#1e293b]'
-                          }`}
-                      >
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                          <div className="flex items-center gap-2.5">
-                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isLoss
-                              ? 'bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-400'
-                              : 'bg-sky-500/10 border border-sky-500/20 text-sky-500'
-                              }`}>
-                              <DashboardIcon name={isLoss ? 'warning' : 'insights'} className="text-lg" />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                                  Chỉ số hiệu quả tài chính & Tỷ suất sinh lời
-                                </span>
-                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${isLoss
-                                  ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30'
-                                  : netMarginPercent >= 50
-                                    ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                                    : netMarginPercent >= 20
-                                      ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/20'
-                                      : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20'
-                                  }`}>
-                                  {isLoss ? `Thâm hụt: ${netMarginPercent}%` : `Biên lợi nhuận: ${netMarginPercent}%`}
-                                </span>
-                              </div>
-                              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                                {gross === 0
-                                  ? 'Chưa ghi nhận doanh thu trong kỳ này để tính tỷ suất tài chính.'
-                                  : isLoss
-                                    ? `Lưu ý: Kỳ này đang chịu lỗ ròng do tổng chi phí (${costRatioPercent}% doanh thu) vượt quá số tiền thực thu.`
-                                    : netMarginPercent >= 50
-                                      ? `Hiệu suất sinh lời xuất sắc: Mỗi 100đ doanh thu tạo ra ${netMarginPercent}đ lợi nhuận ròng sau mọi chi phí.`
-                                      : netMarginPercent >= 20
-                                        ? `Biên lợi nhuận ổn định (${netMarginPercent}%). Tỷ lệ chi phí vận hành chiếm ${costRatioPercent}% doanh thu.`
-                                        : `Cần lưu ý: Tỷ lệ tổng chi phí (${costRatioPercent}%) đang cao so với doanh thu kỳ này.`}
-                              </p>
-                            </div>
-                          </div>
-
-                          {gross > 0 && (
-                            <div className="flex items-center gap-3 shrink-0 text-xs bg-white dark:bg-[#131929] px-3 py-1.5 rounded-xl border border-slate-200/60 dark:border-slate-800">
-                              <div className="flex items-center gap-1.5" title="Chi phí nhân sự / Doanh thu">
-                                <span className="w-2 h-2 rounded-full bg-amber-500" />
-                                <span className="text-[11px] text-slate-500 dark:text-slate-400">Lương:</span>
-                                <span className="text-[11px] font-black text-amber-600 dark:text-amber-400">{salaryRatioPercent}%</span>
-                              </div>
-                              <div className="w-px h-3 bg-slate-200 dark:bg-slate-700" />
-                              <div className="flex items-center gap-1.5" title="Chi phí nguyên liệu tiêu hao / Doanh thu">
-                                <span className="w-2 h-2 rounded-full bg-sky-500" />
-                                <span className="text-[11px] text-slate-500 dark:text-slate-400">Nguyên liệu:</span>
-                                <span className="text-[11px] font-black text-[#0284c7] dark:text-[#38BDF8]">{ingredientRatioPercent}%</span>
-                              </div>
-                              <div className="w-px h-3 bg-slate-200 dark:bg-slate-700" />
-                              <div className="flex items-center gap-1.5" title="Tỷ suất lợi nhuận ròng">
-                                <span className={`w-2 h-2 rounded-full ${isLoss ? 'bg-rose-500' : 'bg-emerald-500'}`} />
-                                <span className="text-[11px] text-slate-500 dark:text-slate-400">Ròng:</span>
-                                <span className={`text-[11px] font-black ${isLoss ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                                  {netMarginPercent}%
-                                </span>
-                              </div>
-                            </div>
-                          )}
+                  {/* Tab 2: Attendances (Chi lương ca làm) */}
+                  {analyticsDayLedgerTab === 'attendances' && (
+                    <div className="overflow-x-auto">
+                      {(!currentLedgerList || currentLedgerList.length === 0) ? (
+                        <div className="py-12 text-center text-slate-400 text-xs">
+                          <DashboardIcon name="badge" className="text-4xl text-slate-300 dark:text-slate-600 mb-2 block" />
+                          Không có ca làm việc nào được ghi nhận trong ngày này.
                         </div>
-                      </div>
-                    );
-                  })()}
-
-                  {/* 5 Financial KPI Cards (Clean Typography - Modern Surface Tokens) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-3.5">
-                    {/* Card 1: Gross Revenue */}
-                    <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-slate-800 p-3.5 sm:p-4 rounded-2xl shadow-xs hover:border-emerald-500/40 hover:shadow-emerald-500/5 transition-all group relative overflow-hidden flex flex-col justify-between min-h-[148px]">
-                      <div>
-                        {/* Top row: Icon + Status Badge */}
-                        <div className="flex items-center justify-between gap-1.5">
-                          <div className="w-7 h-7 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                            <DashboardIcon name="payments" className="text-[17px]" />
-                          </div>
-                          {analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus ? (
-                            <span
-                              className={`text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${analyticsSummary.settlementStatus.isSettled
-                                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
-                                : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse'
-                                }`}
-                            >
-                              {analyticsSummary.settlementStatus.isSettled ? '✓ Đã Chốt Sổ' : 'Tạm Tính'}
-                            </span>
-                          ) : (
-                            <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shrink-0">
-                              Cả Tháng
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Title & Amount */}
-                        <div className="mt-2.5">
-                          <span className="text-slate-500 dark:text-slate-400 text-xs font-bold block truncate" title="1. Tổng Doanh Thu">
-                            1. Tổng Doanh Thu
-                          </span>
-                          <div className="mt-1 text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-heading tracking-tight truncate" title={formatPrice(analyticsSummary?.periodGross ?? analyticsSummary?.todayGross ?? 0)}>
-                            {formatPrice(analyticsSummary?.periodGross ?? analyticsSummary?.todayGross ?? 0)}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Footer Note */}
-                      <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate" title={analyticsPeriodMode === 'day' ? (analyticsSummary?.settlementStatus?.isSettled ? 'Hóa đơn đã quyết toán đầy đủ' : 'Thu từ đơn hàng ngày này (tạm tính)') : 'Tổng thực thu toàn bộ tháng'}>
-                          {analyticsPeriodMode === 'day'
-                            ? (analyticsSummary?.settlementStatus?.isSettled ? 'Hóa đơn đã quyết toán đầy đủ' : 'Thu từ đơn hàng tạm tính')
-                            : 'Tổng thực thu toàn bộ tháng'}
-                        </p>
-                      </div>
+                      ) : (
+                        <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
+                          <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
+                            <tr>
+                              <th className="p-3">Nhân viên</th>
+                              <th className="p-3">Ca làm</th>
+                              <th className="p-3">Check-in</th>
+                              <th className="p-3">Check-out</th>
+                              <th className="p-3 text-center">Tổng giờ</th>
+                              <th className="p-3 text-right">Chi phí lương tính toán</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
+                            {paginatedList.map((att: any, idx: number) => {
+                              const inTime = att.checkIn ? new Date(att.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--';
+                              const outTime = att.checkOut ? new Date(att.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (att.checkIn ? 'Đang làm' : '--:--');
+                              const hours = att.totalHours || (att.checkIn && att.checkOut ? Math.max(0, (new Date(att.checkOut).getTime() - new Date(att.checkIn).getTime()) / 3600000) : 0);
+                              const estPay = Math.round(hours * 25000);
+                              return (
+                                <tr key={att._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
+                                  <td className="p-3 font-bold text-slate-900 dark:text-white">
+                                    {att.userId?.name || att.userId?.username || 'Nhân viên'}
+                                    <span className="block text-[10px] text-slate-400 font-normal">
+                                      {att.userId?.role === 'barista' ? 'Pha chế' : (att.userId?.role === 'admin' ? 'Quản trị' : 'Phục vụ')}
+                                    </span>
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 capitalize">
+                                      Ca {att.shift === 'morning' ? 'Sáng' : (att.shift === 'afternoon' ? 'Chiều' : (att.shift === 'evening' ? 'Tối' : att.shift))}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 font-medium text-slate-600 dark:text-slate-300">{inTime}</td>
+                                  <td className="p-3 font-medium text-slate-600 dark:text-slate-300">{outTime}</td>
+                                  <td className="p-3 text-center font-bold text-[#0284c7] dark:text-[#38BDF8]">
+                                    {hours > 0 ? `${hours.toFixed(1)}h` : '--'}
+                                  </td>
+                                  <td className="p-3 text-right font-black text-amber-600 dark:text-amber-400">
+                                    {formatPrice(estPay)}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      )}
                     </div>
+                  )}
 
-                    {/* Card 2: Salary Costs */}
-                    <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-slate-800 p-3.5 sm:p-4 rounded-2xl shadow-xs hover:border-amber-500/40 hover:shadow-amber-500/5 transition-all group relative overflow-hidden flex flex-col justify-between min-h-[148px]">
-                      <div>
-                        {/* Top row: Icon + Shift Status Badge */}
-                        <div className="flex items-center justify-between gap-1.5">
-                          <div className="w-7 h-7 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                            <DashboardIcon name="badge" className="text-[17px]" />
-                          </div>
-                          {analyticsPeriodMode === 'day' ? (
-                            analyticsSummary?.settlementStatus?.activeShiftsCount > 0 ? (
-                              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 shrink-0">
-                                Đang chạy ca
-                              </span>
-                            ) : (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 shrink-0">
-                                Theo ca làm
-                              </span>
-                            )
-                          ) : (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 shrink-0">
-                              Cả Tháng
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Title & Amount */}
-                        <div className="mt-2.5">
-                          <span className="text-slate-500 dark:text-slate-400 text-xs font-bold block truncate" title="2. Chi Phí Lương">
-                            2. Chi Phí Lương
-                          </span>
-                          <div className="mt-1 text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 font-heading tracking-tight truncate" title={formatPrice(analyticsSummary?.periodSalary ?? analyticsSummary?.todaySalary ?? 0)}>
-                            {formatPrice(analyticsSummary?.periodSalary ?? analyticsSummary?.todaySalary ?? 0)}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Footer Note */}
-                      <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate" title={analyticsPeriodMode === 'day' ? (analyticsSummary?.settlementStatus?.activeShiftsCount > 0 ? `Còn ${analyticsSummary.settlementStatus.activeShiftsCount} ca chưa checkout` : 'Lương ca làm tính theo ngày') : 'Tổng quỹ lương trong tháng'}>
-                          {analyticsPeriodMode === 'day'
-                            ? (analyticsSummary?.settlementStatus?.activeShiftsCount > 0
-                              ? `Còn ${analyticsSummary.settlementStatus.activeShiftsCount} ca chưa checkout`
-                              : 'Lương ca làm tính theo ngày')
-                            : 'Tổng quỹ lương trong tháng'}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Card 3: Ingredient Costs */}
-                    <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-slate-800 p-3.5 sm:p-4 rounded-2xl shadow-xs hover:border-sky-500/40 hover:shadow-sky-500/5 transition-all group relative overflow-hidden flex flex-col justify-between min-h-[148px]">
-                      <div>
-                        {/* Top row: Icon + Stock Badge */}
-                        <div className="flex items-center justify-between gap-1.5">
-                          <div className="w-7 h-7 rounded-xl bg-sky-500/10 dark:bg-sky-500/20 text-sky-600 dark:text-[#38BDF8] flex items-center justify-center shrink-0">
-                            <DashboardIcon name="inventory_2" className="text-[17px]" />
-                          </div>
-                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-[#38BDF8] border border-sky-500/20 shrink-0">
-                            Định mức kho
-                          </span>
-                        </div>
-
-                        {/* Title & Amount */}
-                        <div className="mt-2.5">
-                          <span className="text-slate-500 dark:text-slate-400 text-xs font-bold block truncate" title="3. Tiền Nguyên Liệu">
-                            3. Tiền Nguyên Liệu
-                          </span>
-                          <div className="mt-1 text-xl sm:text-2xl font-black text-[#0284c7] dark:text-[#38BDF8] font-heading tracking-tight truncate" title={formatPrice(analyticsSummary?.periodIngredientCost ?? 0)}>
-                            {formatPrice(analyticsSummary?.periodIngredientCost ?? 0)}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Footer Note & Stock Value */}
-                      <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
-                        <div className="flex items-center justify-between gap-1 text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-                          <span className="truncate" title={analyticsPeriodMode === 'day' ? 'Tiêu hao pha chế trong ngày' : 'Tổng tiêu hao trong tháng'}>
-                            {analyticsPeriodMode === 'day' ? 'Tiêu hao trong ngày' : 'Tổng tiêu hao tháng'}
-                          </span>
-                          {analyticsSummary?.totalInventoryValue !== undefined && (
-                            <span
-                              className="text-[9px] font-bold text-sky-600 dark:text-[#38BDF8] bg-sky-50 dark:bg-sky-500/10 px-1.5 py-0.5 rounded shrink-0 cursor-default"
-                              title={`Vốn kho hiện tại: ${formatPrice(analyticsSummary.totalInventoryValue)}`}
-                            >
-                              Kho: {formatPrice(analyticsSummary.totalInventoryValue)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Card 4: Incidental / Operating Expenses */}
-                    <div className="bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-slate-800 p-3.5 sm:p-4 rounded-2xl shadow-xs hover:border-purple-500/40 hover:shadow-purple-500/5 transition-all group relative overflow-hidden flex flex-col justify-between min-h-[148px]">
-                      <div>
-                        {/* Top row: Icon + Add Expense Action */}
-                        <div className="flex items-center justify-between gap-1.5">
-                          <div className="w-7 h-7 rounded-xl bg-purple-500/10 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
-                            <DashboardIcon name="receipt_long" className="text-[17px]" />
-                          </div>
-                          <button
-                            onClick={() => {
-                              setExpenseForm({
-                                title: '',
-                                amount: '',
-                                category: 'Vật tư & Tiện ích',
-                                note: '',
-                                date: analyticsSelectedDate,
-                              });
-                              setIsAddExpenseModalOpen(true);
-                            }}
-                            className="px-2.5 py-0.5 bg-purple-500/15 hover:bg-purple-500/25 text-purple-600 dark:text-purple-400 rounded-lg transition-colors cursor-pointer text-[10px] font-black active:scale-95 border border-purple-500/20 shrink-0 flex items-center gap-1"
-                            title="Thêm chi phí phát sinh"
-                          >
-                            <span>+ Thêm</span>
-                          </button>
-                        </div>
-
-                        {/* Title & Amount */}
-                        <div className="mt-2.5">
-                          <span className="text-slate-500 dark:text-slate-400 text-xs font-bold block truncate" title="4. Tiền Phát Sinh">
-                            4. Tiền Phát Sinh
-                          </span>
-                          <div className="mt-1 text-xl sm:text-2xl font-black text-purple-600 dark:text-purple-400 font-heading tracking-tight truncate" title={formatPrice(analyticsSummary?.periodExpenseCost ?? analyticsSummary?.todayExpenseCost ?? 0)}>
-                            {formatPrice(analyticsSummary?.periodExpenseCost ?? analyticsSummary?.todayExpenseCost ?? 0)}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Footer Note */}
-                      <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate" title="Mua đá, sửa chữa, phụ phí vận hành...">
-                          Mua đá, sửa chữa, phụ phí...
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Card 5: Net Profit */}
-                    {(() => {
-                      const netProfitVal = analyticsSummary?.periodNetProfit ?? analyticsSummary?.todayNetProfit ?? 0;
-                      const isNegative = netProfitVal < 0;
-
-                      return (
-                        <div
-                          className={`border p-3.5 sm:p-4 rounded-2xl shadow-xs transition-all group relative overflow-hidden flex flex-col justify-between min-h-[148px] sm:col-span-2 lg:col-span-2 xl:col-span-1 ${isNegative
-                            ? 'bg-white dark:bg-[#111827] border-rose-500/40 dark:border-rose-500/30 hover:border-rose-500 bg-gradient-to-br from-rose-500/10 via-amber-500/5 to-transparent'
-                            : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
-                              ? 'bg-white dark:bg-[#111827] border-amber-500/40 dark:border-amber-500/30 hover:border-amber-500 bg-gradient-to-br from-amber-500/10 via-sky-500/5 to-transparent'
-                              : 'bg-white dark:bg-[#111827] border-emerald-500/40 dark:border-emerald-500/30 hover:border-emerald-500 bg-gradient-to-br from-emerald-500/10 via-sky-500/5 to-transparent'
-                            }`}
-                        >
-                          <div>
-                            {/* Top row: Icon + Net Status Badge */}
-                            <div className="flex items-center justify-between gap-1.5">
-                              <div
-                                className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 ${isNegative
-                                  ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
-                                  : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                                  }`}
-                              >
-                                <DashboardIcon name={isNegative ? 'trending_down' : 'account_balance_wallet'} className="text-[17px]" />
-                              </div>
-                              {analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus ? (
-                                <span
-                                  className={`text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${isNegative
-                                    ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30'
-                                    : analyticsSummary.settlementStatus.isSettled
-                                      ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
-                                      : 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30'
-                                    }`}
-                                >
-                                  {isNegative ? 'Thâm Hụt' : analyticsSummary.settlementStatus.isSettled ? '✓ Đã Quyết Toán' : 'Chờ Chốt Ca'}
-                                </span>
-                              ) : (
-                                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shrink-0">
-                                  Lãi / Lỗ Tháng
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Title & Amount */}
-                            <div className="mt-2.5">
-                              <span
-                                className={`text-xs font-black block truncate ${isNegative
-                                  ? 'text-rose-600 dark:text-rose-400'
-                                  : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
-                                    ? 'text-amber-600 dark:text-amber-400'
-                                    : 'text-emerald-600 dark:text-emerald-400'
-                                  }`}
-                                title={isNegative ? '5. Lỗ Ròng (Thâm Hụt)' : '5. Lợi Nhuận Ròng'}
-                              >
-                                {isNegative ? '5. Lỗ Ròng (Thâm Hụt)' : '5. Lợi Nhuận Ròng'}
-                              </span>
-                              <div
-                                className={`mt-1 text-xl sm:text-2xl font-black font-heading tracking-tight truncate ${isNegative
-                                  ? 'text-rose-600 dark:text-rose-400'
-                                  : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
-                                    ? 'text-amber-600 dark:text-amber-400'
-                                    : 'text-emerald-600 dark:text-emerald-400'
-                                  }`}
-                                title={formatPrice(netProfitVal)}
-                              >
-                                {formatPrice(netProfitVal)}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Footer Note */}
-                          <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
-                            <p
-                              className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate"
-                              title={
-                                isNegative
-                                  ? 'Chi phí trong kỳ vượt quá doanh thu'
-                                  : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
-                                    ? 'Tạm tính (Chưa chốt lương ca làm & chi phí cuối ngày)'
-                                    : 'Thu - Lương - NL - Phát sinh (Chính thức)'
-                              }
-                            >
-                              {isNegative
-                                ? 'Chi phí vượt doanh thu'
-                                : analyticsPeriodMode === 'day' && analyticsSummary?.settlementStatus && !analyticsSummary.settlementStatus.isSettled
-                                  ? 'Tạm tính (chờ chốt ca)'
-                                  : 'Thu trừ toàn bộ chi phí'}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-
-                  {/* Detailed Breakdown Section: Day Ledger OR Monthly Aggregation Table */}
-                  {analyticsPeriodMode === 'day' ? (
-                    /* ── DAY LEDGER DETAILS (4 TABS) ───────────────────────── */
-                    <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-4 sm:p-6 shadow-xs space-y-4">
-                      <div className="flex flex-col 2xl:flex-row 2xl:items-center justify-between gap-3 border-b border-slate-100 dark:border-[#1e293b] pb-3">
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-sm font-black text-slate-900 dark:text-white font-heading">
-                            Sổ Kê Chi Tiết Thu - Chi Trong Ngày ({analyticsSelectedDate})
-                          </h4>
-                        </div>
-
-                        {/* Day Ledger Tabs — Responsive flex-wrap */}
-                        <div className="flex items-center flex-wrap gap-1.5 w-full 2xl:w-auto p-1 bg-slate-100 dark:bg-[#0B0F17] rounded-xl border border-slate-200/60 dark:border-[#1e293b]">
-                          <button
-                            onClick={() => { setAnalyticsDayLedgerTab('orders'); setLedgerPage(1); }}
-                            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${analyticsDayLedgerTab === 'orders'
-                              ? 'bg-white dark:bg-[#1e293b] text-emerald-600 dark:text-emerald-400 shadow-xs'
-                              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                              }`}
-                          >
-                            Thu: Đơn Hàng ({analyticsSummary?.dayOrders?.length || 0})
-                          </button>
-
-                          <button
-                            onClick={() => { setAnalyticsDayLedgerTab('attendances'); setLedgerPage(1); }}
-                            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${analyticsDayLedgerTab === 'attendances'
-                              ? 'bg-white dark:bg-[#1e293b] text-amber-600 dark:text-amber-400 shadow-xs'
-                              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                              }`}
-                          >
-                            Chi: Ca Làm Lương ({analyticsSummary?.dayAttendances?.length || 0})
-                          </button>
-
-                          <button
-                            onClick={() => { setAnalyticsDayLedgerTab('expenses'); setLedgerPage(1); }}
-                            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${analyticsDayLedgerTab === 'expenses'
-                              ? 'bg-white dark:bg-[#1e293b] text-purple-600 dark:text-purple-400 shadow-xs'
-                              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                              }`}
-                          >
-                            Chi: Tiền Phát Sinh ({analyticsSummary?.dayExpenses?.length || 0})
-                          </button>
-
-                          <button
-                            onClick={() => { setAnalyticsDayLedgerTab('ingredients'); setLedgerPage(1); }}
-                            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${analyticsDayLedgerTab === 'ingredients'
-                              ? 'bg-white dark:bg-[#1e293b] text-[#0284c7] dark:text-[#38BDF8] shadow-xs'
-                              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                              }`}
-                          >
-                            Chi: Tiêu Hao Nguyên Liệu ({analyticsSummary?.dayIngredientUsages?.length || 0})
-                          </button>
-                        </div>
-                      </div>
-
-                      {(() => {
-                        const currentLedgerList =
-                          analyticsDayLedgerTab === 'orders' ? (analyticsSummary?.dayOrders || []) :
-                            analyticsDayLedgerTab === 'attendances' ? (analyticsSummary?.dayAttendances || []) :
-                              analyticsDayLedgerTab === 'expenses' ? (analyticsSummary?.dayExpenses || []) :
-                                (analyticsSummary?.dayIngredientUsages || []);
-
-                        const totalLedgerItems = currentLedgerList.length;
-                        const totalLedgerPages = Math.max(1, Math.ceil(totalLedgerItems / LEDGER_PAGE_SIZE));
-                        const safePage = Math.min(Math.max(1, ledgerPage), totalLedgerPages);
-                        const startIndex = (safePage - 1) * LEDGER_PAGE_SIZE;
-                        const paginatedList = currentLedgerList.slice(startIndex, startIndex + LEDGER_PAGE_SIZE);
-
-                        const tabLabel =
-                          analyticsDayLedgerTab === 'orders' ? 'đơn hàng' :
-                            analyticsDayLedgerTab === 'attendances' ? 'ca làm' :
-                              analyticsDayLedgerTab === 'expenses' ? 'khoản chi' :
-                                'lần tiêu hao';
-
-                        return (
-                          <>
-                            {/* Tab 1: Orders (Thu) */}
-                            {analyticsDayLedgerTab === 'orders' && (
-                              <div className="overflow-x-auto">
-                                {(!currentLedgerList || currentLedgerList.length === 0) ? (
-                                  <div className="py-12 text-center text-slate-400 text-xs">
-                                    <DashboardIcon name="receipt" className="text-4xl text-slate-300 dark:text-slate-600 mb-2 block" />
-                                    Không có đơn hàng nào đã thanh toán trong ngày này.
-                                  </div>
-                                ) : (
-                                  <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
-                                    <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
-                                      <tr>
-                                        <th className="p-3">Mã đơn</th>
-                                        <th className="p-3">Thời gian</th>
-                                        <th className="p-3">Bàn / Hình thức</th>
-                                        <th className="p-3">Món gọi</th>
-                                        <th className="p-3">Thanh toán</th>
-                                        <th className="p-3 text-right">Số tiền</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
-                                      {paginatedList.map((ord: any, idx: number) => {
-                                        const paidDate = ord.paidAt ? new Date(ord.paidAt) : (ord.createdAt ? new Date(ord.createdAt) : null);
-                                        const timeStr = paidDate ? `${String(paidDate.getHours()).padStart(2, '0')}:${String(paidDate.getMinutes()).padStart(2, '0')}` : '--:--';
-                                        return (
-                                          <tr key={ord._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
-                                            <td className="p-3 font-mono font-bold text-slate-900 dark:text-white">
-                                              #{String(ord._id).slice(-5).toUpperCase()}
-                                            </td>
-                                            <td className="p-3 text-slate-500 font-medium">{timeStr}</td>
-                                            <td className="p-3 font-bold text-slate-800 dark:text-slate-200">
-                                              {ord.isTakeaway ? (
-                                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                                                  Mang về
-                                                </span>
-                                              ) : (
-                                                <span>Bàn {ord.tableId?.tableNumber || ord.tableNumber || 'Tại chỗ'}</span>
-                                              )}
-                                            </td>
-                                            <td className="p-3 text-slate-600 dark:text-slate-300 max-w-xs truncate">
-                                              {ord.items?.length ? `${ord.items.length} món (${ord.items.map((i: any) => `${i.foodId?.name || 'Món'} x${i.quantity || 1}`).join(', ')})` : 'Chi tiết đơn'}
-                                            </td>
-                                            <td className="p-3">
-                                              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase">
-                                                {ord.paymentMethod === 'bank' || ord.paymentMethod === 'bank_transfer' ? 'Chuyển khoản' : (ord.paymentMethod === 'momo' ? 'MoMo' : 'Tiền mặt')}
-                                              </span>
-                                            </td>
-                                            <td className="p-3 text-right font-black text-emerald-600 dark:text-emerald-400">
-                                              {formatPrice(ord.totalAmount || 0)}
-                                            </td>
-                                          </tr>
-                                        );
-                                      })}
-                                    </tbody>
-                                  </table>
-                                )}
-                              </div>
-                            )}
-
-                            {/* Tab 2: Attendances (Chi lương ca làm) */}
-                            {analyticsDayLedgerTab === 'attendances' && (
-                              <div className="overflow-x-auto">
-                                {(!currentLedgerList || currentLedgerList.length === 0) ? (
-                                  <div className="py-12 text-center text-slate-400 text-xs">
-                                    <DashboardIcon name="badge" className="text-4xl text-slate-300 dark:text-slate-600 mb-2 block" />
-                                    Không có ca làm việc nào được ghi nhận trong ngày này.
-                                  </div>
-                                ) : (
-                                  <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
-                                    <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
-                                      <tr>
-                                        <th className="p-3">Nhân viên</th>
-                                        <th className="p-3">Ca làm</th>
-                                        <th className="p-3">Check-in</th>
-                                        <th className="p-3">Check-out</th>
-                                        <th className="p-3 text-center">Tổng giờ</th>
-                                        <th className="p-3 text-right">Chi phí lương tính toán</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
-                                      {paginatedList.map((att: any, idx: number) => {
-                                        const inTime = att.checkIn ? new Date(att.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--';
-                                        const outTime = att.checkOut ? new Date(att.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (att.checkIn ? 'Đang làm' : '--:--');
-                                        const hours = att.totalHours || (att.checkIn && att.checkOut ? Math.max(0, (new Date(att.checkOut).getTime() - new Date(att.checkIn).getTime()) / 3600000) : 0);
-                                        const estPay = Math.round(hours * 25000);
-                                        return (
-                                          <tr key={att._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
-                                            <td className="p-3 font-bold text-slate-900 dark:text-white">
-                                              {att.userId?.name || att.userId?.username || 'Nhân viên'}
-                                              <span className="block text-[10px] text-slate-400 font-normal">
-                                                {att.userId?.role === 'barista' ? 'Pha chế' : (att.userId?.role === 'admin' ? 'Quản trị' : 'Phục vụ')}
-                                              </span>
-                                            </td>
-                                            <td className="p-3">
-                                              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 capitalize">
-                                                Ca {att.shift === 'morning' ? 'Sáng' : (att.shift === 'afternoon' ? 'Chiều' : (att.shift === 'evening' ? 'Tối' : att.shift))}
-                                              </span>
-                                            </td>
-                                            <td className="p-3 font-medium text-slate-600 dark:text-slate-300">{inTime}</td>
-                                            <td className="p-3 font-medium text-slate-600 dark:text-slate-300">{outTime}</td>
-                                            <td className="p-3 text-center font-bold text-[#0284c7] dark:text-[#38BDF8]">
-                                              {hours > 0 ? `${hours.toFixed(1)}h` : '--'}
-                                            </td>
-                                            <td className="p-3 text-right font-black text-amber-600 dark:text-amber-400">
-                                              {formatPrice(estPay)}
-                                            </td>
-                                          </tr>
-                                        );
-                                      })}
-                                    </tbody>
-                                  </table>
-                                )}
-                              </div>
-                            )}
-
-                            {/* Tab 3: Incidental Expenses (Chi tiền phát sinh) */}
-                            {analyticsDayLedgerTab === 'expenses' && (
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-xs text-slate-500 font-medium">
-                                    Các khoản chi phát sinh ngoài kho trong ngày: mua đá, sửa chữa, phụ phí...
-                                  </span>
-                                  <button
-                                    onClick={() => {
-                                      setExpenseForm({
-                                        title: '',
-                                        amount: '',
-                                        category: 'Vật tư & Tiện ích',
-                                        note: '',
-                                        date: analyticsSelectedDate,
-                                      });
-                                      setIsAddExpenseModalOpen(true);
-                                    }}
-                                    className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
-                                  >
-                                    <span>+ Thêm Khoản Chi</span>
-                                  </button>
-                                </div>
-
-                                <div className="overflow-x-auto">
-                                  {(!currentLedgerList || currentLedgerList.length === 0) ? (
-                                    <div className="py-12 text-center text-slate-400 text-xs">
-                                      <DashboardIcon name="receipt_long" className="text-4xl text-slate-300 dark:text-slate-600 mb-2 block" />
-                                      Chưa có khoản chi phát sinh nào trong ngày này.
-                                    </div>
-                                  ) : (
-                                    <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
-                                      <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
-                                        <tr>
-                                          <th className="p-3">Khoản chi</th>
-                                          <th className="p-3">Danh mục</th>
-                                          <th className="p-3">Ghi chú</th>
-                                          <th className="p-3">Người ghi nhận</th>
-                                          <th className="p-3 text-right">Số tiền</th>
-                                          <th className="p-3 text-center">Hành động</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
-                                        {paginatedList.map((exp: any, idx: number) => (
-                                          <tr key={exp._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
-                                            <td className="p-3 font-bold text-slate-900 dark:text-white">
-                                              {exp.title}
-                                            </td>
-                                            <td className="p-3">
-                                              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                                                {exp.category || 'Vật tư & Tiện ích'}
-                                              </span>
-                                            </td>
-                                            <td className="p-3 text-slate-500 dark:text-slate-400">{exp.note || '--'}</td>
-                                            <td className="p-3 text-slate-600 dark:text-slate-300">{exp.createdBy || 'Admin'}</td>
-                                            <td className="p-3 text-right font-black text-purple-600 dark:text-purple-400">
-                                              {formatPrice(exp.amount || 0)}
-                                            </td>
-                                            <td className="p-3 text-center">
-                                              <button
-                                                onClick={() => handleDeleteExpense(exp._id)}
-                                                className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
-                                                title="Xóa khoản chi này"
-                                              >
-                                                <DashboardIcon name="delete" className="text-base" />
-                                              </button>
-                                            </td>
-                                          </tr>
-                                        ))}
-                                      </tbody>
-                                    </table>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Tab 4: Ingredient Usages (Chi tiêu hao nguyên liệu trong ngày) */}
-                            {analyticsDayLedgerTab === 'ingredients' && (
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-xs text-slate-500 font-medium">
-                                    Ghi nhận tự động mỗi khi giảm số lượng nguyên liệu trong kho (pha chế, xuất dùng).
-                                  </span>
-                                  <span className="text-xs font-bold text-[#0284c7] dark:text-[#38BDF8]">
-                                    Tổng tiêu hao: {formatPrice(analyticsSummary?.periodIngredientCost || 0)}
-                                  </span>
-                                </div>
-
-                                <div className="overflow-x-auto">
-                                  {(!currentLedgerList || currentLedgerList.length === 0) ? (
-                                    <div className="py-12 text-center text-slate-400 text-xs">
-                                      <DashboardIcon name="inventory_2" className="text-4xl text-slate-300 dark:text-slate-600 mb-2 block" />
-                                      Chưa có ghi nhận tiêu hao nguyên liệu nào trong ngày này.
-                                    </div>
-                                  ) : (
-                                    <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
-                                      <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
-                                        <tr>
-                                          <th className="p-3">Nguyên liệu</th>
-                                          <th className="p-3">Lượng giảm</th>
-                                          <th className="p-3">Đơn giá</th>
-                                          <th className="p-3">Thời gian</th>
-                                          <th className="p-3">Người cập nhật</th>
-                                          <th className="p-3 text-right">Thành tiền tiêu hao</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
-                                        {paginatedList.map((usage: any, idx: number) => {
-                                          const uDate = usage.date ? new Date(usage.date) : (usage.createdAt ? new Date(usage.createdAt) : null);
-                                          const timeStr = uDate ? `${String(uDate.getHours()).padStart(2, '0')}:${String(uDate.getMinutes()).padStart(2, '0')}` : '--:--';
-                                          return (
-                                            <tr key={usage._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
-                                              <td className="p-3 font-bold text-slate-900 dark:text-white">
-                                                {usage.ingredientName || 'Nguyên liệu'}
-                                                {usage.note && (
-                                                  <span className="block text-[10px] text-slate-400 font-normal">
-                                                    {usage.note}
-                                                  </span>
-                                                )}
-                                              </td>
-                                              <td className="p-3 font-bold text-rose-500">
-                                                -{usage.quantity} {usage.unit || ''}
-                                              </td>
-                                              <td className="p-3 text-slate-500 font-medium">
-                                                {formatPrice(usage.unitPrice || 0)} / {usage.unit || 'đv'}
-                                              </td>
-                                              <td className="p-3 text-slate-500 font-medium">{timeStr}</td>
-                                              <td className="p-3 text-slate-600 dark:text-slate-300">{usage.updatedBy || 'Pha chế'}</td>
-                                              <td className="p-3 text-right font-black text-[#0284c7] dark:text-[#38BDF8]">
-                                                {formatPrice(usage.totalCost || 0)}
-                                              </td>
-                                            </tr>
-                                          );
-                                        })}
-                                      </tbody>
-                                    </table>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Pagination Controls */}
-                            {totalLedgerItems > 0 && (
-                              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-200/70 dark:border-[#1e293b]">
-                                <div className="text-xs text-slate-500 dark:text-slate-400">
-                                  Hiển thị <span className="font-extrabold text-slate-900 dark:text-white">{startIndex + 1}</span> - <span className="font-extrabold text-slate-900 dark:text-white">{Math.min(startIndex + LEDGER_PAGE_SIZE, totalLedgerItems)}</span> trong tổng số <span className="font-extrabold text-slate-900 dark:text-white">{totalLedgerItems}</span> {tabLabel}
-                                </div>
-
-                                {totalLedgerPages > 1 && (
-                                  <div className="flex items-center gap-1.5 select-none">
-                                    <button
-                                      onClick={() => setLedgerPage(Math.max(1, safePage - 1))}
-                                      disabled={safePage === 1}
-                                      className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200 dark:border-[#1e293b] bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1e293b] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-xs font-bold transition-all flex items-center gap-1"
-                                      title="Trang trước"
-                                    >
-                                      <DashboardIcon name="chevron_left" className="text-sm" />
-                                      <span className="hidden sm:inline">Trước</span>
-                                    </button>
-
-                                    <div className="flex items-center gap-1">
-                                      {Array.from({ length: totalLedgerPages }, (_, i) => i + 1).map((pageNum) => {
-                                        const isEdge = pageNum === 1 || pageNum === totalLedgerPages;
-                                        const isNearby = Math.abs(pageNum - safePage) <= 1;
-
-                                        if (isEdge || isNearby) {
-                                          const isActive = pageNum === safePage;
-                                          return (
-                                            <button
-                                              key={pageNum}
-                                              onClick={() => setLedgerPage(pageNum)}
-                                              className={`min-w-[32px] h-8 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${isActive
-                                                ? 'bg-[#38BDF8] text-[#090D16] shadow-md shadow-[#38BDF8]/20 scale-105'
-                                                : 'border border-slate-200 dark:border-[#1e293b] bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1e293b]'
-                                                }`}
-                                            >
-                                              {pageNum}
-                                            </button>
-                                          );
-                                        } else if (pageNum === safePage - 2 || pageNum === safePage + 2) {
-                                          return (
-                                            <span key={pageNum} className="px-1 text-slate-400 text-xs font-bold">
-                                              ...
-                                            </span>
-                                          );
-                                        }
-                                        return null;
-                                      })}
-                                    </div>
-
-                                    <button
-                                      onClick={() => setLedgerPage(Math.min(totalLedgerPages, safePage + 1))}
-                                      disabled={safePage === totalLedgerPages}
-                                      className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200 dark:border-[#1e293b] bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1e293b] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-xs font-bold transition-all flex items-center gap-1"
-                                      title="Trang sau"
-                                    >
-                                      <span className="hidden sm:inline">Sau</span>
-                                      <DashboardIcon name="chevron_right" className="text-sm" />
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </>
-                        );
-                      })()}
-                    </div>
-                  ) : (
-                    /* ── MONTHLY BREAKDOWN TABLE ───────────────────────────── */
-                    <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-4 sm:p-6 shadow-xs space-y-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-[#1e293b] pb-3">
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-sm font-black text-slate-900 dark:text-white font-heading">
-                            Bảng Tổng Hợp Doanh Thu & Chi Phí Từng Ngày ({analyticsSelectedMonth})
-                          </h4>
-                        </div>
-                        <span className="text-xs text-slate-400">
-                          Bấm "Xem Ngày" để vào sổ chi tiết của ngày đó
+                  {/* Tab 3: Incidental Expenses (Chi tiền phát sinh) */}
+                  {analyticsDayLedgerTab === 'expenses' && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-slate-500 font-medium">
+                          Các khoản chi phát sinh ngoài kho trong ngày: mua đá, sửa chữa, phụ phí...
                         </span>
+                        <button
+                          onClick={() => {
+                            setExpenseForm({
+                              title: '',
+                              amount: '',
+                              category: 'Vật tư & Tiện ích',
+                              note: '',
+                              date: analyticsSelectedDate,
+                            });
+                            setIsAddExpenseModalOpen(true);
+                          }}
+                          className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
+                        >
+                          <span>+ Thêm Khoản Chi</span>
+                        </button>
                       </div>
 
                       <div className="overflow-x-auto">
-                        {(!analyticsSummary?.dailyBreakdown || analyticsSummary.dailyBreakdown.length === 0) ? (
+                        {(!currentLedgerList || currentLedgerList.length === 0) ? (
                           <div className="py-12 text-center text-slate-400 text-xs">
-                            Chưa có dữ liệu tổng hợp cho tháng này.
+                            <DashboardIcon name="receipt_long" className="text-4xl text-slate-300 dark:text-slate-600 mb-2 block" />
+                            Chưa có khoản chi phát sinh nào trong ngày này.
                           </div>
                         ) : (
-                          <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[750px]">
+                          <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
                             <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
                               <tr>
-                                <th className="p-3">Ngày</th>
-                                <th className="p-3 text-center">Số đơn</th>
-                                <th className="p-3 text-right text-emerald-600 dark:text-emerald-400">1. Doanh Thu</th>
-                                <th className="p-3 text-right text-amber-600 dark:text-amber-400">2. Lương</th>
-                                <th className="p-3 text-right text-[#0284c7] dark:text-[#38BDF8]">3. Nguyên Liệu</th>
-                                <th className="p-3 text-right text-purple-600 dark:text-purple-400">4. Phát Sinh</th>
-                                <th className="p-3 text-right text-emerald-600 dark:text-emerald-400 font-extrabold">5. Lợi Nhuận</th>
-                                <th className="p-3 text-center">Thao tác</th>
+                                <th className="p-3">Khoản chi</th>
+                                <th className="p-3">Danh mục</th>
+                                <th className="p-3">Ghi chú</th>
+                                <th className="p-3">Người ghi nhận</th>
+                                <th className="p-3 text-right">Số tiền</th>
+                                <th className="p-3 text-center">Hành động</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
-                              {analyticsSummary.dailyBreakdown.map((row: any) => (
-                                <tr key={row.date} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
-                                  <td className="p-3 font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                    <span className={`px-2 py-0.5 text-[10px] font-extrabold rounded-md ${row.dayOfWeek === 'CN' ? 'bg-rose-500/10 text-rose-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                                      }`}>
-                                      {row.dayOfWeek}
+                              {paginatedList.map((exp: any, idx: number) => (
+                                <tr key={exp._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
+                                  <td className="p-3 font-bold text-slate-900 dark:text-white">
+                                    {exp.title}
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                                      {exp.category || 'Vật tư & Tiện ích'}
                                     </span>
-                                    <span>{row.date}</span>
                                   </td>
-                                  <td className="p-3 text-center font-bold text-slate-700 dark:text-slate-300">
-                                    {row.ordersCount}
-                                  </td>
-                                  <td className="p-3 text-right font-black text-slate-900 dark:text-white">
-                                    {formatPrice(row.grossRevenue || 0)}
-                                  </td>
-                                  <td className="p-3 text-right font-bold text-amber-600 dark:text-amber-400">
-                                    {formatPrice(row.salaryCost || 0)}
-                                  </td>
-                                  <td className="p-3 text-right font-bold text-[#0284c7] dark:text-[#38BDF8]">
-                                    {formatPrice(row.ingredientCost || 0)}
-                                  </td>
-                                  <td className="p-3 text-right font-bold text-purple-600 dark:text-purple-400">
-                                    {formatPrice(row.expenseCost || 0)}
-                                  </td>
-                                  <td className="p-3 text-right font-black text-emerald-600 dark:text-emerald-400 text-sm">
-                                    {formatPrice(row.netProfit || 0)}
+                                  <td className="p-3 text-slate-500 dark:text-slate-400">{exp.note || '--'}</td>
+                                  <td className="p-3 text-slate-600 dark:text-slate-300">{exp.createdBy || 'Admin'}</td>
+                                  <td className="p-3 text-right font-black text-purple-600 dark:text-purple-400">
+                                    {formatPrice(exp.amount || 0)}
                                   </td>
                                   <td className="p-3 text-center">
                                     <button
-                                      onClick={() => {
-                                        setAnalyticsSelectedDate(row.date);
-                                        setAnalyticsPeriodMode('day');
-                                        setLedgerPage(1);
-                                        if (token) fetchAnalytics(token, row.date, undefined, 'day');
-                                      }}
-                                      className="px-2.5 py-1 text-[11px] font-bold bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] rounded-lg hover:bg-[#0284c7] hover:text-white transition-all cursor-pointer"
+                                      onClick={() => handleDeleteExpense(exp._id)}
+                                      className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+                                      title="Xóa khoản chi này"
                                     >
-                                      Xem ngày
+                                      <DashboardIcon name="delete" className="text-base" />
                                     </button>
                                   </td>
                                 </tr>
                               ))}
                             </tbody>
-                            <tfoot className="bg-slate-100 dark:bg-[#1e293b] font-black text-xs text-slate-900 dark:text-white border-t border-slate-300 dark:border-slate-700">
-                              <tr>
-                                <td className="p-3">TỔNG CỘNG THÁNG</td>
-                                <td className="p-3 text-center">
-                                  {analyticsSummary.dailyBreakdown.reduce((s: number, r: any) => s + (r.ordersCount || 0), 0)}
-                                </td>
-                                <td className="p-3 text-right text-slate-900 dark:text-white">
-                                  {formatPrice(analyticsSummary.dailyBreakdown.reduce((s: number, r: any) => s + (r.grossRevenue || 0), 0))}
-                                </td>
-                                <td className="p-3 text-right text-amber-600 dark:text-amber-400">
-                                  {formatPrice(analyticsSummary.dailyBreakdown.reduce((s: number, r: any) => s + (r.salaryCost || 0), 0))}
-                                </td>
-                                <td className="p-3 text-right text-[#0284c7] dark:text-[#38BDF8]">
-                                  {formatPrice(analyticsSummary.dailyBreakdown.reduce((s: number, r: any) => s + (r.ingredientCost || 0), 0))}
-                                </td>
-                                <td className="p-3 text-right text-purple-600 dark:text-purple-400">
-                                  {formatPrice(analyticsSummary.dailyBreakdown.reduce((s: number, r: any) => s + (r.expenseCost || 0), 0))}
-                                </td>
-                                <td className="p-3 text-right text-emerald-600 dark:text-emerald-400 text-sm font-black">
-                                  {formatPrice(analyticsSummary.dailyBreakdown.reduce((s: number, r: any) => s + (r.netProfit || 0), 0))}
-                                </td>
-                                <td></td>
-                              </tr>
-                            </tfoot>
                           </table>
                         )}
                       </div>
                     </div>
                   )}
-                </div>
 
-                {/* Overview Weekly/Monthly & Review Indicators */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                  <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl shadow-xs">
-                    <span className="text-slate-500 dark:text-slate-400 text-xs font-normal uppercase tracking-wider block">Lợi nhuận ròng tuần này</span>
-                    <span className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block font-heading">
-                      {formatPrice(analyticsSummary?.week || 0)}
-                    </span>
-                    <span className="text-[10px] text-slate-500 block mt-1">
-                      Doanh thu: {formatPrice(analyticsSummary?.weekGross || 0)} — Trừ lương: {formatPrice(analyticsSummary?.weekSalary || 0)}
-                    </span>
-                  </div>
-                  <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl shadow-xs">
-                    <span className="text-slate-500 dark:text-slate-400 text-xs font-normal uppercase tracking-wider block">Lợi nhuận ròng tháng này</span>
-                    <span className="text-xl sm:text-2xl font-black text-purple-600 dark:text-purple-400 mt-1 block font-heading">
-                      {formatPrice(analyticsSummary?.month || 0)}
-                    </span>
-                    <span className="text-[10px] text-slate-500 block mt-1">
-                      Doanh thu: {formatPrice(analyticsSummary?.monthGross || 0)} — Trừ lương: {formatPrice(analyticsSummary?.monthSalary || 0)}
-                    </span>
-                  </div>
-                  <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl shadow-xs">
-                    <span className="text-slate-500 dark:text-slate-400 text-xs font-normal uppercase tracking-wider block">Đánh giá trung bình</span>
-                    <span className="text-xl sm:text-2xl font-black text-amber-500 dark:text-amber-400 mt-1 flex items-center gap-1 font-heading">
-                      <DashboardIcon name="star" className="text-amber-500 text-lg sm:text-xl" />
-                      <span>{avgStar} / 5.0</span>
-                    </span>
-                    <span className="text-[10px] text-slate-500 block mt-1">
-                      {reviews.length} đánh giá từ khách hàng
-                    </span>
-                  </div>
-                </div>
+                  {/* Tab 4: Ingredient Usages (Chi tiêu hao nguyên liệu trong ngày) */}
+                  {analyticsDayLedgerTab === 'ingredients' && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-slate-500 font-medium">
+                          Ghi nhận tự động mỗi khi giảm số lượng nguyên liệu trong kho (pha chế, xuất dùng).
+                        </span>
+                        <span className="text-xs font-bold text-[#0284c7] dark:text-[#38BDF8]">
+                          Tổng tiêu hao: {formatPrice(analyticsSummary?.periodIngredientCost || 0)}
+                        </span>
+                      </div>
 
-                {/* AI Review Quality Insights */}
-                <AdminAiReviewInsights token={token} />
-
-                {/* AI Demand Forecasting & Smart Restock Advice */}
-                <AiDemandForecastCard token={token} />
-
-
-                {/* Chart.js Visualizations Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {/* Chart 1: Daily Revenue Trend Line */}
-                  <div className="lg:col-span-2 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-4 sm:p-5 space-y-4 shadow-xs">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                      <h3 className="text-sm font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
-                        <DashboardIcon name="show_chart" className="text-[#0284c7] dark:text-[#38BDF8] text-base" />
-                        <span>Biểu đồ Xu hướng Doanh thu theo Ngày</span>
-                      </h3>
-                      <span className="text-[11px] text-slate-500 dark:text-slate-400">Tự động vẽ từ MongoDB</span>
-                    </div>
-                    <div className="h-52 sm:h-64">
-                      <Line data={lineChartData} options={lineChartOptions} />
-                    </div>
-                  </div>
-
-                  {/* Chart 3: Top 5 Selling Foods Doughnut */}
-                  <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-5 space-y-4 shadow-xs">
-                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
-                      <DashboardIcon name="pie_chart" className="text-amber-500 dark:text-amber-400 text-base" />
-                      <span>Cơ cấu Top Món bán chạy</span>
-                    </h3>
-                    <div className="h-52 sm:h-64">
-                      {topFoods.length > 0 ? (
-                        <Doughnut data={doughnutData} options={doughnutOptions} />
-                      ) : (
-                        <div className="h-full flex items-center justify-center text-xs text-slate-500">Chưa có dữ liệu món bán</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Chart 2: Revenue vs Salaries vs Net Profit Grouped Bar */}
-                <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-5 space-y-4 shadow-xs">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
-                      <DashboardIcon name="bar_chart" className="text-emerald-600 dark:text-emerald-400 text-base" />
-                      <span>So sánh Cấu trúc Doanh thu, Chi phí Lương & Lợi nhuận Ròng</span>
-                    </h3>
-                  </div>
-                  <div className="h-72">
-                    <Bar data={barChartData} options={barChartOptions} />
-                  </div>
-                </div>
-
-                {/* Top Selling Foods Table from DB */}
-                <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-4 sm:p-5 space-y-4 shadow-xs">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
-                      <DashboardIcon name="local_fire_department" className="text-[#0284c7] dark:text-[#38BDF8] text-lg" />
-                      <span>Top Các món được bán nhiều nhất từ Database</span>
-                    </h3>
-                    <span className="self-start sm:self-auto bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] px-3 py-1 rounded-full text-xs font-bold shrink-0">
-                      {topFoods.length} món bán chạy
-                    </span>
-                  </div>
-
-                  {/* Mobile Card List (< sm: 640px) */}
-                  <div className="grid grid-cols-1 gap-3 sm:hidden">
-                    {topFoods.length === 0 ? (
-                      <p className="p-4 text-center text-slate-500 text-xs">Chưa có dữ liệu thống kê món</p>
-                    ) : (
-                      topFoods.map((tf, i) => (
-                        <div key={i} className="bg-white dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] p-3.5 rounded-xl flex items-center justify-between gap-3 text-xs">
-                          <div className="flex items-center gap-3 min-w-0">
-                            {tf.foodImage && (
-                              <img src={tf.foodImage} alt={tf.foodName} className="w-10 h-10 rounded-lg object-cover bg-slate-200 dark:bg-slate-800 shrink-0" />
-                            )}
-                            <div className="truncate">
-                              <span className="block font-bold text-slate-900 dark:text-white truncate">{tf.foodName}</span>
-                              <span className="text-[10px] text-slate-500">Hạng #{i + 1} — {tf.category || 'Thực đơn'}</span>
-                            </div>
+                      <div className="overflow-x-auto">
+                        {(!currentLedgerList || currentLedgerList.length === 0) ? (
+                          <div className="py-12 text-center text-slate-400 text-xs">
+                            <DashboardIcon name="inventory_2" className="text-4xl text-slate-300 dark:text-slate-600 mb-2 block" />
+                            Chưa có ghi nhận tiêu hao nguyên liệu nào trong ngày này.
                           </div>
-                          <div className="text-right shrink-0">
-                            <span className="block font-black text-[#0284c7] dark:text-[#38BDF8]">{tf.totalQuantity} món</span>
-                            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">{formatPrice(tf.totalRevenue || 0)}</span>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  {/* Desktop Table View (>= sm: 640px) */}
-                  <div className="hidden sm:block overflow-x-auto">
-                    <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[600px]">
-                      <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
-                        <tr>
-                          <th className="p-3.5">Tên Món ăn / Thức uống</th>
-                          <th className="p-3.5">Danh mục</th>
-                          <th className="p-3.5">Đơn giá</th>
-                          <th className="p-3.5">Số lượng đã bán</th>
-                          <th className="p-3.5 text-right">Tổng doanh thu món</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
-                        {topFoods.length === 0 ? (
-                          <tr>
-                            <td colSpan={5} className="p-6 text-center text-slate-500">Chưa có dữ liệu thống kê món</td>
-                          </tr>
                         ) : (
-                          topFoods.map((tf, i) => (
-                            <tr key={i} className="hover:bg-slate-100/60 dark:hover:bg-[#182035] transition-colors">
-                              <td className="p-3.5 font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                                {tf.foodImage && (
-                                  <img src={tf.foodImage} alt={tf.foodName} className="w-9 h-9 rounded-lg object-cover bg-slate-200 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-[#1e293b]" />
-                                )}
-                                <div className="truncate">
-                                  <span className="block font-bold text-slate-900 dark:text-white truncate">{tf.foodName}</span>
-                                  <span className="text-[10px] text-slate-500">Hạng #{i + 1}</span>
-                                </div>
-                              </td>
-                              <td className="p-3.5 text-slate-500 dark:text-slate-400">{tf.category || 'Thực đơn'}</td>
-                              <td className="p-3.5 font-semibold text-slate-700 dark:text-slate-300">{tf.price ? formatPrice(tf.price) : '--'}</td>
-                              <td className="p-3.5 font-black text-[#0284c7] dark:text-[#38BDF8] text-sm">{tf.totalQuantity} món</td>
-                              <td className="p-3.5 font-black text-emerald-600 dark:text-emerald-400 text-right">{formatPrice(tf.totalRevenue || 0)}</td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* Customer Reviews & Feedback Section */}
-                <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-4 sm:p-5 space-y-4 shadow-xs">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
-                        <DashboardIcon name="star" className="text-amber-500 dark:text-amber-400 text-lg" />
-                        <span>Đánh giá & Phản hồi từ Khách hàng</span>
-                      </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Ý kiến đóng góp trực tiếp từ khách hàng quét QR tại bàn</p>
-                    </div>
-                    <div className="self-start sm:self-auto flex items-center gap-2 bg-slate-100 dark:bg-[#1e293b] px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0">
-                      <span className="text-amber-500 dark:text-amber-400 font-black text-sm flex items-center gap-1">
-                        <DashboardIcon name="star" className="text-base" />
-                        <span>{avgStar}</span>
-                      </span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">({reviews.length} đánh giá)</span>
-                    </div>
-                  </div>
-
-                  {reviews.length === 0 ? (
-                    <div className="bg-white dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-8 text-center text-slate-500">
-                      Chưa có đánh giá nào từ khách hàng
-                    </div>
-                  ) : (() => {
-                    const REVIEWS_PER_PAGE = 4; // 2 hàng x 2 cột = 4 đánh giá/trang
-                    const totalReviewPages = Math.ceil(reviews.length / REVIEWS_PER_PAGE) || 1;
-                    const safeReviewPage = Math.min(reviewCurrentPage, totalReviewPages);
-                    const paginatedReviews = reviews.slice((safeReviewPage - 1) * REVIEWS_PER_PAGE, safeReviewPage * REVIEWS_PER_PAGE);
-
-                    return (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {paginatedReviews.map((rev) => (
-                            <div key={rev._id} className="bg-white dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] p-4 rounded-xl space-y-2 relative shadow-xs">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-bold text-slate-900 dark:text-white text-xs">{rev.customerName || 'Khách hàng'}</span>
-                                    <span className="text-[10px] bg-slate-200 dark:bg-[#1e293b] text-slate-700 dark:text-slate-400 px-2 py-0.5 rounded-md">
-                                      {rev.tableId?.tableName || 'Bàn'}
-                                    </span>
-                                  </div>
-                                  <div className="text-amber-500 dark:text-amber-400 text-xs mt-1 flex items-center">
-                                    {Array.from({ length: rev.serviceStar || 5 }).map((_, idx) => (
-                                      <DashboardIcon name="star" key={idx} className="text-sm" />
-                                    ))}
-                                  </div>
-                                </div>
-
-                                <button
-                                  onClick={() => setReviewToDelete(rev._id)}
-                                  className="text-slate-400 hover:text-red-500 p-1 cursor-pointer"
-                                  title="Xóa đánh giá"
-                                >
-                                  <DashboardIcon name="delete" className="text-sm" />
-                                </button>
-                              </div>
-
-                              <p className="text-xs text-slate-700 dark:text-slate-300 italic">{rev.comment || 'Khách hàng không để lại nhận xét'}</p>
-
-                              <div className="text-[10px] text-slate-500 text-right">
-                                {rev.createdAt ? new Date(rev.createdAt).toLocaleString('vi-VN') : ''}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Phân trang: 2 hàng (4 thẻ/trang) */}
-                        {totalReviewPages > 1 && (
-                          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-200 dark:border-white/10 text-xs">
-                            <span className="text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap shrink-0">
-                              Hiển thị 2 hàng (trang <b className="text-slate-900 dark:text-white font-bold">{safeReviewPage}</b> / {totalReviewPages} • tổng {reviews.length} đánh giá)
-                            </span>
-                            <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-                              <button
-                                type="button"
-                                onClick={() => setReviewCurrentPage((p) => Math.max(1, p - 1))}
-                                disabled={safeReviewPage <= 1}
-                                className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-bold flex items-center gap-1 cursor-pointer whitespace-nowrap"
-                              >
-                                <DashboardIcon name="chevron_left" className="text-sm" />
-                                <span>Trang trước</span>
-                              </button>
-
-                              <div className="flex items-center gap-1">
-                                {Array.from({ length: totalReviewPages }, (_, i) => i + 1)
-                                  .filter((page) => totalReviewPages <= 5 || Math.abs(page - safeReviewPage) <= 1 || page === 1 || page === totalReviewPages)
-                                  .map((page, idx, arr) => (
-                                    <React.Fragment key={page}>
-                                      {idx > 0 && page - arr[idx - 1] > 1 && (
-                                        <span className="px-1 text-slate-400 select-none">...</span>
+                          <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[650px]">
+                            <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
+                              <tr>
+                                <th className="p-3">Nguyên liệu</th>
+                                <th className="p-3">Lượng giảm</th>
+                                <th className="p-3">Đơn giá</th>
+                                <th className="p-3">Thời gian</th>
+                                <th className="p-3">Người cập nhật</th>
+                                <th className="p-3 text-right">Thành tiền tiêu hao</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
+                              {paginatedList.map((usage: any, idx: number) => {
+                                const uDate = usage.date ? new Date(usage.date) : (usage.createdAt ? new Date(usage.createdAt) : null);
+                                const timeStr = uDate ? `${String(uDate.getHours()).padStart(2, '0')}:${String(uDate.getMinutes()).padStart(2, '0')}` : '--:--';
+                                return (
+                                  <tr key={usage._id || idx} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
+                                    <td className="p-3 font-bold text-slate-900 dark:text-white">
+                                      {usage.ingredientName || 'Nguyên liệu'}
+                                      {usage.note && (
+                                        <span className="block text-[10px] text-slate-400 font-normal">
+                                          {usage.note}
+                                        </span>
                                       )}
-                                      <button
-                                        type="button"
-                                        onClick={() => setReviewCurrentPage(page)}
-                                        className={`min-w-[28px] h-7 px-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                                          safeReviewPage === page
-                                            ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-[#090D16] shadow-xs'
-                                            : 'bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                                        }`}
-                                      >
-                                        {page}
-                                      </button>
-                                    </React.Fragment>
-                                  ))}
-                              </div>
-
-                              <button
-                                type="button"
-                                onClick={() => setReviewCurrentPage((p) => Math.min(totalReviewPages, p + 1))}
-                                disabled={safeReviewPage >= totalReviewPages}
-                                className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-bold flex items-center gap-1 cursor-pointer whitespace-nowrap"
-                              >
-                                <span>Trang sau</span>
-                                <DashboardIcon name="chevron_right" className="text-sm" />
-                              </button>
-                            </div>
-                          </div>
+                                    </td>
+                                    <td className="p-3 font-bold text-rose-500">
+                                      -{usage.quantity} {usage.unit || ''}
+                                    </td>
+                                    <td className="p-3 text-slate-500 font-medium">
+                                      {formatPrice(usage.unitPrice || 0)} / {usage.unit || 'đv'}
+                                    </td>
+                                    <td className="p-3 text-slate-500 font-medium">{timeStr}</td>
+                                    <td className="p-3 text-slate-600 dark:text-slate-300">{usage.updatedBy || 'Pha chế'}</td>
+                                    <td className="p-3 text-right font-black text-[#0284c7] dark:text-[#38BDF8]">
+                                      {formatPrice(usage.totalCost || 0)}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
                         )}
                       </div>
-                    );
-                  })()}
+                    </div>
+                  )}
+
+                  {/* Pagination Controls */}
+                  {totalLedgerItems > 0 && (
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-200/70 dark:border-[#1e293b]">
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        Hiển thị <span className="font-extrabold text-slate-900 dark:text-white">{startIndex + 1}</span> - <span className="font-extrabold text-slate-900 dark:text-white">{Math.min(startIndex + LEDGER_PAGE_SIZE, totalLedgerItems)}</span> trong tổng số <span className="font-extrabold text-slate-900 dark:text-white">{totalLedgerItems}</span> {tabLabel}
+                      </div>
+
+                      {totalLedgerPages > 1 && (
+                        <div className="flex items-center gap-1.5 select-none">
+                          <button
+                            onClick={() => setLedgerPage(Math.max(1, safePage - 1))}
+                            disabled={safePage === 1}
+                            className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200 dark:border-[#1e293b] bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1e293b] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-xs font-bold transition-all flex items-center gap-1"
+                            title="Trang trước"
+                          >
+                            <DashboardIcon name="chevron_left" className="text-sm" />
+                            <span className="hidden sm:inline">Trước</span>
+                          </button>
+
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: totalLedgerPages }, (_, i) => i + 1).map((pageNum) => {
+                              const isEdge = pageNum === 1 || pageNum === totalLedgerPages;
+                              const isNearby = Math.abs(pageNum - safePage) <= 1;
+
+                              if (isEdge || isNearby) {
+                                const isActive = pageNum === safePage;
+                                return (
+                                  <button
+                                    key={pageNum}
+                                    onClick={() => setLedgerPage(pageNum)}
+                                    className={`min-w-[32px] h-8 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${isActive
+                                      ? 'bg-[#38BDF8] text-[#090D16] shadow-md shadow-[#38BDF8]/20 scale-105'
+                                      : 'border border-slate-200 dark:border-[#1e293b] bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1e293b]'
+                                      }`}
+                                  >
+                                    {pageNum}
+                                  </button>
+                                );
+                              } else if (pageNum === safePage - 2 || pageNum === safePage + 2) {
+                                return (
+                                  <span key={pageNum} className="px-1 text-slate-400 text-xs font-bold">
+                                    ...
+                                  </span>
+                                );
+                              }
+                              return null;
+                            })}
+                          </div>
+
+                          <button
+                            onClick={() => setLedgerPage(Math.min(totalLedgerPages, safePage + 1))}
+                            disabled={safePage === totalLedgerPages}
+                            className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200 dark:border-[#1e293b] bg-white dark:bg-[#0B0F17] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1e293b] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-xs font-bold transition-all flex items-center gap-1"
+                            title="Trang sau"
+                          >
+                            <span className="hidden sm:inline">Sau</span>
+                            <DashboardIcon name="chevron_right" className="text-sm" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+          </div>
+        ) : (
+          /* ── MONTHLY BREAKDOWN TABLE ───────────────────────────── */
+          <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-4 sm:p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-[#1e293b] pb-3">
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm font-black text-slate-900 dark:text-white font-heading">
+                  Bảng Tổng Hợp Doanh Thu & Chi Phí Từng Ngày ({analyticsSelectedMonth})
+                </h4>
+              </div>
+              <span className="text-xs text-slate-400">
+                Bấm "Xem Ngày" để vào sổ chi tiết của ngày đó
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              {(!analyticsSummary?.dailyBreakdown || analyticsSummary.dailyBreakdown.length === 0) ? (
+                <div className="py-12 text-center text-slate-400 text-xs">
+                  Chưa có dữ liệu tổng hợp cho tháng này.
+                </div>
+              ) : (
+                <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[750px]">
+                  <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
+                    <tr>
+                      <th className="p-3">Ngày</th>
+                      <th className="p-3 text-center">Số đơn</th>
+                      <th className="p-3 text-right text-emerald-600 dark:text-emerald-400">1. Doanh Thu</th>
+                      <th className="p-3 text-right text-amber-600 dark:text-amber-400">2. Lương</th>
+                      <th className="p-3 text-right text-[#0284c7] dark:text-[#38BDF8]">3. Nguyên Liệu</th>
+                      <th className="p-3 text-right text-purple-600 dark:text-purple-400">4. Phát Sinh</th>
+                      <th className="p-3 text-right text-emerald-600 dark:text-emerald-400 font-extrabold">5. Lợi Nhuận</th>
+                      <th className="p-3 text-center">Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
+                    {analyticsSummary.dailyBreakdown.map((row: any) => (
+                      <tr key={row.date} className="hover:bg-slate-50 dark:hover:bg-[#182035] transition-colors">
+                        <td className="p-3 font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                          <span className={`px-2 py-0.5 text-[10px] font-extrabold rounded-md ${row.dayOfWeek === 'CN' ? 'bg-rose-500/10 text-rose-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                            }`}>
+                            {row.dayOfWeek}
+                          </span>
+                          <span>{row.date}</span>
+                        </td>
+                        <td className="p-3 text-center font-bold text-slate-700 dark:text-slate-300">
+                          {row.ordersCount}
+                        </td>
+                        <td className="p-3 text-right font-black text-slate-900 dark:text-white">
+                          {formatPrice(row.grossRevenue || 0)}
+                        </td>
+                        <td className="p-3 text-right font-bold text-amber-600 dark:text-amber-400">
+                          {formatPrice(row.salaryCost || 0)}
+                        </td>
+                        <td className="p-3 text-right font-bold text-[#0284c7] dark:text-[#38BDF8]">
+                          {formatPrice(row.ingredientCost || 0)}
+                        </td>
+                        <td className="p-3 text-right font-bold text-purple-600 dark:text-purple-400">
+                          {formatPrice(row.expenseCost || 0)}
+                        </td>
+                        <td className="p-3 text-right font-black text-emerald-600 dark:text-emerald-400 text-sm">
+                          {formatPrice(row.netProfit || 0)}
+                        </td>
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={() => {
+                              setAnalyticsSelectedDate(row.date);
+                              setAnalyticsPeriodMode('day');
+                              setLedgerPage(1);
+                              if (token) fetchAnalytics(token, row.date, undefined, 'day');
+                            }}
+                            className="px-2.5 py-1 text-[11px] font-bold bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] rounded-lg hover:bg-[#0284c7] hover:text-white transition-all cursor-pointer"
+                          >
+                            Xem ngày
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-slate-100 dark:bg-[#1e293b] font-black text-xs text-slate-900 dark:text-white border-t border-slate-300 dark:border-slate-700">
+                    <tr>
+                      <td className="p-3">TỔNG CỘNG THÁNG</td>
+                      <td className="p-3 text-center">
+                        {analyticsSummary.dailyBreakdown.reduce((s: number, r: any) => s + (r.ordersCount || 0), 0)}
+                      </td>
+                      <td className="p-3 text-right text-slate-900 dark:text-white">
+                        {formatPrice(analyticsSummary.dailyBreakdown.reduce((s: number, r: any) => s + (r.grossRevenue || 0), 0))}
+                      </td>
+                      <td className="p-3 text-right text-amber-600 dark:text-amber-400">
+                        {formatPrice(analyticsSummary.dailyBreakdown.reduce((s: number, r: any) => s + (r.salaryCost || 0), 0))}
+                      </td>
+                      <td className="p-3 text-right text-[#0284c7] dark:text-[#38BDF8]">
+                        {formatPrice(analyticsSummary.dailyBreakdown.reduce((s: number, r: any) => s + (r.ingredientCost || 0), 0))}
+                      </td>
+                      <td className="p-3 text-right text-purple-600 dark:text-purple-400">
+                        {formatPrice(analyticsSummary.dailyBreakdown.reduce((s: number, r: any) => s + (r.expenseCost || 0), 0))}
+                      </td>
+                      <td className="p-3 text-right text-emerald-600 dark:text-emerald-400 text-sm font-black">
+                        {formatPrice(analyticsSummary.dailyBreakdown.reduce((s: number, r: any) => s + (r.netProfit || 0), 0))}
+                      </td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Overview Weekly/Monthly & Review Indicators */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl shadow-xs">
+          <span className="text-slate-500 dark:text-slate-400 text-xs font-normal uppercase tracking-wider block">Lợi nhuận ròng tuần này</span>
+          <span className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block font-heading">
+            {formatPrice(analyticsSummary?.week || 0)}
+          </span>
+          <span className="text-[10px] text-slate-500 block mt-1">
+            Doanh thu: {formatPrice(analyticsSummary?.weekGross || 0)} — Trừ lương: {formatPrice(analyticsSummary?.weekSalary || 0)}
+          </span>
+        </div>
+        <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl shadow-xs">
+          <span className="text-slate-500 dark:text-slate-400 text-xs font-normal uppercase tracking-wider block">Lợi nhuận ròng tháng này</span>
+          <span className="text-xl sm:text-2xl font-black text-purple-600 dark:text-purple-400 mt-1 block font-heading">
+            {formatPrice(analyticsSummary?.month || 0)}
+          </span>
+          <span className="text-[10px] text-slate-500 block mt-1">
+            Doanh thu: {formatPrice(analyticsSummary?.monthGross || 0)} — Trừ lương: {formatPrice(analyticsSummary?.monthSalary || 0)}
+          </span>
+        </div>
+        <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl shadow-xs">
+          <span className="text-slate-500 dark:text-slate-400 text-xs font-normal uppercase tracking-wider block">Đánh giá trung bình</span>
+          <span className="text-xl sm:text-2xl font-black text-amber-500 dark:text-amber-400 mt-1 flex items-center gap-1 font-heading">
+            <DashboardIcon name="star" className="text-amber-500 text-lg sm:text-xl" />
+            <span>{avgStar} / 5.0</span>
+          </span>
+          <span className="text-[10px] text-slate-500 block mt-1">
+            {reviews.length} đánh giá từ khách hàng
+          </span>
+        </div>
+      </div>
+
+
+
+
+      {/* Chart.js Visualizations Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Chart 1: Daily Revenue Trend Line */}
+        <div className="lg:col-span-2 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-4 sm:p-5 space-y-4 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
+              <DashboardIcon name="show_chart" className="text-[#0284c7] dark:text-[#38BDF8] text-base" />
+              <span>Biểu đồ Xu hướng Doanh thu theo Ngày</span>
+            </h3>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400">Tự động vẽ từ MongoDB</span>
+          </div>
+          <div className="h-52 sm:h-64">
+            <Line data={lineChartData} options={lineChartOptions} />
+          </div>
+        </div>
+
+        {/* Chart 3: Top 5 Selling Foods Doughnut */}
+        <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-5 space-y-4 shadow-xs">
+          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
+            <DashboardIcon name="pie_chart" className="text-amber-500 dark:text-amber-400 text-base" />
+            <span>Cơ cấu Top Món bán chạy</span>
+          </h3>
+          <div className="h-52 sm:h-64">
+            {topFoods.length > 0 ? (
+              <Doughnut data={doughnutData} options={doughnutOptions} />
+            ) : (
+              <div className="h-full flex items-center justify-center text-xs text-slate-500">Chưa có dữ liệu món bán</div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Chart 2: Revenue vs Salaries vs Net Profit Grouped Bar */}
+      <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-5 space-y-4 shadow-xs">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
+            <DashboardIcon name="bar_chart" className="text-emerald-600 dark:text-emerald-400 text-base" />
+            <span>So sánh Cấu trúc Doanh thu, Chi phí Lương & Lợi nhuận Ròng</span>
+          </h3>
+        </div>
+        <div className="h-72">
+          <Bar data={barChartData} options={barChartOptions} />
+        </div>
+      </div>
+
+      {/* Top Selling Foods Table from DB */}
+      <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-4 sm:p-5 space-y-4 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
+            <DashboardIcon name="local_fire_department" className="text-[#0284c7] dark:text-[#38BDF8] text-lg" />
+            <span>Top Các món được bán nhiều nhất từ Database</span>
+          </h3>
+          <span className="self-start sm:self-auto bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] px-3 py-1 rounded-full text-xs font-bold shrink-0">
+            {topFoods.length} món bán chạy
+          </span>
+        </div>
+
+        {/* Mobile Card List (< sm: 640px) */}
+        <div className="grid grid-cols-1 gap-3 sm:hidden">
+          {topFoods.length === 0 ? (
+            <p className="p-4 text-center text-slate-500 text-xs">Chưa có dữ liệu thống kê món</p>
+          ) : (
+            topFoods.map((tf, i) => (
+              <div key={i} className="bg-white dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] p-3.5 rounded-xl flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-3 min-w-0">
+                  {tf.foodImage && (
+                    <img src={tf.foodImage} alt={tf.foodName} className="w-10 h-10 rounded-lg object-cover bg-slate-200 dark:bg-slate-800 shrink-0" />
+                  )}
+                  <div className="truncate">
+                    <span className="block font-bold text-slate-900 dark:text-white truncate">{tf.foodName}</span>
+                    <span className="text-[10px] text-slate-500">Hạng #{i + 1} — {tf.category || 'Thực đơn'}</span>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="block font-black text-[#0284c7] dark:text-[#38BDF8]">{tf.totalQuantity} món</span>
+                  <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">{formatPrice(tf.totalRevenue || 0)}</span>
                 </div>
               </div>
-            )}
+            ))
+          )}
+        </div>
 
-            {/* Coupons View: ADMIN ONLY */}
-            {activeTab === ('coupons' as any) && user?.role === 'admin' && (
-              <div className="flex-1 overflow-y-auto space-y-4 pb-32 lg:pb-10 scrollbar-thin">
-                <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-xs">
-                  <div>
-                    <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading">
-                      Chương trình Khuyến mãi & Voucher
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Thiết lập mã giảm giá chiết khấu, voucher tri ân và ưu đãi tự động cho hóa đơn
-                    </p>
+        {/* Desktop Table View (>= sm: 640px) */}
+        <div className="hidden sm:block overflow-x-auto">
+          <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[600px]">
+            <thead className="bg-slate-100 dark:bg-[#1e293b] text-slate-900 dark:text-white uppercase text-[10px] tracking-wider font-bold">
+              <tr>
+                <th className="p-3.5">Tên Món ăn / Thức uống</th>
+                <th className="p-3.5">Danh mục</th>
+                <th className="p-3.5">Đơn giá</th>
+                <th className="p-3.5">Số lượng đã bán</th>
+                <th className="p-3.5 text-right">Tổng doanh thu món</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 dark:divide-[#1e293b]">
+              {topFoods.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-6 text-center text-slate-500">Chưa có dữ liệu thống kê món</td>
+                </tr>
+              ) : (
+                topFoods.map((tf, i) => (
+                  <tr key={i} className="hover:bg-slate-100/60 dark:hover:bg-[#182035] transition-colors">
+                    <td className="p-3.5 font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                      {tf.foodImage && (
+                        <img src={tf.foodImage} alt={tf.foodName} className="w-9 h-9 rounded-lg object-cover bg-slate-200 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-[#1e293b]" />
+                      )}
+                      <div className="truncate">
+                        <span className="block font-bold text-slate-900 dark:text-white truncate">{tf.foodName}</span>
+                        <span className="text-[10px] text-slate-500">Hạng #{i + 1}</span>
+                      </div>
+                    </td>
+                    <td className="p-3.5 text-slate-500 dark:text-slate-400">{tf.category || 'Thực đơn'}</td>
+                    <td className="p-3.5 font-semibold text-slate-700 dark:text-slate-300">{tf.price ? formatPrice(tf.price) : '--'}</td>
+                    <td className="p-3.5 font-black text-[#0284c7] dark:text-[#38BDF8] text-sm">{tf.totalQuantity} món</td>
+                    <td className="p-3.5 font-black text-emerald-600 dark:text-emerald-400 text-right">{formatPrice(tf.totalRevenue || 0)}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Customer Reviews & Feedback Section */}
+      <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-4 sm:p-5 space-y-4 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading flex items-center gap-2">
+              <DashboardIcon name="star" className="text-amber-500 dark:text-amber-400 text-lg" />
+              <span>Đánh giá & Phản hồi từ Khách hàng</span>
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Ý kiến đóng góp trực tiếp từ khách hàng quét QR tại bàn</p>
+          </div>
+          <div className="self-start sm:self-auto flex items-center gap-2 bg-slate-100 dark:bg-[#1e293b] px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0">
+            <span className="text-amber-500 dark:text-amber-400 font-black text-sm flex items-center gap-1">
+              <DashboardIcon name="star" className="text-base" />
+              <span>{avgStar}</span>
+            </span>
+            <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">({reviews.length} đánh giá)</span>
+          </div>
+        </div>
+
+        {reviews.length === 0 ? (
+          <div className="bg-white dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-8 text-center text-slate-500">
+            Chưa có đánh giá nào từ khách hàng
+          </div>
+        ) : (() => {
+          const REVIEWS_PER_PAGE = 4; // 2 hàng x 2 cột = 4 đánh giá/trang
+          const totalReviewPages = Math.ceil(reviews.length / REVIEWS_PER_PAGE) || 1;
+          const safeReviewPage = Math.min(reviewCurrentPage, totalReviewPages);
+          const paginatedReviews = reviews.slice((safeReviewPage - 1) * REVIEWS_PER_PAGE, safeReviewPage * REVIEWS_PER_PAGE);
+
+          return (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {paginatedReviews.map((rev) => (
+                  <div key={rev._id} className="bg-white dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] p-4 rounded-xl space-y-2 relative shadow-xs">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-slate-900 dark:text-white text-xs">{rev.customerName || 'Khách hàng'}</span>
+                          <span className="text-[10px] bg-slate-200 dark:bg-[#1e293b] text-slate-700 dark:text-slate-400 px-2 py-0.5 rounded-md">
+                            {rev.tableId?.tableName || 'Bàn'}
+                          </span>
+                        </div>
+                        <div className="text-amber-500 dark:text-amber-400 text-xs mt-1 flex items-center">
+                          {Array.from({ length: rev.serviceStar || 5 }).map((_, idx) => (
+                            <DashboardIcon name="star" key={idx} className="text-sm" />
+                          ))}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => setReviewToDelete(rev._id)}
+                        className="text-slate-400 hover:text-red-500 p-1 cursor-pointer"
+                        title="Xóa đánh giá"
+                      >
+                        <DashboardIcon name="delete" className="text-sm" />
+                      </button>
+                    </div>
+
+                    <p className="text-xs text-slate-700 dark:text-slate-300 italic">{rev.comment || 'Khách hàng không để lại nhận xét'}</p>
+
+                    <div className="text-[10px] text-slate-500 text-right">
+                      {rev.createdAt ? new Date(rev.createdAt).toLocaleString('vi-VN') : ''}
+                    </div>
                   </div>
+                ))}
+              </div>
+
+              {/* Phân trang: 2 hàng (4 thẻ/trang) */}
+              {totalReviewPages > 1 && (
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-200 dark:border-white/10 text-xs">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap shrink-0">
+                    Hiển thị 2 hàng (trang <b className="text-slate-900 dark:text-white font-bold">{safeReviewPage}</b> / {totalReviewPages} • tổng {reviews.length} đánh giá)
+                  </span>
+                  <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+                    <button
+                      type="button"
+                      onClick={() => setReviewCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={safeReviewPage <= 1}
+                      className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-bold flex items-center gap-1 cursor-pointer whitespace-nowrap"
+                    >
+                      <DashboardIcon name="chevron_left" className="text-sm" />
+                      <span>Trang trước</span>
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalReviewPages }, (_, i) => i + 1)
+                        .filter((page) => totalReviewPages <= 5 || Math.abs(page - safeReviewPage) <= 1 || page === 1 || page === totalReviewPages)
+                        .map((page, idx, arr) => (
+                          <React.Fragment key={page}>
+                            {idx > 0 && page - arr[idx - 1] > 1 && (
+                              <span className="px-1 text-slate-400 select-none">...</span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => setReviewCurrentPage(page)}
+                              className={`min-w-[28px] h-7 px-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${safeReviewPage === page
+                                  ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-[#090D16] shadow-xs'
+                                  : 'bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                }`}
+                            >
+                              {page}
+                            </button>
+                          </React.Fragment>
+                        ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setReviewCurrentPage((p) => Math.min(totalReviewPages, p + 1))}
+                      disabled={safeReviewPage >= totalReviewPages}
+                      className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-bold flex items-center gap-1 cursor-pointer whitespace-nowrap"
+                    >
+                      <span>Trang sau</span>
+                      <DashboardIcon name="chevron_right" className="text-sm" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+      </div>
+    </div>
+  )
+}
+
+{/* Coupons View: ADMIN ONLY */ }
+{
+  activeTab === ('coupons' as any) && user?.role === 'admin' && (
+    <div className="flex-1 overflow-y-auto space-y-4 pb-32 lg:pb-10 scrollbar-thin">
+      <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-3.5 sm:p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-xs">
+        <div>
+          <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading">
+            Chương trình Khuyến mãi & Voucher
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Thiết lập mã giảm giá chiết khấu, voucher tri ân và ưu đãi tự động cho hóa đơn
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            setEditingCoupon(null);
+            setCouponForm({
+              code: '',
+              type: 'percent',
+              value: '',
+              maxDiscount: '',
+              maxUsage: '',
+              minOrderAmount: '',
+              expiresAt: '',
+              isActive: true,
+            });
+            setIsCouponModalOpen(true);
+          }}
+          className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+        >
+          <DashboardIcon name="add" className="text-lg sm:text-xl" />
+          <span>Tạo mã mới</span>
+        </button>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-[#1e293b] pb-2">
+        <button
+          onClick={() => setCouponFilter('all')}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${couponFilter === 'all'
+            ? 'bg-[#3AA6FF] text-white shadow-xs'
+            : 'bg-white dark:bg-[#131929] text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+        >
+          Tất cả mã ({coupons.length})
+        </button>
+        <button
+          onClick={() => setCouponFilter('manual')}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${couponFilter === 'manual'
+            ? 'bg-[#3AA6FF] text-white shadow-xs'
+            : 'bg-white dark:bg-[#131929] text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+        >
+          Thủ công ({coupons.filter((c) => !c.isAutoGenerated).length})
+        </button>
+        <button
+          onClick={() => setCouponFilter('auto')}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${couponFilter === 'auto'
+            ? 'bg-[#3AA6FF] text-white shadow-xs'
+            : 'bg-white dark:bg-[#131929] text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+        >
+          Tự động tặng - Bill &gt; 300k ({coupons.filter((c) => c.isAutoGenerated).length})
+        </button>
+      </div>
+
+      {coupons.length === 0 ? (
+        <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-8 text-center text-slate-500 text-xs">
+          Chưa có mã giảm giá nào trong hệ thống
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {coupons
+            .filter((c) => {
+              if (couponFilter === 'manual') return !c.isAutoGenerated;
+              if (couponFilter === 'auto') return c.isAutoGenerated;
+              return true;
+            })
+            .map((c) => (
+              <div key={c._id} className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 rounded-2xl space-y-3 relative shadow-xs">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-mono text-base font-black text-[#0284c7] dark:text-[#38BDF8] tracking-wider block">
+                        {c.code}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-slate-500 font-semibold block mt-0.5">
+                      {c.type === 'percent' ? `Giảm ${c.value}%` : `Giảm cố định ${formatPrice(c.value)}`}
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${c.isActive ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-500'}`}>
+                      {c.isActive ? 'Đang kích hoạt' : 'Tạm khóa'}
+                    </span>
+                    {c.isAutoGenerated && (
+                      <span className="px-2 py-0.5 rounded-md text-[9px] font-bold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+                        Tự động tặng - Bill &gt; 300k
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 space-y-1 pt-2 border-t border-slate-100 dark:border-[#1e293b]">
+                  {c.rewardedFromOrderId && (
+                    <div>Đơn hàng sinh mã: <span className="font-bold font-mono text-[#0284c7] dark:text-[#38BDF8]">#{c.rewardedFromOrderId.slice(-6).toUpperCase()}</span></div>
+                  )}
+                  <div>Đơn tối thiểu: <span className="font-bold text-slate-700 dark:text-slate-300">{formatPrice(c.minOrderAmount || 0)}</span></div>
+                  <div>Lượt đã dùng: <span className="font-bold text-slate-700 dark:text-slate-300">{c.usedCount || 0} / {c.maxUsage > 0 ? c.maxUsage : 'Không giới hạn'}</span></div>
+                  <div>Hạn dùng: <span className="font-bold text-slate-700 dark:text-slate-300">{c.expiresAt ? new Date(c.expiresAt).toLocaleDateString('vi-VN') : 'Không thời hạn'}</span></div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-[#1e293b]">
                   <button
                     onClick={() => {
-                      setEditingCoupon(null);
+                      setEditingCoupon(c);
                       setCouponForm({
-                        code: '',
-                        type: 'percent',
-                        value: '',
-                        maxDiscount: '',
-                        maxUsage: '',
-                        minOrderAmount: '',
-                        expiresAt: '',
-                        isActive: true,
+                        code: c.code || '',
+                        type: c.type || 'percent',
+                        value: String(c.value || ''),
+                        maxDiscount: String(c.maxDiscount || ''),
+                        maxUsage: String(c.maxUsage || ''),
+                        minOrderAmount: String(c.minOrderAmount || ''),
+                        expiresAt: formatForDatetimeInput(c.expiresAt),
+                        isActive: c.isActive ?? true,
                       });
                       setIsCouponModalOpen(true);
                     }}
-                    className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+                    className="p-1.5 text-slate-400 hover:text-[#38BDF8] transition-colors"
+                    title="Sửa mã"
                   >
-                    <DashboardIcon name="add" className="text-lg sm:text-xl" />
-                    <span>Tạo mã mới</span>
+                    <DashboardIcon name="edit" className="text-base" />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteCoupon(c._id)}
+                    className="p-1.5 text-slate-400 hover:text-rose-500 transition-colors"
+                    title="Xóa mã"
+                  >
+                    <DashboardIcon name="delete" className="text-base" />
                   </button>
                 </div>
-
-                {/* Filter Tabs */}
-                <div className="flex items-center gap-2 border-b border-slate-200 dark:border-[#1e293b] pb-2">
-                  <button
-                    onClick={() => setCouponFilter('all')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${couponFilter === 'all'
-                      ? 'bg-[#3AA6FF] text-white shadow-xs'
-                      : 'bg-white dark:bg-[#131929] text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                      }`}
-                  >
-                    Tất cả mã ({coupons.length})
-                  </button>
-                  <button
-                    onClick={() => setCouponFilter('manual')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${couponFilter === 'manual'
-                      ? 'bg-[#3AA6FF] text-white shadow-xs'
-                      : 'bg-white dark:bg-[#131929] text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                      }`}
-                  >
-                    Thủ công ({coupons.filter((c) => !c.isAutoGenerated).length})
-                  </button>
-                  <button
-                    onClick={() => setCouponFilter('auto')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${couponFilter === 'auto'
-                      ? 'bg-[#3AA6FF] text-white shadow-xs'
-                      : 'bg-white dark:bg-[#131929] text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                      }`}
-                  >
-                    Tự động tặng - Bill &gt; 300k ({coupons.filter((c) => c.isAutoGenerated).length})
-                  </button>
-                </div>
-
-                {coupons.length === 0 ? (
-                  <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-8 text-center text-slate-500 text-xs">
-                    Chưa có mã giảm giá nào trong hệ thống
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {coupons
-                      .filter((c) => {
-                        if (couponFilter === 'manual') return !c.isAutoGenerated;
-                        if (couponFilter === 'auto') return c.isAutoGenerated;
-                        return true;
-                      })
-                      .map((c) => (
-                        <div key={c._id} className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] p-4 rounded-2xl space-y-3 relative shadow-xs">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-mono text-base font-black text-[#0284c7] dark:text-[#38BDF8] tracking-wider block">
-                                  {c.code}
-                                </span>
-                              </div>
-                              <span className="text-[11px] text-slate-500 font-semibold block mt-0.5">
-                                {c.type === 'percent' ? `Giảm ${c.value}%` : `Giảm cố định ${formatPrice(c.value)}`}
-                              </span>
-                            </div>
-                            <div className="flex flex-col items-end gap-1">
-                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${c.isActive ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-500'}`}>
-                                {c.isActive ? 'Đang kích hoạt' : 'Tạm khóa'}
-                              </span>
-                              {c.isAutoGenerated && (
-                                <span className="px-2 py-0.5 rounded-md text-[9px] font-bold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
-                                  Tự động tặng - Bill &gt; 300k
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400 space-y-1 pt-2 border-t border-slate-100 dark:border-[#1e293b]">
-                            {c.rewardedFromOrderId && (
-                              <div>Đơn hàng sinh mã: <span className="font-bold font-mono text-[#0284c7] dark:text-[#38BDF8]">#{c.rewardedFromOrderId.slice(-6).toUpperCase()}</span></div>
-                            )}
-                            <div>Đơn tối thiểu: <span className="font-bold text-slate-700 dark:text-slate-300">{formatPrice(c.minOrderAmount || 0)}</span></div>
-                            <div>Lượt đã dùng: <span className="font-bold text-slate-700 dark:text-slate-300">{c.usedCount || 0} / {c.maxUsage > 0 ? c.maxUsage : 'Không giới hạn'}</span></div>
-                            <div>Hạn dùng: <span className="font-bold text-slate-700 dark:text-slate-300">{c.expiresAt ? new Date(c.expiresAt).toLocaleDateString('vi-VN') : 'Không thời hạn'}</span></div>
-                          </div>
-
-                          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-[#1e293b]">
-                            <button
-                              onClick={() => {
-                                setEditingCoupon(c);
-                                setCouponForm({
-                                  code: c.code || '',
-                                  type: c.type || 'percent',
-                                  value: String(c.value || ''),
-                                  maxDiscount: String(c.maxDiscount || ''),
-                                  maxUsage: String(c.maxUsage || ''),
-                                  minOrderAmount: String(c.minOrderAmount || ''),
-                                  expiresAt: formatForDatetimeInput(c.expiresAt),
-                                  isActive: c.isActive ?? true,
-                                });
-                                setIsCouponModalOpen(true);
-                              }}
-                              className="p-1.5 text-slate-400 hover:text-[#38BDF8] transition-colors"
-                              title="Sửa mã"
-                            >
-                              <DashboardIcon name="edit" className="text-base" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteCoupon(c._id)}
-                              className="p-1.5 text-slate-400 hover:text-rose-500 transition-colors"
-                              title="Xóa mã"
-                            >
-                              <DashboardIcon name="delete" className="text-base" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                )}
               </div>
-            )}
+            ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
-            {/* Reservations View: STAFF & ADMIN */}
-            {activeTab === ('reservations' as any) && (
-              <div className="flex-1 overflow-y-auto space-y-4 pb-32 lg:pb-10 scrollbar-thin">
-                {reservations.length === 0 ? (
-                  <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-10 text-center text-slate-500 text-xs">
-                    Chưa có đơn đặt bàn trực tuyến nào
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-3 sm:gap-4">
-                    {reservations.map((res) => {
-                      let statusBadge = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25';
-                      let statusDot = 'bg-amber-500';
-                      let statusLabel = 'Chờ xác nhận';
+{/* Reservations View: STAFF & ADMIN */ }
+{
+  activeTab === ('reservations' as any) && (
+    <div className="flex-1 overflow-y-auto space-y-4 pb-32 lg:pb-10 scrollbar-thin">
+      {reservations.length === 0 ? (
+        <div className="bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-10 text-center text-slate-500 text-xs">
+          Chưa có đơn đặt bàn trực tuyến nào
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-3 sm:gap-4">
+          {reservations.map((res) => {
+            let statusBadge = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25';
+            let statusDot = 'bg-amber-500';
+            let statusLabel = 'Chờ xác nhận';
 
-                      if (res.status === 'confirmed') {
-                        statusBadge = 'bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] border-[#38BDF8]/30';
-                        statusDot = 'bg-[#38BDF8]';
-                        statusLabel = 'Đã xác nhận';
-                      } else if (res.status === 'arrived') {
-                        statusBadge = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25';
-                        statusDot = 'bg-emerald-500';
-                        statusLabel = 'Khách đã đến';
-                      } else if (res.status === 'cancelled') {
-                        statusBadge = 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/25';
-                        statusDot = 'bg-rose-500';
-                        statusLabel = 'Đã hủy đặt';
-                      }
+            if (res.status === 'confirmed') {
+              statusBadge = 'bg-[#38BDF8]/10 text-[#0284c7] dark:text-[#38BDF8] border-[#38BDF8]/30';
+              statusDot = 'bg-[#38BDF8]';
+              statusLabel = 'Đã xác nhận';
+            } else if (res.status === 'arrived') {
+              statusBadge = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25';
+              statusDot = 'bg-emerald-500';
+              statusLabel = 'Khách đã đến';
+            } else if (res.status === 'cancelled') {
+              statusBadge = 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/25';
+              statusDot = 'bg-rose-500';
+              statusLabel = 'Đã hủy đặt';
+            }
 
-                      const resTime = new Date(res.reservationTime).getTime();
-                      const isLateOver30 = res.status === 'confirmed' && (Date.now() - resTime) > 30 * 60 * 1000;
+            const resTime = new Date(res.reservationTime).getTime();
+            const isLateOver30 = res.status === 'confirmed' && (Date.now() - resTime) > 30 * 60 * 1000;
 
-                      const formatResDate = (dateStr: string) => {
-                        try {
-                          const d = new Date(dateStr);
-                          const time = d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false });
-                          const date = d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                          return `${time} · ${date}`;
-                        } catch {
-                          return new Date(dateStr).toLocaleString('vi-VN');
-                        }
-                      };
+            const formatResDate = (dateStr: string) => {
+              try {
+                const d = new Date(dateStr);
+                const time = d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false });
+                const date = d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                return `${time} · ${date}`;
+              } catch {
+                return new Date(dateStr).toLocaleString('vi-VN');
+              }
+            };
 
-                      return (
-                        <div
-                          key={res._id}
-                          className={`bg-white dark:bg-[#131929] border ${isLateOver30
-                            ? 'border-rose-500/60 dark:border-rose-500/50 bg-rose-500/[0.02]'
-                            : 'border-slate-200/80 dark:border-white/10 hover:border-[#38BDF8]/50 dark:hover:border-[#38BDF8]/40'
-                            } p-4 sm:p-5 rounded-2xl space-y-3.5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between`}
-                        >
-                          {/* Header: Customer Name & Phone & Status Badge (Minimal, no phone/status icons) */}
-                          <div className="flex justify-between items-start gap-2">
-                            <div className="space-y-0.5 min-w-0">
-                              <h4 className="font-extrabold text-slate-900 dark:text-white text-base tracking-tight font-heading truncate">
-                                {res.customerName}
-                              </h4>
-                              <div className="font-mono text-xs font-normal text-slate-500 dark:text-slate-400">
-                                {res.customerPhone}
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-                              {isLateOver30 && (
-                                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 flex items-center gap-1 animate-pulse">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                                  <span>Trễ &gt; 30p</span>
-                                </span>
-                              )}
-                              <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider border flex items-center gap-1.5 ${statusBadge}`}>
-                                <span className={`w-1.5 h-1.5 rounded-full ${statusDot}`} />
-                                <span>{statusLabel}</span>
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Middle Info Block: Clean Structured Micro-Grid without Icons */}
-                          <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-50 dark:bg-[#0B0F17] border border-slate-100 dark:border-white/5 text-xs">
-                            <div>
-                              <div className="text-[10px] font-normal text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                                Bàn đặt
-                              </div>
-                              <div className="font-extrabold text-slate-900 dark:text-white text-xs mt-0.5 truncate">
-                                {res.tableId?.tableName || 'Chưa xếp bàn'}
-                              </div>
-                            </div>
-                            <div>
-                              <div className="text-[10px] font-normal text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                                Số lượng
-                              </div>
-                              <div className="font-extrabold text-slate-900 dark:text-white text-xs mt-0.5">
-                                {res.guestCount} người
-                              </div>
-                            </div>
-                            <div className="col-span-2 pt-2 border-t border-slate-200/60 dark:border-white/5 flex justify-between items-center">
-                              <span className="text-[10px] font-normal text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                                Giờ nhận bàn
-                              </span>
-                              <span className="font-mono font-extrabold text-slate-800 dark:text-slate-200 text-xs">
-                                {formatResDate(res.reservationTime)}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Check-In PIN Display: Modern, High-Contrast Pill without Icons */}
-                          {res.checkInCode && (
-                            <div className="flex justify-between items-center bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 border border-[#38BDF8]/30 px-3.5 py-2 rounded-xl">
-                              <span className="text-[#0284c7] dark:text-[#38BDF8] text-[11px] font-extrabold uppercase tracking-wider">
-                                Mã nhận bàn
-                              </span>
-                              <span className="font-mono font-black text-sm tracking-[0.25em] text-[#090D16] dark:text-white bg-white dark:bg-[#090D16] px-3 py-0.5 rounded-lg border border-[#38BDF8]/40 shadow-xs">
-                                {res.checkInCode}
-                              </span>
-                            </div>
-                          )}
-
-                          {/* Special Note without Icon */}
-                          {res.note && (
-                            <div className="text-xs text-amber-800 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 px-3 py-2 rounded-xl font-medium">
-                              <span className="font-extrabold text-amber-900 dark:text-amber-200">Ghi chú:</span> {res.note}
-                            </div>
-                          )}
-
-                          {/* Bottom Actions: Clean Minimalist Buttons */}
-                          <div className="space-y-2 pt-1">
-                            {isLateOver30 && (
-                              <button
-                                type="button"
-                                onClick={() => handleCancelLateReservation(res._id)}
-                                className="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-98 text-center"
-                                title="Khách trễ hơn 30 phút so với giờ hẹn"
-                              >
-                                Hủy do trễ hẹn (&gt;30p) - Trả bàn trống
-                              </button>
-                            )}
-
-                            <div className="flex items-center gap-2">
-                              {res.status === 'pending' && (
-                                <>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleUpdateReservationStatus(res._id, 'confirmed')}
-                                    className="flex-1 py-2.5 bg-[#38BDF8] text-[#090D16] hover:bg-[#0284c7] hover:text-white text-xs font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center"
-                                  >
-                                    Duyệt đặt bàn
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleUpdateReservationStatus(res._id, 'cancelled')}
-                                    className="px-3.5 py-2.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500 hover:text-white text-xs font-extrabold rounded-xl transition-all cursor-pointer active:scale-95 text-center"
-                                  >
-                                    Từ chối
-                                  </button>
-                                </>
-                              )}
-
-                              {res.status === 'confirmed' && (
-                                <>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleStaffCheckIn(res)}
-                                    className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center"
-                                  >
-                                    Khách đã đến (Nhận bàn)
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleUpdateReservationStatus(res._id, 'cancelled')}
-                                    className="px-3.5 py-2.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500 hover:text-white text-xs font-extrabold rounded-xl transition-all cursor-pointer active:scale-95 text-center"
-                                    title="Hủy đơn đặt bàn"
-                                  >
-                                    Hủy
-                                  </button>
-                                </>
-                              )}
-
-                              {res.status === 'arrived' && (
-                                <div className="flex-1 py-2 px-3 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-xl text-xs font-extrabold">
-                                  Khách đã nhận bàn và đang dùng bữa
-                                </div>
-                              )}
-
-                              {res.status === 'cancelled' && (
-                                <div className="flex-1 py-2 px-3 bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 rounded-xl text-xs font-bold">
-                                  Đơn đặt bàn đã bị hủy
-                                </div>
-                              )}
-
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteReservation(res._id)}
-                                className="p-2 text-slate-400 hover:text-rose-500 transition-colors flex items-center justify-center cursor-pointer shrink-0 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 ml-auto"
-                                title="Xóa đơn đặt bàn"
-                              >
-                                <DashboardIcon name="delete" className="text-base" />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* Staff Occupied Table Switch Modal */}
-                {staffOccupiedReservation && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm select-none">
-                    <div className="relative w-full max-w-lg rounded-2xl bg-white dark:bg-[#131929] border border-slate-200 dark:border-white/10 p-6 space-y-5 shadow-2xl z-10 font-sans">
-                      <div className="flex justify-between items-start">
-                        <div className="space-y-1">
-                          <h4 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2 font-heading">
-                            <DashboardIcon name="info" className="text-amber-500" />
-                            <span>Bàn Hiện Đang Có Khách Ngồi</span>
-                          </h4>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">
-                            Bàn <strong>{staffOccupiedReservation.reservation.tableId?.tableName || 'đã đặt'}</strong> đang phục vụ khách trước giờ hẹn của{' '}
-                            <strong>{staffOccupiedReservation.reservation.customerName}</strong> ({staffOccupiedReservation.reservation.guestCount} khách).
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setStaffOccupiedReservation(null)}
-                          className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white"
-                        >
-                          <DashboardIcon name="close" className="text-lg" />
-                        </button>
-                      </div>
-
-                      <div className="space-y-2">
-                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                          Gợi ý bàn trống sẵn sàng đón khách ngay:
-                        </span>
-                        {staffOccupiedReservation.suggestedTables.length === 0 ? (
-                          <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs text-center text-slate-500">
-                            Hiện không có bàn trống nào khác phù hợp. Vui lòng hướng dẫn khách chờ trong giây lát.
-                          </div>
-                        ) : (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-60 overflow-y-auto pr-1">
-                            {staffOccupiedReservation.suggestedTables.map((tbl: any) => (
-                              <button
-                                key={tbl._id}
-                                type="button"
-                                onClick={() =>
-                                  handleStaffSwitchTable(
-                                    staffOccupiedReservation.reservation._id,
-                                    staffOccupiedReservation.reservation.checkInCode || '',
-                                    tbl._id,
-                                  )
-                                }
-                                className="p-3 rounded-xl border border-[#38BDF8]/40 hover:border-[#38BDF8] bg-sky-500/5 hover:bg-sky-500/15 text-left transition-all flex justify-between items-center group cursor-pointer"
-                              >
-                                <div>
-                                  <div className="font-extrabold text-slate-900 dark:text-white text-xs group-hover:text-[#0284c7] dark:group-hover:text-[#38BDF8]">
-                                    {tbl.tableName}
-                                  </div>
-                                  <div className="text-[10.5px] text-slate-500 dark:text-slate-400">
-                                    Sức chứa: {tbl.capacity || 2} người
-                                  </div>
-                                </div>
-                                <DashboardIcon name="login" className="text-sm text-[#0284c7] dark:text-[#38BDF8]" />
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="pt-2 flex justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setStaffOccupiedReservation(null)}
-                          className="px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
-                        >
-                          Đóng (Khách sẽ chờ bàn cũ)
-                        </button>
-                      </div>
+            return (
+              <div
+                key={res._id}
+                className={`bg-white dark:bg-[#131929] border ${isLateOver30
+                  ? 'border-rose-500/60 dark:border-rose-500/50 bg-rose-500/[0.02]'
+                  : 'border-slate-200/80 dark:border-white/10 hover:border-[#38BDF8]/50 dark:hover:border-[#38BDF8]/40'
+                  } p-4 sm:p-5 rounded-2xl space-y-3.5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between`}
+              >
+                {/* Header: Customer Name & Phone & Status Badge (Minimal, no phone/status icons) */}
+                <div className="flex justify-between items-start gap-2">
+                  <div className="space-y-0.5 min-w-0">
+                    <h4 className="font-extrabold text-slate-900 dark:text-white text-base tracking-tight font-heading truncate">
+                      {res.customerName}
+                    </h4>
+                    <div className="font-mono text-xs font-normal text-slate-500 dark:text-slate-400">
+                      {res.customerPhone}
                     </div>
                   </div>
-                )}
-              </div>
-            )}
 
-            {/* Inventory View: BARISTA & ADMIN ONLY */}
-            {activeTab === 'inventory' && (user?.role === 'admin' || user?.role === 'barista') && (
-              <div className="flex-1 overflow-y-auto pb-32 lg:pb-10 scrollbar-thin space-y-6">
-                {user?.role === 'admin' && (
-                  <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
-                    <AiDemandForecastCard token={token} />
+                  <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                    {isLateOver30 && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 flex items-center gap-1 animate-pulse">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                        <span>Trễ &gt; 30p</span>
+                      </span>
+                    )}
+                    <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider border flex items-center gap-1.5 ${statusBadge}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${statusDot}`} />
+                      <span>{statusLabel}</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Middle Info Block: Clean Structured Micro-Grid without Icons */}
+                <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-50 dark:bg-[#0B0F17] border border-slate-100 dark:border-white/5 text-xs">
+                  <div>
+                    <div className="text-[10px] font-normal text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      Bàn đặt
+                    </div>
+                    <div className="font-extrabold text-slate-900 dark:text-white text-xs mt-0.5 truncate">
+                      {res.tableId?.tableName || 'Chưa xếp bàn'}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-normal text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      Số lượng
+                    </div>
+                    <div className="font-extrabold text-slate-900 dark:text-white text-xs mt-0.5">
+                      {res.guestCount} người
+                    </div>
+                  </div>
+                  <div className="col-span-2 pt-2 border-t border-slate-200/60 dark:border-white/5 flex justify-between items-center">
+                    <span className="text-[10px] font-normal text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      Giờ nhận bàn
+                    </span>
+                    <span className="font-mono font-extrabold text-slate-800 dark:text-slate-200 text-xs">
+                      {formatResDate(res.reservationTime)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Check-In PIN Display: Modern, High-Contrast Pill without Icons */}
+                {res.checkInCode && (
+                  <div className="flex justify-between items-center bg-[#38BDF8]/10 dark:bg-[#38BDF8]/15 border border-[#38BDF8]/30 px-3.5 py-2 rounded-xl">
+                    <span className="text-[#0284c7] dark:text-[#38BDF8] text-[11px] font-extrabold uppercase tracking-wider">
+                      Mã nhận bàn
+                    </span>
+                    <span className="font-mono font-black text-sm tracking-[0.25em] text-[#090D16] dark:text-white bg-white dark:bg-[#090D16] px-3 py-0.5 rounded-lg border border-[#38BDF8]/40 shadow-xs">
+                      {res.checkInCode}
+                    </span>
                   </div>
                 )}
-                <InventoryManagement
-                  userRole={user?.role === 'admin' ? 'admin' : 'staff'}
-                  userName={user?.name || 'Nhân viên'}
-                  apiBase={API_BASE}
-                  socket={socketRef.current}
-                />
+
+                {/* Special Note without Icon */}
+                {res.note && (
+                  <div className="text-xs text-amber-800 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 px-3 py-2 rounded-xl font-medium">
+                    <span className="font-extrabold text-amber-900 dark:text-amber-200">Ghi chú:</span> {res.note}
+                  </div>
+                )}
+
+                {/* Bottom Actions: Clean Minimalist Buttons */}
+                <div className="space-y-2 pt-1">
+                  {isLateOver30 && (
+                    <button
+                      type="button"
+                      onClick={() => handleCancelLateReservation(res._id)}
+                      className="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-98 text-center"
+                      title="Khách trễ hơn 30 phút so với giờ hẹn"
+                    >
+                      Hủy do trễ hẹn (&gt;30p) - Trả bàn trống
+                    </button>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    {res.status === 'pending' && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateReservationStatus(res._id, 'confirmed')}
+                          className="flex-1 py-2.5 bg-[#38BDF8] text-[#090D16] hover:bg-[#0284c7] hover:text-white text-xs font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center"
+                        >
+                          Duyệt đặt bàn
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateReservationStatus(res._id, 'cancelled')}
+                          className="px-3.5 py-2.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500 hover:text-white text-xs font-extrabold rounded-xl transition-all cursor-pointer active:scale-95 text-center"
+                        >
+                          Từ chối
+                        </button>
+                      </>
+                    )}
+
+                    {res.status === 'confirmed' && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => handleStaffCheckIn(res)}
+                          className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center"
+                        >
+                          Khách đã đến (Nhận bàn)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateReservationStatus(res._id, 'cancelled')}
+                          className="px-3.5 py-2.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500 hover:text-white text-xs font-extrabold rounded-xl transition-all cursor-pointer active:scale-95 text-center"
+                          title="Hủy đơn đặt bàn"
+                        >
+                          Hủy
+                        </button>
+                      </>
+                    )}
+
+                    {res.status === 'arrived' && (
+                      <div className="flex-1 py-2 px-3 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-xl text-xs font-extrabold">
+                        Khách đã nhận bàn và đang dùng bữa
+                      </div>
+                    )}
+
+                    {res.status === 'cancelled' && (
+                      <div className="flex-1 py-2 px-3 bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 rounded-xl text-xs font-bold">
+                        Đơn đặt bàn đã bị hủy
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteReservation(res._id)}
+                      className="p-2 text-slate-400 hover:text-rose-500 transition-colors flex items-center justify-center cursor-pointer shrink-0 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 ml-auto"
+                      title="Xóa đơn đặt bàn"
+                    >
+                      <DashboardIcon name="delete" className="text-base" />
+                    </button>
+                  </div>
+                </div>
               </div>
-            )}
+            );
+          })}
+        </div>
+      )}
+
+      {/* Staff Occupied Table Switch Modal */}
+      {staffOccupiedReservation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm select-none">
+          <div className="relative w-full max-w-lg rounded-2xl bg-white dark:bg-[#131929] border border-slate-200 dark:border-white/10 p-6 space-y-5 shadow-2xl z-10 font-sans">
+            <div className="flex justify-between items-start">
+              <div className="space-y-1">
+                <h4 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2 font-heading">
+                  <DashboardIcon name="info" className="text-amber-500" />
+                  <span>Bàn Hiện Đang Có Khách Ngồi</span>
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Bàn <strong>{staffOccupiedReservation.reservation.tableId?.tableName || 'đã đặt'}</strong> đang phục vụ khách trước giờ hẹn của{' '}
+                  <strong>{staffOccupiedReservation.reservation.customerName}</strong> ({staffOccupiedReservation.reservation.guestCount} khách).
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setStaffOccupiedReservation(null)}
+                className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white"
+              >
+                <DashboardIcon name="close" className="text-lg" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                Gợi ý bàn trống sẵn sàng đón khách ngay:
+              </span>
+              {staffOccupiedReservation.suggestedTables.length === 0 ? (
+                <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs text-center text-slate-500">
+                  Hiện không có bàn trống nào khác phù hợp. Vui lòng hướng dẫn khách chờ trong giây lát.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-60 overflow-y-auto pr-1">
+                  {staffOccupiedReservation.suggestedTables.map((tbl: any) => (
+                    <button
+                      key={tbl._id}
+                      type="button"
+                      onClick={() =>
+                        handleStaffSwitchTable(
+                          staffOccupiedReservation.reservation._id,
+                          staffOccupiedReservation.reservation.checkInCode || '',
+                          tbl._id,
+                        )
+                      }
+                      className="p-3 rounded-xl border border-[#38BDF8]/40 hover:border-[#38BDF8] bg-sky-500/5 hover:bg-sky-500/15 text-left transition-all flex justify-between items-center group cursor-pointer"
+                    >
+                      <div>
+                        <div className="font-extrabold text-slate-900 dark:text-white text-xs group-hover:text-[#0284c7] dark:group-hover:text-[#38BDF8]">
+                          {tbl.tableName}
+                        </div>
+                        <div className="text-[10.5px] text-slate-500 dark:text-slate-400">
+                          Sức chứa: {tbl.capacity || 2} người
+                        </div>
+                      </div>
+                      <DashboardIcon name="login" className="text-sm text-[#0284c7] dark:text-[#38BDF8]" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="pt-2 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setStaffOccupiedReservation(null)}
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+              >
+                Đóng (Khách sẽ chờ bàn cũ)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+{/* Inventory View: BARISTA & ADMIN ONLY */ }
+{
+  activeTab === 'inventory' && (user?.role === 'admin' || user?.role === 'barista') && (
+    <div className="flex-1 overflow-y-auto pb-32 lg:pb-10 scrollbar-thin space-y-6">
+      <InventoryManagement
+        userRole={user?.role === 'admin' ? 'admin' : 'staff'}
+        userName={user?.name || 'Nhân viên'}
+        apiBase={API_BASE}
+        socket={socketRef.current}
+      />
+    </div>
+  )
+}
 
           </>
         )}
-      </main>
+      </main >
 
-      {/* ── COLUMN 3: RIGHT REALTIME ACTIVITY SIDEBAR (bg-slate-50 / dark:bg-[#0F172A]) ────── */}
-      <aside
-        className={`fixed xl:static inset-y-0 right-0 z-40 w-[290px] 2xl:w-[330px] max-w-[88vw] shrink-0 bg-slate-50/95 dark:bg-[#0F172A]/90 backdrop-blur-xl border-l border-slate-200 dark:border-white/10 p-4 sm:p-5 h-screen flex flex-col overflow-y-auto transition-all duration-300 ease-in-out ${isRealtimeDrawerOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full xl:translate-x-0'
+  {/* ── COLUMN 3: RIGHT REALTIME ACTIVITY SIDEBAR (bg-slate-50 / dark:bg-[#0F172A]) ────── */ }
+  < aside
+className = {`fixed xl:static inset-y-0 right-0 z-40 w-[290px] 2xl:w-[330px] max-w-[88vw] shrink-0 bg-slate-50/95 dark:bg-[#0F172A]/90 backdrop-blur-xl border-l border-slate-200 dark:border-white/10 p-4 sm:p-5 h-screen flex flex-col overflow-y-auto transition-all duration-300 ease-in-out ${isRealtimeDrawerOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full xl:translate-x-0'
+  }`}
+      >
+  <div className="flex justify-between items-center mb-4 border-b border-slate-200 dark:border-white/10 pb-3">
+    <h2 className="text-sm font-black uppercase tracking-wider text-slate-800 dark:text-slate-100 flex items-center gap-2">
+      <span className="w-2 h-2 rounded-full bg-[#3B82F6] dark:bg-[#38BDF8] animate-ping" />
+      {user?.role === 'admin'
+        ? 'Hoạt động'
+        : user?.role === 'barista'
+          ? 'Đơn hàng chờ pha chế'
+          : 'Hoạt động '}
+    </h2>
+    <button
+      onClick={() => setIsRealtimeDrawerOpen(false)}
+      className="xl:hidden text-slate-400 hover:text-slate-900 dark:hover:text-white p-1 rounded-lg"
+    >
+      <DashboardIcon name="close" className="text-lg" />
+    </button>
+  </div>
+
+{/* Realtime Activity Content */ }
+{
+  user?.role === 'admin' ? (
+    <>
+      {/* Admin Realtime Staff Attendance Content */}
+      <div className="space-y-4 flex-1 overflow-y-auto scrollbar-none pr-1">
+        {(() => {
+          const now = new Date();
+          const todayAttendances = attendances.filter((att) => {
+            if (!att || !att.checkIn) return false;
+            const d = new Date(att.checkIn);
+            return (
+              d.getDate() === now.getDate() &&
+              d.getMonth() === now.getMonth() &&
+              d.getFullYear() === now.getFullYear()
+            );
+          });
+          const checkedInMap = new Map<string, any>();
+          todayAttendances.forEach((att) => {
+            const rawUser = att.userId;
+            let uId = '';
+            let uEmail = '';
+            if (typeof rawUser === 'object' && rawUser !== null) {
+              uId = String((rawUser as any)._id || (rawUser as any).id || '');
+              uEmail = String((rawUser as any).email || '').toLowerCase();
+            } else if (rawUser) {
+              uId = String(rawUser);
+            }
+            if (uId) checkedInMap.set(uId, att);
+            if (uEmail) checkedInMap.set(uEmail, att);
+          });
+
+          const staffMembers = usersList.filter((u) => u.role !== 'admin');
+          const checkedInList = staffMembers.filter((u) => {
+            const uId = String(u._id || (u as any).id || '');
+            const uEmail = String(u.email || '').toLowerCase();
+            return (uId && checkedInMap.has(uId)) || (uEmail && checkedInMap.has(uEmail));
+          });
+          const notCheckedInList = staffMembers.filter((u) => {
+            const uId = String(u._id || (u as any).id || '');
+            const uEmail = String(u.email || '').toLowerCase();
+            return (!uId || !checkedInMap.has(uId)) && (!uEmail || !checkedInMap.has(uEmail));
+          });
+
+          return (
+            <>
+              {/* Render Checked In Staff */}
+              {(activityFilter === 'all' || activityFilter === 'checkedIn') && (
+                <div className="space-y-2.5">
+                  <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                    Nhân viên đã điểm danh ({checkedInList.length})
+                  </h4>
+                  {checkedInList.length === 0 ? (
+                    <p className="text-xs text-slate-400 italic">Chưa có nhân viên nào điểm danh hôm nay</p>
+                  ) : (
+                    checkedInList.map((st) => {
+                      const uId = String(st._id || (st as any).id || '');
+                      const uEmail = String(st.email || '').toLowerCase();
+                      const attRecord = (uId ? checkedInMap.get(uId) : null) || (uEmail ? checkedInMap.get(uEmail) : null);
+                      const cInTime = attRecord?.checkIn
+                        ? new Date(attRecord.checkIn).toLocaleTimeString('vi-VN', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                        : '';
+                      const cOutTime = attRecord?.checkOut
+                        ? new Date(attRecord.checkOut).toLocaleTimeString('vi-VN', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                        : null;
+
+                      return (
+                        <div
+                          key={st._id || st.email}
+                          className="p-3 bg-white dark:bg-[#131929] border border-emerald-500/30 rounded-2xl space-y-1.5 text-xs shadow-2xs"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                              {st.name}
+                            </span>
+                            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-md">
+                              {cOutTime ? 'Đã check-out' : 'Đang làm việc'}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                            Check-in lúc: <strong className="text-slate-700 dark:text-slate-300">{cInTime}</strong>
+                            {cOutTime && (
+                              <>
+                                {' '}
+                                | Check-out: <strong className="text-slate-700 dark:text-slate-300">{cOutTime}</strong> ({attRecord.totalHours}h)
+                              </>
+                            )}
+                          </div>
+                          <div className="text-[10px] text-slate-400 truncate">{st.email}</div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+
+              {/* Render Not Checked In Staff */}
+              {(activityFilter === 'all' || activityFilter === 'notCheckedIn') && (
+                <div className="space-y-2.5 pt-2">
+                  <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-500 dark:text-rose-400">
+                    Nhân viên chưa điểm danh ({notCheckedInList.length})
+                  </h4>
+                  {notCheckedInList.length === 0 ? (
+                    <p className="text-xs text-emerald-500 font-bold">Tất cả nhân viên đã điểm danh đầy đủ!</p>
+                  ) : (
+                    notCheckedInList.map((st) => (
+                      <div
+                        key={st._id}
+                        className="p-3 bg-white dark:bg-[#131929] border border-rose-500/30 rounded-2xl space-y-1.5 text-xs shadow-2xs"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-rose-500" />
+                            {st.name}
+                          </span>
+                          <span className="text-[10px] font-bold text-rose-500 dark:text-rose-400 bg-rose-500/15 px-2 py-0.5 rounded-md">
+                            Chưa ca
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Chưa có dữ liệu điểm danh ca làm hôm nay
+                        </div>
+                        <div className="text-[10px] text-slate-400 truncate">{st.email}</div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </>
+          );
+        })()}
+      </div>
+    </>
+  ) : user?.role === 'barista' ? (
+    <>
+      {(() => {
+        const confirmedOrders = orders.filter((o) => o.status === 'confirmed');
+        const cookingOrders = orders.filter((o) => o.status === 'cooking');
+        const brewingQueue = orders.filter((o) => o.status === 'confirmed' || o.status === 'cooking');
+
+        return (
+          <>
+            <div className="space-y-3 flex-1 overflow-y-auto scrollbar-none pr-1">
+              {brewingQueue.length === 0 ? (
+                <div className="p-6 text-center text-slate-400 text-xs italic">
+                  Hiện chưa có đơn hàng mới nào được Phục vụ xác nhận.
+                </div>
+              ) : (
+                brewingQueue
+                  .map((order) => (
+                    <div
+                      key={order._id}
+                      className={`p-3.5 border rounded-2xl space-y-2 text-xs transition-all shadow-xs ${order.status === 'confirmed'
+                        ? 'bg-sky-500/10 border-sky-500/30'
+                        : 'bg-amber-500/10 border-amber-500/30'
+                        }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                          <span className={`w-2 h-2 rounded-full ${order.status === 'confirmed' ? 'bg-sky-400 animate-ping' : 'bg-amber-400 animate-pulse'}`} />
+                          {order.isTakeaway || !order.tableId ? 'Mang về' : order.tableId?.tableName || 'Bàn chọn'}
+                        </span>
+                        <span
+                          className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${order.status === 'confirmed'
+                            ? 'bg-sky-500/20 text-sky-600 dark:text-sky-400'
+                            : 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
+                            }`}
+                        >
+                          {order.status === 'confirmed' ? 'Phục vụ đã duyệt' : 'Đang pha chế'}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1 py-1 border-t border-b border-slate-200/40 dark:border-slate-800/40">
+                        {order.items?.map((item: any, idx: number) => (
+                          <div key={idx} className="flex justify-between text-[11px]">
+                            <span className="text-slate-800 dark:text-slate-200 font-bold truncate">
+                              {item.foodId?.name || 'Món ăn'}
+                              {(item.orderedBy || (item.note && item.note.match(/^\[(.*?)\]/)?.[1])) && (
+                                <span className="ml-1 px-1 py-0.2 rounded text-[9px] font-mono text-sky-500 bg-sky-500/10">
+                                  {item.orderedBy || item.note.match(/^\[(.*?)\]/)?.[1]}
+                                </span>
+                              )}
+                            </span>
+                            <span className="text-slate-500 dark:text-slate-400 font-black">x{item.quantity}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          {order.createdAt ? new Date(order.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : ''}
+                        </span>
+                        {order.status === 'confirmed' ? (
+                          <button
+                            onClick={() => handleUpdateStatus(order._id, 'cooking')}
+                            className="px-3 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-[10.5px] rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+                          >
+                            Bắt đầu pha chế
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleUpdateStatus(order._id, 'ready')}
+                            className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-black text-[10.5px] rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+                          >
+                            Pha xong (Báo Phục vụ)
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
+          </>
+        );
+      })()}
+    </>
+  ) : (
+  /* Staff View: Support Calls & Recent Orders */
+  <>
+    <div className="flex border-b border-slate-200 dark:border-[#1e293b] mb-4 gap-3 text-xs font-bold text-slate-500 dark:text-slate-400 overflow-x-auto scrollbar-none pb-0.5">
+      <button
+        onClick={() => setActivityFilter('all')}
+        className={`pb-2 transition-all shrink-0 ${activityFilter === 'all'
+          ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
+          : 'hover:text-slate-900 dark:hover:text-white'
           }`}
       >
-        <div className="flex justify-between items-center mb-4 border-b border-slate-200 dark:border-white/10 pb-3">
-          <h2 className="text-sm font-black uppercase tracking-wider text-slate-800 dark:text-slate-100 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#3B82F6] dark:bg-[#38BDF8] animate-ping" />
-            {user?.role === 'admin'
-              ? 'Hoạt động'
-              : user?.role === 'barista'
-                ? 'Đơn hàng chờ pha chế'
-                : 'Hoạt động '}
-          </h2>
+        Tất cả
+      </button>
+      <button
+        onClick={() => setActivityFilter('table')}
+        className={`pb-2 transition-all shrink-0 ${activityFilter === 'table'
+          ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
+          : 'hover:text-slate-900 dark:hover:text-white'
+          }`}
+      >
+        Bàn {(tableActivities.length + pendingTransferRequests.length) > 0 && `(${tableActivities.length + pendingTransferRequests.length})`}
+      </button>
+      <button
+        onClick={() => setActivityFilter('support')}
+        className={`pb-2 transition-all shrink-0 ${activityFilter === 'support'
+          ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
+          : 'hover:text-slate-900 dark:hover:text-white'
+          }`}
+      >
+        Hỗ trợ {staffCalls.length > 0 && `(${staffCalls.length})`}
+      </button>
+      <button
+        onClick={() => setActivityFilter('payment')}
+        className={`pb-2 transition-all shrink-0 ${activityFilter === 'payment'
+          ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
+          : 'hover:text-slate-900 dark:hover:text-white'
+          }`}
+      >
+        Thanh toán
+      </button>
+    </div>
+
+    {/* Timeline Items for Staff */}
+    <div className="space-y-3 flex-1 overflow-y-auto scrollbar-none pr-1">
+      {/* Table Transfer Requests from Customers */}
+      {(activityFilter === 'all' || activityFilter === 'table' || activityFilter === 'support') &&
+        pendingTransferRequests.map((req) => (
+          <div
+            key={req.id}
+            className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl space-y-2 text-xs shadow-2xs"
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping shrink-0" />
+                <span>{req.fromTableName} ➔ {req.toTableName}</span>
+              </span>
+              <span className="text-[10px] font-mono text-amber-600 dark:text-amber-400 font-extrabold">
+                {req.createdAt
+                  ? new Date(req.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+                  : 'Vừa xong'}
+              </span>
+            </div>
+
+            <p className="text-[11.5px] font-extrabold text-amber-700 dark:text-amber-300">
+              Khách hàng <span className="underline">{req.customerName || 'Khách tại bàn'}</span> yêu cầu đổi bàn
+            </p>
+
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => handleApproveTransfer(req.id)}
+                className="flex-1 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-[10.5px] font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center"
+              >
+                Chấp nhận
+              </button>
+              <button
+                type="button"
+                onClick={() => handleRejectTransfer(req.id)}
+                className="flex-1 py-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[10.5px] font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center"
+              >
+                Từ chối
+              </button>
+            </div>
+          </div>
+        ))}
+
+      {/* Table Session Activity Items (Guest Joined / Guest Left) */}
+      {(activityFilter === 'all' || activityFilter === 'table') &&
+        tableActivities.map((act) => (
+          <div
+            key={act.id}
+            className={`p-3.5 rounded-2xl space-y-2 text-xs shadow-2xs border ${act.type === 'joined'
+              ? 'bg-sky-500/10 border-sky-500/30'
+              : 'bg-slate-500/10 border-slate-500/30'
+              }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <span
+                  className={`w-2 h-2 rounded-full shrink-0 ${act.type === 'joined' ? 'bg-sky-400 animate-ping' : 'bg-slate-400'
+                    }`}
+                />
+                {act.tableName}
+              </span>
+              <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 font-extrabold">
+                {new Date(act.timestamp).toLocaleTimeString('vi-VN', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </span>
+            </div>
+
+            <p
+              className={`text-[11.5px] font-extrabold ${act.type === 'joined'
+                ? 'text-sky-700 dark:text-sky-300'
+                : 'text-slate-600 dark:text-slate-300'
+                }`}
+            >
+              {act.type === 'joined' ? 'Khách mới vừa quét mã QR vào bàn!' : 'Khách đã rời bàn (Bàn hiện trống)'}
+            </p>
+
+            <button
+              onClick={() =>
+                setTableActivities((prev) => prev.filter((item) => item.id !== act.id))
+              }
+              className="w-full py-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-black text-[10.5px] rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center mt-1"
+            >
+              Đã xem
+            </button>
+          </div>
+        ))}
+
+      {/* Drink Ready Notifications for Waiters (Auto-removes when completed) */}
+      {(activityFilter === 'all' || activityFilter === 'support') &&
+        drinkReadyList.map((item) => (
+          <div key={item.orderId} className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl space-y-2 text-xs shadow-2xs">
+            <div className="flex items-center justify-between">
+              <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                {item.tableName}
+              </span>
+              <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-extrabold">
+                {new Date(item.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+            <p className="text-[11.5px] font-extrabold text-emerald-700 dark:text-emerald-300">
+              Pha chế xong món! Cần ra món cho khách.
+            </p>
+            <button
+              onClick={() => handleUpdateStatus(item.orderId, 'completed')}
+              className="w-full py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-[10.5px] font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+            >
+              Xác nhận Đã ra món
+            </button>
+          </div>
+        ))}
+
+      {/* Staff Call Support Items (Auto-removes when acknowledged) */}
+      {(activityFilter === 'all' || activityFilter === 'support') &&
+        staffCalls.map((call) => (
+          <div key={call._id} className="p-3.5 bg-sky-500/10 border border-sky-500/30 rounded-2xl space-y-2 text-xs shadow-2xs">
+            <div className="flex items-center justify-between">
+              <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
+                {call.tableId?.tableName || 'Bàn'}
+              </span>
+              <span className="text-[10px] font-mono text-sky-600 dark:text-sky-400 font-extrabold">
+                {call.createdAt
+                  ? new Date(call.createdAt).toLocaleTimeString('vi-VN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                  })
+                  : 'Vừa xong'}
+              </span>
+            </div>
+            <p className="text-[11.5px] font-extrabold text-sky-700 dark:text-sky-300">
+              Khách tại bàn gửi yêu cầu phục vụ!
+            </p>
+            <button
+              onClick={() => handleAcknowledgeCall(call._id)}
+              className="w-full py-1.5 bg-sky-500 hover:bg-sky-600 text-white text-[10.5px] font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+            >
+              Đã tiếp nhận
+            </button>
+          </div>
+        ))}
+
+      {/* Payment Notified Items (Only show when customer clicked "Xác nhận Đã chuyển khoản") */}
+      {(activityFilter === 'all' || activityFilter === 'payment') &&
+        orders
+          .filter((o) => o.paymentNotified && o.status !== 'paid')
+          .slice(0, 10)
+          .map((order) => (
+            <div
+              key={order._id}
+              className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl space-y-2 text-xs shadow-2xs"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full shrink-0 bg-amber-500 animate-ping" />
+                  {order.isTakeaway || !order.tableId ? 'Mang về' : order.tableId?.tableName || 'Bàn chọn'}
+                </span>
+                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-mono font-bold">
+                  {order.createdAt
+                    ? new Date(order.createdAt).toLocaleTimeString('vi-VN', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })
+                    : 'Vừa xong'}
+                </span>
+              </div>
+
+              <p className="text-[11.5px] text-amber-800 dark:text-amber-300 font-black leading-tight">Khách hàng vừa bấm báo đã chuyển khoản!</p>
+
+              <div className="flex items-center justify-between pt-1 border-t border-amber-500/20">
+                <span className="text-[10.5px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tổng đơn:</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11.5px] text-[#0284c7] dark:text-[#38BDF8] font-black">
+                    {formatPrice(order.totalAmount || 0)}
+                  </span>
+                  <span className="px-1.5 py-0.5 text-[9.5px] font-black bg-amber-500 text-white rounded uppercase">
+                    VietQR
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex gap-1.5 pt-0.5">
+                <button
+                  onClick={() => handleUpdateStatus(order._id, 'paid')}
+                  className="flex-1 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-[10.5px] rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center flex items-center justify-center"
+                >
+                  <span>Xác nhận Đã nhận tiền</span>
+                </button>
+                <button
+                  onClick={() => setActiveInvoice(order)}
+                  className="px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-200 font-extrabold text-[10.5px] rounded-xl transition-all cursor-pointer flex items-center justify-center"
+                  title="Xem hóa đơn"
+                >
+                  <span>Hóa đơn</span>
+                </button>
+              </div>
+            </div>
+          ))}
+
+      {staffCalls.length === 0 &&
+        drinkReadyList.length === 0 &&
+        tableActivities.length === 0 &&
+        pendingTransferRequests.length === 0 &&
+        orders.filter((o) => o.paymentNotified && o.status !== 'paid').length === 0 && (
+          <div className="p-6 text-center text-slate-400 text-xs italic">
+            Hiện chưa có hoạt động nào mới.
+          </div>
+        )}
+    </div>
+  </>
+)
+}
+      </aside >
+
+  {/* ── ALL MODALS & TOAST NOTIFICATIONS ────────────────────────────────── */ }
+
+{/* 0. Category Manager Modal (Admin Only) */ }
+<AnimatePresence>
+  {isCategoryModalOpen && (
+    <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCategoryModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-xl bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5 my-auto max-h-[85vh] overflow-y-auto scrollbar-thin">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1e293b]">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-sky-500/10 text-sky-500 rounded-xl">
+              <DashboardIcon name="layers" className="text-xl" />
+            </div>
+            <div>
+              <h3 className="text-base font-black text-slate-900 dark:text-white font-heading">Quản lý Danh mục Thực đơn</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Thêm, chỉnh sửa và xóa danh mục món ăn cho quán</p>
+            </div>
+          </div>
+          <button onClick={() => setIsCategoryModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
+            <DashboardIcon name="close" />
+          </button>
+        </div>
+
+        {/* Form Add / Edit Category */}
+        <form onSubmit={handleSaveCategory} className="bg-slate-50 dark:bg-[#090D16] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-4">
+          <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+            {editingCategory ? 'Sửa thông tin danh mục' : 'Thêm danh mục mới'}
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div>
+              <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Tên danh mục *</label>
+              <input
+                type="text"
+                required
+                placeholder="VD: Cà Phê, Trà Trái Cây..."
+                value={categoryForm.name}
+                onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                className="w-full bg-white dark:bg-[#131929] border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-[#38BDF8]"
+              />
+            </div>
+            <div>
+              <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Biểu tượng (Icon)</label>
+              <select
+                value={categoryForm.icon}
+                onChange={(e) => setCategoryForm({ ...categoryForm, icon: e.target.value })}
+                className="w-full bg-white dark:bg-[#131929] border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-[#38BDF8] cursor-pointer"
+              >
+                <option value="local_cafe">local_cafe (Cà phê)</option>
+                <option value="local_bar">local_bar (Trà / Nước)</option>
+                <option value="icecream">icecream (Đá xay / Kem)</option>
+                <option value="bakery_dining">bakery_dining (Bánh ngọt)</option>
+                <option value="restaurant">restaurant (Đồ ăn)</option>
+                <option value="star">star (Nổi bật)</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            {editingCategory && (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingCategory(null);
+                  setCategoryForm({ name: '', icon: 'local_cafe', order: categories.length + 1, isActive: true });
+                }}
+                className="px-3 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer"
+              >
+                Hủy chỉnh sửa
+              </button>
+            )}
+            <button
+              type="submit"
+              className="px-4 py-2 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
+            >
+              <DashboardIcon name="check_circle" className="text-base" />
+              <span>{editingCategory ? 'Lưu cập nhật' : 'Tạo danh mục'}</span>
+            </button>
+          </div>
+        </form>
+
+        {/* List Existing Categories */}
+        <div className="space-y-3">
+          <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+            Danh sách danh mục hiện có ({categories.length})
+          </h4>
+          <div className="grid grid-cols-1 gap-2.5">
+            {categories.map((cat) => {
+              const foodCount = foods.filter((f) => f.category === cat.name).length;
+              const isValidIcon = ['local_cafe', 'local_bar', 'icecream', 'bakery_dining', 'restaurant', 'star', 'coffee', 'local_drink', 'cake', 'category', 'emoji_food_beverage', 'fastfood'].includes(cat.icon);
+              const isImg = cat.icon && (cat.icon.startsWith('http') || cat.icon.startsWith('/') || cat.icon.includes('.'));
+              return (
+                <div
+                  key={cat._id}
+                  className="p-3.5 bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200/80 dark:border-slate-800 rounded-2xl flex items-center justify-between gap-3 text-xs"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="p-2.5 bg-white dark:bg-[#131929] text-[#0284c7] dark:text-[#38BDF8] rounded-xl shrink-0 border border-slate-200 dark:border-slate-800 flex items-center justify-center w-10 h-10">
+                      {isImg ? (
+                        <img src={cat.icon} alt={cat.name} className="w-5 h-5 object-contain" />
+                      ) : (
+                        <DashboardIcon name={isValidIcon ? cat.icon : 'category'} className="text-lg" />
+                      )}
+                    </div>
+                    <div className="truncate">
+                      <h5 className="font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>{cat.name}</span>
+                        <span className="px-2 py-0.5 bg-slate-200 dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 text-[10px] rounded-md font-bold">
+                          {foodCount} món
+                        </span>
+                      </h5>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => {
+                        setEditingCategory(cat);
+                        setCategoryForm({
+                          name: cat.name || '',
+                          icon: isValidIcon ? cat.icon : 'local_cafe',
+                          order: cat.order || 0,
+                          isActive: cat.isActive !== false,
+                        });
+                      }}
+                      className="p-2 text-slate-400 hover:text-[#38BDF8] transition-colors cursor-pointer"
+                      title="Chỉnh sửa"
+                    >
+                      <DashboardIcon name="edit" className="text-base" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCategory(cat._id)}
+                      className="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                      title="Xóa danh mục"
+                    >
+                      <DashboardIcon name="delete" className="text-base" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  )}
+</AnimatePresence>
+
+{/* 1. Food Create / Edit Modal */ }
+<AnimatePresence>
+  {isFoodModalOpen && (
+    <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsFoodModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-lg bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[85vh] overflow-y-auto scrollbar-thin">
+        <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white font-heading">{editingFood ? t.modalFoodTitleEdit : t.modalFoodTitleAdd}</h3>
+          <button onClick={() => setIsFoodModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
+            <DashboardIcon name="close" />
+          </button>
+        </div>
+
+        <form onSubmit={handleCreateOrUpdateFood} className="space-y-3 text-xs">
+          <div>
+            <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">{t.modalFoodName}</label>
+            <input type="text" required value={foodForm.name} onChange={(e) => setFoodForm({ ...foodForm, name: e.target.value })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[#181c23] dark:text-slate-300 font-bold mb-1">{t.modalFoodPrice}</label>
+              <input type="number" required value={foodForm.price} onChange={(e) => setFoodForm({ ...foodForm, price: e.target.value })} className="w-full bg-[#f1f3fe] dark:bg-[#090D16] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg p-2.5 text-[#181c23] dark:text-white focus:outline-none focus:border-[#0059b9]" />
+            </div>
+            <div>
+              <label className="block text-[#181c23] dark:text-slate-300 font-bold mb-1">{t.modalFoodCategory}</label>
+              <select value={foodForm.category} onChange={(e) => setFoodForm({ ...foodForm, category: e.target.value })} className="w-full bg-[#f1f3fe] dark:bg-[#090D16] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg p-2.5 text-[#181c23] dark:text-white font-bold focus:outline-none focus:border-[#0059b9] cursor-pointer">
+                {categories.map((cat) => (
+                  <option key={cat._id} value={cat.name} className="bg-white dark:bg-[#090D16] text-[#181c23] dark:text-white font-bold py-1">
+                    {cat.name}
+                  </option>
+                ))}
+                {categories.length === 0 && (
+                  <option value="Cà phê" className="bg-white dark:bg-[#090D16] text-[#181c23] dark:text-white font-bold py-1">Cà phê</option>
+                )}
+              </select>
+            </div>
+          </div>
+
+          {/* Topping Category Indicator Badge */}
+          {(() => {
+            const isMilkTea = foodForm.category?.toLowerCase().includes('trà sữa') || foodForm.category?.toLowerCase().includes('milk tea');
+            return isMilkTea ? (
+              <div className="p-3 bg-[#0059b9]/10 border border-[#0059b9]/30 rounded-lg text-[11.5px] text-[#0059b9] font-bold flex items-center gap-2">
+                <DashboardIcon name="local_drink" className="text-base" />
+                <span>Danh mục Trà Sữa: Món ăn này sẽ hỗ trợ chọn Topping (Trân châu, thạch, pudding...) khi khách hàng đặt món.</span>
+              </div>
+            ) : (
+              <div className="p-3 bg-[#f1f3fe] dark:bg-[#1e293b]/60 border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg text-[11.5px] text-[#414754] dark:text-slate-400 font-medium flex items-center gap-2">
+                <DashboardIcon name="info" className="text-base" />
+                <span>Danh mục món ăn/thức uống này KHÔNG hỗ trợ Topping. Khách hàng chỉ chọn Size & Ghi chú.</span>
+              </div>
+            );
+          })()}
+
+          <div>
+            <label className="block text-[#181c23] dark:text-slate-300 font-bold mb-1">{t.modalFoodImg}</label>
+            <div className="flex gap-2 mb-2">
+              <button type="button" onClick={() => setFoodInputType('upload')} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${foodInputType === 'upload' ? 'bg-[#0059b9] text-white' : 'bg-[#f1f3fe] dark:bg-[#1e293b] text-[#414754] dark:text-slate-300'}`}>{t.modalFoodUpload}</button>
+              <button type="button" onClick={() => setFoodInputType('url')} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${foodInputType === 'url' ? 'bg-[#0059b9] text-white' : 'bg-[#f1f3fe] dark:bg-[#1e293b] text-[#414754] dark:text-slate-300'}`}>{t.modalFoodUrl}</button>
+            </div>
+
+            {foodInputType === 'upload' ? (
+              <label className="custum-file-upload" htmlFor="file">
+                <div className="icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <g strokeWidth={0} id="SVGRepo_bgCarrier" />
+                    <g strokeLinejoin="round" strokeLinecap="round" id="SVGRepo_tracerCarrier" />
+                    <g id="SVGRepo_iconCarrier">
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M10 1C9.73478 1 9.48043 1.10536 9.29289 1.29289L3.29289 7.29289C3.10536 7.48043 3 7.73478 3 8V20C3 21.6569 4.34315 23 6 23H7C7.55228 23 8 22.5523 8 22C8 21.4477 7.55228 21 7 21H6C5.44772 21 5 20.5523 5 20V9H10C10.5523 9 11 8.55228 11 8V3H18C18.5523 3 19 3.44772 19 4V9C19 9.55228 19.4477 10 20 10C20.5523 10 21 9.55228 21 9V4C21 2.34315 19.6569 1 18 1H10ZM9 7H6.41421L9 4.41421V7ZM14 15.5C14 14.1193 15.1193 13 16.5 13C17.8807 13 19 14.1193 19 15.5V16V17H20C21.1046 17 22 17.8954 22 19C22 20.1046 21.1046 21 20 21H13C11.8954 21 11 20.1046 11 19C11 17.8954 11.8954 17 13 17H14V16V15.5ZM16.5 11C14.142 11 12.2076 12.8136 12.0156 15.122C10.2825 15.5606 9 17.1305 9 19C9 21.2091 10.7909 23 13 23H20C22.2091 23 24 21.2091 20.9844 15.122C20.7924 12.8136 18.858 11 16.5 11Z"
+                      />
+                    </g>
+                  </svg>
+                </div>
+                <div className="text">
+                  <span>Click to upload image</span>
+                </div>
+                <input type="file" id="file" accept="image/*" onChange={handleCloudinaryUpload} />
+              </label>
+            ) : (
+              <input type="text" placeholder={t.modalFoodUrlPlaceholder} value={foodForm.image} onChange={(e) => setFoodForm({ ...foodForm, image: e.target.value })} className="w-full bg-[#f1f3fe] dark:bg-[#090D16] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg p-2.5 text-[#181c23] dark:text-white focus:outline-none focus:border-[#0059b9]" />
+            )}
+
+            {/* Live Image Preview Box */}
+            {foodForm.image && (
+              <div className="mt-3 p-2.5 bg-[#f1f3fe] dark:bg-[#090D16] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg flex items-center gap-3">
+                <img
+                  src={foodForm.image}
+                  alt="Xem trước ảnh món"
+                  className="w-14 h-14 rounded-lg object-cover bg-[#ebedf8] dark:bg-slate-800 border border-[#c1c6d6] dark:border-[#1e293b] shrink-0"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = 'none';
+                  }}
+                />
+                <div className="truncate flex-1">
+                  <span className="text-[11px] font-bold text-[#181c23] dark:text-slate-200 block">Xem trước hình ảnh món</span>
+                  <span className="text-[10px] text-[#414754] dark:text-slate-400 truncate block mt-0.5">{foodForm.image}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 pt-1">
+            <input type="checkbox" id="isAvailable" checked={foodForm.isAvailable} onChange={(e) => setFoodForm({ ...foodForm, isAvailable: e.target.checked })} className="rounded" />
+            <label htmlFor="isAvailable" className="text-[#181c23] dark:text-slate-300 font-bold">{t.modalFoodActive}</label>
+          </div>
+
+          <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
+            <DashboardIcon name="check_circle" className="text-base" />
+            <span>{t.modalFoodSave}</span>
+          </button>
+        </form>
+      </motion.div>
+    </div>
+  )}
+</AnimatePresence>
+
+{/* 2. Table Create / Edit Modal */ }
+<AnimatePresence>
+  {isTableModalOpen && (
+    <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsTableModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-[#c1c6d6] dark:border-[#1e293b] rounded-2xl p-6 shadow-xl space-y-4 my-auto max-h-[85vh] overflow-y-auto scrollbar-thin">
+        <div className="flex justify-between items-center border-b border-[#c1c6d6] dark:border-[#1e293b] pb-3">
+          <h3 className="text-lg font-bold text-[#181c23] dark:text-white font-heading">{editingTable ? t.modalTableTitleEdit : t.modalTableTitleAdd}</h3>
+          <button onClick={() => setIsTableModalOpen(false)} className="text-[#717785] hover:text-[#181c23] dark:hover:text-white cursor-pointer">
+            <DashboardIcon name="close" />
+          </button>
+        </div>
+
+        <form onSubmit={handleCreateOrUpdateTable} className="space-y-3 text-xs">
+          <div>
+            <label className="block text-[#181c23] dark:text-slate-300 font-bold mb-1">Số thứ tự bàn (Chỉ nhập số)</label>
+            <input
+              type="number"
+              min="1"
+              required
+              placeholder="Ví dụ: 4 (Tự động lưu là Bàn số 4)"
+              value={tableForm.tableName.replace(/\D/g, '')}
+              onChange={(e) => setTableForm({ ...tableForm, tableName: e.target.value })}
+              className="w-full bg-[#f1f3fe] dark:bg-[#090D16] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg p-2.5 text-[#181c23] dark:text-white focus:outline-none focus:border-[#0059b9]"
+            />
+            <p className="text-[11px] text-[#414754] dark:text-slate-400 mt-1">
+              {tableForm.tableName.replace(/\D/g, '')
+                ? `Tên hiển thị: Bàn số ${tableForm.tableName.replace(/\D/g, '')}`
+                : 'Hệ thống tự động thêm chữ "Bàn số "'}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-[#181c23] dark:text-slate-300 font-bold mb-1">{t.modalTableStatus}</label>
+            <select value={tableForm.status} onChange={(e) => setTableForm({ ...tableForm, status: e.target.value })} className="w-full bg-[#f1f3fe] dark:bg-[#090D16] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg p-2.5 text-[#181c23] dark:text-white font-bold focus:outline-none focus:border-[#0059b9] cursor-pointer">
+              <option value="empty" className="bg-white dark:bg-[#090D16] text-[#181c23] dark:text-white font-bold py-1">{t.tableEmpty}</option>
+              <option value="serving" className="bg-white dark:bg-[#090D16] text-[#181c23] dark:text-white font-bold py-1">{t.tableOccupied}</option>
+              <option value="reserved" className="bg-white dark:bg-[#090D16] text-[#181c23] dark:text-white font-bold py-1">{t.tableReserved}</option>
+            </select>
+          </div>
+
+          <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
+            <DashboardIcon name="check_circle" className="text-base" />
+            <span>{t.modalFoodSave}</span>
+          </button>
+        </form>
+      </motion.div>
+    </div>
+  )}
+</AnimatePresence>
+
+{/* 3.8 Employee Shift Swap Request Modal */ }
+<AnimatePresence>
+  {isShiftSwapModalOpen && (
+    <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsShiftSwapModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[85vh] overflow-y-auto scrollbar-thin">
+        <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3">
+          <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading">Gửi Yêu Cầu Đổi Ca Làm</h3>
+          <button onClick={() => setIsShiftSwapModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
+            <DashboardIcon name="close" />
+          </button>
+        </div>
+
+        <form onSubmit={handleRequestShiftSwap} className="space-y-3 text-xs">
+          <div>
+            <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Ca làm phân công hiện tại</label>
+            <input
+              type="text"
+              disabled
+              value={
+                user?.assignedShift === 'morning' ? 'Ca Sáng (06:00 - 12:00)' :
+                  user?.assignedShift === 'afternoon' ? 'Ca Chiều (12:00 - 18:00)' : 'Ca Tối (18:00 - 23:00)'
+              }
+              className="w-full bg-slate-100 dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-500 font-bold"
+            />
+          </div>
+
+          <div>
+            <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Ca làm muốn đổi sang *</label>
+            <select
+              value={requestedSwapShift}
+              onChange={(e) => setRequestedSwapShift(e.target.value as any)}
+              className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-[#38BDF8] cursor-pointer"
+            >
+              <option value="morning">Ca Sáng (06:00 - 12:00)</option>
+              <option value="afternoon">Ca Chiều (12:00 - 18:00)</option>
+              <option value="evening">Ca Tối (18:00 - 23:00)</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Lý do đổi ca (Không bắt buộc)</label>
+            <textarea
+              rows={2}
+              placeholder="VD: Đổi ca với Nguyễn Văn A cho ca làm hôm nay..."
+              value={swapReason}
+              onChange={(e) => setSwapReason(e.target.value)}
+              className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
+            />
+          </div>
+
+          <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
+            <DashboardIcon name="send" className="text-base" />
+            <span>Gửi Yêu Cầu Cho Admin Duyệt</span>
+          </button>
+        </form>
+      </motion.div>
+    </div>
+  )}
+</AnimatePresence>
+
+{/* 2.5 Table QR Code Modal */ }
+<AnimatePresence>
+  {qrTable && (
+    <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setQrTable(null)} className="fixed inset-0 bg-black/80 backdrop-blur-xs print:hidden" />
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 text-center my-auto max-h-[85vh] overflow-y-auto scrollbar-thin printable-modal">
+        <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3 print:hidden">
+          <h3 className="text-base font-bold text-slate-900 dark:text-white font-heading">Mã QR Đặt Món — {qrTable.tableName}</h3>
+          <button onClick={() => setQrTable(null)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
+            <DashboardIcon name="close" />
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          <p className="text-xs text-slate-500 dark:text-slate-400 print:hidden">Khách hàng quét mã QR này tại bàn để xem menu & gọi món trực tiếp</p>
+          <div className="bg-white p-4 rounded-xl border border-slate-200 inline-block shadow-inner">
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(getTableQrUrl(qrTable._id, qrTable.qrToken))}`}
+              alt={`QR Code ${qrTable.tableName}`}
+              className="w-48 h-48 mx-auto"
+            />
+          </div>
+          <p className="text-sm font-black text-slate-900 dark:text-white">{qrTable.tableName}</p>
+          {qrTable.qrToken && (
+            <p className="text-[10px] text-emerald-500 font-mono font-bold">Mã QR động: #{qrTable.qrToken.slice(0, 8)}</p>
+          )}
+        </div>
+
+        <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-[#1e293b] print:hidden text-xs">
+          <div className="flex items-center bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2">
+            <input
+              type="text"
+              readOnly
+              value={getTableQrUrl(qrTable._id, qrTable.qrToken)}
+              className="bg-transparent text-slate-700 dark:text-slate-300 text-[11px] truncate flex-1 focus:outline-none"
+            />
+            <button
+              onClick={() => {
+                const url = getTableQrUrl(qrTable._id, qrTable.qrToken);
+                navigator.clipboard.writeText(url);
+                showToast('Đã sao chép link đặt món!', 'success');
+              }}
+              className="px-2.5 py-1 bg-[#3AA6FF] text-white font-bold rounded-lg text-[10px] hover:bg-[#2593e8] transition-all ml-1 shrink-0 cursor-pointer"
+            >
+              Sao chép
+            </button>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                try {
+                  const res = await fetch(`${API_BASE}/tables/${qrTable._id}/regenerate-qr`, {
+                    method: 'PATCH',
+                  });
+                  if (res.ok) {
+                    const updated = await res.json();
+                    setQrTable(updated);
+                    setTables((prev) => prev.map((t) => (t._id === qrTable._id ? updated : t)));
+                    showToast('Đã tạo mã QR mới thành công!', 'success');
+                  }
+                } catch (e) {
+                  showToast('Không thể đổi mã QR!', 'error');
+                }
+              }}
+              className="flex-1 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-xl font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all border border-amber-500/30"
+            >
+              <DashboardIcon name="sync" className="text-base" />
+              <span>Đổi mã QR mới</span>
+            </button>
+            <button
+              onClick={() => window.print()}
+              className="flex-1 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-md"
+            >
+              <DashboardIcon name="print" className="text-base" />
+              <span>In QR Code</span>
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  )}
+</AnimatePresence>
+
+{/* 2.6 Confirm Clear Table Modal - Modern Minimalist */ }
+<AnimatePresence>
+  {confirmClearTableModal && (
+    <div className="fixed inset-0 z-50 overflow-y-auto p-4 flex items-center justify-center min-h-full">
+      {/* Minimalist deep backdrop blur */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={() => !isClearingTable && setConfirmClearTableModal(null)}
+        className="fixed inset-0 bg-black/75 backdrop-blur-md transition-opacity"
+      />
+
+      {/* Modal Dialog Card */}
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0, y: 8 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 8 }}
+        transition={{ type: 'spring', damping: 26, stiffness: 360 }}
+        className="relative z-10 w-full max-w-[420px] bg-[#0C111D] text-white border border-white/10 rounded-2xl p-5 sm:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.6)] space-y-4 my-auto overflow-hidden"
+      >
+        {/* Top Accent Glow (Subtle minimalist ambient light) */}
+        <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-16 bg-rose-500/15 blur-2xl pointer-events-none rounded-full" />
+
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3 relative">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center shrink-0 shadow-inner">
+              <DashboardIcon name="cleaning_services" className="text-xl" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-extrabold text-white tracking-tight font-heading truncate">
+                  Dọn bàn & về Trống
+                </h3>
+                <span className="px-2 py-0.5 rounded-md text-[10.5px] font-bold bg-[#38BDF8]/10 text-[#38BDF8] border border-[#38BDF8]/20 shrink-0 font-mono">
+                  {confirmClearTableModal.tableName}
+                </span>
+              </div>
+              <p className="text-[12px] text-slate-400 mt-0.5 leading-snug">
+                Đang có <strong className="text-white font-bold">{confirmClearTableModal.orders.length} đơn chưa thanh toán</strong>
+              </p>
+            </div>
+          </div>
+
           <button
-            onClick={() => setIsRealtimeDrawerOpen(false)}
-            className="xl:hidden text-slate-400 hover:text-slate-900 dark:hover:text-white p-1 rounded-lg"
+            type="button"
+            disabled={isClearingTable}
+            onClick={() => setConfirmClearTableModal(null)}
+            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/5 transition-colors cursor-pointer disabled:opacity-40 shrink-0"
           >
             <DashboardIcon name="close" className="text-lg" />
           </button>
         </div>
 
-        {/* Realtime Activity Content */}
-        {user?.role === 'admin' ? (
-          <>
-            {/* Admin Realtime Staff Attendance Content */}
-            <div className="space-y-4 flex-1 overflow-y-auto scrollbar-none pr-1">
-              {(() => {
-                const now = new Date();
-                const todayAttendances = attendances.filter((att) => {
-                  if (!att || !att.checkIn) return false;
-                  const d = new Date(att.checkIn);
-                  return (
-                    d.getDate() === now.getDate() &&
-                    d.getMonth() === now.getMonth() &&
-                    d.getFullYear() === now.getFullYear()
-                  );
-                });
-                const checkedInMap = new Map<string, any>();
-                todayAttendances.forEach((att) => {
-                  const rawUser = att.userId;
-                  let uId = '';
-                  let uEmail = '';
-                  if (typeof rawUser === 'object' && rawUser !== null) {
-                    uId = String((rawUser as any)._id || (rawUser as any).id || '');
-                    uEmail = String((rawUser as any).email || '').toLowerCase();
-                  } else if (rawUser) {
-                    uId = String(rawUser);
-                  }
-                  if (uId) checkedInMap.set(uId, att);
-                  if (uEmail) checkedInMap.set(uEmail, att);
-                });
+        {/* Minimalist Notice */}
+        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 text-[12px] text-slate-300 flex items-start gap-2.5 leading-relaxed">
+          <DashboardIcon name="info" className="text-rose-400 text-base shrink-0 mt-0.5" />
+          <span>
+            Hệ thống sẽ <span className="text-rose-400 font-semibold">tự động hủy</span> các đơn chưa hoàn tất, xóa phiên của khách và đưa bàn về trạng thái trống.
+          </span>
+        </div>
 
-                const staffMembers = usersList.filter((u) => u.role !== 'admin');
-                const checkedInList = staffMembers.filter((u) => {
-                  const uId = String(u._id || (u as any).id || '');
-                  const uEmail = String(u.email || '').toLowerCase();
-                  return (uId && checkedInMap.has(uId)) || (uEmail && checkedInMap.has(uEmail));
-                });
-                const notCheckedInList = staffMembers.filter((u) => {
-                  const uId = String(u._id || (u as any).id || '');
-                  const uEmail = String(u.email || '').toLowerCase();
-                  return (!uId || !checkedInMap.has(uId)) && (!uEmail || !checkedInMap.has(uEmail));
-                });
+        {/* Orders List */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 px-0.5">
+            <span>Đơn hàng tại bàn</span>
+            <span className="text-slate-500 font-mono">{confirmClearTableModal.orders.length} đơn</span>
+          </div>
 
-                return (
-                  <>
-                    {/* Render Checked In Staff */}
-                    {(activityFilter === 'all' || activityFilter === 'checkedIn') && (
-                      <div className="space-y-2.5">
-                        <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                          Nhân viên đã điểm danh ({checkedInList.length})
-                        </h4>
-                        {checkedInList.length === 0 ? (
-                          <p className="text-xs text-slate-400 italic">Chưa có nhân viên nào điểm danh hôm nay</p>
-                        ) : (
-                          checkedInList.map((st) => {
-                            const uId = String(st._id || (st as any).id || '');
-                            const uEmail = String(st.email || '').toLowerCase();
-                            const attRecord = (uId ? checkedInMap.get(uId) : null) || (uEmail ? checkedInMap.get(uEmail) : null);
-                            const cInTime = attRecord?.checkIn
-                              ? new Date(attRecord.checkIn).toLocaleTimeString('vi-VN', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })
-                              : '';
-                            const cOutTime = attRecord?.checkOut
-                              ? new Date(attRecord.checkOut).toLocaleTimeString('vi-VN', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })
-                              : null;
-
-                            return (
-                              <div
-                                key={st._id || st.email}
-                                className="p-3 bg-white dark:bg-[#131929] border border-emerald-500/30 rounded-2xl space-y-1.5 text-xs shadow-2xs"
-                              >
-                                <div className="flex items-center justify-between">
-                                  <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                    {st.name}
-                                  </span>
-                                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-md">
-                                    {cOutTime ? 'Đã check-out' : 'Đang làm việc'}
-                                  </span>
-                                </div>
-                                <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                                  Check-in lúc: <strong className="text-slate-700 dark:text-slate-300">{cInTime}</strong>
-                                  {cOutTime && (
-                                    <>
-                                      {' '}
-                                      | Check-out: <strong className="text-slate-700 dark:text-slate-300">{cOutTime}</strong> ({attRecord.totalHours}h)
-                                    </>
-                                  )}
-                                </div>
-                                <div className="text-[10px] text-slate-400 truncate">{st.email}</div>
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
-                    )}
-
-                    {/* Render Not Checked In Staff */}
-                    {(activityFilter === 'all' || activityFilter === 'notCheckedIn') && (
-                      <div className="space-y-2.5 pt-2">
-                        <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-500 dark:text-rose-400">
-                          Nhân viên chưa điểm danh ({notCheckedInList.length})
-                        </h4>
-                        {notCheckedInList.length === 0 ? (
-                          <p className="text-xs text-emerald-500 font-bold">Tất cả nhân viên đã điểm danh đầy đủ!</p>
-                        ) : (
-                          notCheckedInList.map((st) => (
-                            <div
-                              key={st._id}
-                              className="p-3 bg-white dark:bg-[#131929] border border-rose-500/30 rounded-2xl space-y-1.5 text-xs shadow-2xs"
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
-                                  <span className="w-2 h-2 rounded-full bg-rose-500" />
-                                  {st.name}
-                                </span>
-                                <span className="text-[10px] font-bold text-rose-500 dark:text-rose-400 bg-rose-500/15 px-2 py-0.5 rounded-md">
-                                  Chưa ca
-                                </span>
-                              </div>
-                              <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                                Chưa có dữ liệu điểm danh ca làm hôm nay
-                              </div>
-                              <div className="text-[10px] text-slate-400 truncate">{st.email}</div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
-          </>
-        ) : user?.role === 'barista' ? (
-          <>
-            {(() => {
-              const confirmedOrders = orders.filter((o) => o.status === 'confirmed');
-              const cookingOrders = orders.filter((o) => o.status === 'cooking');
-              const brewingQueue = orders.filter((o) => o.status === 'confirmed' || o.status === 'cooking');
+          <div className="space-y-1.5 max-h-44 overflow-y-auto pr-0.5 scrollbar-thin">
+            {confirmClearTableModal.orders.map((ord: any) => {
+              const statusText =
+                ord.status === 'cooking'
+                  ? 'Đang làm'
+                  : ord.status === 'ready'
+                    ? 'Đã xong'
+                    : ord.status === 'completed'
+                      ? 'Chờ thanh toán'
+                      : ord.status === 'confirmed'
+                        ? 'Đã duyệt'
+                        : 'Chờ duyệt';
 
               return (
-                <>
-                  <div className="space-y-3 flex-1 overflow-y-auto scrollbar-none pr-1">
-                    {brewingQueue.length === 0 ? (
-                      <div className="p-6 text-center text-slate-400 text-xs italic">
-                        Hiện chưa có đơn hàng mới nào được Phục vụ xác nhận.
-                      </div>
-                    ) : (
-                      brewingQueue
-                        .map((order) => (
-                          <div
-                            key={order._id}
-                            className={`p-3.5 border rounded-2xl space-y-2 text-xs transition-all shadow-xs ${order.status === 'confirmed'
-                              ? 'bg-sky-500/10 border-sky-500/30'
-                              : 'bg-amber-500/10 border-amber-500/30'
-                              }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="font-black text-slate-900 dark:text-white flex items-center gap-1.5">
-                                <span className={`w-2 h-2 rounded-full ${order.status === 'confirmed' ? 'bg-sky-400 animate-ping' : 'bg-amber-400 animate-pulse'}`} />
-                                {order.isTakeaway || !order.tableId ? 'Mang về' : order.tableId?.tableName || 'Bàn chọn'}
-                              </span>
-                              <span
-                                className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${order.status === 'confirmed'
-                                  ? 'bg-sky-500/20 text-sky-600 dark:text-sky-400'
-                                  : 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
-                                  }`}
-                              >
-                                {order.status === 'confirmed' ? 'Phục vụ đã duyệt' : 'Đang pha chế'}
-                              </span>
-                            </div>
-
-                            <div className="space-y-1 py-1 border-t border-b border-slate-200/40 dark:border-slate-800/40">
-                              {order.items?.map((item: any, idx: number) => (
-                                <div key={idx} className="flex justify-between text-[11px]">
-                                  <span className="text-slate-800 dark:text-slate-200 font-bold truncate">
-                                    {item.foodId?.name || 'Món ăn'}
-                                    {(item.orderedBy || (item.note && item.note.match(/^\[(.*?)\]/)?.[1])) && (
-                                      <span className="ml-1 px-1 py-0.2 rounded text-[9px] font-mono text-sky-500 bg-sky-500/10">
-                                        {item.orderedBy || item.note.match(/^\[(.*?)\]/)?.[1]}
-                                      </span>
-                                    )}
-                                  </span>
-                                  <span className="text-slate-500 dark:text-slate-400 font-black">x{item.quantity}</span>
-                                </div>
-                              ))}
-                            </div>
-
-                            <div className="flex items-center justify-between pt-1">
-                              <span className="text-[10px] text-slate-400 font-mono">
-                                {order.createdAt ? new Date(order.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : ''}
-                              </span>
-                              {order.status === 'confirmed' ? (
-                                <button
-                                  onClick={() => handleUpdateStatus(order._id, 'cooking')}
-                                  className="px-3 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-[10.5px] rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
-                                >
-                                  Bắt đầu pha chế
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={() => handleUpdateStatus(order._id, 'ready')}
-                                  className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-black text-[10.5px] rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
-                                >
-                                  Pha xong (Báo Phục vụ)
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        ))
-                    )}
-                  </div>
-                </>
-              );
-            })()}
-          </>
-        ) : (
-          /* Staff View: Support Calls & Recent Orders */
-          <>
-            <div className="flex border-b border-slate-200 dark:border-[#1e293b] mb-4 gap-3 text-xs font-bold text-slate-500 dark:text-slate-400 overflow-x-auto scrollbar-none pb-0.5">
-              <button
-                onClick={() => setActivityFilter('all')}
-                className={`pb-2 transition-all shrink-0 ${activityFilter === 'all'
-                  ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
-                  : 'hover:text-slate-900 dark:hover:text-white'
-                  }`}
-              >
-                Tất cả
-              </button>
-              <button
-                onClick={() => setActivityFilter('table')}
-                className={`pb-2 transition-all shrink-0 ${activityFilter === 'table'
-                  ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
-                  : 'hover:text-slate-900 dark:hover:text-white'
-                  }`}
-              >
-                Bàn {(tableActivities.length + pendingTransferRequests.length) > 0 && `(${tableActivities.length + pendingTransferRequests.length})`}
-              </button>
-              <button
-                onClick={() => setActivityFilter('support')}
-                className={`pb-2 transition-all shrink-0 ${activityFilter === 'support'
-                  ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
-                  : 'hover:text-slate-900 dark:hover:text-white'
-                  }`}
-              >
-                Hỗ trợ {staffCalls.length > 0 && `(${staffCalls.length})`}
-              </button>
-              <button
-                onClick={() => setActivityFilter('payment')}
-                className={`pb-2 transition-all shrink-0 ${activityFilter === 'payment'
-                  ? 'text-[#0284c7] dark:text-[#38BDF8] border-b-2 border-[#38BDF8]'
-                  : 'hover:text-slate-900 dark:hover:text-white'
-                  }`}
-              >
-                Thanh toán
-              </button>
-            </div>
-
-            {/* Timeline Items for Staff */}
-            <div className="space-y-3 flex-1 overflow-y-auto scrollbar-none pr-1">
-              {/* Table Transfer Requests from Customers */}
-              {(activityFilter === 'all' || activityFilter === 'table' || activityFilter === 'support') &&
-                pendingTransferRequests.map((req) => (
-                  <div
-                    key={req.id}
-                    className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl space-y-2 text-xs shadow-2xs"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping shrink-0" />
-                        <span>{req.fromTableName} ➔ {req.toTableName}</span>
-                      </span>
-                      <span className="text-[10px] font-mono text-amber-600 dark:text-amber-400 font-extrabold">
-                        {req.createdAt
-                          ? new Date(req.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-                          : 'Vừa xong'}
-                      </span>
-                    </div>
-
-                    <p className="text-[11.5px] font-extrabold text-amber-700 dark:text-amber-300">
-                      Khách hàng <span className="underline">{req.customerName || 'Khách tại bàn'}</span> yêu cầu đổi bàn
-                    </p>
-
-                    <div className="flex items-center gap-2 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => handleApproveTransfer(req.id)}
-                        className="flex-1 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-[10.5px] font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center"
-                      >
-                        Chấp nhận
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleRejectTransfer(req.id)}
-                        className="flex-1 py-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[10.5px] font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center"
-                      >
-                        Từ chối
-                      </button>
-                    </div>
-                  </div>
-                ))}
-
-              {/* Table Session Activity Items (Guest Joined / Guest Left) */}
-              {(activityFilter === 'all' || activityFilter === 'table') &&
-                tableActivities.map((act) => (
-                  <div
-                    key={act.id}
-                    className={`p-3.5 rounded-2xl space-y-2 text-xs shadow-2xs border ${act.type === 'joined'
-                      ? 'bg-sky-500/10 border-sky-500/30'
-                      : 'bg-slate-500/10 border-slate-500/30'
-                      }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
-                        <span
-                          className={`w-2 h-2 rounded-full shrink-0 ${act.type === 'joined' ? 'bg-sky-400 animate-ping' : 'bg-slate-400'
-                            }`}
-                        />
-                        {act.tableName}
-                      </span>
-                      <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 font-extrabold">
-                        {new Date(act.timestamp).toLocaleTimeString('vi-VN', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                    </div>
-
-                    <p
-                      className={`text-[11.5px] font-extrabold ${act.type === 'joined'
-                        ? 'text-sky-700 dark:text-sky-300'
-                        : 'text-slate-600 dark:text-slate-300'
-                        }`}
-                    >
-                      {act.type === 'joined' ? 'Khách mới vừa quét mã QR vào bàn!' : 'Khách đã rời bàn (Bàn hiện trống)'}
-                    </p>
-
-                    <button
-                      onClick={() =>
-                        setTableActivities((prev) => prev.filter((item) => item.id !== act.id))
-                      }
-                      className="w-full py-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-black text-[10.5px] rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center mt-1"
-                    >
-                      Đã xem
-                    </button>
-                  </div>
-                ))}
-
-              {/* Drink Ready Notifications for Waiters (Auto-removes when completed) */}
-              {(activityFilter === 'all' || activityFilter === 'support') &&
-                drinkReadyList.map((item) => (
-                  <div key={item.orderId} className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl space-y-2 text-xs shadow-2xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                        {item.tableName}
-                      </span>
-                      <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-extrabold">
-                        {new Date(item.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                    <p className="text-[11.5px] font-extrabold text-emerald-700 dark:text-emerald-300">
-                      Pha chế xong món! Cần ra món cho khách.
-                    </p>
-                    <button
-                      onClick={() => handleUpdateStatus(item.orderId, 'completed')}
-                      className="w-full py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-[10.5px] font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
-                    >
-                      Xác nhận Đã ra món
-                    </button>
-                  </div>
-                ))}
-
-              {/* Staff Call Support Items (Auto-removes when acknowledged) */}
-              {(activityFilter === 'all' || activityFilter === 'support') &&
-                staffCalls.map((call) => (
-                  <div key={call._id} className="p-3.5 bg-sky-500/10 border border-sky-500/30 rounded-2xl space-y-2 text-xs shadow-2xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
-                        {call.tableId?.tableName || 'Bàn'}
-                      </span>
-                      <span className="text-[10px] font-mono text-sky-600 dark:text-sky-400 font-extrabold">
-                        {call.createdAt
-                          ? new Date(call.createdAt).toLocaleTimeString('vi-VN', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit',
-                          })
-                          : 'Vừa xong'}
-                      </span>
-                    </div>
-                    <p className="text-[11.5px] font-extrabold text-sky-700 dark:text-sky-300">
-                      Khách tại bàn gửi yêu cầu phục vụ!
-                    </p>
-                    <button
-                      onClick={() => handleAcknowledgeCall(call._id)}
-                      className="w-full py-1.5 bg-sky-500 hover:bg-sky-600 text-white text-[10.5px] font-black rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
-                    >
-                      Đã tiếp nhận
-                    </button>
-                  </div>
-                ))}
-
-              {/* Payment Notified Items (Only show when customer clicked "Xác nhận Đã chuyển khoản") */}
-              {(activityFilter === 'all' || activityFilter === 'payment') &&
-                orders
-                  .filter((o) => o.paymentNotified && o.status !== 'paid')
-                  .slice(0, 10)
-                  .map((order) => (
-                    <div
-                      key={order._id}
-                      className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl space-y-2 text-xs shadow-2xs"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full shrink-0 bg-amber-500 animate-ping" />
-                          {order.isTakeaway || !order.tableId ? 'Mang về' : order.tableId?.tableName || 'Bàn chọn'}
-                        </span>
-                        <span className="text-[10px] text-amber-600 dark:text-amber-400 font-mono font-bold">
-                          {order.createdAt
-                            ? new Date(order.createdAt).toLocaleTimeString('vi-VN', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
-                            : 'Vừa xong'}
-                        </span>
-                      </div>
-
-                      <p className="text-[11.5px] text-amber-800 dark:text-amber-300 font-black leading-tight">Khách hàng vừa bấm báo đã chuyển khoản!</p>
-
-                      <div className="flex items-center justify-between pt-1 border-t border-amber-500/20">
-                        <span className="text-[10.5px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tổng đơn:</span>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[11.5px] text-[#0284c7] dark:text-[#38BDF8] font-black">
-                            {formatPrice(order.totalAmount || 0)}
-                          </span>
-                          <span className="px-1.5 py-0.5 text-[9.5px] font-black bg-amber-500 text-white rounded uppercase">
-                            VietQR
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-1.5 pt-0.5">
-                        <button
-                          onClick={() => handleUpdateStatus(order._id, 'paid')}
-                          className="flex-1 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-black text-[10.5px] rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 text-center flex items-center justify-center"
-                        >
-                          <span>Xác nhận Đã nhận tiền</span>
-                        </button>
-                        <button
-                          onClick={() => setActiveInvoice(order)}
-                          className="px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-200 font-extrabold text-[10.5px] rounded-xl transition-all cursor-pointer flex items-center justify-center"
-                          title="Xem hóa đơn"
-                        >
-                          <span>Hóa đơn</span>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-
-              {staffCalls.length === 0 &&
-                drinkReadyList.length === 0 &&
-                tableActivities.length === 0 &&
-                pendingTransferRequests.length === 0 &&
-                orders.filter((o) => o.paymentNotified && o.status !== 'paid').length === 0 && (
-                  <div className="p-6 text-center text-slate-400 text-xs italic">
-                    Hiện chưa có hoạt động nào mới.
-                  </div>
-                )}
-            </div>
-          </>
-        )}
-      </aside>
-
-      {/* ── ALL MODALS & TOAST NOTIFICATIONS ────────────────────────────────── */}
-
-      {/* 0. Category Manager Modal (Admin Only) */}
-      <AnimatePresence>
-        {isCategoryModalOpen && (
-          <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCategoryModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-xl bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5 my-auto max-h-[85vh] overflow-y-auto scrollbar-thin">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1e293b]">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 bg-sky-500/10 text-sky-500 rounded-xl">
-                    <DashboardIcon name="layers" className="text-xl" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-black text-slate-900 dark:text-white font-heading">Quản lý Danh mục Thực đơn</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Thêm, chỉnh sửa và xóa danh mục món ăn cho quán</p>
-                  </div>
-                </div>
-                <button onClick={() => setIsCategoryModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
-                  <DashboardIcon name="close" />
-                </button>
-              </div>
-
-              {/* Form Add / Edit Category */}
-              <form onSubmit={handleSaveCategory} className="bg-slate-50 dark:bg-[#090D16] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-4">
-                <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                  {editingCategory ? 'Sửa thông tin danh mục' : 'Thêm danh mục mới'}
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Tên danh mục *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="VD: Cà Phê, Trà Trái Cây..."
-                      value={categoryForm.name}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
-                      className="w-full bg-white dark:bg-[#131929] border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-[#38BDF8]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Biểu tượng (Icon)</label>
-                    <select
-                      value={categoryForm.icon}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, icon: e.target.value })}
-                      className="w-full bg-white dark:bg-[#131929] border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white font-semibold focus:outline-none focus:border-[#38BDF8] cursor-pointer"
-                    >
-                      <option value="local_cafe">local_cafe (Cà phê)</option>
-                      <option value="local_bar">local_bar (Trà / Nước)</option>
-                      <option value="icecream">icecream (Đá xay / Kem)</option>
-                      <option value="bakery_dining">bakery_dining (Bánh ngọt)</option>
-                      <option value="restaurant">restaurant (Đồ ăn)</option>
-                      <option value="star">star (Nổi bật)</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2 pt-2">
-                  {editingCategory && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingCategory(null);
-                        setCategoryForm({ name: '', icon: 'local_cafe', order: categories.length + 1, isActive: true });
-                      }}
-                      className="px-3 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer"
-                    >
-                      Hủy chỉnh sửa
-                    </button>
-                  )}
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
-                  >
-                    <DashboardIcon name="check_circle" className="text-base" />
-                    <span>{editingCategory ? 'Lưu cập nhật' : 'Tạo danh mục'}</span>
-                  </button>
-                </div>
-              </form>
-
-              {/* List Existing Categories */}
-              <div className="space-y-3">
-                <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                  Danh sách danh mục hiện có ({categories.length})
-                </h4>
-                <div className="grid grid-cols-1 gap-2.5">
-                  {categories.map((cat) => {
-                    const foodCount = foods.filter((f) => f.category === cat.name).length;
-                    const isValidIcon = ['local_cafe', 'local_bar', 'icecream', 'bakery_dining', 'restaurant', 'star', 'coffee', 'local_drink', 'cake', 'category', 'emoji_food_beverage', 'fastfood'].includes(cat.icon);
-                    const isImg = cat.icon && (cat.icon.startsWith('http') || cat.icon.startsWith('/') || cat.icon.includes('.'));
-                    return (
-                      <div
-                        key={cat._id}
-                        className="p-3.5 bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200/80 dark:border-slate-800 rounded-2xl flex items-center justify-between gap-3 text-xs"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="p-2.5 bg-white dark:bg-[#131929] text-[#0284c7] dark:text-[#38BDF8] rounded-xl shrink-0 border border-slate-200 dark:border-slate-800 flex items-center justify-center w-10 h-10">
-                            {isImg ? (
-                              <img src={cat.icon} alt={cat.name} className="w-5 h-5 object-contain" />
-                            ) : (
-                              <DashboardIcon name={isValidIcon ? cat.icon : 'category'} className="text-lg" />
-                            )}
-                          </div>
-                          <div className="truncate">
-                            <h5 className="font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                              <span>{cat.name}</span>
-                              <span className="px-2 py-0.5 bg-slate-200 dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 text-[10px] rounded-md font-bold">
-                                {foodCount} món
-                              </span>
-                            </h5>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button
-                            onClick={() => {
-                              setEditingCategory(cat);
-                              setCategoryForm({
-                                name: cat.name || '',
-                                icon: isValidIcon ? cat.icon : 'local_cafe',
-                                order: cat.order || 0,
-                                isActive: cat.isActive !== false,
-                              });
-                            }}
-                            className="p-2 text-slate-400 hover:text-[#38BDF8] transition-colors cursor-pointer"
-                            title="Chỉnh sửa"
-                          >
-                            <DashboardIcon name="edit" className="text-base" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteCategory(cat._id)}
-                            className="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
-                            title="Xóa danh mục"
-                          >
-                            <DashboardIcon name="delete" className="text-base" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* 1. Food Create / Edit Modal */}
-      <AnimatePresence>
-        {isFoodModalOpen && (
-          <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsFoodModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-lg bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[85vh] overflow-y-auto scrollbar-thin">
-              <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white font-heading">{editingFood ? t.modalFoodTitleEdit : t.modalFoodTitleAdd}</h3>
-                <button onClick={() => setIsFoodModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
-                  <DashboardIcon name="close" />
-                </button>
-              </div>
-
-              <form onSubmit={handleCreateOrUpdateFood} className="space-y-3 text-xs">
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">{t.modalFoodName}</label>
-                  <input type="text" required value={foodForm.name} onChange={(e) => setFoodForm({ ...foodForm, name: e.target.value })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]" />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[#181c23] dark:text-slate-300 font-bold mb-1">{t.modalFoodPrice}</label>
-                    <input type="number" required value={foodForm.price} onChange={(e) => setFoodForm({ ...foodForm, price: e.target.value })} className="w-full bg-[#f1f3fe] dark:bg-[#090D16] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg p-2.5 text-[#181c23] dark:text-white focus:outline-none focus:border-[#0059b9]" />
-                  </div>
-                  <div>
-                    <label className="block text-[#181c23] dark:text-slate-300 font-bold mb-1">{t.modalFoodCategory}</label>
-                    <select value={foodForm.category} onChange={(e) => setFoodForm({ ...foodForm, category: e.target.value })} className="w-full bg-[#f1f3fe] dark:bg-[#090D16] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg p-2.5 text-[#181c23] dark:text-white font-bold focus:outline-none focus:border-[#0059b9] cursor-pointer">
-                      {categories.map((cat) => (
-                        <option key={cat._id} value={cat.name} className="bg-white dark:bg-[#090D16] text-[#181c23] dark:text-white font-bold py-1">
-                          {cat.name}
-                        </option>
-                      ))}
-                      {categories.length === 0 && (
-                        <option value="Cà phê" className="bg-white dark:bg-[#090D16] text-[#181c23] dark:text-white font-bold py-1">Cà phê</option>
-                      )}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Topping Category Indicator Badge */}
-                {(() => {
-                  const isMilkTea = foodForm.category?.toLowerCase().includes('trà sữa') || foodForm.category?.toLowerCase().includes('milk tea');
-                  return isMilkTea ? (
-                    <div className="p-3 bg-[#0059b9]/10 border border-[#0059b9]/30 rounded-lg text-[11.5px] text-[#0059b9] font-bold flex items-center gap-2">
-                      <DashboardIcon name="local_drink" className="text-base" />
-                      <span>Danh mục Trà Sữa: Món ăn này sẽ hỗ trợ chọn Topping (Trân châu, thạch, pudding...) khi khách hàng đặt món.</span>
-                    </div>
-                  ) : (
-                    <div className="p-3 bg-[#f1f3fe] dark:bg-[#1e293b]/60 border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg text-[11.5px] text-[#414754] dark:text-slate-400 font-medium flex items-center gap-2">
-                      <DashboardIcon name="info" className="text-base" />
-                      <span>Danh mục món ăn/thức uống này KHÔNG hỗ trợ Topping. Khách hàng chỉ chọn Size & Ghi chú.</span>
-                    </div>
-                  );
-                })()}
-
-                <div>
-                  <label className="block text-[#181c23] dark:text-slate-300 font-bold mb-1">{t.modalFoodImg}</label>
-                  <div className="flex gap-2 mb-2">
-                    <button type="button" onClick={() => setFoodInputType('upload')} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${foodInputType === 'upload' ? 'bg-[#0059b9] text-white' : 'bg-[#f1f3fe] dark:bg-[#1e293b] text-[#414754] dark:text-slate-300'}`}>{t.modalFoodUpload}</button>
-                    <button type="button" onClick={() => setFoodInputType('url')} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${foodInputType === 'url' ? 'bg-[#0059b9] text-white' : 'bg-[#f1f3fe] dark:bg-[#1e293b] text-[#414754] dark:text-slate-300'}`}>{t.modalFoodUrl}</button>
-                  </div>
-
-                  {foodInputType === 'upload' ? (
-                    <label className="custum-file-upload" htmlFor="file">
-                      <div className="icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                          <g strokeWidth={0} id="SVGRepo_bgCarrier" />
-                          <g strokeLinejoin="round" strokeLinecap="round" id="SVGRepo_tracerCarrier" />
-                          <g id="SVGRepo_iconCarrier">
-                            <path
-                              fillRule="evenodd"
-                              clipRule="evenodd"
-                              d="M10 1C9.73478 1 9.48043 1.10536 9.29289 1.29289L3.29289 7.29289C3.10536 7.48043 3 7.73478 3 8V20C3 21.6569 4.34315 23 6 23H7C7.55228 23 8 22.5523 8 22C8 21.4477 7.55228 21 7 21H6C5.44772 21 5 20.5523 5 20V9H10C10.5523 9 11 8.55228 11 8V3H18C18.5523 3 19 3.44772 19 4V9C19 9.55228 19.4477 10 20 10C20.5523 10 21 9.55228 21 9V4C21 2.34315 19.6569 1 18 1H10ZM9 7H6.41421L9 4.41421V7ZM14 15.5C14 14.1193 15.1193 13 16.5 13C17.8807 13 19 14.1193 19 15.5V16V17H20C21.1046 17 22 17.8954 22 19C22 20.1046 21.1046 21 20 21H13C11.8954 21 11 20.1046 11 19C11 17.8954 11.8954 17 13 17H14V16V15.5ZM16.5 11C14.142 11 12.2076 12.8136 12.0156 15.122C10.2825 15.5606 9 17.1305 9 19C9 21.2091 10.7909 23 13 23H20C22.2091 23 24 21.2091 20.9844 15.122C20.7924 12.8136 18.858 11 16.5 11Z"
-                            />
-                          </g>
-                        </svg>
-                      </div>
-                      <div className="text">
-                        <span>Click to upload image</span>
-                      </div>
-                      <input type="file" id="file" accept="image/*" onChange={handleCloudinaryUpload} />
-                    </label>
-                  ) : (
-                    <input type="text" placeholder={t.modalFoodUrlPlaceholder} value={foodForm.image} onChange={(e) => setFoodForm({ ...foodForm, image: e.target.value })} className="w-full bg-[#f1f3fe] dark:bg-[#090D16] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg p-2.5 text-[#181c23] dark:text-white focus:outline-none focus:border-[#0059b9]" />
-                  )}
-
-                  {/* Live Image Preview Box */}
-                  {foodForm.image && (
-                    <div className="mt-3 p-2.5 bg-[#f1f3fe] dark:bg-[#090D16] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg flex items-center gap-3">
-                      <img
-                        src={foodForm.image}
-                        alt="Xem trước ảnh món"
-                        className="w-14 h-14 rounded-lg object-cover bg-[#ebedf8] dark:bg-slate-800 border border-[#c1c6d6] dark:border-[#1e293b] shrink-0"
-                        onError={(e) => {
-                          (e.target as HTMLElement).style.display = 'none';
-                        }}
-                      />
-                      <div className="truncate flex-1">
-                        <span className="text-[11px] font-bold text-[#181c23] dark:text-slate-200 block">Xem trước hình ảnh món</span>
-                        <span className="text-[10px] text-[#414754] dark:text-slate-400 truncate block mt-0.5">{foodForm.image}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2 pt-1">
-                  <input type="checkbox" id="isAvailable" checked={foodForm.isAvailable} onChange={(e) => setFoodForm({ ...foodForm, isAvailable: e.target.checked })} className="rounded" />
-                  <label htmlFor="isAvailable" className="text-[#181c23] dark:text-slate-300 font-bold">{t.modalFoodActive}</label>
-                </div>
-
-                <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
-                  <DashboardIcon name="check_circle" className="text-base" />
-                  <span>{t.modalFoodSave}</span>
-                </button>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* 2. Table Create / Edit Modal */}
-      <AnimatePresence>
-        {isTableModalOpen && (
-          <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsTableModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-[#c1c6d6] dark:border-[#1e293b] rounded-2xl p-6 shadow-xl space-y-4 my-auto max-h-[85vh] overflow-y-auto scrollbar-thin">
-              <div className="flex justify-between items-center border-b border-[#c1c6d6] dark:border-[#1e293b] pb-3">
-                <h3 className="text-lg font-bold text-[#181c23] dark:text-white font-heading">{editingTable ? t.modalTableTitleEdit : t.modalTableTitleAdd}</h3>
-                <button onClick={() => setIsTableModalOpen(false)} className="text-[#717785] hover:text-[#181c23] dark:hover:text-white cursor-pointer">
-                  <DashboardIcon name="close" />
-                </button>
-              </div>
-
-              <form onSubmit={handleCreateOrUpdateTable} className="space-y-3 text-xs">
-                <div>
-                  <label className="block text-[#181c23] dark:text-slate-300 font-bold mb-1">Số thứ tự bàn (Chỉ nhập số)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    required
-                    placeholder="Ví dụ: 4 (Tự động lưu là Bàn số 4)"
-                    value={tableForm.tableName.replace(/\D/g, '')}
-                    onChange={(e) => setTableForm({ ...tableForm, tableName: e.target.value })}
-                    className="w-full bg-[#f1f3fe] dark:bg-[#090D16] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg p-2.5 text-[#181c23] dark:text-white focus:outline-none focus:border-[#0059b9]"
-                  />
-                  <p className="text-[11px] text-[#414754] dark:text-slate-400 mt-1">
-                    {tableForm.tableName.replace(/\D/g, '')
-                      ? `Tên hiển thị: Bàn số ${tableForm.tableName.replace(/\D/g, '')}`
-                      : 'Hệ thống tự động thêm chữ "Bàn số "'}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-[#181c23] dark:text-slate-300 font-bold mb-1">{t.modalTableStatus}</label>
-                  <select value={tableForm.status} onChange={(e) => setTableForm({ ...tableForm, status: e.target.value })} className="w-full bg-[#f1f3fe] dark:bg-[#090D16] border border-[#c1c6d6] dark:border-[#1e293b] rounded-lg p-2.5 text-[#181c23] dark:text-white font-bold focus:outline-none focus:border-[#0059b9] cursor-pointer">
-                    <option value="empty" className="bg-white dark:bg-[#090D16] text-[#181c23] dark:text-white font-bold py-1">{t.tableEmpty}</option>
-                    <option value="serving" className="bg-white dark:bg-[#090D16] text-[#181c23] dark:text-white font-bold py-1">{t.tableOccupied}</option>
-                    <option value="reserved" className="bg-white dark:bg-[#090D16] text-[#181c23] dark:text-white font-bold py-1">{t.tableReserved}</option>
-                  </select>
-                </div>
-
-                <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
-                  <DashboardIcon name="check_circle" className="text-base" />
-                  <span>{t.modalFoodSave}</span>
-                </button>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* 3.8 Employee Shift Swap Request Modal */}
-      <AnimatePresence>
-        {isShiftSwapModalOpen && (
-          <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsShiftSwapModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[85vh] overflow-y-auto scrollbar-thin">
-              <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3">
-                <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading">Gửi Yêu Cầu Đổi Ca Làm</h3>
-                <button onClick={() => setIsShiftSwapModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
-                  <DashboardIcon name="close" />
-                </button>
-              </div>
-
-              <form onSubmit={handleRequestShiftSwap} className="space-y-3 text-xs">
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Ca làm phân công hiện tại</label>
-                  <input
-                    type="text"
-                    disabled
-                    value={
-                      user?.assignedShift === 'morning' ? 'Ca Sáng (06:00 - 12:00)' :
-                        user?.assignedShift === 'afternoon' ? 'Ca Chiều (12:00 - 18:00)' : 'Ca Tối (18:00 - 23:00)'
-                    }
-                    className="w-full bg-slate-100 dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-500 font-bold"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Ca làm muốn đổi sang *</label>
-                  <select
-                    value={requestedSwapShift}
-                    onChange={(e) => setRequestedSwapShift(e.target.value as any)}
-                    className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-[#38BDF8] cursor-pointer"
-                  >
-                    <option value="morning">Ca Sáng (06:00 - 12:00)</option>
-                    <option value="afternoon">Ca Chiều (12:00 - 18:00)</option>
-                    <option value="evening">Ca Tối (18:00 - 23:00)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Lý do đổi ca (Không bắt buộc)</label>
-                  <textarea
-                    rows={2}
-                    placeholder="VD: Đổi ca với Nguyễn Văn A cho ca làm hôm nay..."
-                    value={swapReason}
-                    onChange={(e) => setSwapReason(e.target.value)}
-                    className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
-                  />
-                </div>
-
-                <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
-                  <DashboardIcon name="send" className="text-base" />
-                  <span>Gửi Yêu Cầu Cho Admin Duyệt</span>
-                </button>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* 2.5 Table QR Code Modal */}
-      <AnimatePresence>
-        {qrTable && (
-          <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setQrTable(null)} className="fixed inset-0 bg-black/80 backdrop-blur-xs print:hidden" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 text-center my-auto max-h-[85vh] overflow-y-auto scrollbar-thin printable-modal">
-              <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3 print:hidden">
-                <h3 className="text-base font-bold text-slate-900 dark:text-white font-heading">Mã QR Đặt Món — {qrTable.tableName}</h3>
-                <button onClick={() => setQrTable(null)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
-                  <DashboardIcon name="close" />
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                <p className="text-xs text-slate-500 dark:text-slate-400 print:hidden">Khách hàng quét mã QR này tại bàn để xem menu & gọi món trực tiếp</p>
-                <div className="bg-white p-4 rounded-xl border border-slate-200 inline-block shadow-inner">
-                  <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(getTableQrUrl(qrTable._id, qrTable.qrToken))}`}
-                    alt={`QR Code ${qrTable.tableName}`}
-                    className="w-48 h-48 mx-auto"
-                  />
-                </div>
-                <p className="text-sm font-black text-slate-900 dark:text-white">{qrTable.tableName}</p>
-                {qrTable.qrToken && (
-                  <p className="text-[10px] text-emerald-500 font-mono font-bold">Mã QR động: #{qrTable.qrToken.slice(0, 8)}</p>
-                )}
-              </div>
-
-              <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-[#1e293b] print:hidden text-xs">
-                <div className="flex items-center bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2">
-                  <input
-                    type="text"
-                    readOnly
-                    value={getTableQrUrl(qrTable._id, qrTable.qrToken)}
-                    className="bg-transparent text-slate-700 dark:text-slate-300 text-[11px] truncate flex-1 focus:outline-none"
-                  />
-                  <button
-                    onClick={() => {
-                      const url = getTableQrUrl(qrTable._id, qrTable.qrToken);
-                      navigator.clipboard.writeText(url);
-                      showToast('Đã sao chép link đặt món!', 'success');
-                    }}
-                    className="px-2.5 py-1 bg-[#3AA6FF] text-white font-bold rounded-lg text-[10px] hover:bg-[#2593e8] transition-all ml-1 shrink-0 cursor-pointer"
-                  >
-                    Sao chép
-                  </button>
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={async () => {
-                      try {
-                        const res = await fetch(`${API_BASE}/tables/${qrTable._id}/regenerate-qr`, {
-                          method: 'PATCH',
-                        });
-                        if (res.ok) {
-                          const updated = await res.json();
-                          setQrTable(updated);
-                          setTables((prev) => prev.map((t) => (t._id === qrTable._id ? updated : t)));
-                          showToast('Đã tạo mã QR mới thành công!', 'success');
-                        }
-                      } catch (e) {
-                        showToast('Không thể đổi mã QR!', 'error');
-                      }
-                    }}
-                    className="flex-1 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-xl font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all border border-amber-500/30"
-                  >
-                    <DashboardIcon name="sync" className="text-base" />
-                    <span>Đổi mã QR mới</span>
-                  </button>
-                  <button
-                    onClick={() => window.print()}
-                    className="flex-1 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-md"
-                  >
-                    <DashboardIcon name="print" className="text-base" />
-                    <span>In QR Code</span>
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* 2.6 Confirm Clear Table Modal - Modern Minimalist */}
-      <AnimatePresence>
-        {confirmClearTableModal && (
-          <div className="fixed inset-0 z-50 overflow-y-auto p-4 flex items-center justify-center min-h-full">
-            {/* Minimalist deep backdrop blur */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => !isClearingTable && setConfirmClearTableModal(null)}
-              className="fixed inset-0 bg-black/75 backdrop-blur-md transition-opacity"
-            />
-
-            {/* Modal Dialog Card */}
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 8 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 8 }}
-              transition={{ type: 'spring', damping: 26, stiffness: 360 }}
-              className="relative z-10 w-full max-w-[420px] bg-[#0C111D] text-white border border-white/10 rounded-2xl p-5 sm:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.6)] space-y-4 my-auto overflow-hidden"
-            >
-              {/* Top Accent Glow (Subtle minimalist ambient light) */}
-              <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-16 bg-rose-500/15 blur-2xl pointer-events-none rounded-full" />
-
-              {/* Header */}
-              <div className="flex items-start justify-between gap-3 relative">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center shrink-0 shadow-inner">
-                    <DashboardIcon name="cleaning_services" className="text-xl" />
-                  </div>
-                  <div className="min-w-0">
+                <div
+                  key={ord._id}
+                  className="p-2.5 bg-white/[0.02] hover:bg-white/[0.04] border border-white/5 rounded-xl flex items-center justify-between gap-3 text-xs transition-colors"
+                >
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-extrabold text-white tracking-tight font-heading truncate">
-                        Dọn bàn & về Trống
-                      </h3>
-                      <span className="px-2 py-0.5 rounded-md text-[10.5px] font-bold bg-[#38BDF8]/10 text-[#38BDF8] border border-[#38BDF8]/20 shrink-0 font-mono">
-                        {confirmClearTableModal.tableName}
+                      <span className="font-mono font-bold text-white text-[11px]">
+                        #{ord._id?.slice(-6).toUpperCase()}
+                      </span>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-white/5 text-slate-300 border border-white/10">
+                        {statusText}
                       </span>
                     </div>
-                    <p className="text-[12px] text-slate-400 mt-0.5 leading-snug">
-                      Đang có <strong className="text-white font-bold">{confirmClearTableModal.orders.length} đơn chưa thanh toán</strong>
+                    <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+                      {ord.customerName ? ord.customerName : 'Khách tại bàn'} • {ord.items?.length || 0} món
                     </p>
                   </div>
+
+                  <div className="text-right shrink-0">
+                    <span className="font-bold text-white text-xs block font-mono">
+                      {(ord.totalAmount || 0).toLocaleString('vi-VN')}đ
+                    </span>
+                    <span className="text-[10px] text-rose-400/90 font-medium">Chưa thanh toán</span>
+                  </div>
                 </div>
-
-                <button
-                  type="button"
-                  disabled={isClearingTable}
-                  onClick={() => setConfirmClearTableModal(null)}
-                  className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/5 transition-colors cursor-pointer disabled:opacity-40 shrink-0"
-                >
-                  <DashboardIcon name="close" className="text-lg" />
-                </button>
-              </div>
-
-              {/* Minimalist Notice */}
-              <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 text-[12px] text-slate-300 flex items-start gap-2.5 leading-relaxed">
-                <DashboardIcon name="info" className="text-rose-400 text-base shrink-0 mt-0.5" />
-                <span>
-                  Hệ thống sẽ <span className="text-rose-400 font-semibold">tự động hủy</span> các đơn chưa hoàn tất, xóa phiên của khách và đưa bàn về trạng thái trống.
-                </span>
-              </div>
-
-              {/* Orders List */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 px-0.5">
-                  <span>Đơn hàng tại bàn</span>
-                  <span className="text-slate-500 font-mono">{confirmClearTableModal.orders.length} đơn</span>
-                </div>
-
-                <div className="space-y-1.5 max-h-44 overflow-y-auto pr-0.5 scrollbar-thin">
-                  {confirmClearTableModal.orders.map((ord: any) => {
-                    const statusText =
-                      ord.status === 'cooking'
-                        ? 'Đang làm'
-                        : ord.status === 'ready'
-                          ? 'Đã xong'
-                          : ord.status === 'completed'
-                            ? 'Chờ thanh toán'
-                            : ord.status === 'confirmed'
-                              ? 'Đã duyệt'
-                              : 'Chờ duyệt';
-
-                    return (
-                      <div
-                        key={ord._id}
-                        className="p-2.5 bg-white/[0.02] hover:bg-white/[0.04] border border-white/5 rounded-xl flex items-center justify-between gap-3 text-xs transition-colors"
-                      >
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono font-bold text-white text-[11px]">
-                              #{ord._id?.slice(-6).toUpperCase()}
-                            </span>
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-white/5 text-slate-300 border border-white/10">
-                              {statusText}
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-slate-400 mt-0.5 truncate">
-                            {ord.customerName ? ord.customerName : 'Khách tại bàn'} • {ord.items?.length || 0} món
-                          </p>
-                        </div>
-
-                        <div className="text-right shrink-0">
-                          <span className="font-bold text-white text-xs block font-mono">
-                            {(ord.totalAmount || 0).toLocaleString('vi-VN')}đ
-                          </span>
-                          <span className="text-[10px] text-rose-400/90 font-medium">Chưa thanh toán</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Actions Footer */}
-              <div className="pt-2 flex items-center justify-end gap-2.5 border-t border-white/5">
-                <button
-                  type="button"
-                  disabled={isClearingTable}
-                  onClick={() => setConfirmClearTableModal(null)}
-                  className="py-2 px-3.5 text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all cursor-pointer disabled:opacity-40"
-                >
-                  Hủy bỏ
-                </button>
-                <button
-                  type="button"
-                  disabled={isClearingTable}
-                  onClick={handleConfirmClearTable}
-                  className="py-2 px-4 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
-                >
-                  {isClearingTable ? (
-                    <>
-                      <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Đang dọn bàn...</span>
-                    </>
-                  ) : (
-                    <>
-                      <DashboardIcon name="done" className="text-[16px]" />
-                      <span>Xác nhận về Trống</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </motion.div>
+              );
+            })}
           </div>
-        )}
-      </AnimatePresence>
+        </div>
 
-      {/* 3. User Create / Edit Modal */}
-      <AnimatePresence>
-        {isUserModalOpen && (
-          <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsUserModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[85vh] overflow-y-auto scrollbar-thin">
-              <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white font-heading">{editingUser ? t.modalUserTitleEdit : t.modalUserTitleAdd}</h3>
-                <button onClick={() => setIsUserModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
-                  <DashboardIcon name="close" />
-                </button>
-              </div>
+        {/* Actions Footer */}
+        <div className="pt-2 flex items-center justify-end gap-2.5 border-t border-white/5">
+          <button
+            type="button"
+            disabled={isClearingTable}
+            onClick={() => setConfirmClearTableModal(null)}
+            className="py-2 px-3.5 text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all cursor-pointer disabled:opacity-40"
+          >
+            Hủy bỏ
+          </button>
+          <button
+            type="button"
+            disabled={isClearingTable}
+            onClick={handleConfirmClearTable}
+            className="py-2 px-4 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
+          >
+            {isClearingTable ? (
+              <>
+                <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>Đang dọn bàn...</span>
+              </>
+            ) : (
+              <>
+                <DashboardIcon name="done" className="text-[16px]" />
+                <span>Xác nhận về Trống</span>
+              </>
+            )}
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  )}
+</AnimatePresence>
 
-              <form onSubmit={handleCreateOrUpdateUser} className="space-y-3 text-xs">
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">{t.modalUserName}</label>
-                  <input type="text" required value={userForm.name} onChange={(e) => setUserForm({ ...userForm, name: e.target.value })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]" />
-                </div>
+{/* 3. User Create / Edit Modal */ }
+<AnimatePresence>
+  {isUserModalOpen && (
+    <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsUserModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[85vh] overflow-y-auto scrollbar-thin">
+        <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white font-heading">{editingUser ? t.modalUserTitleEdit : t.modalUserTitleAdd}</h3>
+          <button onClick={() => setIsUserModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
+            <DashboardIcon name="close" />
+          </button>
+        </div>
 
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">{t.modalUserEmail}</label>
-                  <input type="email" required value={userForm.email} onChange={(e) => setUserForm({ ...userForm, email: e.target.value })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]" />
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">{t.modalUserPassword}</label>
-                  <input type="password" placeholder={editingUser ? 'Bỏ trống nếu không đổi' : ''} value={userForm.password} onChange={(e) => setUserForm({ ...userForm, password: e.target.value })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]" />
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">{t.modalUserRole}</label>
-                  <select value={userForm.role} onChange={(e) => setUserForm({ ...userForm, role: e.target.value as any })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-[#38BDF8] cursor-pointer">
-                    <option value="waiter" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Phục vụ (Waiter)</option>
-                    <option value="barista" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Pha chế (Barista)</option>
-                    <option value="admin" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">{t.adminRole}</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Ca làm phân công mặc định</label>
-                  <select value={userForm.assignedShift} onChange={(e) => setUserForm({ ...userForm, assignedShift: e.target.value as any })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-[#38BDF8] cursor-pointer">
-                    <option value="morning" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Ca Sáng (06:00 - 12:00)</option>
-                    <option value="afternoon" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Ca Chiều (12:00 - 18:00)</option>
-                    <option value="evening" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Ca Tối (18:00 - 23:00)</option>
-                  </select>
-                </div>
-
-                <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
-                  <DashboardIcon name="check_circle" className="text-base" />
-                  <span>{t.modalFoodSave}</span>
-                </button>
-              </form>
-            </motion.div>
+        <form onSubmit={handleCreateOrUpdateUser} className="space-y-3 text-xs">
+          <div>
+            <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">{t.modalUserName}</label>
+            <input type="text" required value={userForm.name} onChange={(e) => setUserForm({ ...userForm, name: e.target.value })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]" />
           </div>
-        )}
-      </AnimatePresence>
 
-      {/* 3.5 Attendance Edit Modal */}
-      <AnimatePresence>
-        {isAttendanceModalOpen && (
-          <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsAttendanceModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[85vh] overflow-y-auto scrollbar-thin">
-              <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white font-heading">Cập Nhật Giờ Chấm Công</h3>
-                <button onClick={() => setIsAttendanceModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
-                  <DashboardIcon name="close" />
-                </button>
-              </div>
-
-              <form onSubmit={handleCreateOrUpdateAttendance} className="space-y-3 text-xs">
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Thời gian Check-in</label>
-                  <input
-                    type="datetime-local"
-                    required
-                    value={attendanceForm.checkIn}
-                    onChange={(e) => setAttendanceForm({ ...attendanceForm, checkIn: e.target.value })}
-                    className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Thời gian Check-out</label>
-                  <input
-                    type="datetime-local"
-                    required
-                    value={attendanceForm.checkOut}
-                    onChange={(e) => setAttendanceForm({ ...attendanceForm, checkOut: e.target.value })}
-                    className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Ghi chú điều chỉnh</label>
-                  <input
-                    type="text"
-                    placeholder="Ví dụ: Đổi ca hoặc quên check-out..."
-                    value={attendanceForm.note}
-                    onChange={(e) => setAttendanceForm({ ...attendanceForm, note: e.target.value })}
-                    className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
-                  />
-                </div>
-
-                <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
-                  <DashboardIcon name="check_circle" className="text-base" />
-                  <span>Lưu thay đổi chấm công</span>
-                </button>
-              </form>
-            </motion.div>
+          <div>
+            <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">{t.modalUserEmail}</label>
+            <input type="email" required value={userForm.email} onChange={(e) => setUserForm({ ...userForm, email: e.target.value })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]" />
           </div>
-        )}
-      </AnimatePresence>
 
-      {/* 3.6 Salary Config Modal */}
-      <AnimatePresence>
-        {isSalaryConfigModalOpen && (
-          <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsSalaryConfigModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-lg bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[90vh] overflow-y-auto scrollbar-thin">
-              <div className="flex justify-between items-start border-b border-slate-200 dark:border-[#1e293b] pb-3">
-                <div>
-                  <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider">Cấu Hình Mức Lương</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Nhân viên: <span className="font-bold text-[#38BDF8]">{salaryConfigForm.staffName}</span>
-                  </p>
-                </div>
-                <button onClick={() => setIsSalaryConfigModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer text-sm font-bold px-2 py-1">
-                  Đóng
-                </button>
-              </div>
+          <div>
+            <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">{t.modalUserPassword}</label>
+            <input type="password" placeholder={editingUser ? 'Bỏ trống nếu không đổi' : ''} value={userForm.password} onChange={(e) => setUserForm({ ...userForm, password: e.target.value })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]" />
+          </div>
 
-              <div className="space-y-4 text-xs">
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1.5">Hình thức tính lương chính</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {[
-                      { id: 'hourly', label: 'Theo Giờ' },
-                      { id: 'daily', label: 'Theo Ca/Ngày' },
-                      { id: 'weekly', label: 'Theo Tuần' },
-                      { id: 'monthly', label: 'Theo Tháng' },
-                    ].map((opt) => (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => setSalaryConfigForm({ ...salaryConfigForm, type: opt.id })}
-                        className={`py-2 px-3 rounded-xl border text-center font-bold transition-all cursor-pointer ${salaryConfigForm.type === opt.id
-                          ? 'bg-[#38BDF8] text-slate-950 border-[#38BDF8]'
-                          : 'border-slate-200 dark:border-[#1e293b] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#090D16]'
-                          }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+          <div>
+            <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">{t.modalUserRole}</label>
+            <select value={userForm.role} onChange={(e) => setUserForm({ ...userForm, role: e.target.value as any })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-[#38BDF8] cursor-pointer">
+              <option value="waiter" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Phục vụ (Waiter)</option>
+              <option value="barista" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Pha chế (Barista)</option>
+              <option value="admin" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">{t.adminRole}</option>
+            </select>
+          </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Mức lương theo Giờ (VND/h)</label>
-                    <input
-                      type="number"
-                      step="1000"
-                      value={salaryConfigForm.hourlyRate}
-                      onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, hourlyRate: Number(e.target.value) })}
-                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Lương ngày công chuẩn (VND/ngày)</label>
-                    <input
-                      type="number"
-                      step="5000"
-                      value={salaryConfigForm.dailyRate}
-                      onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, dailyRate: Number(e.target.value) })}
-                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
-                    />
-                  </div>
-                </div>
+          <div>
+            <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Ca làm phân công mặc định</label>
+            <select value={userForm.assignedShift} onChange={(e) => setUserForm({ ...userForm, assignedShift: e.target.value as any })} className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-[#38BDF8] cursor-pointer">
+              <option value="morning" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Ca Sáng (06:00 - 12:00)</option>
+              <option value="afternoon" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Ca Chiều (12:00 - 18:00)</option>
+              <option value="evening" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-bold py-1">Ca Tối (18:00 - 23:00)</option>
+            </select>
+          </div>
 
-                <div>
-                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1.5">Đơn giá định mức theo từng Ca (VND/ca)</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <span className="block text-[10px] text-slate-400 font-medium mb-1">Ca Sáng (06:00 - 12:00)</span>
-                      <input
-                        type="number"
-                        step="5000"
-                        value={salaryConfigForm.morningRate}
-                        onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, morningRate: Number(e.target.value) })}
-                        className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
-                      />
-                    </div>
-                    <div>
-                      <span className="block text-[10px] text-slate-400 font-medium mb-1">Ca Chiều (12:00 - 18:00)</span>
-                      <input
-                        type="number"
-                        step="5000"
-                        value={salaryConfigForm.afternoonRate}
-                        onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, afternoonRate: Number(e.target.value) })}
-                        className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
-                      />
-                    </div>
-                    <div>
-                      <span className="block text-[10px] text-slate-400 font-medium mb-1">Ca Tối (18:00 - 23:00)</span>
-                      <input
-                        type="number"
-                        step="5000"
-                        value={salaryConfigForm.eveningRate}
-                        onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, eveningRate: Number(e.target.value) })}
-                        className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
-                      />
-                    </div>
-                  </div>
-                </div>
+          <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
+            <DashboardIcon name="check_circle" className="text-base" />
+            <span>{t.modalFoodSave}</span>
+          </button>
+        </form>
+      </motion.div>
+    </div>
+  )}
+</AnimatePresence>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Phụ cấp ăn ca (VND/ca)</label>
-                    <input
-                      type="number"
-                      step="5000"
-                      value={salaryConfigForm.mealAllowancePerShift}
-                      onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, mealAllowancePerShift: Number(e.target.value) })}
-                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Thưởng chuyên cần tuần (VND)</label>
-                    <input
-                      type="number"
-                      step="10000"
-                      value={salaryConfigForm.weeklyAttendanceBonus}
-                      onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, weeklyAttendanceBonus: Number(e.target.value) })}
-                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
-                    />
-                  </div>
-                </div>
+{/* 3.5 Attendance Edit Modal */ }
+<AnimatePresence>
+  {isAttendanceModalOpen && (
+    <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsAttendanceModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[85vh] overflow-y-auto scrollbar-thin">
+        <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e293b] pb-3">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white font-heading">Cập Nhật Giờ Chấm Công</h3>
+          <button onClick={() => setIsAttendanceModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
+            <DashboardIcon name="close" />
+          </button>
+        </div>
 
-                {salaryConfigForm.type === 'weekly' && (
-                  <div>
-                    <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Lương khoán theo tuần cố định (VND/tuần)</label>
-                    <input
-                      type="number"
-                      step="50000"
-                      value={salaryConfigForm.weeklyBaseRate}
-                      onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, weeklyBaseRate: Number(e.target.value) })}
-                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
-                    />
-                  </div>
-                )}
+        <form onSubmit={handleCreateOrUpdateAttendance} className="space-y-3 text-xs">
+          <div>
+            <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Thời gian Check-in</label>
+            <input
+              type="datetime-local"
+              required
+              value={attendanceForm.checkIn}
+              onChange={(e) => setAttendanceForm({ ...attendanceForm, checkIn: e.target.value })}
+              className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
+            />
+          </div>
 
-                {salaryConfigForm.type === 'monthly' && (
-                  <div>
-                    <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Lương cơ bản tháng (VND/tháng)</label>
-                    <input
-                      type="number"
-                      step="100000"
-                      value={salaryConfigForm.monthlyBaseSalary}
-                      onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, monthlyBaseSalary: Number(e.target.value) })}
-                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
-                    />
-                  </div>
-                )}
-              </div>
+          <div>
+            <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Thời gian Check-out</label>
+            <input
+              type="datetime-local"
+              required
+              value={attendanceForm.checkOut}
+              onChange={(e) => setAttendanceForm({ ...attendanceForm, checkOut: e.target.value })}
+              className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
+            />
+          </div>
 
-              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-[#1e293b]">
+          <div>
+            <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Ghi chú điều chỉnh</label>
+            <input
+              type="text"
+              placeholder="Ví dụ: Đổi ca hoặc quên check-out..."
+              value={attendanceForm.note}
+              onChange={(e) => setAttendanceForm({ ...attendanceForm, note: e.target.value })}
+              className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
+            />
+          </div>
+
+          <button type="submit" className="w-full py-3 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold rounded-xl text-xs transition-all shadow-md mt-4 cursor-pointer active:scale-95 flex items-center justify-center gap-1.5">
+            <DashboardIcon name="check_circle" className="text-base" />
+            <span>Lưu thay đổi chấm công</span>
+          </button>
+        </form>
+      </motion.div>
+    </div>
+  )}
+</AnimatePresence>
+
+{/* 3.6 Salary Config Modal */ }
+<AnimatePresence>
+  {isSalaryConfigModalOpen && (
+    <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsSalaryConfigModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-lg bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[90vh] overflow-y-auto scrollbar-thin">
+        <div className="flex justify-between items-start border-b border-slate-200 dark:border-[#1e293b] pb-3">
+          <div>
+            <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider">Cấu Hình Mức Lương</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Nhân viên: <span className="font-bold text-[#38BDF8]">{salaryConfigForm.staffName}</span>
+            </p>
+          </div>
+          <button onClick={() => setIsSalaryConfigModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer text-sm font-bold px-2 py-1">
+            Đóng
+          </button>
+        </div>
+
+        <div className="space-y-4 text-xs">
+          <div>
+            <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1.5">Hình thức tính lương chính</label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {[
+                { id: 'hourly', label: 'Theo Giờ' },
+                { id: 'daily', label: 'Theo Ca/Ngày' },
+                { id: 'weekly', label: 'Theo Tuần' },
+                { id: 'monthly', label: 'Theo Tháng' },
+              ].map((opt) => (
                 <button
+                  key={opt.id}
                   type="button"
-                  onClick={() => setIsSalaryConfigModalOpen(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs transition-all cursor-pointer active:scale-95 border border-slate-200/60 dark:border-slate-700/60"
+                  onClick={() => setSalaryConfigForm({ ...salaryConfigForm, type: opt.id })}
+                  className={`py-2 px-3 rounded-xl border text-center font-bold transition-all cursor-pointer ${salaryConfigForm.type === opt.id
+                    ? 'bg-[#38BDF8] text-slate-950 border-[#38BDF8]'
+                    : 'border-slate-200 dark:border-[#1e293b] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#090D16]'
+                    }`}
                 >
-                  Hủy
+                  {opt.label}
                 </button>
-                <button
-                  type="button"
-                  onClick={handleSaveSalaryConfig}
-                  disabled={isSavingSalaryConfig}
-                  className="px-5 py-2 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-extrabold rounded-xl text-xs shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-md transition-all cursor-pointer disabled:opacity-50 active:scale-95"
-                >
-                  {isSavingSalaryConfig ? 'Đang lưu...' : 'Lưu Cấu Hình Lương'}
-                </button>
-              </div>
-            </motion.div>
+              ))}
+            </div>
           </div>
-        )}
-      </AnimatePresence>
 
-      {/* 3.7 Payroll Slip & Disbursement Modal */}
-      <AnimatePresence>
-        {isDisbursementModalOpen && disbursementData && (
-          <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => !isProcessingDisbursement && setIsDisbursementModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-md bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[90vh] overflow-y-auto scrollbar-thin">
-              <div className="flex justify-between items-start border-b border-slate-200 dark:border-[#1e293b] pb-3">
-                <div>
-                  <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider">Phiếu Chi Trả Lương</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Nhân viên: <span className="font-bold text-slate-900 dark:text-white">{disbursementData.staffName}</span> • <span className="text-[#38BDF8] font-bold">{disbursementData.periodLabel}</span>
-                  </p>
-                </div>
-                <button
-                  disabled={isProcessingDisbursement}
-                  onClick={() => setIsDisbursementModalOpen(false)}
-                  className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer text-sm font-bold px-2 py-1"
-                >
-                  Đóng
-                </button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Mức lương theo Giờ (VND/h)</label>
+              <input
+                type="number"
+                step="1000"
+                value={salaryConfigForm.hourlyRate}
+                onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, hourlyRate: Number(e.target.value) })}
+                className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
+              />
+            </div>
+            <div>
+              <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Lương ngày công chuẩn (VND/ngày)</label>
+              <input
+                type="number"
+                step="5000"
+                value={salaryConfigForm.dailyRate}
+                onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, dailyRate: Number(e.target.value) })}
+                className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1.5">Đơn giá định mức theo từng Ca (VND/ca)</label>
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <span className="block text-[10px] text-slate-400 font-medium mb-1">Ca Sáng (06:00 - 12:00)</span>
+                <input
+                  type="number"
+                  step="5000"
+                  value={salaryConfigForm.morningRate}
+                  onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, morningRate: Number(e.target.value) })}
+                  className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
+                />
               </div>
-
-              {/* Attendance metrics */}
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="bg-slate-50 dark:bg-[#090D16] p-3 rounded-xl">
-                  <span className="block text-[10px] text-slate-400 font-medium">Số ca làm việc</span>
-                  <span className="block font-mono font-black text-sm text-slate-900 dark:text-white mt-0.5">
-                    {disbursementData.totalShifts} ca
-                  </span>
-                </div>
-                <div className="bg-slate-50 dark:bg-[#090D16] p-3 rounded-xl">
-                  <span className="block text-[10px] text-slate-400 font-medium">Tổng số giờ</span>
-                  <span className="block font-mono font-black text-sm text-slate-900 dark:text-white mt-0.5">
-                    {disbursementData.totalHours} giờ
-                  </span>
-                </div>
+              <div>
+                <span className="block text-[10px] text-slate-400 font-medium mb-1">Ca Chiều (12:00 - 18:00)</span>
+                <input
+                  type="number"
+                  step="5000"
+                  value={salaryConfigForm.afternoonRate}
+                  onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, afternoonRate: Number(e.target.value) })}
+                  className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
+                />
               </div>
-
-              {/* Financial calculations */}
-              <div className="space-y-2.5 text-xs bg-slate-50 dark:bg-[#090D16] p-4 rounded-xl border border-slate-200/60 dark:border-[#1e293b]/60">
-                <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
-                  <span>Lương cơ bản / Định mức</span>
-                  <span className="font-mono font-bold text-slate-900 dark:text-white">{formatPrice(disbursementData.basePay)}</span>
-                </div>
-
-                {disbursementData.allowances > 0 && (
-                  <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
-                    <span>Phụ cấp ăn ca</span>
-                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">+{formatPrice(disbursementData.allowances)}</span>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between gap-3 pt-1">
-                  <span className="text-slate-600 dark:text-slate-400">Thưởng thêm (VND)</span>
-                  <input
-                    type="number"
-                    step="10000"
-                    min="0"
-                    value={disbursementData.bonuses}
-                    onChange={(e) => {
-                      const b = Number(e.target.value) || 0;
-                      const net = Math.max(0, disbursementData.basePay + disbursementData.allowances + b - disbursementData.deductions);
-                      setDisbursementData({ ...disbursementData, bonuses: b, netSalary: net });
-                    }}
-                    className="w-28 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-lg p-1.5 text-right font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-slate-600 dark:text-slate-400">Khấu trừ / Tạm ứng (VND)</span>
-                  <input
-                    type="number"
-                    step="10000"
-                    min="0"
-                    value={disbursementData.deductions}
-                    onChange={(e) => {
-                      const d = Number(e.target.value) || 0;
-                      const net = Math.max(0, disbursementData.basePay + disbursementData.allowances + disbursementData.bonuses - d);
-                      setDisbursementData({ ...disbursementData, deductions: d, netSalary: net });
-                    }}
-                    className="w-28 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-lg p-1.5 text-right font-mono font-bold text-rose-600 dark:text-rose-400 focus:outline-none focus:border-[#38BDF8]"
-                  />
-                </div>
-
-                <div className="pt-2 border-t border-slate-200 dark:border-[#1e293b] flex items-center justify-between font-black text-sm">
-                  <span className="text-slate-900 dark:text-white uppercase tracking-wider">Thực Lĩnh (Net)</span>
-                  <span className="text-base text-[#38BDF8] font-mono">
-                    {formatPrice(disbursementData.netSalary)}
-                  </span>
-                </div>
+              <div>
+                <span className="block text-[10px] text-slate-400 font-medium mb-1">Ca Tối (18:00 - 23:00)</span>
+                <input
+                  type="number"
+                  step="5000"
+                  value={salaryConfigForm.eveningRate}
+                  onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, eveningRate: Number(e.target.value) })}
+                  className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
+                />
               </div>
+            </div>
+          </div>
 
-              {/* Payment method selector */}
-              <div className="space-y-1.5 text-xs">
-                <label className="block text-slate-700 dark:text-slate-300 font-bold">Hình thức chi trả</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setDisbursementData({ ...disbursementData, paidMethod: 'cash' })}
-                    className={`py-2 px-3 rounded-xl border text-center font-bold transition-all cursor-pointer ${disbursementData.paidMethod === 'cash'
-                      ? 'bg-[#38BDF8] text-slate-950 border-[#38BDF8]'
-                      : 'border-slate-200 dark:border-[#1e293b] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#090D16]'
-                      }`}
-                  >
-                    Tiền mặt
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDisbursementData({ ...disbursementData, paidMethod: 'bank_transfer' })}
-                    className={`py-2 px-3 rounded-xl border text-center font-bold transition-all cursor-pointer ${disbursementData.paidMethod === 'bank_transfer'
-                      ? 'bg-[#38BDF8] text-slate-950 border-[#38BDF8]'
-                      : 'border-slate-200 dark:border-[#1e293b] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#090D16]'
-                      }`}
-                  >
-                    Chuyển khoản
-                  </button>
-                </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Phụ cấp ăn ca (VND/ca)</label>
+              <input
+                type="number"
+                step="5000"
+                value={salaryConfigForm.mealAllowancePerShift}
+                onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, mealAllowancePerShift: Number(e.target.value) })}
+                className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
+              />
+            </div>
+            <div>
+              <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Thưởng chuyên cần tuần (VND)</label>
+              <input
+                type="number"
+                step="10000"
+                value={salaryConfigForm.weeklyAttendanceBonus}
+                onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, weeklyAttendanceBonus: Number(e.target.value) })}
+                className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
+              />
+            </div>
+          </div>
+
+          {salaryConfigForm.type === 'weekly' && (
+            <div>
+              <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Lương khoán theo tuần cố định (VND/tuần)</label>
+              <input
+                type="number"
+                step="50000"
+                value={salaryConfigForm.weeklyBaseRate}
+                onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, weeklyBaseRate: Number(e.target.value) })}
+                className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
+              />
+            </div>
+          )}
+
+          {salaryConfigForm.type === 'monthly' && (
+            <div>
+              <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Lương cơ bản tháng (VND/tháng)</label>
+              <input
+                type="number"
+                step="100000"
+                value={salaryConfigForm.monthlyBaseSalary}
+                onChange={(e) => setSalaryConfigForm({ ...salaryConfigForm, monthlyBaseSalary: Number(e.target.value) })}
+                className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-[#1e293b]">
+          <button
+            type="button"
+            onClick={() => setIsSalaryConfigModalOpen(false)}
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs transition-all cursor-pointer active:scale-95 border border-slate-200/60 dark:border-slate-700/60"
+          >
+            Hủy
+          </button>
+          <button
+            type="button"
+            onClick={handleSaveSalaryConfig}
+            disabled={isSavingSalaryConfig}
+            className="px-5 py-2 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-extrabold rounded-xl text-xs shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-md transition-all cursor-pointer disabled:opacity-50 active:scale-95"
+          >
+            {isSavingSalaryConfig ? 'Đang lưu...' : 'Lưu Cấu Hình Lương'}
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  )}
+</AnimatePresence>
+
+{/* 3.7 Payroll Slip & Disbursement Modal */ }
+<AnimatePresence>
+  {isDisbursementModalOpen && disbursementData && (
+    <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 flex items-center justify-center min-h-full">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => !isProcessingDisbursement && setIsDisbursementModalOpen(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xs" />
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-md bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[90vh] overflow-y-auto scrollbar-thin">
+        <div className="flex justify-between items-start border-b border-slate-200 dark:border-[#1e293b] pb-3">
+          <div>
+            <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider">Phiếu Chi Trả Lương</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Nhân viên: <span className="font-bold text-slate-900 dark:text-white">{disbursementData.staffName}</span> • <span className="text-[#38BDF8] font-bold">{disbursementData.periodLabel}</span>
+            </p>
+          </div>
+          <button
+            disabled={isProcessingDisbursement}
+            onClick={() => setIsDisbursementModalOpen(false)}
+            className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer text-sm font-bold px-2 py-1"
+          >
+            Đóng
+          </button>
+        </div>
+
+        {/* Attendance metrics */}
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="bg-slate-50 dark:bg-[#090D16] p-3 rounded-xl">
+            <span className="block text-[10px] text-slate-400 font-medium">Số ca làm việc</span>
+            <span className="block font-mono font-black text-sm text-slate-900 dark:text-white mt-0.5">
+              {disbursementData.totalShifts} ca
+            </span>
+          </div>
+          <div className="bg-slate-50 dark:bg-[#090D16] p-3 rounded-xl">
+            <span className="block text-[10px] text-slate-400 font-medium">Tổng số giờ</span>
+            <span className="block font-mono font-black text-sm text-slate-900 dark:text-white mt-0.5">
+              {disbursementData.totalHours} giờ
+            </span>
+          </div>
+        </div>
+
+        {/* Financial calculations */}
+        <div className="space-y-2.5 text-xs bg-slate-50 dark:bg-[#090D16] p-4 rounded-xl border border-slate-200/60 dark:border-[#1e293b]/60">
+          <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+            <span>Lương cơ bản / Định mức</span>
+            <span className="font-mono font-bold text-slate-900 dark:text-white">{formatPrice(disbursementData.basePay)}</span>
+          </div>
+
+          {disbursementData.allowances > 0 && (
+            <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+              <span>Phụ cấp ăn ca</span>
+              <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">+{formatPrice(disbursementData.allowances)}</span>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between gap-3 pt-1">
+            <span className="text-slate-600 dark:text-slate-400">Thưởng thêm (VND)</span>
+            <input
+              type="number"
+              step="10000"
+              min="0"
+              value={disbursementData.bonuses}
+              onChange={(e) => {
+                const b = Number(e.target.value) || 0;
+                const net = Math.max(0, disbursementData.basePay + disbursementData.allowances + b - disbursementData.deductions);
+                setDisbursementData({ ...disbursementData, bonuses: b, netSalary: net });
+              }}
+              className="w-28 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-lg p-1.5 text-right font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-slate-600 dark:text-slate-400">Khấu trừ / Tạm ứng (VND)</span>
+            <input
+              type="number"
+              step="10000"
+              min="0"
+              value={disbursementData.deductions}
+              onChange={(e) => {
+                const d = Number(e.target.value) || 0;
+                const net = Math.max(0, disbursementData.basePay + disbursementData.allowances + disbursementData.bonuses - d);
+                setDisbursementData({ ...disbursementData, deductions: d, netSalary: net });
+              }}
+              className="w-28 bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-lg p-1.5 text-right font-mono font-bold text-rose-600 dark:text-rose-400 focus:outline-none focus:border-[#38BDF8]"
+            />
+          </div>
+
+          <div className="pt-2 border-t border-slate-200 dark:border-[#1e293b] flex items-center justify-between font-black text-sm">
+            <span className="text-slate-900 dark:text-white uppercase tracking-wider">Thực Lĩnh (Net)</span>
+            <span className="text-base text-[#38BDF8] font-mono">
+              {formatPrice(disbursementData.netSalary)}
+            </span>
+          </div>
+        </div>
+
+        {/* Payment method selector */}
+        <div className="space-y-1.5 text-xs">
+          <label className="block text-slate-700 dark:text-slate-300 font-bold">Hình thức chi trả</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setDisbursementData({ ...disbursementData, paidMethod: 'cash' })}
+              className={`py-2 px-3 rounded-xl border text-center font-bold transition-all cursor-pointer ${disbursementData.paidMethod === 'cash'
+                ? 'bg-[#38BDF8] text-slate-950 border-[#38BDF8]'
+                : 'border-slate-200 dark:border-[#1e293b] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#090D16]'
+                }`}
+            >
+              Tiền mặt
+            </button>
+            <button
+              type="button"
+              onClick={() => setDisbursementData({ ...disbursementData, paidMethod: 'bank_transfer' })}
+              className={`py-2 px-3 rounded-xl border text-center font-bold transition-all cursor-pointer ${disbursementData.paidMethod === 'bank_transfer'
+                ? 'bg-[#38BDF8] text-slate-950 border-[#38BDF8]'
+                : 'border-slate-200 dark:border-[#1e293b] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#090D16]'
+                }`}
+            >
+              Chuyển khoản
+            </button>
+          </div>
+        </div>
+
+        {/* Note input */}
+        <div className="text-xs">
+          <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Ghi chú chi trả</label>
+          <input
+            type="text"
+            placeholder="Ví dụ: Đã thanh toán tiền mặt cuối ca..."
+            value={disbursementData.note}
+            onChange={(e) => setDisbursementData({ ...disbursementData, note: e.target.value })}
+            className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
+          />
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-200 dark:border-[#1e293b]">
+          <button
+            type="button"
+            disabled={isProcessingDisbursement}
+            onClick={() => setIsDisbursementModalOpen(false)}
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs transition-all cursor-pointer active:scale-95 border border-slate-200/60 dark:border-slate-700/60"
+          >
+            Hủy
+          </button>
+          <button
+            type="button"
+            disabled={isProcessingDisbursement}
+            onClick={handleConfirmDisbursement}
+            className="px-5 py-2.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-extrabold rounded-xl text-xs transition-all shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-md cursor-pointer disabled:opacity-50 active:scale-95"
+          >
+            {isProcessingDisbursement ? 'Đang xử lý...' : 'Xác Nhận Chi Trả & Khóa Ca'}
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  )}
+</AnimatePresence>
+
+{/* 4. Profile Update Modal (Premium Modern Redesign) */ }
+<AnimatePresence>
+  {isProfileModalOpen && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+      {/* Backdrop with Blur */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={() => setIsProfileModalOpen(false)}
+        className="fixed inset-0 bg-slate-950/60 dark:bg-slate-950/80 backdrop-blur-md transition-opacity"
+      />
+
+      {/* Modal Content Box */}
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0, y: 15 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 15 }}
+        transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+        className="relative z-10 w-full max-w-md bg-white dark:bg-[#0D121F] border border-slate-200/80 dark:border-slate-800/90 rounded-[28px] p-6 sm:p-7 shadow-2xl shadow-slate-950/20 dark:shadow-cyan-950/30 space-y-5 overflow-hidden"
+      >
+        {/* Top Decorative Cyan Glow Line */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#38BDF8] to-transparent opacity-80" />
+
+        {/* Header Bar */}
+        <div className="flex justify-between items-center pb-1">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-[#0284c7] dark:text-[#38BDF8] shadow-xs">
+              <DashboardIcon name="group" className="text-xl" />
+            </div>
+            <div>
+              <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading leading-tight tracking-tight">
+                {t.modalProfileTitle}
+              </h3>
+              <p className="text-[11.5px] text-slate-500 dark:text-slate-400 font-medium">
+                Quản lý tài khoản & thông tin bảo mật
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsProfileModalOpen(false)}
+            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/60 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer"
+            title="Đóng"
+          >
+            <DashboardIcon name="close" className="text-lg" />
+          </button>
+        </div>
+
+        {/* Staff Profile Overview Card */}
+        <div className="relative bg-gradient-to-r from-slate-50 via-cyan-50/40 to-slate-50 dark:from-[#131B2E] dark:via-[#111828] dark:to-[#0D1424] border border-cyan-500/20 dark:border-cyan-500/15 rounded-2xl p-4 flex items-center gap-4 shadow-xs overflow-hidden">
+          {/* Background Ambient Light */}
+          <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-cyan-500/10 rounded-full blur-xl pointer-events-none" />
+
+          {/* Gradient Avatar Circle */}
+          <div className="relative shrink-0">
+            <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-[#38BDF8] via-[#0284c7] to-blue-700 p-[2px] shadow-md shadow-cyan-500/20">
+              <div className="w-full h-full rounded-[14px] bg-gradient-to-br from-[#0284c7] to-blue-600 dark:from-slate-900 dark:to-slate-950 text-white dark:text-[#38BDF8] font-black text-xl flex items-center justify-center">
+                {user?.name ? user.name.charAt(0).toUpperCase() : 'K'}
               </div>
+            </div>
+            <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border-2 border-white dark:border-slate-900" />
+            </span>
+          </div>
 
-              {/* Note input */}
-              <div className="text-xs">
-                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Ghi chú chi trả</label>
+          {/* Profile Meta Details */}
+          <div className="min-w-0 flex-1">
+            <h4 className="text-sm font-black text-slate-900 dark:text-white truncate">
+              {user?.name || 'Tài khoản Quản trị'}
+            </h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5 font-medium">
+              {user?.email}
+            </p>
+            <div className="mt-1.5 flex items-center gap-2">
+              <span className="px-2.5 py-0.5 bg-cyan-500/10 text-[#0284c7] dark:text-[#38BDF8] border border-cyan-500/25 text-[10px] font-black rounded-full uppercase tracking-wider">
+                {user?.role === 'admin' ? t.adminRole : t.staffRole}
+              </span>
+              <span className="text-[10.5px] text-emerald-600 dark:text-emerald-400 font-extrabold flex items-center gap-1">
+                ● Hoạt động
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Form Input Groups */}
+        <form onSubmit={handleUpdateProfile} className="space-y-4 text-xs">
+          {/* Full Name Field */}
+          <div>
+            <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
+              <span>{t.modalProfileName}</span>
+              <span className="text-rose-500 font-bold">*</span>
+            </label>
+            <div className="group relative flex items-center rounded-2xl bg-white dark:bg-[#070A10] border border-slate-200 dark:border-slate-800/90 focus-within:border-[#0284c7] dark:focus-within:border-[#38BDF8] focus-within:ring-4 focus-within:ring-cyan-500/10 transition-all shadow-xs">
+              <DashboardIcon name="person" className="text-slate-400 group-focus-within:text-[#0284c7] dark:group-focus-within:text-[#38BDF8] pl-3.5 text-lg transition-colors pointer-events-none" />
+              <input
+                type="text"
+                required
+                value={profileName}
+                onChange={(e) => setProfileName(e.target.value)}
+                placeholder="Nhập họ và tên..."
+                className="w-full bg-transparent py-3 pr-3.5 pl-2 text-slate-900 dark:text-white font-semibold placeholder-slate-400 focus:outline-none text-xs sm:text-sm"
+              />
+            </div>
+          </div>
+
+          {/* Email Field */}
+          <div>
+            <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
+              <span>{t.modalProfileEmail}</span>
+              <span className="text-rose-500 font-bold">*</span>
+            </label>
+            <div className="group relative flex items-center rounded-2xl bg-white dark:bg-[#070A10] border border-slate-200 dark:border-slate-800/90 focus-within:border-[#0284c7] dark:focus-within:border-[#38BDF8] focus-within:ring-4 focus-within:ring-cyan-500/10 transition-all shadow-xs">
+              <DashboardIcon name="mail" className="text-slate-400 group-focus-within:text-[#0284c7] dark:group-focus-within:text-[#38BDF8] pl-3.5 text-lg transition-colors pointer-events-none" />
+              <input
+                type="email"
+                required
+                value={profileEmail}
+                onChange={(e) => setProfileEmail(e.target.value)}
+                placeholder="email@kohicoffee.com"
+                className="w-full bg-transparent py-3 pr-3.5 pl-2 text-slate-900 dark:text-white font-semibold placeholder-slate-400 focus:outline-none text-xs sm:text-sm"
+              />
+            </div>
+          </div>
+
+          {/* Password Field */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300">
+                Mật khẩu mới
+              </label>
+              <span className="text-[10.5px] text-slate-400 font-medium">Tùy chọn</span>
+            </div>
+            <div className="group relative flex items-center rounded-2xl bg-white dark:bg-[#070A10] border border-slate-200 dark:border-slate-800/90 focus-within:border-[#0284c7] dark:focus-within:border-[#38BDF8] focus-within:ring-4 focus-within:ring-cyan-500/10 transition-all shadow-xs">
+              <DashboardIcon name="lock" className="text-slate-400 group-focus-within:text-[#0284c7] dark:group-focus-within:text-[#38BDF8] pl-3.5 text-lg transition-colors pointer-events-none" />
+              <input
+                type="password"
+                value={profilePassword}
+                onChange={(e) => setProfilePassword(e.target.value)}
+                placeholder="Bỏ trống nếu giữ mật khẩu cũ"
+                className="w-full bg-transparent py-3 pr-3.5 pl-2 text-slate-900 dark:text-white font-semibold placeholder-slate-400 focus:outline-none text-xs sm:text-sm"
+              />
+            </div>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5 flex items-center gap-1 font-medium">
+              <DashboardIcon name="info" className="text-sm text-slate-400" />
+              Mật khẩu phải có tối thiểu 6 ký tự.
+            </p>
+          </div>
+
+          {/* Modal Footer Actions */}
+          <div className="flex items-center gap-3 pt-3">
+            <button
+              type="button"
+              onClick={() => setIsProfileModalOpen(false)}
+              className="flex-1 py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-extrabold rounded-2xl text-xs sm:text-sm transition-all cursor-pointer"
+            >
+              Hủy bỏ
+            </button>
+            <button
+              type="submit"
+              disabled={isSavingProfile}
+              className="flex-[1.5] py-3.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-gradient-to-r dark:from-[#38BDF8] dark:to-[#0284c7] dark:hover:from-[#0284c7] dark:hover:to-[#0369a1] text-white dark:text-slate-950 font-black rounded-2xl text-xs sm:text-sm tracking-wide transition-all shadow-lg shadow-sky-600/25 dark:shadow-cyan-500/25 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              {isSavingProfile ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white dark:border-slate-950 border-t-transparent rounded-full animate-spin" />
+                  <span>{t.modalProfileSaving}</span>
+                </>
+              ) : (
+                <span>{t.modalProfileSave}</span>
+              )}
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  )}
+</AnimatePresence>
+
+{/* 5. Active Invoice Details Printable Modal */ }
+<AnimatePresence>
+  {activeInvoice && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={() => setActiveInvoice(null)}
+        className="fixed inset-0 bg-black/75 backdrop-blur-xs print:hidden"
+      />
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        className="relative z-10 w-full max-w-md bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] text-slate-900 dark:text-white rounded-3xl p-6 shadow-2xl space-y-4 font-mono printable-modal my-auto max-h-[92vh] flex flex-col overflow-y-auto scrollbar-thin"
+      >
+        {/* Header */}
+        <div className="text-center border-b border-slate-200 dark:border-[#1e293b] pb-3 space-y-1">
+          <h3 className="text-lg font-black tracking-tight text-slate-900 dark:text-white uppercase font-heading">
+            {t.hubTitle}
+          </h3>
+          <p className="text-xs font-bold text-[#0284c7] dark:text-[#38BDF8] uppercase tracking-wider">
+            {t.invoiceTitle}
+          </p>
+          <div className="inline-block mt-2 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-[11px] font-bold text-cyan-600 dark:text-[#38BDF8]">
+            {t.invoiceTable}: <span className="font-extrabold">{activeInvoice.tableId?.tableName || t.unknownTable}</span> | #{activeInvoice._id.slice(-6).toUpperCase()}
+          </div>
+        </div>
+
+        {/* Items Table */}
+        <div className="border border-slate-200 dark:border-[#1e293b] rounded-2xl overflow-hidden">
+          <table className="w-full text-xs border-collapse">
+            <thead>
+              <tr className="bg-slate-50 dark:bg-[#090D16] text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] border-b border-slate-200 dark:border-[#1e293b]">
+                <th className="text-left p-2.5">{t.invoiceFoodName}</th>
+                <th className="text-center p-2.5">{t.invoiceQty}</th>
+                <th className="text-right p-2.5">{t.invoiceSubtotal}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b]">
+              {activeInvoice.items?.map((item, i) => (
+                <tr key={i} className="text-slate-800 dark:text-slate-200">
+                  <td className="p-2.5 font-bold">{item.foodId?.name || 'Món'}</td>
+                  <td className="text-center p-2.5 font-bold">x{item.quantity}</td>
+                  <td className="text-right p-2.5 font-bold">{formatPrice((item.foodId?.price || 0) * item.quantity)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Summary */}
+        <div className="pt-2 border-t border-slate-200 dark:border-[#1e293b] flex justify-between font-black text-sm text-slate-900 dark:text-white">
+          <span>{t.invoiceTotal}:</span>
+          <span className="text-[#0284c7] dark:text-[#38BDF8] text-base">{formatPrice(activeInvoice.totalAmount)}</span>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2.5 pt-2 print:hidden">
+          <button
+            type="button"
+            onClick={() => setActiveInvoice(null)}
+            className="flex-1 py-2.5 bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer"
+          >
+            {t.invoiceBack}
+          </button>
+          <button
+            type="button"
+            onClick={handlePrintInvoice}
+            className="flex-1 py-2.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-black rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+          >
+            <DashboardIcon name="print" className="text-base" />
+            <span>{t.invoicePrintBtn}</span>
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  )}
+</AnimatePresence>
+
+{/* 5.5 Staff Takeaway POS Modal (Tạo đơn mang về - chỉ Phục vụ / Nhân viên quầy) */ }
+<AnimatePresence>
+  {isTakeawayModalOpen && user?.role !== 'admin' && user?.role !== 'barista' && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={() => setIsTakeawayModalOpen(false)}
+        className="absolute inset-0 bg-black/80 backdrop-blur-xs"
+      />
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        className="relative z-10 w-full max-w-4xl bg-white dark:bg-[#0d1322] border border-slate-200 dark:border-white/10 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+      >
+        {/* Modal Header */}
+        <div className="flex justify-between items-center border-b border-slate-200 dark:border-white/10 pb-4 shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-2xl bg-sky-500/10 dark:bg-sky-400/10 text-[#0284c7] dark:text-[#38BDF8] flex items-center justify-center shrink-0">
+              <DashboardIcon name="shopping_bag" className="text-xl" />
+            </div>
+            <div>
+              <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white font-sans tracking-tight">
+                Tạo Đơn Hàng Bán Mang Về (POS)
+              </h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
+                Thêm nhanh món và tạo đơn mang về trực tiếp
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsTakeawayModalOpen(false)}
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all cursor-pointer"
+          >
+            <DashboardIcon name="close" className="text-lg" />
+          </button>
+        </div>
+
+        {/* Modal Body: 2 Columns layout (Catalog Left, Cart Right) */}
+        <div className="flex-1 overflow-y-auto space-y-5 lg:space-y-0 lg:grid lg:grid-cols-12 lg:gap-5 min-h-0 pt-4 pr-1">
+          {/* LEFT: Food Catalog (7 cols) */}
+          <div className="lg:col-span-7 flex flex-col gap-3.5 lg:border-r border-slate-200 dark:border-white/10 lg:pr-5 pb-4 lg:pb-0 lg:h-full lg:overflow-hidden">
+            {/* Category Filter & Search */}
+            <div className="flex flex-col gap-2.5 shrink-0">
+              <div className="relative">
+                <DashboardIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none" />
                 <input
                   type="text"
-                  placeholder="Ví dụ: Đã thanh toán tiền mặt cuối ca..."
-                  value={disbursementData.note}
-                  onChange={(e) => setDisbursementData({ ...disbursementData, note: e.target.value })}
-                  className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-[#38BDF8]"
+                  placeholder="Tìm kiếm món ăn, thức uống..."
+                  value={takeawaySearch}
+                  onChange={(e) => setTakeawaySearch(e.target.value)}
+                  className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-2xl pl-9 pr-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/30 transition-all font-normal"
                 />
               </div>
 
-              {/* Action buttons */}
-              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-200 dark:border-[#1e293b]">
+              <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs font-extrabold">
                 <button
                   type="button"
-                  disabled={isProcessingDisbursement}
-                  onClick={() => setIsDisbursementModalOpen(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs transition-all cursor-pointer active:scale-95 border border-slate-200/60 dark:border-slate-700/60"
+                  onClick={() => setTakeawayCategory('all')}
+                  className={`px-3 py-1.5 rounded-full transition-all shrink-0 cursor-pointer ${takeawayCategory === 'all'
+                      ? 'bg-[#38BDF8] text-[#090D16] shadow-xs'
+                      : 'bg-slate-100 dark:bg-[#090D16] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white'
+                    }`}
                 >
-                  Hủy
+                  Tất cả
                 </button>
-                <button
-                  type="button"
-                  disabled={isProcessingDisbursement}
-                  onClick={handleConfirmDisbursement}
-                  className="px-5 py-2.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-extrabold rounded-xl text-xs transition-all shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-md cursor-pointer disabled:opacity-50 active:scale-95"
-                >
-                  {isProcessingDisbursement ? 'Đang xử lý...' : 'Xác Nhận Chi Trả & Khóa Ca'}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* 4. Profile Update Modal (Premium Modern Redesign) */}
-      <AnimatePresence>
-        {isProfileModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-            {/* Backdrop with Blur */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsProfileModalOpen(false)}
-              className="fixed inset-0 bg-slate-950/60 dark:bg-slate-950/80 backdrop-blur-md transition-opacity"
-            />
-
-            {/* Modal Content Box */}
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 15 }}
-              transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-              className="relative z-10 w-full max-w-md bg-white dark:bg-[#0D121F] border border-slate-200/80 dark:border-slate-800/90 rounded-[28px] p-6 sm:p-7 shadow-2xl shadow-slate-950/20 dark:shadow-cyan-950/30 space-y-5 overflow-hidden"
-            >
-              {/* Top Decorative Cyan Glow Line */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#38BDF8] to-transparent opacity-80" />
-
-              {/* Header Bar */}
-              <div className="flex justify-between items-center pb-1">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-[#0284c7] dark:text-[#38BDF8] shadow-xs">
-                    <DashboardIcon name="group" className="text-xl" />
-                  </div>
-                  <div>
-                    <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-heading leading-tight tracking-tight">
-                      {t.modalProfileTitle}
-                    </h3>
-                    <p className="text-[11.5px] text-slate-500 dark:text-slate-400 font-medium">
-                      Quản lý tài khoản & thông tin bảo mật
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setIsProfileModalOpen(false)}
-                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/60 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer"
-                  title="Đóng"
-                >
-                  <DashboardIcon name="close" className="text-lg" />
-                </button>
-              </div>
-
-              {/* Staff Profile Overview Card */}
-              <div className="relative bg-gradient-to-r from-slate-50 via-cyan-50/40 to-slate-50 dark:from-[#131B2E] dark:via-[#111828] dark:to-[#0D1424] border border-cyan-500/20 dark:border-cyan-500/15 rounded-2xl p-4 flex items-center gap-4 shadow-xs overflow-hidden">
-                {/* Background Ambient Light */}
-                <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-cyan-500/10 rounded-full blur-xl pointer-events-none" />
-
-                {/* Gradient Avatar Circle */}
-                <div className="relative shrink-0">
-                  <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-[#38BDF8] via-[#0284c7] to-blue-700 p-[2px] shadow-md shadow-cyan-500/20">
-                    <div className="w-full h-full rounded-[14px] bg-gradient-to-br from-[#0284c7] to-blue-600 dark:from-slate-900 dark:to-slate-950 text-white dark:text-[#38BDF8] font-black text-xl flex items-center justify-center">
-                      {user?.name ? user.name.charAt(0).toUpperCase() : 'K'}
-                    </div>
-                  </div>
-                  <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border-2 border-white dark:border-slate-900" />
-                  </span>
-                </div>
-
-                {/* Profile Meta Details */}
-                <div className="min-w-0 flex-1">
-                  <h4 className="text-sm font-black text-slate-900 dark:text-white truncate">
-                    {user?.name || 'Tài khoản Quản trị'}
-                  </h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5 font-medium">
-                    {user?.email}
-                  </p>
-                  <div className="mt-1.5 flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 bg-cyan-500/10 text-[#0284c7] dark:text-[#38BDF8] border border-cyan-500/25 text-[10px] font-black rounded-full uppercase tracking-wider">
-                      {user?.role === 'admin' ? t.adminRole : t.staffRole}
-                    </span>
-                    <span className="text-[10.5px] text-emerald-600 dark:text-emerald-400 font-extrabold flex items-center gap-1">
-                      ● Hoạt động
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Form Input Groups */}
-              <form onSubmit={handleUpdateProfile} className="space-y-4 text-xs">
-                {/* Full Name Field */}
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
-                    <span>{t.modalProfileName}</span>
-                    <span className="text-rose-500 font-bold">*</span>
-                  </label>
-                  <div className="group relative flex items-center rounded-2xl bg-white dark:bg-[#070A10] border border-slate-200 dark:border-slate-800/90 focus-within:border-[#0284c7] dark:focus-within:border-[#38BDF8] focus-within:ring-4 focus-within:ring-cyan-500/10 transition-all shadow-xs">
-                    <DashboardIcon name="person" className="text-slate-400 group-focus-within:text-[#0284c7] dark:group-focus-within:text-[#38BDF8] pl-3.5 text-lg transition-colors pointer-events-none" />
-                    <input
-                      type="text"
-                      required
-                      value={profileName}
-                      onChange={(e) => setProfileName(e.target.value)}
-                      placeholder="Nhập họ và tên..."
-                      className="w-full bg-transparent py-3 pr-3.5 pl-2 text-slate-900 dark:text-white font-semibold placeholder-slate-400 focus:outline-none text-xs sm:text-sm"
-                    />
-                  </div>
-                </div>
-
-                {/* Email Field */}
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
-                    <span>{t.modalProfileEmail}</span>
-                    <span className="text-rose-500 font-bold">*</span>
-                  </label>
-                  <div className="group relative flex items-center rounded-2xl bg-white dark:bg-[#070A10] border border-slate-200 dark:border-slate-800/90 focus-within:border-[#0284c7] dark:focus-within:border-[#38BDF8] focus-within:ring-4 focus-within:ring-cyan-500/10 transition-all shadow-xs">
-                    <DashboardIcon name="mail" className="text-slate-400 group-focus-within:text-[#0284c7] dark:group-focus-within:text-[#38BDF8] pl-3.5 text-lg transition-colors pointer-events-none" />
-                    <input
-                      type="email"
-                      required
-                      value={profileEmail}
-                      onChange={(e) => setProfileEmail(e.target.value)}
-                      placeholder="email@kohicoffee.com"
-                      className="w-full bg-transparent py-3 pr-3.5 pl-2 text-slate-900 dark:text-white font-semibold placeholder-slate-400 focus:outline-none text-xs sm:text-sm"
-                    />
-                  </div>
-                </div>
-
-                {/* Password Field */}
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300">
-                      Mật khẩu mới
-                    </label>
-                    <span className="text-[10.5px] text-slate-400 font-medium">Tùy chọn</span>
-                  </div>
-                  <div className="group relative flex items-center rounded-2xl bg-white dark:bg-[#070A10] border border-slate-200 dark:border-slate-800/90 focus-within:border-[#0284c7] dark:focus-within:border-[#38BDF8] focus-within:ring-4 focus-within:ring-cyan-500/10 transition-all shadow-xs">
-                    <DashboardIcon name="lock" className="text-slate-400 group-focus-within:text-[#0284c7] dark:group-focus-within:text-[#38BDF8] pl-3.5 text-lg transition-colors pointer-events-none" />
-                    <input
-                      type="password"
-                      value={profilePassword}
-                      onChange={(e) => setProfilePassword(e.target.value)}
-                      placeholder="Bỏ trống nếu giữ mật khẩu cũ"
-                      className="w-full bg-transparent py-3 pr-3.5 pl-2 text-slate-900 dark:text-white font-semibold placeholder-slate-400 focus:outline-none text-xs sm:text-sm"
-                    />
-                  </div>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5 flex items-center gap-1 font-medium">
-                    <DashboardIcon name="info" className="text-sm text-slate-400" />
-                    Mật khẩu phải có tối thiểu 6 ký tự.
-                  </p>
-                </div>
-
-                {/* Modal Footer Actions */}
-                <div className="flex items-center gap-3 pt-3">
+                {availableCategories.map((cat) => (
                   <button
+                    key={cat}
                     type="button"
-                    onClick={() => setIsProfileModalOpen(false)}
-                    className="flex-1 py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-extrabold rounded-2xl text-xs sm:text-sm transition-all cursor-pointer"
+                    onClick={() => setTakeawayCategory(cat)}
+                    className={`px-3 py-1.5 rounded-full transition-all shrink-0 cursor-pointer ${takeawayCategory === cat
+                        ? 'bg-[#38BDF8] text-[#090D16] shadow-xs'
+                        : 'bg-slate-100 dark:bg-[#090D16] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white'
+                      }`}
                   >
-                    Hủy bỏ
+                    {cat}
                   </button>
-                  <button
-                    type="submit"
-                    disabled={isSavingProfile}
-                    className="flex-[1.5] py-3.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-gradient-to-r dark:from-[#38BDF8] dark:to-[#0284c7] dark:hover:from-[#0284c7] dark:hover:to-[#0369a1] text-white dark:text-slate-950 font-black rounded-2xl text-xs sm:text-sm tracking-wide transition-all shadow-lg shadow-sky-600/25 dark:shadow-cyan-500/25 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                  >
-                    {isSavingProfile ? (
-                      <>
-                        <span className="w-4 h-4 border-2 border-white dark:border-slate-950 border-t-transparent rounded-full animate-spin" />
-                        <span>{t.modalProfileSaving}</span>
-                      </>
-                    ) : (
-                      <span>{t.modalProfileSave}</span>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* 5. Active Invoice Details Printable Modal */}
-      <AnimatePresence>
-        {activeInvoice && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setActiveInvoice(null)}
-              className="fixed inset-0 bg-black/75 backdrop-blur-xs print:hidden"
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="relative z-10 w-full max-w-md bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] text-slate-900 dark:text-white rounded-3xl p-6 shadow-2xl space-y-4 font-mono printable-modal my-auto max-h-[92vh] flex flex-col overflow-y-auto scrollbar-thin"
-            >
-              {/* Header */}
-              <div className="text-center border-b border-slate-200 dark:border-[#1e293b] pb-3 space-y-1">
-                <h3 className="text-lg font-black tracking-tight text-slate-900 dark:text-white uppercase font-heading">
-                  {t.hubTitle}
-                </h3>
-                <p className="text-xs font-bold text-[#0284c7] dark:text-[#38BDF8] uppercase tracking-wider">
-                  {t.invoiceTitle}
-                </p>
-                <div className="inline-block mt-2 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-[11px] font-bold text-cyan-600 dark:text-[#38BDF8]">
-                  {t.invoiceTable}: <span className="font-extrabold">{activeInvoice.tableId?.tableName || t.unknownTable}</span> | #{activeInvoice._id.slice(-6).toUpperCase()}
-                </div>
+                ))}
               </div>
+            </div>
 
-              {/* Items Table */}
-              <div className="border border-slate-200 dark:border-[#1e293b] rounded-2xl overflow-hidden">
-                <table className="w-full text-xs border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50 dark:bg-[#090D16] text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] border-b border-slate-200 dark:border-[#1e293b]">
-                      <th className="text-left p-2.5">{t.invoiceFoodName}</th>
-                      <th className="text-center p-2.5">{t.invoiceQty}</th>
-                      <th className="text-right p-2.5">{t.invoiceSubtotal}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b]">
-                    {activeInvoice.items?.map((item, i) => (
-                      <tr key={i} className="text-slate-800 dark:text-slate-200">
-                        <td className="p-2.5 font-bold">{item.foodId?.name || 'Món'}</td>
-                        <td className="text-center p-2.5 font-bold">x{item.quantity}</td>
-                        <td className="text-right p-2.5 font-bold">{formatPrice((item.foodId?.price || 0) * item.quantity)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Summary */}
-              <div className="pt-2 border-t border-slate-200 dark:border-[#1e293b] flex justify-between font-black text-sm text-slate-900 dark:text-white">
-                <span>{t.invoiceTotal}:</span>
-                <span className="text-[#0284c7] dark:text-[#38BDF8] text-base">{formatPrice(activeInvoice.totalAmount)}</span>
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-2.5 pt-2 print:hidden">
-                <button
-                  type="button"
-                  onClick={() => setActiveInvoice(null)}
-                  className="flex-1 py-2.5 bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer"
-                >
-                  {t.invoiceBack}
-                </button>
-                <button
-                  type="button"
-                  onClick={handlePrintInvoice}
-                  className="flex-1 py-2.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0284c7] text-white dark:text-slate-950 font-black rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
-                >
-                  <DashboardIcon name="print" className="text-base" />
-                  <span>{t.invoicePrintBtn}</span>
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* 5.5 Staff Takeaway POS Modal (Tạo đơn mang về - chỉ Phục vụ / Nhân viên quầy) */}
-      <AnimatePresence>
-        {isTakeawayModalOpen && user?.role !== 'admin' && user?.role !== 'barista' && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsTakeawayModalOpen(false)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-xs"
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="relative z-10 w-full max-w-4xl bg-white dark:bg-[#0d1322] border border-slate-200 dark:border-white/10 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
-            >
-              {/* Modal Header */}
-              <div className="flex justify-between items-center border-b border-slate-200 dark:border-white/10 pb-4 shrink-0">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-2xl bg-sky-500/10 dark:bg-sky-400/10 text-[#0284c7] dark:text-[#38BDF8] flex items-center justify-center shrink-0">
-                    <DashboardIcon name="shopping_bag" className="text-xl" />
-                  </div>
-                  <div>
-                    <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white font-sans tracking-tight">
-                      Tạo Đơn Hàng Bán Mang Về (POS)
-                    </h3>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
-                      Thêm nhanh món và tạo đơn mang về trực tiếp
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsTakeawayModalOpen(false)}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all cursor-pointer"
-                >
-                  <DashboardIcon name="close" className="text-lg" />
-                </button>
-              </div>
-
-              {/* Modal Body: 2 Columns layout (Catalog Left, Cart Right) */}
-              <div className="flex-1 overflow-y-auto space-y-5 lg:space-y-0 lg:grid lg:grid-cols-12 lg:gap-5 min-h-0 pt-4 pr-1">
-                {/* LEFT: Food Catalog (7 cols) */}
-                <div className="lg:col-span-7 flex flex-col gap-3.5 lg:border-r border-slate-200 dark:border-white/10 lg:pr-5 pb-4 lg:pb-0 lg:h-full lg:overflow-hidden">
-                  {/* Category Filter & Search */}
-                  <div className="flex flex-col gap-2.5 shrink-0">
-                    <div className="relative">
-                      <DashboardIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none" />
-                      <input
-                        type="text"
-                        placeholder="Tìm kiếm món ăn, thức uống..."
-                        value={takeawaySearch}
-                        onChange={(e) => setTakeawaySearch(e.target.value)}
-                        className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-2xl pl-9 pr-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/30 transition-all font-normal"
-                      />
-                    </div>
-
-                    <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs font-extrabold">
-                      <button
-                        type="button"
-                        onClick={() => setTakeawayCategory('all')}
-                        className={`px-3 py-1.5 rounded-full transition-all shrink-0 cursor-pointer ${
-                          takeawayCategory === 'all'
-                            ? 'bg-[#38BDF8] text-[#090D16] shadow-xs'
-                            : 'bg-slate-100 dark:bg-[#090D16] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white'
+            {/* Food Grid Catalog - content-start auto-rows-max items-start prevents giant stretched cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 content-start auto-rows-max items-start max-h-[260px] sm:max-h-[340px] lg:max-h-none lg:flex-1 overflow-y-auto pr-1 scrollbar-thin">
+              {foods
+                .filter((f) => f.isAvailable !== false)
+                .filter((f) => {
+                  const matchCat = takeawayCategory === 'all' || f.category === takeawayCategory;
+                  const matchSearch =
+                    !takeawaySearch ||
+                    f.name?.toLowerCase().includes(takeawaySearch.toLowerCase()) ||
+                    f.category?.toLowerCase().includes(takeawaySearch.toLowerCase());
+                  return matchCat && matchSearch;
+                })
+                .map((food) => {
+                  const inCart = takeawayCart.find((i) => i.foodId === food._id);
+                  return (
+                    <div
+                      key={food._id}
+                      onClick={() => addToTakeawayCart(food)}
+                      className={`p-2.5 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center gap-3 select-none active:scale-95 group relative ${inCart
+                          ? 'bg-sky-500/10 dark:bg-sky-500/15 border-[#38BDF8] ring-1 ring-[#38BDF8]/30 shadow-xs'
+                          : 'bg-[#F8FAFC] dark:bg-[#090D16] border-slate-200 dark:border-white/10 hover:border-[#38BDF8] hover:bg-slate-100 dark:hover:bg-slate-900/60'
                         }`}
-                      >
-                        Tất cả
-                      </button>
-                      {availableCategories.map((cat) => (
-                        <button
-                          key={cat}
-                          type="button"
-                          onClick={() => setTakeawayCategory(cat)}
-                          className={`px-3 py-1.5 rounded-full transition-all shrink-0 cursor-pointer ${
-                            takeawayCategory === cat
-                              ? 'bg-[#38BDF8] text-[#090D16] shadow-xs'
-                              : 'bg-slate-100 dark:bg-[#090D16] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white'
-                          }`}
-                        >
-                          {cat}
-                        </button>
-                      ))}
+                    >
+                      <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-800 shrink-0">
+                        <img
+                          src={food.image || 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&auto=format&fit=crop&q=80'}
+                          alt={food.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-extrabold text-slate-900 dark:text-white truncate group-hover:text-[#38BDF8] transition-colors">
+                          {food.name}
+                        </h4>
+                        <p className="text-xs font-extrabold text-[#0284c7] dark:text-[#38BDF8] font-mono mt-0.5">
+                          {formatPrice(food.price)}
+                        </p>
+                      </div>
+                      {inCart && (
+                        <span className="shrink-0 bg-[#38BDF8] text-[#090D16] text-[10px] font-extrabold px-1.5 py-0.5 rounded-full shadow-xs">
+                          x{inCart.quantity}
+                        </span>
+                      )}
                     </div>
-                  </div>
+                  );
+                })}
+            </div>
+          </div>
 
-                  {/* Food Grid Catalog - content-start auto-rows-max items-start prevents giant stretched cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 content-start auto-rows-max items-start max-h-[260px] sm:max-h-[340px] lg:max-h-none lg:flex-1 overflow-y-auto pr-1 scrollbar-thin">
-                    {foods
-                      .filter((f) => f.isAvailable !== false)
-                      .filter((f) => {
-                        const matchCat = takeawayCategory === 'all' || f.category === takeawayCategory;
-                        const matchSearch =
-                          !takeawaySearch ||
-                          f.name?.toLowerCase().includes(takeawaySearch.toLowerCase()) ||
-                          f.category?.toLowerCase().includes(takeawaySearch.toLowerCase());
-                        return matchCat && matchSearch;
-                      })
-                      .map((food) => {
-                        const inCart = takeawayCart.find((i) => i.foodId === food._id);
-                        return (
-                          <div
-                            key={food._id}
-                            onClick={() => addToTakeawayCart(food)}
-                            className={`p-2.5 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center gap-3 select-none active:scale-95 group relative ${
-                              inCart
-                                ? 'bg-sky-500/10 dark:bg-sky-500/15 border-[#38BDF8] ring-1 ring-[#38BDF8]/30 shadow-xs'
-                                : 'bg-[#F8FAFC] dark:bg-[#090D16] border-slate-200 dark:border-white/10 hover:border-[#38BDF8] hover:bg-slate-100 dark:hover:bg-slate-900/60'
-                            }`}
-                          >
-                            <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-800 shrink-0">
-                              <img
-                                src={food.image || 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&auto=format&fit=crop&q=80'}
-                                alt={food.name}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <h4 className="text-xs font-extrabold text-slate-900 dark:text-white truncate group-hover:text-[#38BDF8] transition-colors">
-                                {food.name}
-                              </h4>
-                              <p className="text-xs font-extrabold text-[#0284c7] dark:text-[#38BDF8] font-mono mt-0.5">
-                                {formatPrice(food.price)}
-                              </p>
-                            </div>
-                            {inCart && (
-                              <span className="shrink-0 bg-[#38BDF8] text-[#090D16] text-[10px] font-extrabold px-1.5 py-0.5 rounded-full shadow-xs">
-                                x{inCart.quantity}
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })}
-                  </div>
+          {/* RIGHT: Takeaway Order Cart (5 cols) */}
+          <form onSubmit={handleCreateTakeawayOrder} className="lg:col-span-5 flex flex-col gap-3.5 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-200 dark:border-white/10 lg:h-full lg:overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2.5">
+              <h4 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
+                Giỏ hàng mang về ({takeawayCart.reduce((sum, i) => sum + i.quantity, 0)})
+              </h4>
+              {takeawayCart.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setTakeawayCart([])}
+                  className="text-xs text-rose-500 font-extrabold hover:text-rose-600 transition-colors cursor-pointer"
+                >
+                  Xóa tất cả
+                </button>
+              )}
+            </div>
+
+            {/* Cart Items List */}
+            <div className="space-y-2 pr-1 max-h-[160px] sm:max-h-[220px] lg:max-h-none lg:flex-1 overflow-y-auto min-h-[80px] scrollbar-thin">
+              {takeawayCart.length === 0 ? (
+                <div className="text-center py-8 text-slate-400 text-xs flex flex-col items-center justify-center gap-1.5">
+                  <DashboardIcon name="shopping_cart" className="text-3xl opacity-50" />
+                  <p className="font-normal">Chưa chọn món nào.</p>
+                  <p className="text-[11px] text-slate-500 font-normal">Nhấp vào món bên trái để thêm vào giỏ.</p>
                 </div>
-
-                {/* RIGHT: Takeaway Order Cart (5 cols) */}
-                <form onSubmit={handleCreateTakeawayOrder} className="lg:col-span-5 flex flex-col gap-3.5 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-200 dark:border-white/10 lg:h-full lg:overflow-hidden">
-                  <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2.5">
-                    <h4 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
-                      Giỏ hàng mang về ({takeawayCart.reduce((sum, i) => sum + i.quantity, 0)})
-                    </h4>
-                    {takeawayCart.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setTakeawayCart([])}
-                        className="text-xs text-rose-500 font-extrabold hover:text-rose-600 transition-colors cursor-pointer"
-                      >
-                        Xóa tất cả
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Cart Items List */}
-                  <div className="space-y-2 pr-1 max-h-[160px] sm:max-h-[220px] lg:max-h-none lg:flex-1 overflow-y-auto min-h-[80px] scrollbar-thin">
-                    {takeawayCart.length === 0 ? (
-                      <div className="text-center py-8 text-slate-400 text-xs flex flex-col items-center justify-center gap-1.5">
-                        <DashboardIcon name="shopping_cart" className="text-3xl opacity-50" />
-                        <p className="font-normal">Chưa chọn món nào.</p>
-                        <p className="text-[11px] text-slate-500 font-normal">Nhấp vào món bên trái để thêm vào giỏ.</p>
-                      </div>
-                    ) : (
-                      takeawayCart.map((item) => (
-                        <div
-                          key={item.foodId}
-                          className="bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 p-2.5 rounded-2xl space-y-2 text-xs"
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="font-extrabold text-slate-900 dark:text-white truncate flex-1">
-                              {item.food.name}
-                            </span>
-                            <span className="font-extrabold font-mono text-[#0284c7] dark:text-[#38BDF8]">
-                              {formatPrice(item.food.price * item.quantity)}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-200/60 dark:border-white/5">
-                            <input
-                              type="text"
-                              placeholder="Ghi chú (Ít đường, không đá...)"
-                              value={item.note}
-                              onChange={(e) => updateTakeawayNote(item.foodId, e.target.value)}
-                              className="flex-1 bg-white dark:bg-[#0d1322] border border-slate-200 dark:border-white/10 rounded-xl px-2.5 py-1 text-[11px] text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] font-normal"
-                            />
-                            <div className="flex items-center gap-1 bg-white dark:bg-[#0d1322] border border-slate-200 dark:border-white/10 rounded-xl p-0.5">
-                              <button
-                                type="button"
-                                onClick={() => updateTakeawayQuantity(item.foodId, -1)}
-                                className="w-5 h-5 flex items-center justify-center font-extrabold text-slate-500 hover:text-rose-500 transition-colors cursor-pointer"
-                              >
-                                -
-                              </button>
-                              <span className="font-extrabold px-1 text-slate-900 dark:text-white text-xs font-mono">
-                                {item.quantity}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => updateTakeawayQuantity(item.foodId, 1)}
-                                className="w-5 h-5 flex items-center justify-center font-extrabold text-slate-500 hover:text-[#38BDF8] transition-colors cursor-pointer"
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  {/* Customer Info & Order Inputs */}
-                  <div className="space-y-2.5 pt-2.5 border-t border-slate-200 dark:border-white/10 text-xs shrink-0">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-[11px] font-extrabold text-slate-600 dark:text-slate-400 mb-1">
-                          Tên khách hàng <span className="text-rose-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="Tên khách nhận món..."
-                          value={takeawayCustomerName}
-                          onChange={(e) => setTakeawayCustomerName(e.target.value)}
-                          className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-2xl px-3 py-2 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] font-normal"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-extrabold text-slate-600 dark:text-slate-400 mb-1">
-                          Số điện thoại <span className="text-rose-500">*</span>
-                        </label>
-                        <input
-                          type="tel"
-                          required
-                          placeholder="Ví dụ: 0987654321..."
-                          value={takeawayCustomerPhone}
-                          onChange={(e) => setTakeawayCustomerPhone(e.target.value)}
-                          className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-2xl px-3 py-2 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] font-normal"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-[11px] font-extrabold text-slate-600 dark:text-slate-400 mb-1">
-                          Thanh toán
-                        </label>
-                        <select
-                          value={takeawayPaymentMethod}
-                          onChange={(e) => setTakeawayPaymentMethod(e.target.value as 'cash' | 'momo')}
-                          className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-2xl px-3 py-2 text-slate-900 dark:text-white font-extrabold cursor-pointer focus:outline-none focus:border-[#38BDF8]"
-                        >
-                          <option value="cash" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-extrabold">Tiền mặt</option>
-                          <option value="momo" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-extrabold">Chuyển khoản MoMo</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-extrabold text-slate-600 dark:text-slate-400 mb-1">
-                          Mã giảm giá
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="Mã voucher..."
-                          value={takeawayCouponCode}
-                          onChange={(e) => setTakeawayCouponCode(e.target.value)}
-                          className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-2xl px-3 py-2 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] font-normal"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Total Amount Summary */}
-                    <div className="flex items-center justify-between py-2 border-t border-slate-200 dark:border-white/10">
-                      <span className="font-extrabold text-slate-700 dark:text-slate-300">Tổng cộng tiền món:</span>
-                      <span className="text-lg sm:text-xl font-extrabold font-mono text-[#0284c7] dark:text-[#38BDF8]">
-                        {formatPrice(takeawayCart.reduce((sum, item) => sum + item.food.price * item.quantity, 0))}
+              ) : (
+                takeawayCart.map((item) => (
+                  <div
+                    key={item.foodId}
+                    className="bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 p-2.5 rounded-2xl space-y-2 text-xs"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-extrabold text-slate-900 dark:text-white truncate flex-1">
+                        {item.food.name}
+                      </span>
+                      <span className="font-extrabold font-mono text-[#0284c7] dark:text-[#38BDF8]">
+                        {formatPrice(item.food.price * item.quantity)}
                       </span>
                     </div>
 
-                    {/* Submit Button */}
-                    <button
-                      type="submit"
-                      disabled={takeawayCart.length === 0 || isCreatingTakeaway}
-                      className="w-full py-3.5 bg-[#38BDF8] hover:bg-sky-400 disabled:opacity-50 text-[#090D16] font-extrabold rounded-2xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
-                    >
-                      <DashboardIcon name="check_circle" className="text-base" />
-                      <span>{isCreatingTakeaway ? 'Đang tạo đơn...' : 'Xác nhận tạo đơn mang về'}</span>
-                    </button>
+                    <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-200/60 dark:border-white/5">
+                      <input
+                        type="text"
+                        placeholder="Ghi chú (Ít đường, không đá...)"
+                        value={item.note}
+                        onChange={(e) => updateTakeawayNote(item.foodId, e.target.value)}
+                        className="flex-1 bg-white dark:bg-[#0d1322] border border-slate-200 dark:border-white/10 rounded-xl px-2.5 py-1 text-[11px] text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] font-normal"
+                      />
+                      <div className="flex items-center gap-1 bg-white dark:bg-[#0d1322] border border-slate-200 dark:border-white/10 rounded-xl p-0.5">
+                        <button
+                          type="button"
+                          onClick={() => updateTakeawayQuantity(item.foodId, -1)}
+                          className="w-5 h-5 flex items-center justify-center font-extrabold text-slate-500 hover:text-rose-500 transition-colors cursor-pointer"
+                        >
+                          -
+                        </button>
+                        <span className="font-extrabold px-1 text-slate-900 dark:text-white text-xs font-mono">
+                          {item.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateTakeawayQuantity(item.foodId, 1)}
+                          className="w-5 h-5 flex items-center justify-center font-extrabold text-slate-500 hover:text-[#38BDF8] transition-colors cursor-pointer"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </form>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                ))
+              )}
+            </div>
 
-      {/* 7. Create/Edit Coupon Modal */}
-      <AnimatePresence>
-        {isCouponModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsCouponModalOpen(false)}
-              className="fixed inset-0 bg-black/80 backdrop-blur-xs"
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="relative z-10 w-full max-w-md bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[92vh] flex flex-col overflow-y-auto scrollbar-thin"
-            >
-              <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-[#1e293b]">
-                <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading">
-                  {editingCoupon ? 'Cập nhật mã giảm giá' : 'Tạo mã giảm giá mới'}
-                </h3>
-                <button onClick={() => setIsCouponModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
-                  <DashboardIcon name="close" />
-                </button>
-              </div>
-
-              <form onSubmit={handleCreateOrUpdateCoupon} className="space-y-3 text-xs">
+            {/* Customer Info & Order Inputs */}
+            <div className="space-y-2.5 pt-2.5 border-t border-slate-200 dark:border-white/10 text-xs shrink-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Mã giảm giá (Code)</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="VD: KOHI10, WELCOME50K"
-                    value={couponForm.code}
-                    onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })}
-                    className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white uppercase font-mono font-bold focus:border-[#38BDF8]"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Loại giảm giá</label>
-                    <select
-                      value={couponForm.type}
-                      onChange={(e) => setCouponForm({ ...couponForm, type: e.target.value })}
-                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:border-[#38BDF8]"
-                    >
-                      <option value="percent">Giảm theo %</option>
-                      <option value="fixed">Giảm số tiền cố định (VND)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      {couponForm.type === 'percent' ? 'Mức giảm (%)' : 'Số tiền giảm (VND)'}
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      placeholder={couponForm.type === 'percent' ? '10' : '20000'}
-                      value={couponForm.value}
-                      onChange={(e) => setCouponForm({ ...couponForm, value: e.target.value })}
-                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:border-[#38BDF8]"
-                    />
-                  </div>
-                </div>
-
-                {couponForm.type === 'percent' && (
-                  <div>
-                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Giảm tối đa (VND) — Bỏ trống nếu không giới hạn
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="VD: 50000 (tối đa 50.000đ)"
-                      value={couponForm.maxDiscount}
-                      onChange={(e) => setCouponForm({ ...couponForm, maxDiscount: e.target.value })}
-                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:border-[#38BDF8]"
-                    />
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Số lượt dùng</label>
-                    <input
-                      type="number"
-                      placeholder="0 = không giới hạn"
-                      value={couponForm.maxUsage}
-                      onChange={(e) => setCouponForm({ ...couponForm, maxUsage: e.target.value })}
-                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:border-[#38BDF8]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Đơn tối thiểu (VND)</label>
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={couponForm.minOrderAmount}
-                      onChange={(e) => setCouponForm({ ...couponForm, minOrderAmount: e.target.value })}
-                      className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:border-[#38BDF8]"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Hạn sử dụng</label>
-                  <input
-                    type="datetime-local"
-                    value={couponForm.expiresAt}
-                    onChange={(e) => setCouponForm({ ...couponForm, expiresAt: e.target.value })}
-                    className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:border-[#38BDF8]"
-                  />
-                </div>
-
-                <div className="flex items-center gap-2 pt-1">
-                  <input
-                    type="checkbox"
-                    id="couponActive"
-                    checked={couponForm.isActive}
-                    onChange={(e) => setCouponForm({ ...couponForm, isActive: e.target.checked })}
-                    className="rounded text-[#38BDF8]"
-                  />
-                  <label htmlFor="couponActive" className="font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
-                    Kích hoạt mã giảm giá ngay
-                  </label>
-                </div>
-
-                <div className="flex gap-3 pt-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsCouponModalOpen(false)}
-                    className="flex-1 py-2.5 bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 rounded-xl font-bold"
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 py-2.5 bg-[#38BDF8] text-[#090D16] font-black rounded-xl hover:bg-[#0284c7] transition-all"
-                  >
-                    Lưu mã
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* 5.5 Printable Payment Invoice Receipt Modal */}
-      <AnimatePresence>
-        {selectedInvoiceModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedInvoiceModal(null)}
-              className="fixed inset-0 bg-black/80 backdrop-blur-xs"
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="relative z-10 w-full max-w-lg bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-6 shadow-2xl space-y-5 printable-modal my-auto max-h-[92vh] flex flex-col overflow-y-auto scrollbar-thin"
-            >
-              <div className="text-center border-b border-slate-200 dark:border-[#1e293b] pb-4 space-y-1">
-                <h2 className="text-xl font-black tracking-wide text-slate-900 dark:text-white uppercase">Hóa Đơn Thanh Toán</h2>
-                <p className="text-xs font-bold text-[#38BDF8]">KOHI COFFEE BOUTIQUE</p>
-                <div className="inline-block mt-2 px-3.5 py-1 bg-cyan-500/10 border border-cyan-500/30 rounded-full text-xs font-black text-cyan-600 dark:text-[#38BDF8] font-mono">
-                  MÃ HÓA ĐƠN: {selectedInvoiceModal.invoiceCode}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div>
-                  <span className="text-slate-400 font-medium">Bàn / Vị trí: </span>
-                  <span className="font-extrabold text-slate-900 dark:text-white">{selectedInvoiceModal.tableName}</span>
-                </div>
-                <div className="text-right">
-                  <span className="text-slate-400 font-medium">Thời gian: </span>
-                  <span className="font-extrabold text-slate-900 dark:text-white">
-                    {new Date(selectedInvoiceModal.paidAt).toLocaleString('vi-VN')}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 font-medium">Khách hàng: </span>
-                  <span className="font-extrabold text-slate-900 dark:text-white">{selectedInvoiceModal.customerName || 'Khách vãng lai'}</span>
-                </div>
-                <div className="text-right">
-                  <span className="text-slate-400 font-medium">Phương thức: </span>
-                  <span className="font-extrabold text-slate-900 dark:text-white uppercase">
-                    {selectedInvoiceModal.paymentMethod === 'momo' ? 'Ví MoMo' : 'Tiền mặt'}
-                  </span>
-                </div>
-                {selectedInvoiceModal.transactionCode && (
-                  <div className="col-span-2 text-xs text-slate-400">
-                    Mã Giao Dịch: <span className="font-mono text-slate-700 dark:text-slate-300 font-bold">{selectedInvoiceModal.transactionCode}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Itemized Table */}
-              <div className="border border-slate-200 dark:border-[#1e293b] rounded-2xl overflow-hidden">
-                <table className="w-full text-xs text-left">
-                  <thead className="bg-white dark:bg-[#090D16] text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] border-b border-slate-200 dark:border-[#1e293b]">
-                    <tr>
-                      <th className="p-2.5">Món ăn</th>
-                      <th className="p-2.5 text-center">SL</th>
-                      <th className="p-2.5 text-right">Đơn giá</th>
-                      <th className="p-2.5 text-right">Thành tiền</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b] font-medium text-slate-800 dark:text-slate-200">
-                    {selectedInvoiceModal.items?.map((item: any, idx: number) => (
-                      <tr key={idx}>
-                        <td className="p-2.5 font-bold">{item.foodName}</td>
-                        <td className="p-2.5 text-center font-bold">{item.quantity}</td>
-                        <td className="p-2.5 text-right">{formatPrice(item.price)}</td>
-                        <td className="p-2.5 text-right font-extrabold">{formatPrice(item.total)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Financial Summary */}
-              <div className="space-y-1.5 text-xs border-t border-slate-200 dark:border-[#1e293b] pt-3">
-                <div className="flex justify-between text-slate-500">
-                  <span>Tạm tính:</span>
-                  <span className="font-bold">{formatPrice(selectedInvoiceModal.subtotal || selectedInvoiceModal.totalAmount)}</span>
-                </div>
-                {selectedInvoiceModal.discountAmount > 0 && (
-                  <div className="flex justify-between text-emerald-500 font-bold">
-                    <span>Giảm giá ({selectedInvoiceModal.couponCode || 'Voucher'}):</span>
-                    <span>-{formatPrice(selectedInvoiceModal.discountAmount)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-base font-black text-slate-900 dark:text-white pt-2 border-t border-dashed border-slate-200 dark:border-[#1e293b]">
-                  <span>TỔNG THANH TOÁN:</span>
-                  <span className="text-[#38BDF8]">{formatPrice(selectedInvoiceModal.totalAmount)}</span>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedInvoiceModal(null)}
-                  className="flex-1 py-2.5 bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer"
-                >
-                  Đóng
-                </button>
-                <button
-                  type="button"
-                  onClick={() => window.print()}
-                  className="flex-1 py-2.5 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] rounded-xl text-xs font-black transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <DashboardIcon name="print" className="text-base" />
-                  <span>In Hóa Đơn</span>
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* 6. Delete Confirmation Modal */}
-      <AnimatePresence>
-        {(orderToDelete || foodToDelete || tableToDelete || userToDelete || reviewToDelete || attendanceToDelete) && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { setOrderToDelete(null); setFoodToDelete(null); setTableToDelete(null); setUserToDelete(null); setReviewToDelete(null); setAttendanceToDelete(null); }} className="absolute inset-0 bg-black/80 backdrop-blur-xs" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl text-center space-y-4">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Xác nhận xóa</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Bạn có chắc chắn muốn thực hiện hành động xóa này không?</p>
-              <div className="flex gap-3 pt-2">
-                <button onClick={() => { setOrderToDelete(null); setFoodToDelete(null); setTableToDelete(null); setUserToDelete(null); setReviewToDelete(null); setAttendanceToDelete(null); }} className="flex-1 py-2.5 bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-                  Hủy bỏ
-                </button>
-                <button onClick={handleConfirmDelete} className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-xs font-bold transition-all shadow-md">
-                  Xác nhận
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* 8. User Profile & Account Info Modal */}
-      <AnimatePresence>
-        {isProfileModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsProfileModalOpen(false)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-xs"
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 10 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className="relative z-10 w-full max-w-sm sm:max-w-md bg-white dark:bg-[#121824] border border-slate-200 dark:border-[#1E2638] rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1E2638] pb-3">
-                <h3 className="text-base font-black text-slate-900 dark:text-white font-heading">
-                  Thông Tin Tài Khoản
-                </h3>
-                <button
-                  onClick={() => setIsProfileModalOpen(false)}
-                  className="w-7 h-7 rounded-full bg-slate-100 dark:bg-[#181B21] text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-                >
-                  <DashboardIcon name="close" className="text-base" />
-                </button>
-              </div>
-
-              {/* User Avatar & Info Card */}
-              <div className="bg-slate-50 dark:bg-[#181B21] p-3.5 rounded-2xl border border-slate-200/60 dark:border-[#222732] flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 font-black text-lg flex items-center justify-center shadow-xs shrink-0">
-                  {user?.name ? user.name.charAt(0).toUpperCase() : 'N'}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h4 className="text-sm font-black text-slate-900 dark:text-white truncate">
-                    {user?.name || 'Nhân viên Phục vụ'}
-                  </h4>
-                  <span className="inline-block mt-0.5 px-2 py-0.5 bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] text-[10px] font-extrabold rounded-md uppercase tracking-wider">
-                    {user?.role === 'admin' ? 'Quản trị viên' : user?.role === 'barista' ? 'Pha chế (Barista)' : 'Nhân viên Phục vụ'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Edit Profile Form */}
-              <form onSubmit={handleSaveProfile} className="space-y-3 pt-1">
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">
-                    Họ và tên
+                  <label className="block text-[11px] font-extrabold text-slate-600 dark:text-slate-400 mb-1">
+                    Tên khách hàng <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
                     required
-                    value={profileName}
-                    onChange={(e) => setProfileName(e.target.value)}
-                    placeholder="Nhập tên người dùng..."
-                    className="w-full px-3.5 py-2 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-hidden focus:border-[#0284c7] dark:focus:border-[#38BDF8]"
+                    placeholder="Tên khách nhận món..."
+                    value={takeawayCustomerName}
+                    onChange={(e) => setTakeawayCustomerName(e.target.value)}
+                    className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-2xl px-3 py-2 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] font-normal"
                   />
                 </div>
-
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">
-                    Email
+                  <label className="block text-[11px] font-extrabold text-slate-600 dark:text-slate-400 mb-1">
+                    Số điện thoại <span className="text-rose-500">*</span>
                   </label>
                   <input
-                    type="email"
+                    type="tel"
                     required
-                    value={profileEmail}
-                    onChange={(e) => setProfileEmail(e.target.value)}
-                    placeholder="email@kohi.vn"
-                    className="w-full px-3.5 py-2 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-hidden focus:border-[#0284c7] dark:focus:border-[#38BDF8]"
+                    placeholder="Ví dụ: 0987654321..."
+                    value={takeawayCustomerPhone}
+                    onChange={(e) => setTakeawayCustomerPhone(e.target.value)}
+                    className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-2xl px-3 py-2 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] font-normal"
                   />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[11px] font-extrabold text-slate-600 dark:text-slate-400 mb-1">
+                    Thanh toán
+                  </label>
+                  <select
+                    value={takeawayPaymentMethod}
+                    onChange={(e) => setTakeawayPaymentMethod(e.target.value as 'cash' | 'momo')}
+                    className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-2xl px-3 py-2 text-slate-900 dark:text-white font-extrabold cursor-pointer focus:outline-none focus:border-[#38BDF8]"
+                  >
+                    <option value="cash" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-extrabold">Tiền mặt</option>
+                    <option value="momo" className="bg-white dark:bg-[#090D16] text-slate-900 dark:text-white font-extrabold">Chuyển khoản MoMo</option>
+                  </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">
-                    Mật khẩu mới (bỏ trống nếu không đổi)
+                  <label className="block text-[11px] font-extrabold text-slate-600 dark:text-slate-400 mb-1">
+                    Mã giảm giá
                   </label>
                   <input
-                    type="password"
-                    value={profilePassword}
-                    onChange={(e) => setProfilePassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full px-3.5 py-2 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-hidden focus:border-[#0284c7] dark:focus:border-[#38BDF8]"
+                    type="text"
+                    placeholder="Mã voucher..."
+                    value={takeawayCouponCode}
+                    onChange={(e) => setTakeawayCouponCode(e.target.value)}
+                    className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-2xl px-3 py-2 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] font-normal"
                   />
                 </div>
+              </div>
 
-                <button
-                  type="submit"
-                  disabled={isSavingProfile}
-                  className="w-full py-2.5 bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 disabled:opacity-50"
-                >
-                  {isSavingProfile ? 'Đang lưu...' : 'Lưu Thay Đổi Thông Tin'}
-                </button>
-              </form>
-
-              {/* Quick Preferences: Language & Theme Toggles */}
-              <div className="bg-slate-50 dark:bg-[#181B21] p-3 rounded-2xl border border-slate-200/60 dark:border-[#222732] space-y-1.5">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
-                  Cài đặt nhanh
+              {/* Total Amount Summary */}
+              <div className="flex items-center justify-between py-2 border-t border-slate-200 dark:border-white/10">
+                <span className="font-extrabold text-slate-700 dark:text-slate-300">Tổng cộng tiền món:</span>
+                <span className="text-lg sm:text-xl font-extrabold font-mono text-[#0284c7] dark:text-[#38BDF8]">
+                  {formatPrice(takeawayCart.reduce((sum, item) => sum + item.food.price * item.quantity, 0))}
                 </span>
-                <div className="flex items-center justify-between gap-2">
-                  <LanguageToggleSwitch lang={lang} setLang={setLang} />
-                  <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
-                </div>
               </div>
 
-              {/* Direct Logout Button inside Modal */}
-              <div className="pt-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsProfileModalOpen(false);
-                    handleLogout();
-                  }}
-                  className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-600 dark:bg-rose-500/15 dark:hover:bg-rose-600 text-rose-600 dark:text-rose-400 hover:text-white dark:hover:text-white border border-rose-500/30 text-xs font-black rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-                >
-                  <DashboardIcon name="logout" className="text-base" />
-                  <span>Đăng Xuất Tài Khoản</span>
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* 9. Add Store Incidental Expense Modal (Admin Only) */}
-      <AnimatePresence>
-        {isAddExpenseModalOpen && user?.role === 'admin' && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsAddExpenseModalOpen(false)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-xs"
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 10 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className="relative z-10 w-full max-w-md bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1E2638] rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1E2638] pb-3">
-                <div>
-                  <h3 className="text-base font-black text-slate-900 dark:text-white font-heading">
-                    Ghi Nhận Chi Phí Phát Sinh
-                  </h3>
-                  <p className="text-[11px] text-slate-400">Tiền đá, vật tư, sửa chữa, phụ phí vận hành ngoài kho</p>
-                </div>
-                <button
-                  onClick={() => setIsAddExpenseModalOpen(false)}
-                  className="w-7 h-7 rounded-full bg-slate-100 dark:bg-[#181B21] text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-                >
-                  <DashboardIcon name="close" className="text-base" />
-                </button>
-              </div>
-
-              {/* Form */}
-              <form onSubmit={handleAddExpense} className="space-y-3.5 pt-1 text-xs">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Tên khoản chi <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="VD: Mua 2 bao đá lạnh, Mua túi đựng cốc mang về..."
-                    value={expenseForm.title}
-                    onChange={(e) => setExpenseForm({ ...expenseForm, title: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl font-medium text-slate-900 dark:text-white focus:outline-hidden focus:border-purple-500"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Số tiền chi (VNĐ) <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min={1000}
-                      step={1000}
-                      placeholder="VD: 30000"
-                      value={expenseForm.amount}
-                      onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl font-black text-purple-600 dark:text-purple-400 focus:outline-hidden focus:border-purple-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Danh mục chi
-                    </label>
-                    <select
-                      value={expenseForm.category}
-                      onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl font-medium text-slate-900 dark:text-white focus:outline-hidden focus:border-purple-500"
-                    >
-                      <option value="Vật tư & Tiện ích">Vật tư & Tiện ích</option>
-                      <option value="Đá & Đồ uống phụ">Đá & Đồ uống phụ</option>
-                      <option value="Sửa chữa & Bảo trì">Sửa chữa & Bảo trì</option>
-                      <option value="Khác">Chi phí khác</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Ngày chi
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={expenseForm.date || analyticsSelectedDate}
-                    onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })}
-                    className="w-full px-3.5 py-2 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl font-bold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:border-purple-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Ghi chú chi tiết (nếu có)
-                  </label>
-                  <textarea
-                    rows={2}
-                    placeholder="VD: Mua đá từ đại lý Minh Quân, có biên lai tay..."
-                    value={expenseForm.note}
-                    onChange={(e) => setExpenseForm({ ...expenseForm, note: e.target.value })}
-                    className="w-full px-3.5 py-2 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl font-medium text-slate-900 dark:text-white focus:outline-hidden focus:border-purple-500 resize-none"
-                  />
-                </div>
-
-                <div className="pt-2 flex items-center justify-end gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setIsAddExpenseModalOpen(false)}
-                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold transition-all cursor-pointer"
-                  >
-                    Hủy Bỏ
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmittingExpense}
-                    className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-xs hover:shadow-md transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
-                  >
-                    {isSubmittingExpense ? (
-                      <span>Đang lưu...</span>
-                    ) : (
-                      <span>Lưu Khoản Chi</span>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={takeawayCart.length === 0 || isCreatingTakeaway}
+                className="w-full py-3.5 bg-[#38BDF8] hover:bg-sky-400 disabled:opacity-50 text-[#090D16] font-extrabold rounded-2xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+              >
+                <DashboardIcon name="check_circle" className="text-base" />
+                <span>{isCreatingTakeaway ? 'Đang tạo đơn...' : 'Xác nhận tạo đơn mang về'}</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </motion.div>
     </div>
+  )}
+</AnimatePresence>
+
+{/* 7. Create/Edit Coupon Modal */ }
+<AnimatePresence>
+  {isCouponModalOpen && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={() => setIsCouponModalOpen(false)}
+        className="fixed inset-0 bg-black/80 backdrop-blur-xs"
+      />
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        className="relative z-10 w-full max-w-md bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl space-y-4 my-auto max-h-[92vh] flex flex-col overflow-y-auto scrollbar-thin"
+      >
+        <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-[#1e293b]">
+          <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-heading">
+            {editingCoupon ? 'Cập nhật mã giảm giá' : 'Tạo mã giảm giá mới'}
+          </h3>
+          <button onClick={() => setIsCouponModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+            <DashboardIcon name="close" />
+          </button>
+        </div>
+
+        <form onSubmit={handleCreateOrUpdateCoupon} className="space-y-3 text-xs">
+          <div>
+            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Mã giảm giá (Code)</label>
+            <input
+              type="text"
+              required
+              placeholder="VD: KOHI10, WELCOME50K"
+              value={couponForm.code}
+              onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })}
+              className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white uppercase font-mono font-bold focus:border-[#38BDF8]"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Loại giảm giá</label>
+              <select
+                value={couponForm.type}
+                onChange={(e) => setCouponForm({ ...couponForm, type: e.target.value })}
+                className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:border-[#38BDF8]"
+              >
+                <option value="percent">Giảm theo %</option>
+                <option value="fixed">Giảm số tiền cố định (VND)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                {couponForm.type === 'percent' ? 'Mức giảm (%)' : 'Số tiền giảm (VND)'}
+              </label>
+              <input
+                type="number"
+                required
+                placeholder={couponForm.type === 'percent' ? '10' : '20000'}
+                value={couponForm.value}
+                onChange={(e) => setCouponForm({ ...couponForm, value: e.target.value })}
+                className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:border-[#38BDF8]"
+              />
+            </div>
+          </div>
+
+          {couponForm.type === 'percent' && (
+            <div>
+              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Giảm tối đa (VND) — Bỏ trống nếu không giới hạn
+              </label>
+              <input
+                type="number"
+                placeholder="VD: 50000 (tối đa 50.000đ)"
+                value={couponForm.maxDiscount}
+                onChange={(e) => setCouponForm({ ...couponForm, maxDiscount: e.target.value })}
+                className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:border-[#38BDF8]"
+              />
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Số lượt dùng</label>
+              <input
+                type="number"
+                placeholder="0 = không giới hạn"
+                value={couponForm.maxUsage}
+                onChange={(e) => setCouponForm({ ...couponForm, maxUsage: e.target.value })}
+                className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:border-[#38BDF8]"
+              />
+            </div>
+            <div>
+              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Đơn tối thiểu (VND)</label>
+              <input
+                type="number"
+                placeholder="0"
+                value={couponForm.minOrderAmount}
+                onChange={(e) => setCouponForm({ ...couponForm, minOrderAmount: e.target.value })}
+                className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:border-[#38BDF8]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Hạn sử dụng</label>
+            <input
+              type="datetime-local"
+              value={couponForm.expiresAt}
+              onChange={(e) => setCouponForm({ ...couponForm, expiresAt: e.target.value })}
+              className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:border-[#38BDF8]"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 pt-1">
+            <input
+              type="checkbox"
+              id="couponActive"
+              checked={couponForm.isActive}
+              onChange={(e) => setCouponForm({ ...couponForm, isActive: e.target.checked })}
+              className="rounded text-[#38BDF8]"
+            />
+            <label htmlFor="couponActive" className="font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
+              Kích hoạt mã giảm giá ngay
+            </label>
+          </div>
+
+          <div className="flex gap-3 pt-3">
+            <button
+              type="button"
+              onClick={() => setIsCouponModalOpen(false)}
+              className="flex-1 py-2.5 bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 rounded-xl font-bold"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              className="flex-1 py-2.5 bg-[#38BDF8] text-[#090D16] font-black rounded-xl hover:bg-[#0284c7] transition-all"
+            >
+              Lưu mã
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  )}
+</AnimatePresence>
+
+{/* 5.5 Printable Payment Invoice Receipt Modal */ }
+<AnimatePresence>
+  {selectedInvoiceModal && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={() => setSelectedInvoiceModal(null)}
+        className="fixed inset-0 bg-black/80 backdrop-blur-xs"
+      />
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        className="relative z-10 w-full max-w-lg bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-3xl p-6 shadow-2xl space-y-5 printable-modal my-auto max-h-[92vh] flex flex-col overflow-y-auto scrollbar-thin"
+      >
+        <div className="text-center border-b border-slate-200 dark:border-[#1e293b] pb-4 space-y-1">
+          <h2 className="text-xl font-black tracking-wide text-slate-900 dark:text-white uppercase">Hóa Đơn Thanh Toán</h2>
+          <p className="text-xs font-bold text-[#38BDF8]">KOHI COFFEE BOUTIQUE</p>
+          <div className="inline-block mt-2 px-3.5 py-1 bg-cyan-500/10 border border-cyan-500/30 rounded-full text-xs font-black text-cyan-600 dark:text-[#38BDF8] font-mono">
+            MÃ HÓA ĐƠN: {selectedInvoiceModal.invoiceCode}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 text-xs">
+          <div>
+            <span className="text-slate-400 font-medium">Bàn / Vị trí: </span>
+            <span className="font-extrabold text-slate-900 dark:text-white">{selectedInvoiceModal.tableName}</span>
+          </div>
+          <div className="text-right">
+            <span className="text-slate-400 font-medium">Thời gian: </span>
+            <span className="font-extrabold text-slate-900 dark:text-white">
+              {new Date(selectedInvoiceModal.paidAt).toLocaleString('vi-VN')}
+            </span>
+          </div>
+          <div>
+            <span className="text-slate-400 font-medium">Khách hàng: </span>
+            <span className="font-extrabold text-slate-900 dark:text-white">{selectedInvoiceModal.customerName || 'Khách vãng lai'}</span>
+          </div>
+          <div className="text-right">
+            <span className="text-slate-400 font-medium">Phương thức: </span>
+            <span className="font-extrabold text-slate-900 dark:text-white uppercase">
+              {selectedInvoiceModal.paymentMethod === 'momo' ? 'Ví MoMo' : 'Tiền mặt'}
+            </span>
+          </div>
+          {selectedInvoiceModal.transactionCode && (
+            <div className="col-span-2 text-xs text-slate-400">
+              Mã Giao Dịch: <span className="font-mono text-slate-700 dark:text-slate-300 font-bold">{selectedInvoiceModal.transactionCode}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Itemized Table */}
+        <div className="border border-slate-200 dark:border-[#1e293b] rounded-2xl overflow-hidden">
+          <table className="w-full text-xs text-left">
+            <thead className="bg-white dark:bg-[#090D16] text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] border-b border-slate-200 dark:border-[#1e293b]">
+              <tr>
+                <th className="p-2.5">Món ăn</th>
+                <th className="p-2.5 text-center">SL</th>
+                <th className="p-2.5 text-right">Đơn giá</th>
+                <th className="p-2.5 text-right">Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b] font-medium text-slate-800 dark:text-slate-200">
+              {selectedInvoiceModal.items?.map((item: any, idx: number) => (
+                <tr key={idx}>
+                  <td className="p-2.5 font-bold">{item.foodName}</td>
+                  <td className="p-2.5 text-center font-bold">{item.quantity}</td>
+                  <td className="p-2.5 text-right">{formatPrice(item.price)}</td>
+                  <td className="p-2.5 text-right font-extrabold">{formatPrice(item.total)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Financial Summary */}
+        <div className="space-y-1.5 text-xs border-t border-slate-200 dark:border-[#1e293b] pt-3">
+          <div className="flex justify-between text-slate-500">
+            <span>Tạm tính:</span>
+            <span className="font-bold">{formatPrice(selectedInvoiceModal.subtotal || selectedInvoiceModal.totalAmount)}</span>
+          </div>
+          {selectedInvoiceModal.discountAmount > 0 && (
+            <div className="flex justify-between text-emerald-500 font-bold">
+              <span>Giảm giá ({selectedInvoiceModal.couponCode || 'Voucher'}):</span>
+              <span>-{formatPrice(selectedInvoiceModal.discountAmount)}</span>
+            </div>
+          )}
+          <div className="flex justify-between text-base font-black text-slate-900 dark:text-white pt-2 border-t border-dashed border-slate-200 dark:border-[#1e293b]">
+            <span>TỔNG THANH TOÁN:</span>
+            <span className="text-[#38BDF8]">{formatPrice(selectedInvoiceModal.totalAmount)}</span>
+          </div>
+        </div>
+
+        <div className="flex gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => setSelectedInvoiceModal(null)}
+            className="flex-1 py-2.5 bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer"
+          >
+            Đóng
+          </button>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="flex-1 py-2.5 bg-[#38BDF8] hover:bg-[#0284c7] text-[#090D16] rounded-xl text-xs font-black transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <DashboardIcon name="print" className="text-base" />
+            <span>In Hóa Đơn</span>
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  )}
+</AnimatePresence>
+
+{/* 6. Delete Confirmation Modal */ }
+<AnimatePresence>
+  {(orderToDelete || foodToDelete || tableToDelete || userToDelete || reviewToDelete || attendanceToDelete) && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { setOrderToDelete(null); setFoodToDelete(null); setTableToDelete(null); setUserToDelete(null); setReviewToDelete(null); setAttendanceToDelete(null); }} className="absolute inset-0 bg-black/80 backdrop-blur-xs" />
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 w-full max-w-sm bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1e293b] rounded-2xl p-6 shadow-2xl text-center space-y-4">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white">Xác nhận xóa</h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400">Bạn có chắc chắn muốn thực hiện hành động xóa này không?</p>
+        <div className="flex gap-3 pt-2">
+          <button onClick={() => { setOrderToDelete(null); setFoodToDelete(null); setTableToDelete(null); setUserToDelete(null); setReviewToDelete(null); setAttendanceToDelete(null); }} className="flex-1 py-2.5 bg-slate-100 dark:bg-[#1e293b] text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+            Hủy bỏ
+          </button>
+          <button onClick={handleConfirmDelete} className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-xs font-bold transition-all shadow-md">
+            Xác nhận
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  )}
+</AnimatePresence>
+
+{/* 8. User Profile & Account Info Modal */ }
+<AnimatePresence>
+  {isProfileModalOpen && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={() => setIsProfileModalOpen(false)}
+        className="absolute inset-0 bg-black/80 backdrop-blur-xs"
+      />
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0, y: 10 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 10 }}
+        className="relative z-10 w-full max-w-sm sm:max-w-md bg-white dark:bg-[#121824] border border-slate-200 dark:border-[#1E2638] rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1E2638] pb-3">
+          <h3 className="text-base font-black text-slate-900 dark:text-white font-heading">
+            Thông Tin Tài Khoản
+          </h3>
+          <button
+            onClick={() => setIsProfileModalOpen(false)}
+            className="w-7 h-7 rounded-full bg-slate-100 dark:bg-[#181B21] text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+          >
+            <DashboardIcon name="close" className="text-base" />
+          </button>
+        </div>
+
+        {/* User Avatar & Info Card */}
+        <div className="bg-slate-50 dark:bg-[#181B21] p-3.5 rounded-2xl border border-slate-200/60 dark:border-[#222732] flex items-center gap-3">
+          <div className="w-11 h-11 rounded-2xl bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 font-black text-lg flex items-center justify-center shadow-xs shrink-0">
+            {user?.name ? user.name.charAt(0).toUpperCase() : 'N'}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h4 className="text-sm font-black text-slate-900 dark:text-white truncate">
+              {user?.name || 'Nhân viên Phục vụ'}
+            </h4>
+            <span className="inline-block mt-0.5 px-2 py-0.5 bg-[#0284c7]/10 dark:bg-[#38BDF8]/15 text-[#0284c7] dark:text-[#38BDF8] text-[10px] font-extrabold rounded-md uppercase tracking-wider">
+              {user?.role === 'admin' ? 'Quản trị viên' : user?.role === 'barista' ? 'Pha chế (Barista)' : 'Nhân viên Phục vụ'}
+            </span>
+          </div>
+        </div>
+
+        {/* Edit Profile Form */}
+        <form onSubmit={handleSaveProfile} className="space-y-3 pt-1">
+          <div>
+            <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">
+              Họ và tên
+            </label>
+            <input
+              type="text"
+              required
+              value={profileName}
+              onChange={(e) => setProfileName(e.target.value)}
+              placeholder="Nhập tên người dùng..."
+              className="w-full px-3.5 py-2 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-hidden focus:border-[#0284c7] dark:focus:border-[#38BDF8]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              required
+              value={profileEmail}
+              onChange={(e) => setProfileEmail(e.target.value)}
+              placeholder="email@kohi.vn"
+              className="w-full px-3.5 py-2 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-hidden focus:border-[#0284c7] dark:focus:border-[#38BDF8]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">
+              Mật khẩu mới (bỏ trống nếu không đổi)
+            </label>
+            <input
+              type="password"
+              value={profilePassword}
+              onChange={(e) => setProfilePassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full px-3.5 py-2 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-hidden focus:border-[#0284c7] dark:focus:border-[#38BDF8]"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSavingProfile}
+            className="w-full py-2.5 bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950 text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 disabled:opacity-50"
+          >
+            {isSavingProfile ? 'Đang lưu...' : 'Lưu Thay Đổi Thông Tin'}
+          </button>
+        </form>
+
+        {/* Quick Preferences: Language & Theme Toggles */}
+        <div className="bg-slate-50 dark:bg-[#181B21] p-3 rounded-2xl border border-slate-200/60 dark:border-[#222732] space-y-1.5">
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
+            Cài đặt nhanh
+          </span>
+          <div className="flex items-center justify-between gap-2">
+            <LanguageToggleSwitch lang={lang} setLang={setLang} />
+            <ThemeToggleSwitch isDark={isDark} setTheme={setTheme} />
+          </div>
+        </div>
+
+        {/* Direct Logout Button inside Modal */}
+        <div className="pt-1">
+          <button
+            type="button"
+            onClick={() => {
+              setIsProfileModalOpen(false);
+              handleLogout();
+            }}
+            className="w-full py-2.5 bg-rose-500/10 hover:bg-rose-600 dark:bg-rose-500/15 dark:hover:bg-rose-600 text-rose-600 dark:text-rose-400 hover:text-white dark:hover:text-white border border-rose-500/30 text-xs font-black rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+          >
+            <DashboardIcon name="logout" className="text-base" />
+            <span>Đăng Xuất Tài Khoản</span>
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  )}
+</AnimatePresence>
+
+{/* 9. Add Store Incidental Expense Modal (Admin Only) */ }
+<AnimatePresence>
+  {isAddExpenseModalOpen && user?.role === 'admin' && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={() => setIsAddExpenseModalOpen(false)}
+        className="absolute inset-0 bg-black/80 backdrop-blur-xs"
+      />
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0, y: 10 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 10 }}
+        className="relative z-10 w-full max-w-md bg-white dark:bg-[#131929] border border-slate-200 dark:border-[#1E2638] rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1E2638] pb-3">
+          <div>
+            <h3 className="text-base font-black text-slate-900 dark:text-white font-heading">
+              Ghi Nhận Chi Phí Phát Sinh
+            </h3>
+            <p className="text-[11px] text-slate-400">Tiền đá, vật tư, sửa chữa, phụ phí vận hành ngoài kho</p>
+          </div>
+          <button
+            onClick={() => setIsAddExpenseModalOpen(false)}
+            className="w-7 h-7 rounded-full bg-slate-100 dark:bg-[#181B21] text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+          >
+            <DashboardIcon name="close" className="text-base" />
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleAddExpense} className="space-y-3.5 pt-1 text-xs">
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Tên khoản chi <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="VD: Mua 2 bao đá lạnh, Mua túi đựng cốc mang về..."
+              value={expenseForm.title}
+              onChange={(e) => setExpenseForm({ ...expenseForm, title: e.target.value })}
+              className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl font-medium text-slate-900 dark:text-white focus:outline-hidden focus:border-purple-500"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Số tiền chi (VNĐ) <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="number"
+                required
+                min={1000}
+                step={1000}
+                placeholder="VD: 30000"
+                value={expenseForm.amount}
+                onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
+                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl font-black text-purple-600 dark:text-purple-400 focus:outline-hidden focus:border-purple-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Danh mục chi
+              </label>
+              <select
+                value={expenseForm.category}
+                onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
+                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl font-medium text-slate-900 dark:text-white focus:outline-hidden focus:border-purple-500"
+              >
+                <option value="Vật tư & Tiện ích">Vật tư & Tiện ích</option>
+                <option value="Đá & Đồ uống phụ">Đá & Đồ uống phụ</option>
+                <option value="Sửa chữa & Bảo trì">Sửa chữa & Bảo trì</option>
+                <option value="Khác">Chi phí khác</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Ngày chi
+            </label>
+            <input
+              type="date"
+              required
+              value={expenseForm.date || analyticsSelectedDate}
+              onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })}
+              className="w-full px-3.5 py-2 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl font-bold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:border-purple-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Ghi chú chi tiết (nếu có)
+            </label>
+            <textarea
+              rows={2}
+              placeholder="VD: Mua đá từ đại lý Minh Quân, có biên lai tay..."
+              value={expenseForm.note}
+              onChange={(e) => setExpenseForm({ ...expenseForm, note: e.target.value })}
+              className="w-full px-3.5 py-2 bg-slate-50 dark:bg-[#181B21] border border-slate-200 dark:border-[#222732] rounded-xl font-medium text-slate-900 dark:text-white focus:outline-hidden focus:border-purple-500 resize-none"
+            />
+          </div>
+
+          <div className="pt-2 flex items-center justify-end gap-2.5">
+            <button
+              type="button"
+              onClick={() => setIsAddExpenseModalOpen(false)}
+              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold transition-all cursor-pointer"
+            >
+              Hủy Bỏ
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmittingExpense}
+              className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-xs hover:shadow-md transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+            >
+              {isSubmittingExpense ? (
+                <span>Đang lưu...</span>
+              ) : (
+                <span>Lưu Khoản Chi</span>
+              )}
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  )}
+</AnimatePresence>
+
+    </div >
   );
 }

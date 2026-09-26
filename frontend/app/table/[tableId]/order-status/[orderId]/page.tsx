@@ -539,11 +539,29 @@ export default function OrderStatusPage() {
 
   return (
     <div className="fixed inset-0 w-full h-full flex flex-col overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300 font-sans selection:bg-[#0284c7] selection:text-white">
-      {/* ── Standardized Responsive Header (Pinned Stationary) ─────────────── */}
+      {/* ── Standardized Responsive Header (Matching Image 1: < Món đã gọi) ─────────────── */}
       <header className="shrink-0 z-40 bg-[var(--bg-card)]/95 backdrop-blur-md border-b border-[var(--border-color)] transition-colors shadow-xs">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between font-sans">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <BrandLogo onClick={() => router.push(`/table/${tableId}`)} />
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <button
+              type="button"
+              onClick={() => router.push(`/table/${tableId}`)}
+              className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center transition-all cursor-pointer active:scale-95"
+              title={lang === 'en' ? 'Back to table' : lang === 'zh' ? '返回' : 'Quay lại bàn'}
+              aria-label={lang === 'en' ? 'Back' : lang === 'zh' ? '返回' : 'Quay lại'}
+            >
+              <AppIcon name="chevron_left" className="text-2xl" aria-hidden="true" />
+            </button>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white font-sans tracking-tight">
+                {lang === 'en' ? 'Ordered Items' : lang === 'zh' ? '已点菜品' : 'Món đã gọi'}
+              </h2>
+              {order && (
+                <span className="hidden sm:inline-block text-xs text-slate-400 font-mono">
+                  #{order._id.slice(-6).toUpperCase()}
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">

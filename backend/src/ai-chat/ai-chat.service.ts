@@ -112,7 +112,7 @@ export class AiChatService {
 
     // 3. Dynamic Gemini API Response
     if (this.apiKey) {
-      const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+      const models = ['gemini-flash-lite-latest', 'gemini-flash-latest', 'gemini-2.5-flash'];
       const menuSummary = allFoods
         .map((f) => `- ${f.name} (${f.category}): ${f.price.toLocaleString('vi-VN')} VNĐ - ${f.description || ''}`)
         .join('\n');
@@ -196,7 +196,7 @@ export class AiChatService {
 
     // 1. Thử giải mã qua Gemini AI với JSON Response
     if (this.apiKey) {
-      const models = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+      const models = ['gemini-flash-lite-latest', 'gemini-flash-latest', 'gemini-2.5-flash'];
       const menuJson = allFoods.map((f) => ({
         id: (f._id ? f._id.toString() : f.id) || '',
         name: f.name,

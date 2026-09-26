@@ -147,17 +147,63 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
     }
   };
 
+  // Calculate summary counts
+  const totalItemCount = activeOrders.reduce(
+    (sum, o) => sum + (o.items?.reduce((s: number, i: any) => s + (i.quantity || 1), 0) || 0),
+    0
+  );
+  const unpaidOrders = activeOrders.filter((o) => o.status !== 'paid');
+  const isAllPaid = activeOrders.length > 0 && unpaidOrders.length === 0;
+  const grandTotalAmount = activeOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+
+  const getItemStatusBadge = (status: string) => {
+    switch (status) {
+      case 'cooking':
+        return {
+          className: 'bg-[#E0F2FE] text-[#0284C7] dark:bg-sky-950/70 dark:text-sky-300',
+          label: lang === 'en' ? 'Brewing' : lang === 'zh' ? '制作中' : 'Đang chế biến',
+        };
+      case 'pending':
+        return {
+          className: 'bg-[#FEF3C7] text-[#D97706] dark:bg-amber-950/70 dark:text-amber-300',
+          label: lang === 'en' ? 'Awaiting confirmation' : lang === 'zh' ? '待确认' : 'Chờ xác nhận',
+        };
+      case 'ready':
+      case 'served':
+      case 'completed':
+        return {
+          className: 'bg-[#DCFCE7] text-[#16A34A] dark:bg-emerald-950/70 dark:text-emerald-300',
+          label: lang === 'en' ? 'Served' : lang === 'zh' ? '已出餐' : 'Đã ra món',
+        };
+      case 'cancelled':
+        return {
+          className: 'bg-[#FFE4E6] text-[#E11D48] dark:bg-rose-950/70 dark:text-rose-300',
+          label: lang === 'en' ? 'Cancelled' : lang === 'zh' ? '已取消' : 'Đã hủy',
+        };
+      case 'paid':
+        return {
+          className: 'bg-[#DCFCE7] text-[#16A34A] dark:bg-emerald-950/70 dark:text-emerald-300',
+          label: lang === 'en' ? 'Paid' : lang === 'zh' ? '已结账' : 'Đã thanh toán',
+        };
+      default:
+        return {
+          className: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+          label: status,
+        };
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOrderHistoryModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 select-none">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 md:p-6 select-none">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsOrderHistoryModalOpen(false)}
-            className="fixed inset-0 bg-slate-950/60 dark:bg-slate-950/80 backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 bg-slate-950/60 dark:bg-slate-950/80 backdrop-blur-xs transition-opacity"
           />
 
           {/* Modal Container */}
@@ -165,46 +211,61 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
             role="dialog"
             aria-modal="true"
             aria-labelledby="order-history-title"
-            initial={{ scale: 0.96, opacity: 0, y: 10 }}
+            initial={{ scale: 0.98, opacity: 0, y: 15 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.96, opacity: 0, y: 10 }}
+            exit={{ scale: 0.98, opacity: 0, y: 15 }}
             transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-            className="relative w-full max-w-xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-white/10 rounded-2xl p-4 sm:p-7 shadow-2xl z-10 max-h-[90vh] flex flex-col font-sans text-left"
+            className="relative w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-xl bg-[#F4F5F7] dark:bg-[#0B0F17] sm:border sm:border-slate-200/80 sm:dark:border-white/10 sm:rounded-3xl shadow-2xl z-10 flex flex-col font-sans text-left overflow-hidden"
           >
-            {/* Header */}
-            <div className="flex items-start justify-between pb-4 border-b border-slate-200 dark:border-white/10 shrink-0">
-              <div>
-                <h3 id="order-history-title" className="text-lg font-bold text-slate-900 dark:text-white font-heading tracking-tight">
-                  {lang === 'en' ? 'Order History' : lang === 'zh' ? '订单历史' : 'Lịch sử đơn hàng'}
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2 font-medium">
-                  <span>{table?.tableName ? (lang === 'en' ? `Table ${table.tableName}` : lang === 'zh' ? `桌号 ${table.tableName}` : `Bàn số ${table.tableName}`) : (lang === 'en' ? 'Table' : lang === 'zh' ? '桌号' : 'Bàn')}</span>
-                  <span>•</span>
-                  <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
-                    {lang === 'en' ? 'Live updates' : lang === 'zh' ? '实时更新' : 'Cập nhật trực tiếp'}
-                  </span>
-                </p>
+            {/* Header: < Món đã gọi (Matching Image 1) */}
+            <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 bg-white dark:bg-[#131926] border-b border-slate-200/80 dark:border-white/10 shrink-0">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsOrderHistoryModalOpen(false)}
+                  className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center transition-all cursor-pointer active:scale-95"
+                  title={lang === 'en' ? 'Back' : lang === 'zh' ? '返回' : 'Quay lại'}
+                  aria-label={lang === 'en' ? 'Back' : lang === 'zh' ? '返回' : 'Quay lại'}
+                >
+                  <AppIcon name="chevron_left" className="text-2xl" aria-hidden="true" />
+                </button>
+                <div>
+                  <h3 id="order-history-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white font-sans tracking-tight">
+                    {lang === 'en' ? 'Ordered Items' : lang === 'zh' ? '已点菜品' : 'Món đã gọi'}
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-medium">
+                    <span>{table?.tableName ? (lang === 'en' ? `Table ${table.tableName}` : lang === 'zh' ? `桌号 ${table.tableName}` : `Bàn số ${table.tableName}`) : (lang === 'en' ? 'Table' : lang === 'zh' ? '桌号' : 'Bàn')}</span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
+                      {lang === 'en' ? 'Live updates' : lang === 'zh' ? '实时更新' : 'Cập nhật trực tiếp'}
+                    </span>
+                  </p>
+                </div>
               </div>
 
               <button
+                type="button"
                 onClick={() => setIsOrderHistoryModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
-                title={lang === 'en' ? 'Close order history' : lang === 'zh' ? '关闭订单历史' : 'Đóng lịch sử đơn hàng'}
-                aria-label={lang === 'en' ? 'Close order history' : lang === 'zh' ? '关闭订单历史' : 'Đóng lịch sử đơn hàng'}
+                className="w-8 h-8 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
+                title={lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng'}
+                aria-label={lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng'}
               >
-                <AppIcon name="close" className="text-lg" aria-hidden="true" />
+                <AppIcon name="close" className="text-xl" aria-hidden="true" />
               </button>
             </div>
 
-            {/* Modal Body */}
-            <div className="flex-1 overflow-y-auto py-4 space-y-4 scrollbar-none pr-1">
+            {/* Modal Body: Cards List */}
+            <div className="flex-1 overflow-y-auto p-3.5 sm:p-4 space-y-3.5 scrollbar-thin">
               {activeOrders.length === 0 ? (
-                <div className="py-12 text-center text-slate-500">
-                  <p className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
+                <div className="py-16 text-center text-slate-500 bg-white dark:bg-[#131926] rounded-2xl border border-slate-200/60 dark:border-white/5 p-6">
+                  <div className="w-12 h-12 rounded-2xl bg-sky-500/10 dark:bg-sky-500/20 text-sky-500 flex items-center justify-center mx-auto mb-3">
+                    <AppIcon name="receipt_long" className="text-2xl" />
+                  </div>
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-1">
                     {lang === 'en' ? 'No orders placed yet' : lang === 'zh' ? '暂无订单' : 'Chưa có đơn đặt nào'}
                   </p>
-                  <p className="text-xs font-normal max-w-xs mx-auto text-slate-500">
+                  <p className="text-xs font-normal max-w-xs mx-auto text-slate-500 dark:text-slate-400">
                     {lang === 'en'
                       ? 'Select items from the menu to place an order.'
                       : lang === 'zh'
@@ -214,7 +275,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                 </div>
               ) : (
                 <>
-                  {/* Group Members Summary */}
+                  {/* Group Members Summary Pills */}
                   {(() => {
                     const nameCounts: Record<string, number> = {};
                     activeOrders.forEach((o) => {
@@ -223,145 +284,154 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                       nameCounts[name] = (nameCounts[name] || 0) + count;
                     });
                     return (
-                      <div className="flex flex-wrap items-center gap-2 pb-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-                        <span className="font-bold text-slate-700 dark:text-slate-200">
+                      <div className="flex flex-wrap items-center gap-1.5 px-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+                        <span className="font-bold text-slate-700 dark:text-slate-300">
                           {lang === 'en' ? 'Group:' : lang === 'zh' ? '同桌:' : 'Thành viên:'}
                         </span>
                         {Object.entries(nameCounts).map(([name, count]) => (
                           <span
                             key={name}
-                            className="px-2.5 py-0.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 rounded-full text-[11px] font-bold"
+                            className="px-2.5 py-0.5 bg-white dark:bg-[#131926] border border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-slate-300 rounded-full text-[11px] font-bold shadow-2xs"
                           >
-                            {name} <span className="text-slate-500 dark:text-slate-400 font-normal">({count} món)</span>
+                            {name} <span className="text-slate-400 font-normal">({count} món)</span>
                           </span>
                         ))}
                       </div>
                     );
                   })()}
 
-                  {/* Orders List */}
+                  {/* Orders Batch Cards (Matching Image 1) */}
                   {activeOrders.map((order, idx) => {
                     const statusInfo = getOrderStatusInfo(order.status);
                     const isPaid = order.status === 'paid';
+                    const timeFormatted = order.createdAt
+                      ? new Date(order.createdAt).toLocaleTimeString(lang === 'zh' ? 'zh-CN' : lang === 'en' ? 'en-US' : 'vi-VN', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: false,
+                        })
+                      : '18:42';
+
+                    const batchCount = order.items?.reduce((s: number, it: any) => s + (it.quantity || 1), 0) || 0;
+                    const orderBadge = getItemStatusBadge(order.status);
+
+                    // Find if any item has a note or order has a note
+                    const orderNotes = order.items
+                      ?.filter((it: any) => Boolean(it.note && it.note.trim()))
+                      .map((it: any) => it.note)
+                      .join(', ');
+
                     return (
                       <div
                         key={order._id || idx}
-                        className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 rounded-xl p-4 space-y-3 shadow-xs hover:border-blue-500/40 transition-all"
+                        className="bg-white dark:bg-[#131926] rounded-2xl p-4 shadow-xs border border-slate-200/70 dark:border-white/5 space-y-3 transition-all"
                       >
-                        {/* Order Card Header */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-200 dark:border-white/10">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-extrabold text-slate-900 dark:text-slate-200 font-sans">
-                                {lang === 'en' ? 'Order' : lang === 'zh' ? '订单' : 'Mã đơn'}: #{order._id ? order._id.slice(-6).toUpperCase() : idx + 1}
-                              </span>
-                              {order.customerName && (
-                                <span className="px-2 py-0.5 bg-blue-500/15 text-blue-600 dark:text-blue-400 text-[10.5px] font-extrabold rounded-md font-sans">
-                                  {order.customerName}
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 block font-sans">
-                              {order.createdAt
-                                ? new Date(order.createdAt).toLocaleTimeString(lang === 'zh' ? 'zh-CN' : lang === 'en' ? 'en-US' : 'vi-VN', {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                  })
-                                : (lang === 'en' ? 'Just created' : lang === 'zh' ? '刚刚' : 'Vừa tạo')}
-                            </span>
-                          </div>
-
-                          {/* Status Badges Group */}
+                        {/* Top: 18:42 | 1 món       79.000đ */}
+                        <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            {/* Payment Status Badge */}
-                            {isPaid ? (
-                              <span className="px-2.5 py-1 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold border border-emerald-500/30 rounded-full font-sans">
-                                {lang === 'en' ? 'Paid' : lang === 'zh' ? '已结账' : 'Đã thanh toán'}
-                              </span>
-                            ) : (
-                              <span className="px-2.5 py-1 bg-rose-500/15 text-rose-600 dark:text-rose-400 text-[11px] font-bold border border-rose-500/30 rounded-full font-sans">
-                                {lang === 'en' ? 'Unpaid' : lang === 'zh' ? '未支付' : 'Chưa thanh toán'}
+                            <span className="text-sm font-bold text-slate-900 dark:text-white font-sans tracking-tight">
+                              {timeFormatted} | {batchCount} {lang === 'en' ? 'items' : lang === 'zh' ? '件' : 'món'}
+                            </span>
+                            {order.customerName && (
+                              <span className="px-2 py-0.5 bg-sky-500/10 text-sky-600 dark:text-sky-400 text-[10.5px] font-bold rounded-md font-sans">
+                                {order.customerName}
                               </span>
                             )}
-
-                            {/* Kitchen Status Badge */}
-                            <div className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${statusInfo.color} flex items-center gap-1.5 font-sans`}>
-                              {statusInfo.step === 2 && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-spin" />
-                              )}
-                              <span>{statusInfo.label}</span>
-                            </div>
                           </div>
+                          <span className="text-sm font-bold text-slate-900 dark:text-white font-mono">
+                            {formatPrice(order.totalAmount || 0, lang)}
+                          </span>
                         </div>
 
-                        {/* Order Items */}
-                        <div className="space-y-1.5">
+                        {/* Items list with 1x Tôm (Muối Ớt)       [Đang chế biến] */}
+                        <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-white/5">
                           {order.items?.map((item: any, i: number) => {
-                            const itemName = item.food?.name || (typeof item.foodId === 'object' && item.foodId?.name) || item.foodName || (lang === 'en' ? 'Item' : lang === 'zh' ? '商品' : 'Món ăn');
-                            const unitPrice = item.unitPrice || item.price || (typeof item.foodId === 'object' && item.foodId?.price) || item.food?.price || 0;
+                            const itemName =
+                              item.food?.name ||
+                              (typeof item.foodId === 'object' && item.foodId?.name) ||
+                              item.foodName ||
+                              (lang === 'en' ? 'Item' : lang === 'zh' ? '商品' : 'Món ăn');
+                            const itemQty = item.quantity || 1;
+
                             return (
-                              <div key={i} className="flex justify-between items-start text-xs text-slate-700 dark:text-slate-200 font-sans">
-                                <div>
-                                  <span className="font-bold">{itemName}</span>
-                                  <span className="text-slate-500 dark:text-slate-400 font-medium ml-2">x{item.quantity}</span>
-                                  {item.note && (
-                                    <p className="text-[11px] text-slate-500 dark:text-slate-400 italic">
-                                      {lang === 'en' ? 'Note:' : lang === 'zh' ? '备注:' : 'Ghi chú:'} {item.note}
-                                    </p>
-                                  )}
+                              <div
+                                key={i}
+                                className="flex items-center justify-between text-xs font-sans gap-2"
+                              >
+                                <div className="flex items-baseline min-w-0 pr-2">
+                                  <span className="text-slate-400 dark:text-slate-500 font-bold mr-2 text-xs shrink-0">
+                                    {itemQty}x
+                                  </span>
+                                  <span className="font-semibold text-slate-800 dark:text-slate-200 truncate text-[13px]">
+                                    {itemName}
+                                  </span>
                                 </div>
-                                <span className="font-bold text-slate-900 dark:text-white font-sans">
-                                  {formatPrice(unitPrice * item.quantity, lang)}
-                                </span>
+
+                                <div className="shrink-0">
+                                  <span
+                                    className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold inline-flex items-center gap-1 font-sans ${orderBadge.className}`}
+                                  >
+                                    {order.status === 'cooking' && (
+                                      <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
+                                    )}
+                                    <span>{orderBadge.label}</span>
+                                  </span>
+                                </div>
                               </div>
                             );
                           })}
                         </div>
 
-                        {/* Order Footer & Standard Action Buttons */}
-                        <div className="pt-2.5 border-t border-slate-200 dark:border-white/10 flex flex-wrap items-center justify-between gap-3">
-                          <div>
-                            <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-medium font-sans">
-                              {lang === 'en' ? 'Subtotal:' : lang === 'zh' ? '小计:' : 'Tổng đợt:'}
-                            </span>
-                            <span className="text-sm font-bold text-[#0284c7] dark:text-sky-400 font-sans font-mono">
-                              {formatPrice(order.totalAmount || 0, lang)}
-                            </span>
+                        {/* Note block: Ghi chú đơn */}
+                        {orderNotes && (
+                          <div className="pt-2 border-t border-slate-100 dark:border-white/5 text-xs text-slate-600 dark:text-slate-400 font-sans space-y-0.5">
+                            <div className="flex items-center gap-1 text-[11.5px] font-bold text-slate-700 dark:text-slate-300">
+                              <AppIcon name="edit_note" className="text-base text-slate-500" />
+                              <span>{lang === 'en' ? 'Order note:' : lang === 'zh' ? '订单备注:' : 'Ghi chú đơn:'}</span>
+                            </div>
+                            <p className="text-[11.5px] pl-5 text-slate-500 dark:text-slate-400 italic">
+                              {orderNotes}
+                            </p>
                           </div>
+                        )}
+
+                        {/* Action buttons (Preserved from existing logic) */}
+                        <div className="pt-2 border-t border-slate-100 dark:border-white/5 flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-[11px] text-slate-400 font-mono">
+                            #{order._id ? order._id.slice(-6).toUpperCase() : idx + 1}
+                          </span>
 
                           <div className="flex flex-wrap items-center gap-2">
-                            {/* Track Progress Button */}
+                            {/* Track button */}
                             <button
+                              type="button"
                               onClick={() => {
                                 setIsOrderHistoryModalOpen(false);
                                 router.push(`/table/${tableId}/order-status/${order._id}`);
                               }}
-                              className="h-8 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer inline-flex items-center gap-1.5 font-sans"
+                              className="h-7.5 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer inline-flex items-center gap-1 font-sans"
                             >
-                              <AppIcon name="schedule" className="text-[15px]" />
-                              <span>{lang === 'en' ? 'Track' : lang === 'zh' ? '进度' : 'Theo dõi tiến độ'}</span>
+                              <AppIcon name="schedule" className="text-[14px]" />
+                              <span>{lang === 'en' ? 'Track' : lang === 'zh' ? '进度' : 'Theo dõi'}</span>
                             </button>
 
-                            {/* Pay Button or Pending Status (if unpaid) */}
+                            {/* Pay or Cancel or Review */}
                             {!isPaid && (
                               order.status === 'pending' ? (
-                                <div className="flex items-center gap-1.5">
-                                  <span className="h-8 px-3 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold inline-flex items-center font-sans border border-amber-500/20">
-                                    {lang === 'en' ? 'Pending Approval' : lang === 'zh' ? '等待确认' : 'Chờ phục vụ duyệt'}
-                                  </span>
-                                  <button
-                                    id={`btn-cancel-order-${order._id}`}
-                                    onClick={() => handleCancelOrder(order)}
-                                    disabled={cancellingOrderId === order._id}
-                                    className="h-8 px-2.5 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer inline-flex items-center gap-1 font-sans border border-rose-500/20 disabled:opacity-50"
-                                    title={lang === 'en' ? 'Cancel this order' : 'Hủy đơn hàng này'}
-                                  >
-                                    <AppIcon name="close" className="text-[15px]" />
-                                    <span>{cancellingOrderId === order._id ? (lang === 'en' ? 'Cancelling...' : 'Đang hủy...') : (lang === 'en' ? 'Cancel' : lang === 'zh' ? '取消' : 'Hủy')}</span>
-                                  </button>
-                                </div>
+                                <button
+                                  id={`btn-cancel-order-${order._id}`}
+                                  type="button"
+                                  onClick={() => handleCancelOrder(order)}
+                                  disabled={cancellingOrderId === order._id}
+                                  className="h-7.5 px-2.5 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer inline-flex items-center gap-1 font-sans border border-rose-500/20 disabled:opacity-50"
+                                  title={lang === 'en' ? 'Cancel this order' : 'Hủy đơn hàng này'}
+                                >
+                                  <AppIcon name="close" className="text-[14px]" />
+                                  <span>{cancellingOrderId === order._id ? (lang === 'en' ? 'Cancelling...' : 'Đang hủy...') : (lang === 'en' ? 'Cancel' : lang === 'zh' ? '取消' : 'Hủy')}</span>
+                                </button>
                               ) : (
                                 <button
+                                  type="button"
                                   onClick={() => {
                                     if (order.paymentMethod === 'bank_transfer' || order.paymentMethod === 'momo') {
                                       if (onOpenBankPayModal) {
@@ -370,17 +440,16 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                                         router.push(`/table/${tableId}/order-status/${order._id}`);
                                       }
                                     } else {
-                                      // Cash payment: open cash guidance modal
                                       setSelectedCashOrder(order);
                                     }
                                   }}
-                                  className={`h-8 px-3.5 text-white text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer shadow-sm inline-flex items-center gap-1 font-sans ${
+                                  className={`h-7.5 px-3 text-white text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer shadow-xs inline-flex items-center gap-1 font-sans ${
                                     order.paymentMethod === 'cash'
                                       ? 'bg-amber-600 hover:bg-amber-700'
-                                      : 'bg-[#3B82F6] hover:bg-blue-600'
+                                      : 'bg-[#0284c7] hover:bg-[#0369a1]'
                                   }`}
                                 >
-                                  <AppIcon name={order.paymentMethod === 'cash' ? 'payments' : 'qr_code_2'} className="text-[15px]" />
+                                  <AppIcon name={order.paymentMethod === 'cash' ? 'payments' : 'qr_code_2'} className="text-[14px]" />
                                   <span>
                                     {order.paymentMethod === 'cash'
                                       ? (lang === 'en' ? 'Pay Cash' : lang === 'zh' ? '现金支付' : 'Tiền mặt')
@@ -393,10 +462,11 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                             {/* Review Button */}
                             {['ready', 'served', 'completed', 'paid'].includes(order.status) && (
                               <button
+                                type="button"
                                 onClick={() => setReviewingOrder(order)}
-                                className="h-8 px-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer inline-flex items-center gap-1.5 font-sans border border-amber-500/20"
+                                className="h-7.5 px-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer inline-flex items-center gap-1 font-sans border border-amber-500/20"
                               >
-                                <AppIcon name="star" className="text-[15px]" />
+                                <AppIcon name="star" className="text-[14px]" />
                                 <span>{lang === 'en' ? 'Review' : lang === 'zh' ? '评价' : 'Đánh giá'}</span>
                               </button>
                             )}
@@ -409,30 +479,29 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
               )}
             </div>
 
-            {/* Total & Bottom Modal Footer */}
-            <div className="pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between gap-3 shrink-0">
-              <div>
-                <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium font-sans">
-                  {lang === 'en' ? 'Total Session Balance:' : lang === 'zh' ? '本桌累计:' : 'Tổng cộng cả buổi:'}
+            {/* Sticky Bottom Bar (Matching Image 1: Cần thanh toán (8 món) 503,000đ) */}
+            <div className="bg-white dark:bg-[#131926] border-t border-slate-200/80 dark:border-white/10 px-4 sm:px-6 py-3.5 shadow-lg shrink-0">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold text-slate-800 dark:text-slate-200 font-sans">
+                  {lang === 'en'
+                    ? `Payment Due (${totalItemCount} items)`
+                    : lang === 'zh'
+                    ? `需支付 (${totalItemCount} 件)`
+                    : `Cần thanh toán (${totalItemCount} món)`}
                 </span>
-                <span className="text-lg sm:text-xl font-bold text-[#0284c7] dark:text-sky-400 tracking-tight font-sans font-mono">
-                  {formatPrice(
-                    activeOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0),
-                    lang
-                  )}
+                <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white font-mono">
+                  {formatPrice(grandTotalAmount, lang)}
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* Action row at bottom */}
+              <div className="flex items-center gap-2 pt-1">
                 {(() => {
-                  const unpaidOrders = activeOrders.filter((o) => o.status !== 'paid');
-                  const isAllPaid = activeOrders.length > 0 && unpaidOrders.length === 0;
-
                   if (isAllPaid) {
                     return (
-                      <span className="px-3.5 py-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-bold border border-emerald-500/20 font-sans inline-flex items-center gap-1.5">
-                        <AppIcon name="check_circle" className="text-[15px]" />
-                        {lang === 'en' ? 'All Paid' : lang === 'zh' ? '已全额结账' : 'Đã thanh toán đủ'}
+                      <span className="flex-1 py-2.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-bold border border-emerald-500/20 font-sans inline-flex items-center justify-center gap-1.5">
+                        <AppIcon name="check_circle" className="text-base" />
+                        {lang === 'en' ? 'All Paid' : lang === 'zh' ? '已全额结账' : 'Đã thanh toán hoàn tất'}
                       </span>
                     );
                   }
@@ -443,6 +512,7 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
 
                     return (
                       <button
+                        type="button"
                         onClick={() => {
                           if (isCash) {
                             setSelectedCashOrder(latestUnpaid);
@@ -454,15 +524,15 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                             }
                           }
                         }}
-                        className={`h-10 px-5 text-white font-bold rounded-xl text-xs tracking-wide transition-all shadow-md active:scale-95 cursor-pointer inline-flex items-center gap-1.5 font-sans ${
-                          isCash ? 'bg-amber-600 hover:bg-amber-700' : 'bg-[#3B82F6] hover:bg-blue-600'
+                        className={`flex-1 py-2.5 text-white font-black rounded-xl text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer inline-flex items-center justify-center gap-1.5 font-sans ${
+                          isCash ? 'bg-amber-600 hover:bg-amber-700' : 'bg-sky-500 hover:bg-sky-400'
                         }`}
                       >
                         <AppIcon name={isCash ? 'payments' : 'qr_code_2'} className="text-base" />
                         <span>
                           {isCash
                             ? (lang === 'en' ? 'Pay Cash' : lang === 'zh' ? '现金支付' : 'Thanh toán Tiền mặt')
-                            : (lang === 'en' ? 'Pay QR' : lang === 'zh' ? '扫码支付' : 'Thanh toán VietQR')}
+                            : (lang === 'en' ? 'Pay VietQR' : lang === 'zh' ? '扫码支付' : 'Thanh toán VietQR')}
                         </span>
                       </button>
                     );
@@ -472,8 +542,9 @@ export const OrderHistoryModal: React.FC<OrderHistoryModalProps> = ({
                 })()}
 
                 <button
+                  type="button"
                   onClick={() => setIsOrderHistoryModalOpen(false)}
-                  className="h-10 px-5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-xs tracking-wide transition-all active:scale-95 cursor-pointer font-sans"
+                  className="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-xs tracking-wide transition-all active:scale-95 cursor-pointer font-sans"
                 >
                   {lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng'}
                 </button>

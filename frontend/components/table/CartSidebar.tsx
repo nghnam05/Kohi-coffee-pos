@@ -185,11 +185,11 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
       return (
         <div
           key={`${item.food._id}_${item.addedByDeviceId || 'local'}`}
-          className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 shadow-xs transition-colors"
+          className="p-3 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200/80 dark:border-white/10 shadow-xs transition-colors"
         >
           <div className="flex items-start gap-3">
             {/* Food Thumbnail Image */}
-            <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-950 relative flex-shrink-0 border border-slate-200/60 dark:border-white/10 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-950 relative flex-shrink-0 border border-slate-200/60 dark:border-white/10 flex items-center justify-center">
               {item.food.image ? (
                 <Image
                   src={item.food.image}
@@ -205,53 +205,57 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
 
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-start gap-1">
-                <h4 className="text-xs font-semibold text-slate-900 dark:text-white truncate">
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">
                   {item.food.name}
                 </h4>
                 <button
+                  type="button"
                   onClick={() => handleRemove(item.food._id)}
-                  className="w-5 h-5 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 flex items-center justify-center transition-all cursor-pointer font-medium text-sm -mr-1 -mt-0.5 flex-shrink-0"
+                  className="w-5 h-5 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 flex items-center justify-center transition-all cursor-pointer font-medium text-xs -mr-1 -mt-0.5 flex-shrink-0"
                   title={lang === 'en' ? `Remove ${item.food.name}` : lang === 'zh' ? `删除 ${item.food.name}` : `Xóa món ${item.food.name}`}
                   aria-label={lang === 'en' ? `Remove ${item.food.name}` : lang === 'zh' ? `删除 ${item.food.name}` : `Xóa món ${item.food.name}`}
                 >
-                  ×
+                  ✕
                 </button>
               </div>
-              <span className="text-[13px] font-bold text-[#0284c7] dark:text-sky-400 block mt-0.5">
+              <span className="text-xs font-bold text-[#0284c7] dark:text-[#38BDF8] block mt-0.5 font-mono">
                 {formatPrice(effectivePrice, lang)}
               </span>
             </div>
           </div>
 
           {item.note && (
-            <p className="text-[12px] font-normal text-slate-500 dark:text-slate-400 line-clamp-1 italic mt-1.5 pl-0.5">
+            <p className="text-[11.5px] font-normal text-slate-500 dark:text-slate-400 line-clamp-1 italic mt-1.5 pl-0.5">
               {lang === 'en' ? 'Note:' : lang === 'zh' ? '备注:' : 'Ghi chú:'} {item.note}
             </p>
           )}
 
           <div className="flex justify-between items-center mt-2.5">
-            <div className="flex items-center gap-2 bg-slate-200/80 dark:bg-slate-800/80 border border-slate-300/70 dark:border-white/10 rounded-full px-2 py-1 shadow-xs">
+            {/* Stepper pill [ - ] 1 [ + ] */}
+            <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-white/10 rounded-full px-2.5 py-0.5 shadow-2xs">
               <button
+                type="button"
                 onClick={() => handleDecrease(item.food._id)}
-                className="w-6 h-6 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-300/80 dark:hover:bg-slate-700 transition-colors active:scale-95 cursor-pointer font-medium text-base leading-none"
+                className="w-5 h-5 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors active:scale-95 cursor-pointer font-bold text-sm"
                 title={lang === 'en' ? `Decrease quantity for ${item.food.name}` : `Giảm số lượng ${item.food.name}`}
                 aria-label={lang === 'en' ? `Decrease quantity for ${item.food.name}` : `Giảm số lượng ${item.food.name}`}
               >
                 −
               </button>
-              <span className="text-xs font-semibold text-slate-900 dark:text-white min-w-5 text-center font-mono" role="status" aria-label={`${item.quantity} ${item.food.name}`}>
+              <span className="text-xs font-bold text-slate-900 dark:text-white min-w-4 text-center font-mono" role="status" aria-label={`${item.quantity} ${item.food.name}`}>
                 {item.quantity}
               </span>
               <button
+                type="button"
                 onClick={() => handleIncrease(item.food)}
-                className="w-6 h-6 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-300/80 dark:hover:bg-slate-700 transition-colors active:scale-95 cursor-pointer font-medium text-base leading-none"
+                className="w-5 h-5 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors active:scale-95 cursor-pointer font-bold text-sm"
                 title={lang === 'en' ? `Increase quantity for ${item.food.name}` : `Tăng số lượng ${item.food.name}`}
                 aria-label={lang === 'en' ? `Increase quantity for ${item.food.name}` : `Tăng số lượng ${item.food.name}`}
               >
                 +
               </button>
             </div>
-            <span className="text-xs font-semibold text-slate-900 dark:text-white font-mono">
+            <span className="text-xs font-bold text-slate-900 dark:text-white font-mono">
               {formatPrice(effectivePrice * item.quantity, lang)}
             </span>
           </div>
@@ -278,25 +282,25 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             {groups.map((group, groupIdx) => (
               <div
                 key={group.id}
-                className={`space-y-2 ${groupIdx > 0 ? 'pt-3 border-t border-slate-200 dark:border-white/10' : ''}`}
+                className={`space-y-2.5 ${groupIdx > 0 ? 'pt-3 border-t border-slate-200 dark:border-white/10' : ''}`}
               >
-                {/* Group Header: Badge (NO ICON) + Quantity + Group Subtotal */}
-                <div className="flex items-center justify-between text-xs font-semibold">
+                {/* Group Header: Badge (Matching Image 2: HÙNG (Bạn) (1)   25.000 đ) */}
+                <div className="flex items-center justify-between text-xs font-medium py-1">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span
-                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider font-mono truncate max-w-[140px] ${
+                      className={`px-2 py-0.5 rounded text-[10.5px] font-black uppercase tracking-wider font-mono truncate max-w-[130px] ${
                         group.isMine
-                          ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30'
-                          : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                          ? 'bg-sky-100 text-sky-700 dark:bg-sky-950/70 dark:text-sky-300'
+                          : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300'
                       }`}
                     >
                       {group.callerName}
                     </span>
-                    <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                    <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
                       {group.isMine ? (lang === 'en' ? '(You)' : '(Bạn)') : (lang === 'en' ? '(Companion)' : '(Cùng bàn)')} ({group.totalQuantity})
                     </span>
                   </div>
-                  <span className="text-[11px] font-mono font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                  <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
                     {formatPrice(group.totalAmount, lang)}
                   </span>
                 </div>
@@ -308,14 +312,12 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
           </>
         )}
 
-        {/* Upsell Recommendation Section */}
+        {/* Upsell Recommendation Section (Matching Image 2: 👍 CÓ THỂ BẠN SẼ THÍCH) */}
         {cart.length <= 2 && foods.length > 0 && (
-          <div className="pt-2 border-t border-slate-200 dark:border-white/10">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.04em] text-amber-500 dark:text-amber-400 mb-2 flex items-center justify-between">
-              <span className="flex items-center gap-1">
-                <AppIcon name="recommend" className="text-xs" />
-                <span>{t.suggestedForYou || (lang === 'en' ? 'Recommended For You' : lang === 'zh' ? '猜你喜欢' : 'Gợi ý món nên thử')}</span>
-              </span>
+          <div className="pt-2 border-t border-slate-200/80 dark:border-white/10">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-amber-500 dark:text-amber-400 mb-2 flex items-center gap-1.5 font-sans">
+              <span>👍</span>
+              <span>{lang === 'en' ? 'YOU MAY ALSO LIKE' : lang === 'zh' ? '猜你喜欢' : 'CÓ THỂ BẠN SẼ THÍCH'}</span>
             </p>
             <div className="space-y-2">
               {foods
@@ -324,10 +326,10 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                 .map((recomFood) => (
                   <div
                     key={recomFood._id}
-                    className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 shadow-xs"
+                    className="flex items-center justify-between p-2 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200/80 dark:border-white/10 shadow-xs"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-950 relative flex-shrink-0">
+                      <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-950 relative flex-shrink-0 border border-slate-200/60 dark:border-white/10">
                         <Image
                           src={recomFood.image}
                           alt={recomFood.name}
@@ -337,19 +339,20 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                         />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs font-medium text-slate-900 dark:text-white truncate">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
                           {recomFood.name}
                         </p>
-                        <p className="text-[13px] font-extrabold text-slate-900 dark:text-white font-sans tracking-tight">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white font-mono mt-0.5">
                           {formatPrice(recomFood.price, lang)}
                         </p>
                       </div>
                     </div>
                     <button
+                      type="button"
                       onClick={() => handleIncrease(recomFood)}
-                      className="px-3.5 py-1.5 bg-sky-500 hover:bg-sky-400 text-white rounded-xl text-xs font-extrabold transition-all flex items-center gap-1 flex-shrink-0 active:scale-95 cursor-pointer shadow-xs hover:shadow-md hover:shadow-sky-500/25 min-h-[36px]"
+                      className="px-3.5 py-1.5 bg-[#38BDF8] hover:bg-sky-400 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1 flex-shrink-0 active:scale-95 cursor-pointer shadow-xs min-h-[34px]"
                     >
-                      <span className="text-white font-extrabold">+ {t.addItem || (lang === 'en' ? 'Add' : lang === 'zh' ? '添加' : 'Thêm')}</span>
+                      <span>+ {t.addItem || (lang === 'en' ? 'Add' : lang === 'zh' ? '添加' : 'Thêm')}</span>
                     </button>
                   </div>
                 ))}
@@ -390,7 +393,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
     const finalCalculatedTotal = Math.max(0, totalAmount - effectiveDiscount);
 
     return (
-      <div className="flex-shrink-0 max-h-[60vh] sm:max-h-none overflow-y-auto p-3.5 xl:p-5 bg-white/95 dark:bg-[#0B0F17]/95 border-t border-slate-200 dark:border-white/10 shadow-lg dark:shadow-2xl font-sans pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className="flex-shrink-0 max-h-[60vh] sm:max-h-none overflow-y-auto p-3.5 xl:p-5 bg-white/95 dark:bg-[#0B0F17]/95 border-t border-slate-200/80 dark:border-white/10 shadow-lg dark:shadow-2xl font-sans pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         {/* Auto 10% Voucher Banner when >= 300k */}
         {isAutoDiscountApplied && (
           <div className="mb-2.5 p-2.5 rounded-xl bg-gradient-to-r from-sky-500/15 via-blue-500/15 to-indigo-500/15 border border-sky-500/30 text-sky-700 dark:text-sky-300 text-xs font-semibold flex items-center gap-2">
@@ -405,24 +408,24 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
           </div>
         )}
 
-        {/* Progress incentive hint when < 300k */}
+        {/* Progress incentive hint when < 300k (Matching Image 2: Gọi thêm 275.000 đ để được tặng mã giảm 10%! [TẶNG 10%]) */}
         {!isEligibleAutoDiscount && totalAmount > 0 && (
-          <div className="mb-2.5 px-2.5 py-1.5 rounded-xl bg-sky-500/5 dark:bg-sky-500/10 border border-sky-500/20 text-[11px] text-slate-600 dark:text-slate-300 flex items-center justify-between font-sans">
-            <span className="truncate pr-1">
+          <div className="mb-3 px-3 py-2 rounded-xl bg-sky-50/80 dark:bg-sky-950/40 border border-sky-200/80 dark:border-sky-800/40 text-xs text-slate-700 dark:text-slate-300 flex items-center justify-between font-sans">
+            <span className="truncate pr-1 text-[11.5px]">
               {lang === 'en'
-                ? `Add ${formatPrice(300000 - totalAmount, lang)} to get 10% OFF auto applied!`
+                ? `Add ${formatPrice(300000 - totalAmount, lang)} to get 10% OFF voucher!`
                 : lang === 'zh'
                 ? `还差 ${formatPrice(300000 - totalAmount, lang)} 即可立减10%！`
                 : `Gọi thêm ${formatPrice(300000 - totalAmount, lang)} để được tặng mã giảm 10%!`}
             </span>
-            <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-[#38BDF8] text-slate-950 font-mono shrink-0">
+            <span className="px-2 py-0.5 rounded text-[10px] font-black bg-[#38BDF8] text-slate-950 font-mono shrink-0">
               TẶNG 10%
             </span>
           </div>
         )}
 
-        {/* Coupon Input Group (FormField) */}
-        <div className="space-y-2">
+        {/* Coupon Input Group (Matching Image 2: MÃ GIẢM GIÁ... + ÁP DỤNG) */}
+        <div className="space-y-2 mb-3">
           <div className="flex gap-2 items-center">
             <div className="flex-1">
               <input
@@ -433,22 +436,22 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                   setCouponResult(null);
                 }}
                 onKeyDown={(e) => e.key === 'Enter' && handleValidateCoupon()}
-                placeholder={t.promoCode ? `${t.promoCode}...` : (lang === 'en' ? 'Promo Code...' : lang === 'zh' ? '优惠码...' : 'Mã giảm giá...')}
-                aria-label={lang === 'en' ? 'Promo or discount code' : lang === 'zh' ? '优惠码' : 'Mã giảm giá'}
-                className="w-full h-11 bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-2xl px-3.5 text-base sm:text-xs text-slate-900 dark:text-white font-bold uppercase focus:border-[#38BDF8] focus-visible:ring-2 focus-visible:ring-[#38BDF8] outline-none font-sans placeholder-slate-400 dark:placeholder-slate-500"
+                placeholder={t.promoCode ? `${t.promoCode}...` : (lang === 'en' ? 'PROMO CODE...' : lang === 'zh' ? '优惠码...' : 'MÃ GIẢM GIÁ...')}
+                aria-label={lang === 'en' ? 'Promo or discount code' : lang === 'zh' ? '优惠码' : 'MÃ GIẢM GIÁ'}
+                className="w-full h-11 bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-2xl px-4 text-xs font-black uppercase text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-[#38BDF8] focus-visible:ring-1 focus-visible:ring-[#38BDF8] font-sans"
               />
             </div>
             <button
               type="button"
               onClick={handleValidateCoupon}
               disabled={isValidatingCoupon || !couponInput.trim()}
-              className={`h-11 min-h-[44px] px-4 rounded-2xl text-xs font-black uppercase tracking-wider transition-all font-sans shrink-0 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${
+              className={`h-11 min-h-[44px] px-5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all font-sans shrink-0 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8] ${
                 couponInput.trim()
                   ? 'bg-sky-500 hover:bg-sky-400 text-white cursor-pointer shadow-xs'
                   : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
               }`}
             >
-              {isValidatingCoupon ? '...' : (t.apply || (lang === 'en' ? 'Apply' : lang === 'zh' ? '应用' : 'Áp dụng'))}
+              {isValidatingCoupon ? '...' : (t.apply || (lang === 'en' ? 'APPLY' : lang === 'zh' ? '应用' : 'ÁP DỤNG'))}
             </button>
           </div>
 
@@ -461,40 +464,44 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
           )}
         </div>
 
-        <div className="border-t border-slate-200 dark:border-white/10 my-3" />
-
-        {/* Payment Method Selector - Name That UI Segmented Control */}
-        <div>
-          <SegmentedControl<'cash' | 'bank_transfer'>
-            fullWidth
-            size="md"
-            value={paymentMethod === 'cash' ? 'cash' : 'bank_transfer'}
-            onChange={(val) => setPaymentMethod(val)}
-            options={[
-              {
-                value: 'cash',
-                label: t.cash || (lang === 'en' ? 'Cash' : lang === 'zh' ? '现金' : 'Tiền mặt'),
-                icon: <AppIcon name="payments" className="text-lg" />,
-              },
-              {
-                value: 'bank_transfer',
-                label: t.bankTransfer || (lang === 'en' ? 'Bank QR' : lang === 'zh' ? '银行转账' : 'CK Ngân hàng'),
-                icon: <AppIcon name="qr_code_2" className="text-lg" />,
-              },
-            ]}
-          />
+        {/* Payment Method Selector (Matching Image 2: [ 💳 Tiền mặt ] [ 🔲 CK Ngân hàng ]) */}
+        <div className="mb-3">
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setPaymentMethod('cash')}
+              className={`h-11 rounded-2xl border text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                paymentMethod === 'cash'
+                  ? 'border-sky-400 bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300 ring-1 ring-sky-400 font-extrabold'
+                  : 'border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+              }`}
+            >
+              <AppIcon name="payments" className="text-base" />
+              <span>{t.cash || (lang === 'en' ? 'Cash' : lang === 'zh' ? '现金' : 'Tiền mặt')}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPaymentMethod('bank_transfer')}
+              className={`h-11 rounded-2xl border text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                paymentMethod === 'bank_transfer'
+                  ? 'border-sky-400 bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300 ring-1 ring-sky-400 font-extrabold'
+                  : 'border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+              }`}
+            >
+              <AppIcon name="qr_code_2" className="text-base" />
+              <span>{t.bankTransfer || (lang === 'en' ? 'Bank QR' : lang === 'zh' ? '银行转账' : 'CK Ngân hàng')}</span>
+            </button>
+          </div>
         </div>
 
-        <div className="border-t border-slate-200 dark:border-white/10 my-3" />
-
-        {/* Summary Details */}
-        <div className="space-y-2 mb-4">
-          <div className="flex justify-between text-[13.5px] font-normal text-slate-600 dark:text-slate-300 font-sans">
+        {/* Summary Details (Matching Image 2: Tạm tính & Tổng cộng) */}
+        <div className="space-y-1.5 mb-3 text-left">
+          <div className="flex justify-between text-xs font-medium text-slate-600 dark:text-slate-400 font-sans">
             <span>{t.subtotal || (lang === 'en' ? 'Subtotal' : lang === 'zh' ? '小计' : 'Tạm tính')} ({totalQuantity} {lang === 'en' ? 'items' : lang === 'zh' ? '件' : 'món'})</span>
             <span className="font-semibold text-slate-900 dark:text-white font-mono">{formatPrice(totalAmount, lang)}</span>
           </div>
           {effectiveDiscount > 0 && (
-            <div className="flex justify-between text-[13.5px] font-semibold text-emerald-600 dark:text-emerald-400 font-sans">
+            <div className="flex justify-between text-xs font-semibold text-emerald-600 dark:text-emerald-400 font-sans">
               <span>
                 {hasManualCoupon
                   ? `${lang === 'en' ? 'Discount' : lang === 'zh' ? '优惠' : 'Khuyến mãi'} (${couponInput})`
@@ -504,16 +511,16 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             </div>
           )}
           <div className="flex justify-between items-baseline pt-1">
-            <span className="text-[15px] font-bold text-slate-900 dark:text-white font-sans">
+            <span className="text-sm font-bold text-slate-900 dark:text-white font-sans">
               {t.total || (lang === 'en' ? 'Total' : lang === 'zh' ? '总计' : 'Tổng cộng')}
             </span>
-            <span className="text-[20px] font-bold text-[#0284c7] dark:text-sky-400 tracking-tight font-sans font-mono">
+            <span className="text-lg font-bold text-[#0284c7] dark:text-[#38BDF8] tracking-tight font-sans font-mono">
               {formatPrice(finalCalculatedTotal, lang)}
             </span>
           </div>
         </div>
 
-        {/* Pending Order Notice - Name That UI InlineAlert */}
+        {/* Pending Order Notice */}
         {hasPendingOrder && (
           <div className="mb-2">
             <InlineAlert severity="warning">
@@ -526,30 +533,33 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
           </div>
         )}
 
-      {/* Submit CTA Button */}
-      <button
-        type="button"
-        onClick={handleSubmitOrder}
-        disabled={cart.length === 0 || isSubmitting || hasPendingOrder}
-        className={`w-full min-h-[52px] h-[52px] mt-2 rounded-2xl text-xs sm:text-sm font-black uppercase tracking-wider flex items-center justify-center transition-all font-sans focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${
-          cart.length === 0 || hasPendingOrder
-            ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
-            : 'bg-sky-500 hover:bg-sky-400 text-white shadow-lg shadow-sky-500/25 cursor-pointer active:scale-[0.99]'
-        }`}
-      >
-        <span>
-          {isSubmitting
-            ? t.submitting
-            : hasPendingOrder
-            ? (lang === 'en' ? 'WAITING FOR APPROVAL...' : lang === 'zh' ? '正在等待确认...' : 'ĐANG CHỜ DUYỆT ĐƠN...')
-            : effectiveDiscount > 0
-            ? (lang === 'en' ? `SUBMIT TABLE ORDER (${totalQuantity}) • -10% OFF` : lang === 'zh' ? `提交整桌订单 (${totalQuantity}) • 立减10%` : `GỬI ĐƠN CẢ BÀN (${totalQuantity} MÓN) • GIẢM 10%`)
-            : (lang === 'en' ? `SUBMIT TABLE ORDER (${totalQuantity})` : lang === 'zh' ? `提交整桌订单 (${totalQuantity})` : `GỬI ĐƠN CẢ BÀN (${totalQuantity} MÓN)`)}
-        </span>
-      </button>
-    </div>
-  );
-};
+        {/* Submit CTA Button (Matching Image 2: GỬI ĐƠN CẢ BÀN (1 MÓN)) */}
+        <button
+          type="button"
+          onClick={handleSubmitOrder}
+          disabled={cart.length === 0 || isSubmitting || hasPendingOrder}
+          className={`w-full min-h-[48px] h-12 rounded-2xl text-xs sm:text-sm font-black uppercase tracking-wider flex items-center justify-center transition-all font-sans focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${
+            cart.length === 0 || hasPendingOrder
+              ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
+              : 'bg-[#38BDF8] hover:bg-sky-400 text-white shadow-md active:scale-[0.99] cursor-pointer'
+          }`}
+        >
+          <span>
+            {isSubmitting
+              ? t.submitting
+              : hasPendingOrder
+              ? (lang === 'en' ? 'WAITING FOR APPROVAL...' : lang === 'zh' ? '正在等待确认...' : 'ĐANG CHỜ DUYỆT ĐƠN...')
+              : effectiveDiscount > 0
+              ? (lang === 'en' ? `SUBMIT TABLE ORDER (${totalQuantity}) • -10% OFF` : lang === 'zh' ? `提交整桌订单 (${totalQuantity}) • 立减10%` : `GỬI ĐƠN CẢ BÀN (${totalQuantity} MÓN) • GIẢM 10%`)
+              : (lang === 'en' ? `SUBMIT TABLE ORDER (${totalQuantity})` : lang === 'zh' ? `提交整桌订单 (${totalQuantity})` : `GỬI ĐƠN CẢ BÀN (${totalQuantity} MÓN)`)}
+          </span>
+        </button>
+
+        {/* iOS Home Indicator */}
+        <div className="w-12 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mt-2 opacity-60" aria-hidden="true" />
+      </div>
+    );
+  };
 
   return (
     <>
@@ -575,7 +585,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
         {renderCheckoutControls()}
       </aside>
 
-      {/* ── MOBILE / TABLET BOTTOM SHEET CART DRAWER ─────────────────────── */}
+      {/* ── MOBILE / TABLET BOTTOM SHEET CART DRAWER (Matching Image 2) ─────────────────────── */}
       <AnimatePresence>
         {isCartOpen && (
           <>
@@ -588,7 +598,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
               className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs lg:hidden"
             />
 
-            {/* Bottom Sheet Modal */}
+            {/* Bottom Sheet Modal (Image 2 style) */}
             <motion.div
               role="dialog"
               aria-modal="true"
@@ -600,21 +610,22 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
               className="fixed bottom-0 inset-x-0 z-50 h-[85dvh] max-h-[85dvh] bg-white dark:bg-[#0d1322] rounded-t-[32px] border-t border-slate-200/80 dark:border-white/5 shadow-2xl flex flex-col font-sans lg:hidden overflow-hidden text-left"
             >
               {/* Drawer Handle */}
-              <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto my-2.5 flex-shrink-0 opacity-70" aria-hidden="true" />
+              <div className="w-12 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto my-2.5 flex-shrink-0 opacity-70" aria-hidden="true" />
 
-              {/* Mobile Drawer Header */}
-              <div className="px-5 py-3 border-b border-slate-200/80 dark:border-white/5 flex justify-between items-center bg-white dark:bg-[#0d1322] flex-shrink-0">
+              {/* Mobile Drawer Header (Matching Image 2: Giỏ hàng của bạn [1 món]   ✕) */}
+              <div className="px-5 py-3 border-b border-slate-100 dark:border-white/5 flex justify-between items-center bg-white dark:bg-[#0d1322] flex-shrink-0">
                 <div className="flex items-center gap-2">
                   <h3 id="mobile-cart-title" className="text-base font-bold text-slate-900 dark:text-white">
-                    {t.cartTitle}
+                    {lang === 'en' ? 'Your Cart' : lang === 'zh' ? '您的购物车' : 'Giỏ hàng của bạn'}
                   </h3>
-                  <span className="bg-[#38BDF8] text-slate-950 text-xs font-black px-2.5 py-0.5 rounded-full shadow-2xs font-mono" aria-label={`${totalQuantity} ${lang === 'en' ? 'items' : lang === 'zh' ? '件' : 'món'}`}>
+                  <span className="bg-[#38BDF8] text-white text-xs font-black px-2.5 py-0.5 rounded-full shadow-2xs font-mono" aria-label={`${totalQuantity} ${lang === 'en' ? 'items' : lang === 'zh' ? '件' : 'món'}`}>
                     {totalQuantity} {lang === 'en' ? 'items' : lang === 'zh' ? '件' : 'món'}
                   </span>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setIsCartOpen && setIsCartOpen(false)}
-                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer font-medium text-lg leading-none active:scale-95"
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer font-medium text-base leading-none active:scale-95"
                   title={lang === 'en' ? 'Close cart' : lang === 'zh' ? '关闭购物车' : 'Đóng giỏ hàng'}
                   aria-label={lang === 'en' ? 'Close cart' : lang === 'zh' ? '关闭购物车' : 'Đóng giỏ hàng'}
                 >

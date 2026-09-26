@@ -39,6 +39,7 @@ interface HeaderProps {
   unreadNotificationCount?: number;
   customerName?: string;
   onOpenNamePrompt?: () => void;
+  onOpenAiChat?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -65,6 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
   unreadNotificationCount = 0,
   customerName,
   onOpenNamePrompt,
+  onOpenAiChat,
 }) => {
   const [isFloatingPopupOpen, setIsFloatingPopupOpen] = useState(false);
 
@@ -217,6 +219,36 @@ export const Header: React.FC<HeaderProps> = ({
 
                 {/* Primary Actions (Modern Inset Grouped List) */}
                 <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200/90 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-slate-200/80 dark:divide-white/5 shadow-xs">
+                  {/* Trợ lý Kohi AI */}
+                  {onOpenAiChat && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        closePopup();
+                        onOpenAiChat();
+                      }}
+                      className="w-full px-3.5 py-3 flex items-center justify-between text-left hover:bg-sky-500/10 dark:hover:bg-sky-500/15 transition-colors active:scale-[0.99] cursor-pointer group bg-gradient-to-r from-sky-500/5 to-transparent"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-[#090D16] to-[#1E293B] text-[#38BDF8] flex items-center justify-center border border-[#38BDF8]/40 shadow-2xs shrink-0">
+                          <AppIcon name="auto_awesome" className="text-sm" />
+                        </div>
+                        <div>
+                          <h5 className="text-sm font-extrabold text-slate-900 dark:text-white group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors flex items-center gap-1.5">
+                            <span>Kohi AI Concierge</span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          </h5>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            {lang === 'en' ? 'Smart taste & menu guide' : lang === 'zh' ? '智能口味与菜品向导' : 'Trợ lý tư vấn vị giác & món'}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 group-hover:text-sky-500 dark:group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all">
+                        →
+                      </span>
+                    </button>
+                  )}
+
                   {/* Thực Đơn */}
                   <button
                     type="button"
