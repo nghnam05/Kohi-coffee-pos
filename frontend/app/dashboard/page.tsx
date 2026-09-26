@@ -6946,19 +6946,16 @@ export default function DashboardPage() {
 
           {/* Weekly Desktop View (>= sm) */}
           <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl overflow-hidden shadow-xs">
-            <div className="relative overflow-x-auto scrollbar-thin">
-              <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[880px] border-collapse">
+            <div className="overflow-x-auto scrollbar-thin">
+              <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 border-collapse">
                 <thead className="bg-slate-50/95 dark:bg-[#0B101B]/95 border-b border-slate-200/80 dark:border-white/10 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider font-black select-none">
                   <tr>
-                    <th scope="col" className="py-3 px-3.5 whitespace-nowrap min-w-[125px]">Tuần Làm Việc</th>
-                    <th scope="col" className="py-3 px-3.5 whitespace-nowrap min-w-[135px]">Nhân Viên</th>
-                    <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[85px]">Vai Trò</th>
-                    <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[75px] text-center">Tổng Ca</th>
-                    <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[95px] text-center">Giờ Chưa Trả</th>
-                    {user?.role === 'admin' && <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[105px] text-center">Mức Lương/Giờ</th>}
-                    {user?.role === 'admin' && <th scope="col" className="py-3 px-3 whitespace-nowrap min-w-[110px]">Lương Còn Lại</th>}
+                    <th scope="col" className="py-3 px-3 whitespace-nowrap w-[125px]">Tuần Làm Việc</th>
+                    <th scope="col" className="py-3 px-3 whitespace-nowrap">Nhân Viên</th>
+                    <th scope="col" className="py-3 px-3 whitespace-nowrap w-[115px]">Ca & Giờ Công</th>
+                    {user?.role === 'admin' && <th scope="col" className="py-3 px-3 whitespace-nowrap text-right w-[125px]">Lương Chưa Trả</th>}
                     {user?.role === 'admin' && (
-                      <th scope="col" className="py-3 px-3.5 whitespace-nowrap text-right min-w-[160px]">
+                      <th scope="col" className="py-3 pr-4 pl-2 whitespace-nowrap text-right w-[185px]">
                         Thao Tác
                       </th>
                     )}
@@ -6967,7 +6964,7 @@ export default function DashboardPage() {
                 <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b]/60">
                   {weeklyPayrolls.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-12 text-center text-slate-400 font-medium">
+                      <td colSpan={user?.role === 'admin' ? 5 : 3} className="py-12 text-center text-slate-400 font-medium">
                         Chưa có dữ liệu bảng lương gộp theo tuần
                       </td>
                     </tr>
@@ -6978,108 +6975,81 @@ export default function DashboardPage() {
                       const roleLabel = wp.staffRole === 'admin' ? 'Quản trị' : wp.staffRole === 'barista' ? 'Pha chế' : isWaiter ? 'Phục vụ' : 'Nhân viên';
                       return (
                         <tr key={wp.key} className="group hover:bg-slate-50/70 dark:hover:bg-[#182035]/50 transition-colors">
-                          {/* Tuần làm việc */}
-                          <td className="py-3 px-3.5 whitespace-nowrap align-middle">
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-mono font-bold text-xs">
-                              <DashboardIcon name="calendar_month" className="text-sm text-amber-500 shrink-0" />
-                              <span>{wp.weekLabel}</span>
+                          {/* 1. Tuần làm việc */}
+                          <td className="py-3 px-3 whitespace-nowrap align-middle">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-bold text-xs">
+                              <DashboardIcon name="calendar_month" className="text-xs text-amber-500 shrink-0" />
+                              <span>{wp.weekLabel.replace('/2026', '')}</span>
                             </div>
                           </td>
 
-                          {/* Nhân viên */}
-                          <td className="py-3 px-3.5 whitespace-nowrap align-middle">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500/15 to-blue-600/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/25 flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">
+                          {/* 2. Nhân viên & Vai trò */}
+                          <td className="py-3 px-3 whitespace-nowrap align-middle">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500/15 to-blue-600/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/25 flex items-center justify-center font-extrabold text-xs shrink-0 shadow-2xs">
                                 {initials}
                               </div>
                               <div className="min-w-0">
                                 <div className="font-extrabold text-slate-900 dark:text-white text-xs truncate max-w-[130px]">
                                   {wp.staffName}
                                 </div>
-                                {wp.staffEmail && (
-                                  <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate max-w-[130px]">
-                                    {wp.staffEmail}
-                                  </div>
-                                )}
+                                <div className="mt-0.5">
+                                  <span className={`inline-flex items-center px-1.5 py-0.2 rounded text-[9.5px] font-bold border ${wp.staffRole === 'admin' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' :
+                                    wp.staffRole === 'barista' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20' :
+                                      isWaiter ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' :
+                                        'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                                    }`}>
+                                    {roleLabel}
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           </td>
 
-                          {/* Vai trò */}
-                          <td className="py-3 px-2.5 whitespace-nowrap align-middle">
-                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${wp.staffRole === 'admin' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' :
-                              wp.staffRole === 'barista' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20' :
-                                isWaiter ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' :
-                                  'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-                              }`}>
-                              <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
-                              <span>{roleLabel}</span>
-                            </span>
+                          {/* 3. Ca & Giờ công */}
+                          <td className="py-3 px-3 whitespace-nowrap align-middle">
+                            <div className="font-bold text-xs text-slate-900 dark:text-slate-100">
+                              {wp.totalShifts} ca {wp.paidShifts > 0 && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">({wp.paidShifts} đã trả)</span>}
+                            </div>
+                            <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 mt-0.5">
+                              <span className="text-slate-900 dark:text-white font-extrabold">{wp.unpaidHours}h</span>
+                              {wp.paidHours > 0 ? (
+                                <span className="text-slate-400 dark:text-slate-500 font-normal"> / {wp.totalHours}h tổng</span>
+                              ) : (
+                                <span className="text-slate-400 dark:text-slate-500 font-normal"> công</span>
+                              )}
+                            </div>
                           </td>
 
-                          {/* Tổng ca làm */}
-                          <td className="py-3 px-2.5 text-center whitespace-nowrap align-middle">
-                            <span className="font-mono font-bold text-xs text-slate-900 dark:text-slate-100">
-                              {wp.totalShifts} ca
-                            </span>
-                            {wp.paidShifts > 0 && (
-                              <span className="block text-[9.5px] text-emerald-600 dark:text-emerald-400 font-medium">
-                                ({wp.paidShifts} đã trả)
-                              </span>
-                            )}
-                          </td>
-
-                          {/* Giờ công */}
-                          <td className="py-3 px-2.5 text-center whitespace-nowrap align-middle font-mono text-xs">
-                            <span className="font-extrabold text-slate-900 dark:text-white">{wp.unpaidHours}h</span>
-                            <span className="text-slate-400 dark:text-slate-500 font-medium text-[10.5px]"> / {wp.totalHours}h</span>
-                          </td>
-
-                          {/* Mức lương / giờ */}
+                          {/* 4. Lương còn lại & Mức lương/giờ */}
                           {user?.role === 'admin' && (
-                            <td className="py-3 px-2.5 whitespace-nowrap text-center align-middle">
-                              <div className="inline-flex items-center bg-slate-50 dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-xl px-2 py-0.5 shadow-2xs focus-within:ring-2 focus-within:ring-[#38BDF8]/40 focus-within:border-[#0284c7] dark:focus-within:border-[#38BDF8] transition-all">
-                                <input
-                                  type="number"
-                                  step="1000"
-                                  value={wp.hourlyRate}
-                                  onChange={(e) => {
-                                    const val = Number(e.target.value);
-                                    setStaffHourlyRates((prev) => ({ ...prev, [wp.staffId]: val }));
-                                  }}
-                                  onBlur={(e) => handleUpdateHourlyRate(wp.staffId, Number(e.target.value))}
-                                  className="w-14 bg-transparent text-xs font-mono font-black text-slate-900 dark:text-white focus:outline-none text-right"
-                                />
-                                <span className="text-[9.5px] font-bold text-slate-400 dark:text-slate-500 ml-0.5 select-none">đ/h</span>
+                            <td className="py-3 px-3 whitespace-nowrap text-right align-middle">
+                              <div className="font-extrabold text-sm text-emerald-600 dark:text-emerald-400">
+                                {formatPrice(wp.unpaidSalary)}
+                              </div>
+                              <div className="flex items-center justify-end mt-1">
+                                <div className="inline-flex items-center bg-slate-100/90 hover:bg-slate-200/80 dark:bg-white/[0.06] dark:hover:bg-white/[0.09] border border-slate-200/80 dark:border-white/10 rounded-lg px-2 py-0.5 focus-within:border-emerald-500 dark:focus-within:border-emerald-400 focus-within:ring-1 focus-within:ring-emerald-500/30 transition-all shadow-2xs">
+                                  <input
+                                    type="number"
+                                    step="1000"
+                                    value={wp.hourlyRate}
+                                    onChange={(e) => {
+                                      const val = Number(e.target.value);
+                                      setStaffHourlyRates((prev) => ({ ...prev, [wp.staffId]: val }));
+                                    }}
+                                    onBlur={(e) => handleUpdateHourlyRate(wp.staffId, Number(e.target.value))}
+                                    className="w-[50px] bg-transparent text-[11px] font-mono font-bold text-slate-800 dark:text-slate-200 text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:outline-none"
+                                  />
+                                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-1 select-none">đ/h</span>
+                                </div>
                               </div>
                             </td>
                           )}
 
-                          {/* Lương còn lại */}
+                          {/* 5. Thao tác */}
                           {user?.role === 'admin' && (
-                            <td className="py-3 px-3 whitespace-nowrap align-middle font-mono font-black text-xs text-emerald-600 dark:text-emerald-400">
-                              <div>{formatPrice(wp.unpaidSalary)}</div>
-                              {wp.paidHours > 0 && (
-                                <div className="text-[9.5px] text-slate-400 dark:text-slate-500 font-normal mt-0.5">
-                                  Đã trả: {formatPrice(wp.alreadyPaidSalary)}
-                                </div>
-                              )}
-                            </td>
-                          )}
-
-                          {/* Thao tác */}
-                          {user?.role === 'admin' && (
-                            <td className="py-3 px-3.5 text-right whitespace-nowrap align-middle">
-                              <div className="flex items-center justify-end gap-1.5 shrink-0">
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenSalaryConfig({ _id: wp.staffId, name: wp.staffName, role: wp.staffRole })}
-                                  className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-8 px-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/15 text-slate-700 dark:text-slate-200 font-extrabold text-xs border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
-                                  title="Cấu hình mức lương & phụ cấp"
-                                >
-                                  <DashboardIcon name="tune" className="text-sm text-slate-500 dark:text-slate-400" />
-                                  <span>Cấu hình</span>
-                                </button>
+                            <td className="py-3 pr-4 pl-2 text-right whitespace-nowrap align-middle">
+                              <div className="flex items-center justify-end gap-2 shrink-0">
                                 {wp.unpaidSalary > 0 ? (
                                   <button
                                     type="button"
@@ -7099,18 +7069,27 @@ export default function DashboardPage() {
                                         attendanceIds: wp.unpaidAttendances.map((a) => a._id),
                                       })
                                     }
-                                    className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-8 px-3.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
+                                    className="h-[38px] px-4 rounded-full bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap"
                                     title="Thực hiện chi trả lương tuần"
                                   >
-                                    <DashboardIcon name="payments" className="text-sm" />
+                                    <DashboardIcon name="payments" className="text-base" />
                                     <span>Chi trả</span>
                                   </button>
                                 ) : (
-                                  <span className="whitespace-nowrap inline-flex items-center gap-1.5 h-8 px-3 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 shrink-0">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                  <span className="inline-flex items-center gap-1.5 h-[38px] px-3.5 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-full border border-emerald-500/20 shrink-0 whitespace-nowrap">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                                     <span>Đã trả hết</span>
                                   </span>
                                 )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenSalaryConfig({ _id: wp.staffId, name: wp.staffName, role: wp.staffRole })}
+                                  className="h-[38px] px-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/15 text-slate-700 dark:text-slate-200 font-extrabold text-xs rounded-full border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap"
+                                  title="Cấu hình mức lương & phụ cấp"
+                                >
+                                  <DashboardIcon name="tune" className="text-base text-slate-500 dark:text-slate-400" />
+                                  <span>Cấu hình</span>
+                                </button>
                               </div>
                             </td>
                           )}
@@ -7239,18 +7218,15 @@ export default function DashboardPage() {
 
           {/* Hourly Desktop View (>= sm) */}
           <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200/90 dark:border-[#1e293b] rounded-2xl overflow-hidden shadow-xs">
-            <div className="relative overflow-x-auto scrollbar-thin">
-              <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[820px] border-collapse">
+            <div className="overflow-x-auto scrollbar-thin">
+              <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 border-collapse">
                 <thead className="bg-slate-50/95 dark:bg-[#0B101B]/95 border-b border-slate-200/80 dark:border-white/10 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider font-black select-none">
                   <tr>
-                    <th scope="col" className="py-3 px-3.5 whitespace-nowrap min-w-[140px]">Nhân Viên</th>
-                    <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[85px]">Vai Trò</th>
-                    <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[75px] text-center">Tổng Ca</th>
-                    <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[95px] text-center">Giờ Chưa Trả</th>
-                    {user?.role === 'admin' && <th scope="col" className="py-3 px-2.5 whitespace-nowrap min-w-[105px] text-center">Mức Lương/Giờ</th>}
-                    {user?.role === 'admin' && <th scope="col" className="py-3 px-3 whitespace-nowrap min-w-[110px]">Lương Còn Lại</th>}
+                    <th scope="col" className="py-3 px-3 whitespace-nowrap">Nhân Viên</th>
+                    <th scope="col" className="py-3 px-3 whitespace-nowrap w-[130px]">Ca & Giờ Công</th>
+                    {user?.role === 'admin' && <th scope="col" className="py-3 px-3 whitespace-nowrap text-right w-[140px]">Lương Chưa Trả</th>}
                     {user?.role === 'admin' && (
-                      <th scope="col" className="py-3 px-3.5 whitespace-nowrap text-right min-w-[160px]">
+                      <th scope="col" className="py-3 pr-4 pl-2 whitespace-nowrap text-right w-[185px]">
                         Thao Tác
                       </th>
                     )}
@@ -7259,7 +7235,7 @@ export default function DashboardPage() {
                 <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b]/60">
                   {hourlyPayrolls.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-12 text-center text-slate-400 font-medium">
+                      <td colSpan={user?.role === 'admin' ? 4 : 2} className="py-12 text-center text-slate-400 font-medium">
                         Chưa có dữ liệu bảng lương theo giờ
                       </td>
                     </tr>
@@ -7270,82 +7246,65 @@ export default function DashboardPage() {
                       const roleLabel = hp.staffRole === 'admin' ? 'Quản trị' : hp.staffRole === 'barista' ? 'Pha chế' : isWaiter ? 'Phục vụ' : 'Nhân viên';
                       return (
                         <tr key={hp.staffId} className="group hover:bg-slate-50/70 dark:hover:bg-[#182035]/50 transition-colors">
-                          {/* Nhân viên */}
-                          <td className="py-3 px-3.5 whitespace-nowrap align-middle">
-                            <div className="flex items-center gap-2.5">
+                          {/* 1. Nhân viên & Vai trò */}
+                          <td className="py-3 px-3 whitespace-nowrap align-middle">
+                            <div className="flex items-center gap-2">
                               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500/15 to-blue-600/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/25 flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">
                                 {initials}
                               </div>
                               <div className="min-w-0">
-                                <div className="font-extrabold text-slate-900 dark:text-white text-xs truncate max-w-[130px]">
+                                <div className="font-extrabold text-slate-900 dark:text-white text-xs truncate max-w-[140px]">
                                   {hp.staffName}
                                 </div>
-                                {hp.staffEmail && (
-                                  <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate max-w-[130px]">
-                                    {hp.staffEmail}
-                                  </div>
-                                )}
+                                <div className="mt-0.5">
+                                  <span className={`inline-flex items-center px-1.5 py-0.2 rounded text-[9.5px] font-bold border ${hp.staffRole === 'admin' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' :
+                                    hp.staffRole === 'barista' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20' :
+                                      isWaiter ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' :
+                                        'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                                    }`}>
+                                    {roleLabel}
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           </td>
 
-                          {/* Vai trò */}
-                          <td className="py-3 px-2.5 whitespace-nowrap align-middle">
-                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${hp.staffRole === 'admin' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' :
-                              hp.staffRole === 'barista' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20' :
-                                isWaiter ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' :
-                                  'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-                              }`}>
-                              <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
-                              <span>{roleLabel}</span>
-                            </span>
+                          {/* 2. Ca & Giờ công */}
+                          <td className="py-3 px-3 whitespace-nowrap align-middle">
+                            <div className="font-bold text-xs text-slate-900 dark:text-slate-100">
+                              {hp.totalShifts} ca làm
+                            </div>
+                            <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 mt-0.5 font-mono">
+                              <span className="text-slate-900 dark:text-white font-extrabold">{hp.unpaidHours}h</span>
+                              {hp.paidHours > 0 ? (
+                                <span className="text-slate-400 dark:text-slate-500 font-normal font-sans"> / {hp.totalHours}h tổng</span>
+                              ) : (
+                                <span className="text-slate-400 dark:text-slate-500 font-normal font-sans"> công</span>
+                              )}
+                            </div>
                           </td>
 
-                          {/* Tổng ca làm */}
-                          <td className="py-3 px-2.5 text-center whitespace-nowrap align-middle font-mono font-bold text-xs text-slate-800 dark:text-slate-200">
-                            {hp.totalShifts} ca
-                          </td>
-
-                          {/* Giờ công */}
-                          <td className="py-3 px-2.5 text-center whitespace-nowrap align-middle font-mono text-xs">
-                            <span className="font-extrabold text-slate-900 dark:text-white">{hp.unpaidHours}h</span>
-                            <span className="text-slate-400 dark:text-slate-500 font-medium text-[10.5px]"> / {hp.totalHours}h</span>
-                          </td>
-
-                          {/* Đơn giá / giờ */}
+                          {/* 3. Lương còn lại & Đơn giá */}
                           {user?.role === 'admin' && (
-                            <td className="py-3 px-2.5 whitespace-nowrap text-center align-middle">
-                              <div className="inline-flex items-center px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/10 font-mono font-bold text-xs text-slate-900 dark:text-white">
-                                {formatPrice(hp.hourlyRate)}/h
+                            <td className="py-3 px-3 whitespace-nowrap text-right align-middle">
+                              <div className="font-extrabold text-sm text-[#0284c7] dark:text-[#38BDF8]">
+                                {formatPrice(hp.unpaidSalary)}
+                              </div>
+                              <div className="text-[10.5px] font-medium text-slate-400 dark:text-slate-500 mt-0.5">
+                                <span>{formatPrice(hp.hourlyRate)}/h</span>
+                                {hp.paidHours > 0 && (
+                                  <span className="ml-1 text-slate-400">
+                                    • Đã trả: {formatPrice(hp.alreadyPaidSalary)}
+                                  </span>
+                                )}
                               </div>
                             </td>
                           )}
 
-                          {/* Lương còn lại */}
+                          {/* 4. Thao tác */}
                           {user?.role === 'admin' && (
-                            <td className="py-3 px-3 whitespace-nowrap align-middle font-mono font-black text-xs text-[#0284c7] dark:text-[#38BDF8]">
-                              <div>{formatPrice(hp.unpaidSalary)}</div>
-                              {hp.paidHours > 0 && (
-                                <div className="text-[9.5px] text-slate-400 dark:text-slate-500 font-normal mt-0.5">
-                                  Đã trả: {formatPrice(hp.alreadyPaidSalary)} / Tổng: {formatPrice(hp.totalSalary)}
-                                </div>
-                              )}
-                            </td>
-                          )}
-
-                          {/* Thao tác */}
-                          {user?.role === 'admin' && (
-                            <td className="py-3 px-3.5 text-right whitespace-nowrap align-middle">
-                              <div className="flex items-center justify-end gap-1.5 shrink-0">
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenSalaryConfig({ _id: hp.staffId, name: hp.staffName, role: hp.staffRole })}
-                                  className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-8 px-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/15 text-slate-700 dark:text-slate-200 font-extrabold text-xs border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer"
-                                  title="Cấu hình mức lương & phụ cấp"
-                                >
-                                  <DashboardIcon name="tune" className="text-sm text-slate-500 dark:text-slate-400" />
-                                  <span>Cấu hình</span>
-                                </button>
+                            <td className="py-3 pr-4 pl-2 text-right whitespace-nowrap align-middle">
+                              <div className="flex items-center justify-end gap-2 shrink-0">
                                 {hp.unpaidSalary > 0 ? (
                                   <button
                                     type="button"
@@ -7363,18 +7322,27 @@ export default function DashboardPage() {
                                         attendanceIds: hp.unpaidAttendanceIds,
                                       })
                                     }
-                                    className="whitespace-nowrap inline-flex items-center justify-center gap-1.5 h-8 px-3.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
+                                    className="h-[38px] px-4 rounded-full bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap"
                                     title="Thực hiện chi trả lương theo giờ"
                                   >
-                                    <DashboardIcon name="payments" className="text-sm" />
+                                    <DashboardIcon name="payments" className="text-base" />
                                     <span>Chi trả</span>
                                   </button>
                                 ) : (
-                                  <span className="whitespace-nowrap inline-flex items-center gap-1.5 h-8 px-3 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 shrink-0">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                  <span className="inline-flex items-center gap-1.5 h-[38px] px-3.5 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-full border border-emerald-500/20 shrink-0 whitespace-nowrap">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                                     <span>Đã trả hết</span>
                                   </span>
                                 )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenSalaryConfig({ _id: hp.staffId, name: hp.staffName, role: hp.staffRole })}
+                                  className="h-[38px] px-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/15 text-slate-700 dark:text-slate-200 font-extrabold text-xs rounded-full border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap"
+                                  title="Cấu hình mức lương & phụ cấp"
+                                >
+                                  <DashboardIcon name="tune" className="text-base text-slate-500 dark:text-slate-400" />
+                                  <span>Cấu hình</span>
+                                </button>
                               </div>
                             </td>
                           )}
@@ -7566,30 +7534,28 @@ export default function DashboardPage() {
           </div>
 
           {/* Desktop Table View (>= sm: 640px) */}
-          <div className="hidden sm:block bg-white dark:bg-[#131929] border border-slate-200/80 dark:border-[#1e293b] rounded-2xl overflow-hidden shadow-xs">
-            <div className="relative overflow-x-auto scrollbar-thin">
-              <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[880px] border-collapse">
-                <thead className="bg-slate-50/95 dark:bg-[#0d1525]/95 border-b border-slate-200/80 dark:border-[#1e293b] text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-wider font-bold select-none">
+          <div className="hidden sm:block bg-white dark:bg-[#0B101B] border border-slate-200/80 dark:border-white/[0.08] rounded-2xl overflow-hidden shadow-xs">
+            <div className="overflow-x-auto scrollbar-thin">
+              <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 border-collapse">
+                <thead className="bg-slate-50/90 dark:bg-white/[0.03] border-b border-slate-200/80 dark:border-white/[0.08] text-slate-400 dark:text-slate-400 uppercase text-[10px] tracking-wider font-extrabold select-none">
                   <tr>
-                    <th className="py-3 px-3 whitespace-nowrap min-w-[85px]">Ngày</th>
-                    <th className="py-3 px-3 whitespace-nowrap min-w-[135px]">Nhân viên</th>
-                    <th className="py-3 px-2.5 whitespace-nowrap min-w-[80px] text-center">Vai trò</th>
-                    <th className="py-3 px-2.5 whitespace-nowrap min-w-[75px] text-center">Ca làm</th>
-                    <th className="py-3 px-3 whitespace-nowrap min-w-[110px]">Giờ Vào / Ra</th>
-                    <th className="py-3 px-2 whitespace-nowrap text-center min-w-[65px]">Tổng giờ</th>
-                    {user?.role === 'admin' && <th className="py-3 px-2.5 whitespace-nowrap min-w-[95px] text-center">Mức lương/giờ</th>}
-                    {user?.role === 'admin' && <th className="py-3 px-3 whitespace-nowrap min-w-[95px] text-right">Lương tính</th>}
+                    <th className="py-3 px-3 whitespace-nowrap w-[95px]">Ngày</th>
+                    <th className="py-3 px-3 whitespace-nowrap">Nhân viên</th>
+                    <th className="py-3 px-3 whitespace-nowrap w-[145px]">Ca & Thời gian</th>
                     {user?.role === 'admin' && (
-                      <th className="py-3 px-3.5 whitespace-nowrap text-right min-w-[160px]">
-                        Hành động
+                      <th className="py-3 px-3 whitespace-nowrap text-right w-[125px]">Tiền công</th>
+                    )}
+                    {user?.role === 'admin' && (
+                      <th className="py-3 pr-4 pl-2 whitespace-nowrap text-right w-[300px]">
+                        Thao tác
                       </th>
                     )}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-[#1e293b]/60">
+                <tbody className="divide-y divide-slate-100 dark:divide-white/[0.04]">
                   {attendances.length === 0 ? (
                     <tr>
-                      <td colSpan={user?.role === 'admin' ? 9 : 6} className="py-10 text-center text-slate-400 font-medium">
+                      <td colSpan={user?.role === 'admin' ? 5 : 3} className="py-12 text-center text-slate-400 dark:text-slate-500 font-medium">
                         Chưa có dữ liệu điểm danh ca làm
                       </td>
                     </tr>
@@ -7597,7 +7563,6 @@ export default function DashboardPage() {
                     attendances.map((att) => {
                       const staffId = att.userId?._id || att.userId;
                       const staffName = att.userId?.name || 'Nhân viên';
-                      const staffEmail = att.userId?.email || '';
                       const staffRole = att.userId?.role || 'staff';
                       const checkInTime = att.checkIn ? new Date(att.checkIn) : null;
                       const checkOutTime = att.checkOut ? new Date(att.checkOut) : null;
@@ -7630,131 +7595,102 @@ export default function DashboardPage() {
                       const initials = staffName.split(' ').filter(Boolean).slice(-2).map((n: string) => n[0]).join('').toUpperCase() || 'NV';
 
                       return (
-                        <tr key={att._id} className="group hover:bg-slate-50/70 dark:hover:bg-[#182035]/50 transition-colors">
-                          {/* Date */}
-                          <td className="py-3 px-3 font-mono font-medium text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                            {formattedDate}
+                        <tr key={att._id} className="group hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition-colors">
+                          {/* 1. Date */}
+                          <td className="py-3 px-3 whitespace-nowrap align-middle">
+                            <div className="font-extrabold text-xs text-slate-900 dark:text-white font-mono">
+                              {formattedDate}
+                            </div>
                           </td>
 
-                          {/* Staff Name & Avatar */}
-                          <td className="py-3 px-3 whitespace-nowrap">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500/15 to-blue-600/20 text-[#0284c7] dark:text-[#38BDF8] border border-[#0284c7]/25 flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">
+                          {/* 2. Staff Profile & Role */}
+                          <td className="py-3 px-3 whitespace-nowrap align-middle">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-xl bg-sky-500/10 dark:bg-sky-500/15 text-[#0284c7] dark:text-[#38BDF8] border border-sky-500/20 flex items-center justify-center font-extrabold text-xs shrink-0 shadow-2xs">
                                 {initials}
                               </div>
                               <div className="min-w-0">
-                                <div className="font-extrabold text-slate-900 dark:text-white text-xs truncate max-w-[125px] flex items-center gap-1.5">
+                                <div className="font-bold text-slate-900 dark:text-white text-xs truncate max-w-[130px] flex items-center gap-1.5">
                                   <span>{staffName}</span>
                                   {isActive && (
-                                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse" title="Đang làm ca" />
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 animate-pulse" title="Đang làm ca" />
                                   )}
                                 </div>
-                                {staffEmail && <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate max-w-[125px]">{staffEmail}</div>}
+                                <div className="mt-0.5">
+                                  <span className={`inline-flex items-center px-1.5 py-0.2 rounded text-[9.5px] font-bold border ${staffRole === 'admin' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' :
+                                    staffRole === 'barista' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20' :
+                                      staffRole === 'waiter' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' :
+                                        'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 border-slate-200/80 dark:border-white/10'
+                                    }`}>
+                                    {staffRole === 'admin' ? 'Quản trị' : staffRole === 'barista' ? 'Pha chế' : staffRole === 'waiter' ? 'Phục vụ' : 'Nhân viên'}
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           </td>
 
-                          {/* Role */}
-                          <td className="py-3 px-2.5 text-center whitespace-nowrap">
-                            <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${staffRole === 'admin' ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' :
-                              staffRole === 'barista' ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300' :
-                                staffRole === 'waiter' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' :
-                                  'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                          {/* 3. Shift & Hours Worked */}
+                          <td className="py-3 px-3 whitespace-nowrap align-middle">
+                            <div className="flex items-center gap-1.5">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                att.shift === 'morning' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20' :
+                                att.shift === 'afternoon' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' :
+                                'bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20'
                               }`}>
-                              {staffRole === 'admin' ? 'Quản trị' : staffRole === 'barista' ? 'Pha chế' : staffRole === 'waiter' ? 'Phục vụ' : 'Nhân viên'}
-                            </span>
-                          </td>
-
-                          {/* Shift */}
-                          <td className="py-3 px-2.5 text-center whitespace-nowrap">
-                            {(() => {
-                              const s = att.shift || 'morning';
-                              if (s === 'morning') {
-                                return (
-                                  <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
-                                    Ca Sáng
-                                  </span>
-                                );
-                              }
-                              if (s === 'afternoon') {
-                                return (
-                                  <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
-                                    Ca Chiều
-                                  </span>
-                                );
-                              }
-                              return (
-                                <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300">
-                                  Ca Tối
-                                </span>
-                              );
-                            })()}
-                          </td>
-
-                          {/* Giờ Vào / Ra (Combined Check-in & Check-out) */}
-                          <td className="py-3 px-3 font-mono font-medium text-xs whitespace-nowrap">
-                            <div className="flex items-center gap-1.5 font-bold">
+                                {shiftLabel}
+                              </span>
+                              <span className="inline-block px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-white/[0.05] text-slate-800 dark:text-slate-200 font-extrabold text-[11px] font-mono">
+                                {hoursWorked}h
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1 text-[11px] font-semibold mt-1 font-mono">
                               <span className="text-emerald-600 dark:text-emerald-400">
                                 {checkInTime ? checkInTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
                               </span>
                               <span className="text-slate-300 dark:text-slate-600 font-normal">→</span>
-                              <span className={checkOutTime ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 italic'}>
+                              <span className={checkOutTime ? 'text-slate-700 dark:text-slate-300' : 'text-amber-500 dark:text-amber-400 italic'}>
                                 {checkOutTime ? checkOutTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'Đang làm'}
                               </span>
                             </div>
                           </td>
 
-                          {/* Total Hours */}
-                          <td className="py-3 px-2 text-center font-mono font-bold text-xs text-slate-800 dark:text-slate-200 whitespace-nowrap">
-                            {hoursWorked}h
-                          </td>
-
-                          {/* Rate/Hour Input */}
+                          {/* 4. Calculated Salary & Rate Input */}
                           {user?.role === 'admin' && (
-                            <td className="py-3 px-2.5 whitespace-nowrap text-center">
-                              <div className="inline-flex items-center gap-1 bg-slate-50 dark:bg-[#090D16] border border-slate-200 dark:border-[#1e293b] rounded-xl px-2 py-0.5 shadow-2xs">
-                                <input
-                                  type="number"
-                                  step="1000"
-                                  value={hourlyRate}
-                                  onChange={(e) => {
-                                    const val = Number(e.target.value);
-                                    setStaffHourlyRates((prev) => ({ ...prev, [staffId]: val }));
-                                  }}
-                                  onBlur={(e) => handleUpdateHourlyRate(staffId, Number(e.target.value))}
-                                  className="w-14 bg-transparent text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none text-right"
-                                />
-                                <span className="text-[9.5px] font-medium text-slate-400">đ/h</span>
+                            <td className="py-3 px-3 whitespace-nowrap text-right align-middle">
+                              <div className="font-extrabold text-sm text-[#0284c7] dark:text-[#38BDF8]">
+                                {formatPrice(totalSalary)}
+                              </div>
+                              <div className="flex items-center justify-end mt-1">
+                                <div className="inline-flex items-center bg-slate-100/90 hover:bg-slate-200/80 dark:bg-white/[0.06] dark:hover:bg-white/[0.09] border border-slate-200/80 dark:border-white/10 rounded-lg px-2 py-0.5 focus-within:border-[#0284c7] dark:focus-within:border-[#38BDF8] focus-within:ring-1 focus-within:ring-[#0284c7]/30 transition-all shadow-2xs">
+                                  <input
+                                    type="number"
+                                    step="1000"
+                                    value={hourlyRate}
+                                    onChange={(e) => {
+                                      const val = Number(e.target.value);
+                                      setStaffHourlyRates((prev) => ({ ...prev, [staffId]: val }));
+                                    }}
+                                    onBlur={(e) => handleUpdateHourlyRate(staffId, Number(e.target.value))}
+                                    className="w-[50px] bg-transparent text-[11px] font-mono font-bold text-slate-800 dark:text-slate-200 text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:outline-none"
+                                  />
+                                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-1 select-none">đ/h</span>
+                                </div>
                               </div>
                             </td>
                           )}
 
-                          {/* Calculated Salary */}
+                          {/* 5. Action Buttons (Clean & Proportional) */}
                           {user?.role === 'admin' && (
-                            <td className="py-3 px-3 font-mono font-extrabold text-xs text-[#0284c7] dark:text-[#38BDF8] whitespace-nowrap text-right">
-                              {formatPrice(totalSalary)}
-                            </td>
-                          )}
-
-                          {/* Action Buttons */}
-                          {user?.role === 'admin' && (
-                            <td className="py-3 px-3.5 text-right whitespace-nowrap align-middle">
-                              <div className="flex items-center justify-end gap-1.5 shrink-0">
-                                <button
-                                  onClick={() => handleOpenSalaryConfig({ _id: staffId, name: staffName, role: staffRole })}
-                                  className="h-8 px-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/15 text-slate-700 dark:text-slate-200 text-xs font-extrabold rounded-xl border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 shadow-2xs active:scale-95 transition-all cursor-pointer inline-flex items-center gap-1"
-                                  title="Cấu hình mức lương & phụ cấp"
-                                >
-                                  <DashboardIcon name="tune" className="text-xs text-slate-500 dark:text-slate-400" />
-                                  <span>Cấu hình</span>
-                                </button>
+                            <td className="py-3 pr-4 pl-2 text-right whitespace-nowrap align-middle">
+                              <div className="flex items-center justify-end gap-2 shrink-0">
                                 {att.isPaid ? (
-                                  <span className="inline-flex items-center gap-1.5 h-8 px-2.5 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/20 shrink-0">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                  <span className="inline-flex items-center gap-1.5 h-[38px] px-3.5 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-full border border-emerald-500/20 shrink-0 whitespace-nowrap">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                                     <span>Đã trả</span>
                                   </span>
                                 ) : (
                                   <button
+                                    type="button"
                                     onClick={() =>
                                       handleOpenDisbursement({
                                         staffId,
@@ -7769,14 +7705,24 @@ export default function DashboardPage() {
                                         attendanceIds: [att._id],
                                       })
                                     }
-                                    className="h-8 px-3 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs rounded-xl shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer inline-flex items-center gap-1"
+                                    className="h-[38px] px-4 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs rounded-full shadow-xs shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 hover:shadow-sm active:scale-95 transition-all cursor-pointer inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap"
                                     title="Thực hiện chi trả ca làm"
                                   >
-                                    <DashboardIcon name="payments" className="text-xs" />
-                                    <span>Chi trả Ca</span>
+                                    <DashboardIcon name="payments" className="text-base" />
+                                    <span>Chi trả</span>
                                   </button>
                                 )}
                                 <button
+                                  type="button"
+                                  onClick={() => handleOpenSalaryConfig({ _id: staffId, name: staffName, role: staffRole })}
+                                  className="h-[38px] px-3.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.08] dark:hover:bg-white/[0.14] text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 shadow-2xs active:scale-95 transition-all cursor-pointer inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap"
+                                  title="Cấu hình mức lương & phụ cấp"
+                                >
+                                  <DashboardIcon name="tune" className="text-base text-slate-500 dark:text-slate-400" />
+                                  <span>Cấu hình</span>
+                                </button>
+                                <button
+                                  type="button"
                                   onClick={() => {
                                     setEditingAttendance(att);
                                     setAttendanceForm({
@@ -7786,17 +7732,18 @@ export default function DashboardPage() {
                                     });
                                     setIsAttendanceModalOpen(true);
                                   }}
-                                  className="w-8 h-8 rounded-xl bg-white dark:bg-[#131929] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs active:scale-95 transition-all cursor-pointer inline-flex items-center justify-center shrink-0"
+                                  className="w-[38px] h-[38px] rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.08] dark:hover:bg-white/[0.14] text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs active:scale-95 transition-all cursor-pointer inline-flex items-center justify-center shrink-0"
                                   title="Chỉnh sửa giờ điểm danh"
                                 >
-                                  <DashboardIcon name="edit" className="text-xs text-slate-400" />
+                                  <DashboardIcon name="edit" className="text-base text-slate-400" />
                                 </button>
                                 <button
+                                  type="button"
                                   onClick={() => setAttendanceToDelete(att._id)}
-                                  className="w-8 h-8 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-600 dark:text-rose-400 hover:text-white border border-rose-500/20 hover:border-rose-500 active:scale-95 transition-all cursor-pointer inline-flex items-center justify-center shrink-0"
+                                  className="w-[38px] h-[38px] rounded-full bg-rose-500/10 hover:bg-rose-500 text-rose-600 dark:text-rose-400 hover:text-white border border-rose-500/20 hover:border-rose-500 active:scale-95 transition-all cursor-pointer inline-flex items-center justify-center shrink-0"
                                   title="Xóa bản ghi điểm danh"
                                 >
-                                  <DashboardIcon name="delete" className="text-xs" />
+                                  <DashboardIcon name="delete" className="text-base" />
                                 </button>
                               </div>
                             </td>
