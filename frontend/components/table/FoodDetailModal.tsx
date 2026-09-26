@@ -186,15 +186,15 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 40, scale: 0.98 }}
               transition={{ type: 'spring', damping: 25, stiffness: 280 }}
-              className="relative w-full max-w-3xl xl:max-w-[820px] bg-white dark:bg-[#0F172A] border-t md:border border-slate-200 dark:border-white/10 rounded-t-[28px] md:rounded-3xl shadow-2xl z-10 overflow-hidden flex flex-col md:flex-row max-h-[85dvh] sm:max-h-[88dvh] md:max-h-[85vh]"
+              className="relative w-full max-w-3xl xl:max-w-[820px] bg-white dark:bg-[#0d1322] border-t md:border border-slate-200/80 dark:border-white/10 rounded-t-[32px] md:rounded-3xl shadow-2xl z-10 overflow-hidden flex flex-col md:flex-row max-h-[88dvh] md:max-h-[85vh]"
             >
               {/* Mobile Drag Indicator Handle */}
-              <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mt-2.5 mb-1 md:hidden shrink-0 opacity-70" aria-hidden="true" />
+              <div className="w-12 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto my-2.5 md:hidden shrink-0 opacity-70" aria-hidden="true" />
 
               {/* Left Image Section - Compact Floating Hero with Full Uncropped Image */}
               <div
                 onClick={() => setIsLightboxOpen(true)}
-                className="w-full md:w-[42%] h-44 sm:h-60 md:h-auto md:min-h-[440px] bg-slate-900/90 relative flex-shrink-0 cursor-pointer group flex items-center justify-center overflow-hidden"
+                className="w-full md:w-[42%] h-48 sm:h-60 md:h-auto md:min-h-[440px] bg-slate-900/90 relative flex-shrink-0 cursor-pointer group flex items-center justify-center overflow-hidden"
               >
                 {/* Layer 1: Blurred Atmosphere Background */}
                 <Image
@@ -220,7 +220,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
 
                 {/* Top Left Category Badge */}
                 <div className="absolute top-3 left-3 z-20">
-                  <span className="inline-flex items-center gap-1.5 bg-slate-950/80 text-amber-300 border border-amber-500/40 text-[10px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full shadow-md backdrop-blur-md">
+                  <span className="inline-flex items-center gap-1.5 bg-slate-950/80 text-amber-300 border border-amber-500/40 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-md backdrop-blur-md">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0 shadow-[0_0_6px_#f59e0b]" aria-hidden="true" />
                     {translateCategory ? translateCategory(selectedFood.category) : selectedFood.category}
                   </span>
@@ -234,11 +234,11 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                     setSelectedFood(null);
                     setIsModalAiOpen(false);
                   }}
-                  className="absolute top-3 right-3 z-30 w-9 h-9 rounded-full bg-slate-950/70 hover:bg-slate-950 text-white flex items-center justify-center backdrop-blur-md transition-all active:scale-90 border border-white/20 shadow-lg md:hidden cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-500"
+                  className="absolute top-3 right-3 z-30 w-8 h-8 rounded-full bg-slate-950/70 hover:bg-slate-950 text-white flex items-center justify-center backdrop-blur-md transition-all active:scale-90 border border-white/20 shadow-lg md:hidden cursor-pointer"
                   title={lang === 'en' ? 'Close' : lang === 'zh' ? '关闭' : 'Đóng'}
                   aria-label={lang === 'en' ? 'Close food details' : lang === 'zh' ? '关闭详情' : 'Đóng chi tiết món'}
                 >
-                  <AppIcon name="close" className="text-lg" aria-hidden="true" />
+                  <AppIcon name="close" className="text-base" aria-hidden="true" />
                 </button>
 
                 {/* Zoom Pill Button */}
@@ -511,51 +511,56 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                 </div>
 
                 {/* Sticky Bottom Action Bar */}
-                <div className="p-3.5 sm:p-4 border-t border-slate-200/80 dark:border-white/10 bg-white/95 dark:bg-[#090D16]/95 backdrop-blur-md flex items-center justify-between gap-3 sticky bottom-0 z-20 font-sans">
-                  {/* Quantity Stepper */}
-                  <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-2xl p-1 shadow-2xs">
+                <div className="p-3.5 sm:p-4 border-t border-slate-200/80 dark:border-white/10 bg-white/95 dark:bg-[#0d1322]/95 backdrop-blur-md flex flex-col gap-2 sticky bottom-0 z-20 font-sans pb-[max(0.85rem,env(safe-area-inset-bottom))]">
+                  <div className="flex items-center justify-between gap-3">
+                    {/* Quantity Stepper (Matching Image 2 Stepper) */}
+                    <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-white/10 rounded-full px-2.5 py-1 shadow-2xs">
+                      <button
+                        type="button"
+                        onClick={() => setModalQuantity((q) => Math.max(1, q - 1))}
+                        aria-label={lang === 'en' ? 'Decrease quantity' : 'Giảm số lượng'}
+                        className="w-7 h-7 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors active:scale-90 cursor-pointer font-bold text-sm"
+                        title={lang === 'en' ? 'Decrease' : lang === 'zh' ? '减少' : 'Giảm số lượng'}
+                      >
+                        −
+                      </button>
+                      <span
+                        className="text-sm font-bold text-slate-900 dark:text-white min-w-5 text-center select-none font-mono"
+                        role="status"
+                        aria-live="polite"
+                        aria-label={`${lang === 'en' ? 'Quantity' : 'Số lượng'}: ${modalQuantity}`}
+                      >
+                        {modalQuantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setModalQuantity((q) => q + 1)}
+                        aria-label={lang === 'en' ? 'Increase quantity' : 'Tăng số lượng'}
+                        className="w-7 h-7 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors active:scale-90 cursor-pointer font-bold text-sm"
+                        title={lang === 'en' ? 'Increase' : lang === 'zh' ? '增加' : 'Tăng số lượng'}
+                      >
+                        +
+                      </button>
+                    </div>
+
+                    {/* Add To Cart Primary Button (Image 2 style) */}
                     <button
                       type="button"
-                      onClick={() => setModalQuantity((q) => Math.max(1, q - 1))}
-                      aria-label={lang === 'en' ? 'Decrease quantity' : 'Giảm số lượng'}
-                      className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors active:scale-90 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
-                      title={lang === 'en' ? 'Decrease' : lang === 'zh' ? '减少' : 'Giảm số lượng'}
+                      onClick={handleAddFromModal}
+                      aria-label={`${lang === 'en' ? 'Add to cart' : 'Thêm vào giỏ hàng'}: ${selectedFood.name}, ${modalQuantity} ${lang === 'en' ? 'item' : 'món'}, ${formatPrice(currentTotalPrice, lang)}`}
+                      className="flex-1 min-h-[46px] h-12 py-3 px-4 sm:px-5 rounded-2xl bg-[#38BDF8] hover:bg-sky-400 text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-md active:scale-[0.99] transition-all flex items-center justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
                     >
-                      <AppIcon name="remove" className="text-base" aria-hidden="true" />
-                    </button>
-                    <span
-                      className="text-base font-extrabold text-slate-900 dark:text-white w-7 text-center select-none font-mono"
-                      role="status"
-                      aria-live="polite"
-                      aria-label={`${lang === 'en' ? 'Quantity' : 'Số lượng'}: ${modalQuantity}`}
-                    >
-                      {modalQuantity}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setModalQuantity((q) => q + 1)}
-                      aria-label={lang === 'en' ? 'Increase quantity' : 'Tăng số lượng'}
-                      className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors active:scale-90 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]"
-                      title={lang === 'en' ? 'Increase' : lang === 'zh' ? '增加' : 'Tăng số lượng'}
-                    >
-                      <AppIcon name="add" className="text-base" aria-hidden="true" />
+                      <span className="truncate mr-2 font-sans font-black text-white">
+                        {lang === 'en' ? 'ADD TO CART' : lang === 'zh' ? '加入购物车' : 'THÊM VÀO GIỎ'}
+                      </span>
+                      <span className="font-bold bg-white/20 text-white px-2.5 py-0.5 rounded-xl text-xs sm:text-sm whitespace-nowrap font-mono">
+                        {formatPrice(currentTotalPrice, lang)}
+                      </span>
                     </button>
                   </div>
 
-                  {/* Add To Cart Primary Button */}
-                  <button
-                    type="button"
-                    onClick={handleAddFromModal}
-                    aria-label={`${lang === 'en' ? 'Add to cart' : 'Thêm vào giỏ hàng'}: ${selectedFood.name}, ${modalQuantity} ${lang === 'en' ? 'item' : 'món'}, ${formatPrice(currentTotalPrice, lang)}`}
-                    className="flex-1 min-h-[50px] py-3.5 px-4 sm:px-5 rounded-2xl bg-sky-500 hover:bg-sky-400 text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-sky-500/25 active:scale-[0.98] transition-all flex items-center justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
-                  >
-                    <span className="truncate mr-2 font-sans font-black text-white">
-                      {lang === 'en' ? 'ADD TO CART' : lang === 'zh' ? '加入购物车' : 'THÊM VÀO GIỎ'}
-                    </span>
-                    <span className="font-black bg-white/20 text-white px-3 py-1 rounded-xl text-xs sm:text-sm whitespace-nowrap font-mono">
-                      {formatPrice(currentTotalPrice, lang)}
-                    </span>
-                  </button>
+                  {/* iOS Home Indicator */}
+                  <div className="w-12 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto md:hidden opacity-60" aria-hidden="true" />
                 </div>
               </div>
             </motion.div>

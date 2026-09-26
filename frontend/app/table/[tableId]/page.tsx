@@ -2029,6 +2029,7 @@ export default function TableMenuPage() {
           setNameInput(customerName);
           setIsNamePromptOpen(true);
         }}
+        onOpenAiChat={() => setIsAiChatOpen(true)}
       />
 
       <div className={`fixed inset-0 md:static md:h-screen w-full max-w-full overflow-hidden flex flex-col md:flex-row bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-white font-sans antialiased selection:bg-[#3B82F6] selection:text-white transition-colors duration-200 ${
