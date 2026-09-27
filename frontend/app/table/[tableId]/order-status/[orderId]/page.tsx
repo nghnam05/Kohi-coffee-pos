@@ -258,12 +258,17 @@ export default function OrderStatusPage() {
       }
       toast(
         lang === 'en'
-          ? 'Order cancelled successfully!'
-          : 'Đã hủy đơn hàng thành công!',
+          ? 'Order cancelled. Returning to menu...'
+          : 'Đã hủy đơn hàng thành công. Đang quay về thực đơn...',
         { icon: null }
       );
       setIsCancelConfirmOpen(false);
       setOrder((prev) => (prev ? { ...prev, status: 'cancelled' } : null));
+
+      // 🚀 Tự động quay về menu bàn để khách chọn lại món
+      setTimeout(() => {
+        router.push(`/table/${tableId}`);
+      }, 500);
     } catch (e) {
       toast(e instanceof Error ? e.message : 'Lỗi khi hủy đơn hàng.', { icon: null });
     } finally {
@@ -1269,7 +1274,23 @@ export default function OrderStatusPage() {
 
                       {/* Desktop In-Card Payment Trigger Buttons (Hidden on mobile to avoid duplication with sticky footer) */}
                       <div className="hidden sm:block space-y-2.5 pt-1">
-                        {order.status === 'pending' ? (
+                        {order.status === 'cancelled' ? (
+                          <div className="space-y-3">
+                            <InlineAlert
+                              severity="info"
+                              title="Đơn hàng đã được hủy"
+                            >
+                              Đơn hàng đã được hủy. Quý khách vui lòng bấm nút bên dưới để quay lại thực đơn chọn món mới.
+                            </InlineAlert>
+                            <button
+                              onClick={() => router.push(`/table/${tableId}`)}
+                              className="w-full min-h-[46px] py-3 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs uppercase tracking-wider rounded-2xl shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                            >
+                              <AppIcon name="restaurant_menu" className="text-base" />
+                              <span>Quay về thực đơn</span>
+                            </button>
+                          </div>
+                        ) : order.status === 'pending' ? (
                           <div className="space-y-3">
                             <InlineAlert
                               severity="warning"
@@ -1407,7 +1428,15 @@ export default function OrderStatusPage() {
 
           {/* Right: Payment Actions */}
           <div className="flex items-center gap-1.5 flex-1 justify-end min-w-0">
-            {order.status === 'pending' ? (
+            {order.status === 'cancelled' ? (
+              <button
+                onClick={() => router.push(`/table/${tableId}`)}
+                className="w-full min-h-[44px] h-11 px-4 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs uppercase tracking-wider rounded-2xl shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+              >
+                <AppIcon name="restaurant_menu" className="text-base" />
+                <span>Quay về thực đơn</span>
+              </button>
+            ) : order.status === 'pending' ? (
               <div className="flex items-center gap-1.5 flex-1 justify-end">
                 <div className="h-10 px-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-extrabold flex items-center justify-center text-center flex-1 max-w-[140px] truncate">
                   <span>Chờ duyệt...</span>

@@ -302,23 +302,8 @@ export class OrdersService implements OnModuleInit {
       }
     }
 
-    if (updateOrderStatusDto.status === 'cancelled' && updatedOrder.tableId) {
-      const tableIdStr = (updatedOrder.tableId as any)?._id
-        ? (updatedOrder.tableId as any)._id.toString()
-        : updatedOrder.tableId.toString();
-      if (tableIdStr) {
-        const remainingActive = await this.orderModel.countDocuments({
-          tableId: (updatedOrder.tableId as any)?._id || updatedOrder.tableId,
-          _id: { $ne: updatedOrder._id },
-          status: { $in: ['pending', 'confirmed', 'cooking', 'ready', 'completed'] },
-        });
-        if (remainingActive === 0) {
-          await this.tablesService.update(tableIdStr, { status: 'empty' }).catch(() => {});
-          this.ordersGateway.emitTableUpdate(tableIdStr, 'empty');
-        }
-      }
-    }
-
+    // Lưu ý: Khi đơn hàng bị hủy (khách hủy hoặc nhân viên hủy), KHÔNG tự động giải phóng bàn về 'empty',
+    // vì khách vẫn đang ngồi tại bàn và có thể tiếp tục chọn món khác từ thực đơn.
     this.clearCache();
     return updatedOrder;
   }

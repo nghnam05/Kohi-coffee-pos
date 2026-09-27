@@ -72,7 +72,7 @@ const DICTIONARY = {
     staffRole: 'Nhân viên Barista',
     updateAccount: 'Cập nhật thông tin tài khoản',
     logout: 'Đăng xuất',
-    tabOrders: 'Đơn pha chế realtime',
+    tabOrders: 'Đơn pha chế',
     tabFoods: 'Quản lý Menu',
     tabTables: 'Quản lý bàn cà phê',
     tabUsers: 'Đội ngũ Barista & phục vụ',
@@ -190,7 +190,7 @@ const DICTIONARY = {
     staffRole: 'Staff',
     updateAccount: 'Update Account Information',
     logout: 'Log out',
-    tabOrders: ' Orders',
+    tabOrders: 'Orders',
     tabFoods: 'Menu Management',
     tabTables: 'Table Management',
     tabUsers: 'Staff Management',
@@ -2846,17 +2846,12 @@ export default function DashboardPage() {
       return;
     }
 
-    const cleanCustomerName = takeawayCustomerName.trim();
+    const cleanCustomerName = takeawayCustomerName.trim() || 'Khách mang về';
     const cleanCustomerPhone = takeawayCustomerPhone.trim();
     const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
 
-    if (!cleanCustomerName || cleanCustomerName.length < 2) {
-      showToast('Vui lòng nhập Họ và tên khách hàng mang về (tối thiểu 2 ký tự).', 'error');
-      return;
-    }
-
-    if (!cleanCustomerPhone || !phoneRegex.test(cleanCustomerPhone)) {
-      showToast('Vui lòng nhập Số điện thoại hợp lệ của khách hàng mang về (Ví dụ: 0987654321).', 'error');
+    if (cleanCustomerPhone && !phoneRegex.test(cleanCustomerPhone)) {
+      showToast('Số điện thoại không hợp lệ (Ví dụ: 0987654321).', 'error');
       return;
     }
 
@@ -4636,7 +4631,10 @@ export default function DashboardPage() {
                   {/* CTA: Create Takeaway (Phục vụ / Nhân viên quầy tạo đơn - Admin và Barista không được tạo) */}
                   {user?.role !== 'barista' && user?.role !== 'admin' && (
                     <button
+                      type="button"
+                      disabled={isStaffLocked}
                       onClick={() => {
+                        if (isStaffLocked) return;
                         setTakeawayCart([]);
                         setTakeawayCustomerName('');
                         setTakeawayCustomerPhone('');
@@ -4644,7 +4642,10 @@ export default function DashboardPage() {
                         setTakeawayCouponCode('');
                         setIsTakeawayModalOpen(true);
                       }}
-                      className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#3AA6FF] hover:bg-[#2593e8] text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-[#3AA6FF]/25 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+                      className={`w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#38BDF8] dark:hover:bg-[#0ea5e9] text-white dark:text-slate-950 font-black text-xs sm:text-sm rounded-2xl shadow-md shadow-[#0284c7]/25 dark:shadow-[#38BDF8]/20 transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer ${
+                        isStaffLocked ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed' : ''
+                      }`}
+                      title="Tạo đơn hàng mang về (POS)"
                     >
                       <DashboardIcon name="add" className="text-lg sm:text-xl" />
                       <span>Tạo đơn mang về</span>
@@ -11813,12 +11814,11 @@ className = {`fixed xl:static inset-y-0 right-0 z-40 w-[290px] 2xl:w-[330px] max
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
                   <label className="block text-[11px] font-extrabold text-slate-600 dark:text-slate-400 mb-1">
-                    Tên khách hàng <span className="text-rose-500">*</span>
+                    Tên khách hàng
                   </label>
                   <input
                     type="text"
-                    required
-                    placeholder="Tên khách nhận món..."
+                    placeholder="Tên khách (mặc định: Khách mang về)"
                     value={takeawayCustomerName}
                     onChange={(e) => setTakeawayCustomerName(e.target.value)}
                     className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-2xl px-3 py-2 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] font-normal"
@@ -11826,12 +11826,11 @@ className = {`fixed xl:static inset-y-0 right-0 z-40 w-[290px] 2xl:w-[330px] max
                 </div>
                 <div>
                   <label className="block text-[11px] font-extrabold text-slate-600 dark:text-slate-400 mb-1">
-                    Số điện thoại <span className="text-rose-500">*</span>
+                    Số điện thoại
                   </label>
                   <input
                     type="tel"
-                    required
-                    placeholder="Ví dụ: 0987654321..."
+                    placeholder="Ví dụ: 0987654321 (không bắt buộc)"
                     value={takeawayCustomerPhone}
                     onChange={(e) => setTakeawayCustomerPhone(e.target.value)}
                     className="w-full bg-[#F8FAFC] dark:bg-[#090D16] border border-slate-200 dark:border-white/10 rounded-2xl px-3 py-2 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#38BDF8] font-normal"
