@@ -182,6 +182,60 @@ const DICTIONARY = {
     paidSuccess: 'Đã thanh toán hoàn tất',
     viewInvoice: 'Xem hóa đơn chi tiết',
     orderCancelledText: 'Đơn đã bị hủy bỏ',
+
+    // Navigation & Layout
+    navOperations: 'Vận hành',
+    navStore: 'Quản trị cửa hàng',
+    navFinance: 'Tài chính & Tiếp thị',
+    tabReservations: 'Quản lý bàn đã đặt',
+    tabReservationsTitle: 'Quản lý Bàn đã đặt (Reservations)',
+    tabPayroll: 'Chấm công & Bảng lương',
+    tabPayrollStaff: 'Chấm công ca làm',
+    tabPayrollAdmin: 'Chấm công & Thanh toán Lương Nhân viên',
+    tabAnalytics: 'Thống kê doanh thu',
+    tabAnalyticsTitle: 'Thống kê Doanh thu Cửa Hàng',
+    tabCoupons: 'Mã giảm giá',
+    tabCouponsTitle: 'Quản lý Mã giảm giá (Coupons)',
+    baristaKds: 'Quầy pha chế (KDS)',
+
+    // Header Actions
+    btnRefresh: 'Làm mới',
+    btnNotifications: 'Thông báo',
+
+    // Orders Toolbar & States
+    filterActiveOrders: 'Đang xử lý',
+    filterUnpaidOrders: 'Đang chờ thanh toán',
+    filterPaidOrders: 'Tất cả (đã thanh toán)',
+    btnCreateTakeaway: 'Tạo đơn mang về',
+    noPaidOrders: 'Chưa có đơn hàng nào đã thanh toán',
+    noPaidOrdersDesc: 'Các đơn hàng đã hoàn tất thanh toán sẽ hiển thị tại đây.',
+
+    // User Profile & Badges
+    roleAdmin: 'Quản trị viên',
+    roleStaff: 'Nhân viên Phục vụ',
+    roleBarista: 'Nhân viên Pha chế',
+    editProfile: 'Sửa thông tin',
+    needCheckIn: 'Cần Check-in',
+    shiftSwapBadge: 'đổi ca',
+
+    // Right Activity Panel
+    panelActivity: 'Hoạt động',
+    panelBrewingQueue: 'Đơn hàng chờ pha chế',
+    panelCheckedIn: 'Nhân viên đã điểm danh',
+    panelNotCheckedIn: 'Nhân viên chưa điểm danh',
+    panelNoStaffCheckedInToday: 'Chưa có nhân viên nào điểm danh hôm nay',
+    panelAllStaffCheckedIn: 'Tất cả nhân viên đã điểm danh đầy đủ!',
+    panelWorking: 'Đang làm việc',
+    panelCheckedOut: 'Đã check-out',
+    panelOffShift: 'Chưa ca',
+    panelCheckInAt: 'Check-in lúc:',
+    panelCheckOutAt: 'Check-out:',
+    panelNoAttendanceToday: 'Chưa có dữ liệu điểm danh ca làm hôm nay',
+    panelNoActivity: 'Hiện chưa có hoạt động nào mới.',
+    panelAll: 'Tất cả',
+    panelTable: 'Bàn',
+    panelSupport: 'Hỗ trợ',
+    panelPayment: 'Thanh toán',
   },
   en: {
     hubTitle: 'KOHI HQ',
@@ -194,6 +248,7 @@ const DICTIONARY = {
     tabFoods: 'Menu Management',
     tabTables: 'Table Management',
     tabUsers: 'Staff Management',
+    tabInventory: 'Inventory Management',
     addFood: 'Add New Food',
     addTable: 'Add New Table',
     addUser: 'Add New Staff',
@@ -299,6 +354,60 @@ const DICTIONARY = {
     paidSuccess: 'Paid successfully',
     viewInvoice: 'View detailed invoice',
     orderCancelledText: 'Order has been cancelled',
+
+    // Navigation & Layout
+    navOperations: 'Operations',
+    navStore: 'Store Management',
+    navFinance: 'Finance & Marketing',
+    tabReservations: 'Reservations',
+    tabReservationsTitle: 'Reservations Management',
+    tabPayroll: 'Attendance & Payroll',
+    tabPayrollStaff: 'Shift Attendance',
+    tabPayrollAdmin: 'Staff Attendance & Payroll',
+    tabAnalytics: 'Revenue Analytics',
+    tabAnalyticsTitle: 'Store Revenue Analytics',
+    tabCoupons: 'Coupons',
+    tabCouponsTitle: 'Coupon Management',
+    baristaKds: 'Barista KDS',
+
+    // Header Actions
+    btnRefresh: 'Refresh',
+    btnNotifications: 'Notifications',
+
+    // Orders Toolbar & States
+    filterActiveOrders: 'Processing',
+    filterUnpaidOrders: 'Awaiting Payment',
+    filterPaidOrders: 'All (Paid)',
+    btnCreateTakeaway: 'New Takeaway',
+    noPaidOrders: 'No paid orders yet',
+    noPaidOrdersDesc: 'Completed and paid orders will appear here.',
+
+    // User Profile & Badges
+    roleAdmin: 'Administrator',
+    roleStaff: 'Service Staff',
+    roleBarista: 'Barista',
+    editProfile: 'Edit Profile',
+    needCheckIn: 'Need Check-in',
+    shiftSwapBadge: 'swaps',
+
+    // Right Activity Panel
+    panelActivity: 'Activity',
+    panelBrewingQueue: 'Brewing Queue',
+    panelCheckedIn: 'Checked-in Staff',
+    panelNotCheckedIn: 'Not Checked-in Staff',
+    panelNoStaffCheckedInToday: 'No staff checked in today',
+    panelAllStaffCheckedIn: 'All staff have checked in!',
+    panelWorking: 'Working',
+    panelCheckedOut: 'Checked out',
+    panelOffShift: 'Off Shift',
+    panelCheckInAt: 'Check-in at:',
+    panelCheckOutAt: 'Check-out:',
+    panelNoAttendanceToday: 'No attendance record for today',
+    panelNoActivity: 'No new activity yet.',
+    panelAll: 'All',
+    panelTable: 'Table',
+    panelSupport: 'Support',
+    panelPayment: 'Payment',
   },
   zh: {
     hubTitle: 'KOHI HQ',
@@ -311,6 +420,7 @@ const DICTIONARY = {
     tabFoods: '菜单管理',
     tabTables: '餐桌管理',
     tabUsers: '员工管理',
+    tabInventory: '库存管理',
     addFood: '添加新菜品',
     addTable: '添加新餐桌',
     addUser: '添加新员工',
@@ -416,6 +526,60 @@ const DICTIONARY = {
     paidSuccess: '已结账完成',
     viewInvoice: '查看账单详情',
     orderCancelledText: '订单已取消',
+
+    // Navigation & Layout
+    navOperations: '运营管理',
+    navStore: '门店管理',
+    navFinance: '财务与营销',
+    tabReservations: '预订管理',
+    tabReservationsTitle: '预订管理 (Reservations)',
+    tabPayroll: '考勤与薪资',
+    tabPayrollStaff: '班次打卡',
+    tabPayrollAdmin: '员工考勤与薪资结算',
+    tabAnalytics: '营业额统计',
+    tabAnalyticsTitle: '门店营业额统计',
+    tabCoupons: '优惠券管理',
+    tabCouponsTitle: '优惠券管理 (Coupons)',
+    baristaKds: '吧台制作 (KDS)',
+
+    // Header Actions
+    btnRefresh: '刷新',
+    btnNotifications: '通知',
+
+    // Orders Toolbar & States
+    filterActiveOrders: '处理中',
+    filterUnpaidOrders: '待结账',
+    filterPaidOrders: '全部 (已结账)',
+    btnCreateTakeaway: '创建外带订单',
+    noPaidOrders: '暂无已结账订单',
+    noPaidOrdersDesc: '已完成结账的订单将在此处显示。',
+
+    // User Profile & Badges
+    roleAdmin: '管理员',
+    roleStaff: '服务员',
+    roleBarista: '调饮师',
+    editProfile: '修改信息',
+    needCheckIn: '需要签到',
+    shiftSwapBadge: '换班',
+
+    // Right Activity Panel
+    panelActivity: '动态',
+    panelBrewingQueue: '待制作订单',
+    panelCheckedIn: '已签到员工',
+    panelNotCheckedIn: '未签到员工',
+    panelNoStaffCheckedInToday: '今日尚无员工打卡',
+    panelAllStaffCheckedIn: '所有员工均已打卡签到！',
+    panelWorking: '工作中',
+    panelCheckedOut: '已签退',
+    panelOffShift: '未到班',
+    panelCheckInAt: '签到时间:',
+    panelCheckOutAt: '签退时间:',
+    panelNoAttendanceToday: '今日尚无打卡签到记录',
+    panelNoActivity: '暂无最新动态。',
+    panelAll: '全部',
+    panelTable: '餐桌',
+    panelSupport: '呼叫支持',
+    panelPayment: '结账提醒',
   }
 };
 
@@ -3887,7 +4051,7 @@ export default function DashboardPage() {
                   <div className="px-3 pb-1 flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                      Vận hành
+                      {t.navOperations}
                     </p>
                   </div>
 
@@ -3955,7 +4119,7 @@ export default function DashboardPage() {
                       ? 'text-[#0284c7] dark:text-[#38BDF8]'
                       : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`} />
-                    <span className="flex-1 truncate text-left">Quản lý bàn đã đặt</span>
+                    <span className="flex-1 truncate text-left">{t.tabReservations}</span>
                     <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-black flex-shrink-0 ${activeTab === ('reservations' as any)
                       ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
@@ -3968,7 +4132,7 @@ export default function DashboardPage() {
                 {/* ── NHÓM 2: QUẢN TRỊ CỬA HÀNG (STORE MANAGEMENT) ── */}
                 <div className="pt-1.5 border-t border-slate-100 dark:border-white/5 space-y-0.5">
                   <p className="px-3 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    Quản trị cửa hàng
+                    {t.navStore}
                   </p>
 
                   {/* Foods / Menu Tab */}
@@ -4010,7 +4174,7 @@ export default function DashboardPage() {
                       ? 'text-[#0284c7] dark:text-[#38BDF8]'
                       : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`} />
-                    <span className="flex-1 truncate text-left">Quản lý kho nguyên liệu</span>
+                    <span className="flex-1 truncate text-left">{t.tabInventory}</span>
                   </button>
 
                   {/* Users Management Tab */}
@@ -4046,10 +4210,10 @@ export default function DashboardPage() {
                       ? 'text-[#0284c7] dark:text-[#38BDF8]'
                       : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`} />
-                    <span className="flex-1 truncate text-left">Chấm công & Bảng lương</span>
+                    <span className="flex-1 truncate text-left">{t.tabPayroll}</span>
                     {shiftSwaps.filter((s) => s.status === 'pending').length > 0 && (
                       <span className="ml-auto px-1.5 py-0.5 text-[9.5px] font-black bg-amber-500 text-white rounded-full animate-pulse shadow-xs shrink-0">
-                        {shiftSwaps.filter((s) => s.status === 'pending').length} đổi ca
+                        {shiftSwaps.filter((s) => s.status === 'pending').length} {t.shiftSwapBadge}
                       </span>
                     )}
                   </button>
@@ -4058,7 +4222,7 @@ export default function DashboardPage() {
                 {/* ── NHÓM 3: TÀI CHÍNH & TIẾP THỊ (FINANCE & GROWTH) ── */}
                 <div className="pt-1.5 border-t border-slate-100 dark:border-white/5 space-y-0.5">
                   <p className="px-3 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    Tài chính & Tiếp thị
+                    {t.navFinance}
                   </p>
 
                   {/* Revenue Analytics Tab */}
@@ -4080,7 +4244,7 @@ export default function DashboardPage() {
                       ? 'text-[#0284c7] dark:text-[#38BDF8]'
                       : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`} />
-                    <span className="flex-1 truncate text-left">Thống kê doanh thu</span>
+                    <span className="flex-1 truncate text-left">{t.tabAnalytics}</span>
                   </button>
 
                   {/* Coupons Tab */}
@@ -4099,7 +4263,7 @@ export default function DashboardPage() {
                       ? 'text-[#0284c7] dark:text-[#38BDF8]'
                       : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`} />
-                    <span className="flex-1 truncate text-left">Mã giảm giá</span>
+                    <span className="flex-1 truncate text-left">{t.tabCoupons}</span>
                     <span className={`ml-auto inline-block py-0.5 px-2 text-[10.5px] rounded-full font-black flex-shrink-0 ${activeTab === ('coupons' as any)
                       ? 'bg-[#0284c7] dark:bg-[#38BDF8] text-white dark:text-slate-950'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
@@ -4130,7 +4294,7 @@ export default function DashboardPage() {
                     ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                     : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                     }`} />
-                  <span className="flex-1 truncate text-left">{user?.role === 'barista' ? 'Quầy pha chế (KDS)' : t.tabOrders}</span>
+                  <span className="flex-1 truncate text-left">{user?.role === 'barista' ? t.baristaKds : t.tabOrders}</span>
                   {isStaffLocked ? (
                     <DashboardIcon name="lock" className="text-sm text-amber-500 ml-auto" />
                   ) : (
@@ -4227,7 +4391,7 @@ export default function DashboardPage() {
                         ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                         : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                         }`} />
-                      <span className="flex-1 truncate text-left">Quản lý bàn đã đặt</span>
+                      <span className="flex-1 truncate text-left">{t.tabReservations}</span>
                       {isStaffLocked ? (
                         <DashboardIcon name="lock" className="text-sm text-amber-500 ml-auto" />
                       ) : (
@@ -4257,10 +4421,10 @@ export default function DashboardPage() {
                     ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                     : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                     }`} />
-                  <span className="flex-1 truncate text-left">Chấm công ca làm</span>
+                  <span className="flex-1 truncate text-left">{t.tabPayrollStaff}</span>
                   {isStaffLocked && (
                     <span className="ml-auto px-1.5 py-0.5 text-[9.5px] font-black bg-amber-500 text-white rounded-full animate-pulse shadow-xs shrink-0">
-                      Cần Check-in
+                      {t.needCheckIn}
                     </span>
                   )}
                 </button>
@@ -4285,7 +4449,7 @@ export default function DashboardPage() {
                       ? 'text-[#3B82F6] dark:text-[#38BDF8]'
                       : 'text-slate-400 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-white'
                       }`} />
-                    <span className="flex-1 truncate text-left">Quản lý kho nguyên liệu</span>
+                    <span className="flex-1 truncate text-left">{t.tabInventory}</span>
                   </button>
                 )}
               </>
@@ -4307,24 +4471,24 @@ export default function DashboardPage() {
                 setIsMobileSidebarOpen(false);
               }}
               className="flex items-center gap-3 min-w-0 text-left hover:opacity-85 transition-opacity flex-1 cursor-pointer py-0.5"
-              title={user?.name || 'Quản trị viên'}
+              title={user?.name || (user?.role === 'admin' ? t.roleAdmin : user?.role === 'barista' ? t.roleBarista : t.roleStaff)}
             >
               <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-[#3B82F6] text-[#3B82F6] dark:text-white flex items-center justify-center font-extrabold text-sm flex-shrink-0 shadow-xs">
                 {user?.name ? user.name.charAt(0).toUpperCase() : 'N'}
               </div>
               <div className="truncate min-w-0 flex-1">
-                <p className="text-xs font-extrabold text-slate-900 dark:text-slate-100 truncate leading-tight" title={user?.name || 'Quản trị viên'}>
-                  {user?.name || 'Nhân viên Phục vụ'}
+                <p className="text-xs font-extrabold text-slate-900 dark:text-slate-100 truncate leading-tight" title={user?.name || (user?.role === 'admin' ? t.roleAdmin : user?.role === 'barista' ? t.roleBarista : t.roleStaff)}>
+                  {user?.name || (user?.role === 'admin' ? t.roleAdmin : user?.role === 'barista' ? t.roleBarista : t.roleStaff)}
                 </p>
                 <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 truncate leading-tight mt-0.5">
-                  Sửa thông tin
+                  {t.editProfile}
                 </p>
               </div>
             </button>
             <button
               onClick={handleLogout}
               className="text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors p-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-500/10 flex-shrink-0 ml-1 cursor-pointer"
-              title="Đăng xuất"
+              title={t.logout}
             >
               <DashboardIcon name="logout" className="text-lg" />
             </button>
@@ -4338,15 +4502,15 @@ export default function DashboardPage() {
         <div className="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 mb-3.5 sm:mb-4 pb-3 border-b border-slate-200 dark:border-white/10">
           <div className="flex items-center gap-3 min-w-0">
             <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight font-heading truncate">
-              {activeTab === 'orders' && (user?.role === 'barista' ? 'Quầy pha chế (KDS)' : t.tabOrders)}
+              {activeTab === 'orders' && (user?.role === 'barista' ? t.baristaKds : t.tabOrders)}
               {activeTab === 'foods' && t.tabFoods}
               {activeTab === 'tables' && t.tabTables}
               {activeTab === 'users' && t.tabUsers}
-              {activeTab === 'attendance' && (user?.role === 'admin' ? 'Chấm công & Thanh toán Lương Nhân viên' : 'Chấm công ca làm')}
-              {activeTab === 'analytics' && 'Thống kê Doanh thu Cửa Hàng'}
-              {activeTab === 'inventory' && ((t as any).tabInventory || 'Quản lý kho nguyên liệu')}
-              {activeTab === ('coupons' as any) && 'Quản lý Mã giảm giá (Coupons)'}
-              {activeTab === ('reservations' as any) && 'Quản lý Bàn đã đặt (Reservations)'}
+              {activeTab === 'attendance' && (user?.role === 'admin' ? t.tabPayrollAdmin : t.tabPayrollStaff)}
+              {activeTab === 'analytics' && t.tabAnalyticsTitle}
+              {activeTab === 'inventory' && t.tabInventory}
+              {activeTab === ('coupons' as any) && t.tabCouponsTitle}
+              {activeTab === ('reservations' as any) && t.tabReservationsTitle}
             </h2>
           </div>
 
@@ -4372,7 +4536,7 @@ export default function DashboardPage() {
               title="Làm mới dữ liệu từ Database"
             >
               <DashboardIcon name="refresh" className="text-lg text-[#0059b9] dark:text-[#38BDF8]" />
-              <span className="hidden sm:inline">Làm mới</span>
+              <span className="hidden sm:inline">{t.btnRefresh}</span>
             </button>
 
             {/* Header Notification Bell Icon Button (Desktop Only - Mobile has top bar bell) */}
@@ -4388,7 +4552,7 @@ export default function DashboardPage() {
                   <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#38BDF8] border-2 border-white dark:border-[#131929] animate-pulse" />
                 )}
               </div>
-              <span>Thông báo</span>
+              <span>{t.btnNotifications}</span>
             </button>
 
             {/* Tab-Scoped Context Notification Buttons: Chỉ hiển thị trong mục tương ứng */}
@@ -4576,7 +4740,7 @@ export default function DashboardPage() {
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                         }`}
                     >
-                      <span className="whitespace-nowrap">Đang xử lý</span>
+                      <span className="whitespace-nowrap">{t.filterActiveOrders}</span>
                       {orders.filter((o) => ['pending', 'confirmed', 'cooking', 'ready'].includes(o.status)).length > 0 && (
                         <span
                           className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${orderStatusFilter === 'active'
@@ -4595,7 +4759,7 @@ export default function DashboardPage() {
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                         }`}
                     >
-                      <span className="whitespace-nowrap">Đang chờ thanh toán</span>
+                      <span className="whitespace-nowrap">{t.filterUnpaidOrders}</span>
                       {orders.filter((o) => o.status === 'completed').length > 0 && (
                         <span
                           className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${orderStatusFilter === 'unpaid'
@@ -4614,7 +4778,7 @@ export default function DashboardPage() {
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                         }`}
                     >
-                      <span className="whitespace-nowrap">Tất cả (đã thanh toán)</span>
+                      <span className="whitespace-nowrap">{t.filterPaidOrders}</span>
                       {paymentHistory.length > 0 && (
                         <span
                           className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${orderStatusFilter === 'paid'
@@ -4648,7 +4812,7 @@ export default function DashboardPage() {
                       title="Tạo đơn hàng mang về (POS)"
                     >
                       <DashboardIcon name="add" className="text-lg sm:text-xl" />
-                      <span>Tạo đơn mang về</span>
+                      <span>{t.btnCreateTakeaway}</span>
                     </button>
                   )}
                 </div>
@@ -5140,11 +5304,16 @@ export default function DashboardPage() {
                     );
                   })()
                 ) : displayedOrders.length === 0 ? (
-                  <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center text-slate-400">
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">
-                      {(orderStatusFilter as string) === 'paid' ? 'Chưa có đơn hàng nào đã thanh toán' : t.noOrders}
+                  <div className="bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-white/5 rounded-3xl p-12 text-center text-slate-400 shadow-xs flex flex-col items-center justify-center">
+                    <div className="w-14 h-14 rounded-2xl bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center text-[#0284c7] dark:text-[#38BDF8] mb-3.5 shadow-2xs">
+                      <DashboardIcon name={(orderStatusFilter as string) === 'paid' ? "receipt_long" : "local_cafe"} className="text-2xl" />
+                    </div>
+                    <p className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
+                      {(orderStatusFilter as string) === 'paid' ? t.noPaidOrders : t.noOrders}
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t.noOrdersDesc}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 max-w-sm mx-auto leading-relaxed">
+                      {(orderStatusFilter as string) === 'paid' ? t.noPaidOrdersDesc : t.noOrdersDesc}
+                    </p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
@@ -9794,10 +9963,10 @@ className = {`fixed xl:static inset-y-0 right-0 z-40 w-[290px] 2xl:w-[330px] max
     <h2 className="text-sm font-black uppercase tracking-wider text-slate-800 dark:text-slate-100 flex items-center gap-2">
       <span className="w-2 h-2 rounded-full bg-[#3B82F6] dark:bg-[#38BDF8] animate-ping" />
       {user?.role === 'admin'
-        ? 'Hoạt động'
+        ? t.panelActivity
         : user?.role === 'barista'
-          ? 'Đơn hàng chờ pha chế'
-          : 'Hoạt động '}
+          ? t.panelBrewingQueue
+          : t.panelActivity}
     </h2>
     <button
       onClick={() => setIsRealtimeDrawerOpen(false)}
@@ -9857,23 +10026,23 @@ className = {`fixed xl:static inset-y-0 right-0 z-40 w-[290px] 2xl:w-[330px] max
               {(activityFilter === 'all' || activityFilter === 'checkedIn') && (
                 <div className="space-y-2.5">
                   <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                    Nhân viên đã điểm danh ({checkedInList.length})
+                    {t.panelCheckedIn} ({checkedInList.length})
                   </h4>
                   {checkedInList.length === 0 ? (
-                    <p className="text-xs text-slate-400 italic">Chưa có nhân viên nào điểm danh hôm nay</p>
+                    <p className="text-xs text-slate-400 italic">{t.panelNoStaffCheckedInToday}</p>
                   ) : (
                     checkedInList.map((st) => {
                       const uId = String(st._id || (st as any).id || '');
                       const uEmail = String(st.email || '').toLowerCase();
                       const attRecord = (uId ? checkedInMap.get(uId) : null) || (uEmail ? checkedInMap.get(uEmail) : null);
                       const cInTime = attRecord?.checkIn
-                        ? new Date(attRecord.checkIn).toLocaleTimeString('vi-VN', {
+                        ? new Date(attRecord.checkIn).toLocaleTimeString(lang === 'zh' ? 'zh-CN' : lang === 'en' ? 'en-US' : 'vi-VN', {
                           hour: '2-digit',
                           minute: '2-digit',
                         })
                         : '';
                       const cOutTime = attRecord?.checkOut
-                        ? new Date(attRecord.checkOut).toLocaleTimeString('vi-VN', {
+                        ? new Date(attRecord.checkOut).toLocaleTimeString(lang === 'zh' ? 'zh-CN' : lang === 'en' ? 'en-US' : 'vi-VN', {
                           hour: '2-digit',
                           minute: '2-digit',
                         })
@@ -9890,15 +10059,15 @@ className = {`fixed xl:static inset-y-0 right-0 z-40 w-[290px] 2xl:w-[330px] max
                               {st.name}
                             </span>
                             <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-md">
-                              {cOutTime ? 'Đã check-out' : 'Đang làm việc'}
+                              {cOutTime ? t.panelCheckedOut : t.panelWorking}
                             </span>
                           </div>
                           <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                            Check-in lúc: <strong className="text-slate-700 dark:text-slate-300">{cInTime}</strong>
+                            {t.panelCheckInAt} <strong className="text-slate-700 dark:text-slate-300">{cInTime}</strong>
                             {cOutTime && (
                               <>
                                 {' '}
-                                | Check-out: <strong className="text-slate-700 dark:text-slate-300">{cOutTime}</strong> ({attRecord.totalHours}h)
+                                | {t.panelCheckOutAt} <strong className="text-slate-700 dark:text-slate-300">{cOutTime}</strong> ({attRecord.totalHours}h)
                               </>
                             )}
                           </div>
@@ -9914,10 +10083,10 @@ className = {`fixed xl:static inset-y-0 right-0 z-40 w-[290px] 2xl:w-[330px] max
               {(activityFilter === 'all' || activityFilter === 'notCheckedIn') && (
                 <div className="space-y-2.5 pt-2">
                   <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-rose-500 dark:text-rose-400">
-                    Nhân viên chưa điểm danh ({notCheckedInList.length})
+                    {t.panelNotCheckedIn} ({notCheckedInList.length})
                   </h4>
                   {notCheckedInList.length === 0 ? (
-                    <p className="text-xs text-emerald-500 font-bold">Tất cả nhân viên đã điểm danh đầy đủ!</p>
+                    <p className="text-xs text-emerald-500 font-bold">{t.panelAllStaffCheckedIn}</p>
                   ) : (
                     notCheckedInList.map((st) => (
                       <div
@@ -9930,11 +10099,11 @@ className = {`fixed xl:static inset-y-0 right-0 z-40 w-[290px] 2xl:w-[330px] max
                             {st.name}
                           </span>
                           <span className="text-[10px] font-bold text-rose-500 dark:text-rose-400 bg-rose-500/15 px-2 py-0.5 rounded-md">
-                            Chưa ca
+                            {t.panelOffShift}
                           </span>
                         </div>
                         <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                          Chưa có dữ liệu điểm danh ca làm hôm nay
+                          {t.panelNoAttendanceToday}
                         </div>
                         <div className="text-[10px] text-slate-400 truncate">{st.email}</div>
                       </div>
@@ -10041,7 +10210,7 @@ className = {`fixed xl:static inset-y-0 right-0 z-40 w-[290px] 2xl:w-[330px] max
           : 'hover:text-slate-900 dark:hover:text-white'
           }`}
       >
-        Tất cả
+        {t.panelAll}
       </button>
       <button
         onClick={() => setActivityFilter('table')}
@@ -10050,7 +10219,7 @@ className = {`fixed xl:static inset-y-0 right-0 z-40 w-[290px] 2xl:w-[330px] max
           : 'hover:text-slate-900 dark:hover:text-white'
           }`}
       >
-        Bàn {(tableActivities.length + pendingTransferRequests.length) > 0 && `(${tableActivities.length + pendingTransferRequests.length})`}
+        {t.panelTable} {(tableActivities.length + pendingTransferRequests.length) > 0 && `(${tableActivities.length + pendingTransferRequests.length})`}
       </button>
       <button
         onClick={() => setActivityFilter('support')}
@@ -10059,7 +10228,7 @@ className = {`fixed xl:static inset-y-0 right-0 z-40 w-[290px] 2xl:w-[330px] max
           : 'hover:text-slate-900 dark:hover:text-white'
           }`}
       >
-        Hỗ trợ {staffCalls.length > 0 && `(${staffCalls.length})`}
+        {t.panelSupport} {staffCalls.length > 0 && `(${staffCalls.length})`}
       </button>
       <button
         onClick={() => setActivityFilter('payment')}
@@ -10068,7 +10237,7 @@ className = {`fixed xl:static inset-y-0 right-0 z-40 w-[290px] 2xl:w-[330px] max
           : 'hover:text-slate-900 dark:hover:text-white'
           }`}
       >
-        Thanh toán
+        {t.panelPayment}
       </button>
     </div>
 
@@ -10281,7 +10450,7 @@ className = {`fixed xl:static inset-y-0 right-0 z-40 w-[290px] 2xl:w-[330px] max
         pendingTransferRequests.length === 0 &&
         orders.filter((o) => o.paymentNotified && o.status !== 'paid').length === 0 && (
           <div className="p-6 text-center text-slate-400 text-xs italic">
-            Hiện chưa có hoạt động nào mới.
+            {t.panelNoActivity}
           </div>
         )}
     </div>
